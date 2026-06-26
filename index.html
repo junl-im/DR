@@ -2,15 +2,40 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#190f2f" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Dream Library" />
     <meta
       name="description"
       content="Dream Library - vertical fantasy Shisen-Sho puzzle RPG prototype"
     />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/library-hall.svg" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/tiles/magic-book.svg" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/tiles/gold-key.svg" as="image" />
     <title>Dream Library</title>
   </head>
   <body>
+    <aside id="browser-guard" class="browser-guard hidden" aria-label="브라우저 안내" role="dialog" aria-modal="true">
+      <div class="browser-guard-card">
+        <p class="eyebrow">Browser Guard</p>
+        <h2>카카오톡 인앱 브라우저에서는 실행하지 않습니다</h2>
+        <p>
+          로그인, 전체화면, 사운드, 저장 기능이 불안정할 수 있어 외부 브라우저에서만 게임을 시작하도록 막았습니다.
+        </p>
+        <div class="guard-actions">
+          <button id="copy-url-button" type="button">주소 복사</button>
+          <button id="open-external-button" type="button" class="secondary">외부 브라우저 열기</button>
+        </div>
+        <p id="guard-status" class="guard-status">Chrome 또는 Safari 주소창에 붙여넣어 실행하세요.</p>
+      </div>
+    </aside>
+
     <div id="app" class="app-shell">
       <header class="hero-panel">
         <div>
@@ -18,7 +43,11 @@
           <h1>기억의 서고</h1>
           <p class="subtitle">사천성 퍼즐로 조각난 기억을 복원하세요.</p>
         </div>
-        <button id="sound-toggle" class="ghost-button" type="button" aria-label="효과음 토글">♪</button>
+        <div class="header-actions">
+          <button id="fullscreen-button" class="ghost-button" type="button" aria-label="전체화면 시작">⛶</button>
+          <button id="install-button" class="ghost-button hidden" type="button" aria-label="앱 설치">＋</button>
+          <button id="sound-toggle" class="ghost-button" type="button" aria-label="효과음 토글">♪</button>
+        </div>
       </header>
 
       <section class="auth-card" aria-label="로그인">
@@ -32,7 +61,7 @@
           <button id="signout-button" type="button" class="secondary hidden">로그아웃</button>
         </div>
         <form id="email-form" class="email-form">
-          <input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" />
+          <input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" />
           <input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" />
           <div class="email-buttons">
             <button id="email-login-button" type="submit">이메일 로그인</button>
@@ -60,6 +89,14 @@
       <main>
         <section id="board" class="board" aria-label="사천성 보드"></section>
       </main>
+
+      <section class="asset-card" aria-label="기억 자원 도감">
+        <div class="section-heading">
+          <h2>기억 자원</h2>
+          <span id="asset-progress" class="asset-progress">0/24 기억 자원 해금</span>
+        </div>
+        <div id="asset-gallery" class="asset-gallery"></div>
+      </section>
 
       <section class="leaderboard-card" aria-label="리더보드">
         <div class="section-heading">

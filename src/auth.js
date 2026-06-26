@@ -8,36 +8,52 @@ import {
   signOut
 } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebase.js';
+import { auth, db, firebaseReady } from './firebase.js';
 
-const googleProvider = new GoogleAuthProvider();
+const googleProvider = firebaseReady ? new GoogleAuthProvider() : null;
+
+function assertFirebaseReady() {
+  if (!firebaseReady || !auth) {
+    throw Object.assign(new Error('Firebase configuration is missing.'), { code: 'firebase/missing-config' });
+  }
+}
 
 export function observeAuth(callback) {
+  if (!firebaseReady || !auth) {
+    callback(null);
+    return () => {};
+  }
+
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
-      await saveUserProfile(user);
+      await saveUserProfile(user).catch(() => null);
     }
     callback(user);
   });
 }
 
 export function loginAnonymously() {
+  assertFirebaseReady();
   return signInAnonymously(auth);
 }
 
 export function loginWithGoogle() {
+  assertFirebaseReady();
   return signInWithPopup(auth, googleProvider);
 }
 
 export function loginWithEmail(email, password) {
+  assertFirebaseReady();
   return signInWithEmailAndPassword(auth, email, password);
 }
 
 export function signupWithEmail(email, password) {
+  assertFirebaseReady();
   return createUserWithEmailAndPassword(auth, email, password);
 }
 
 export function logout() {
+  assertFirebaseReady();
   return signOut(auth);
 }
 
@@ -55,6 +71,7 @@ function getProvider(user) {
 }
 
 async function saveUserProfile(user) {
+  if (!db) return;
   await setDoc(
     doc(db, 'users', user.uid),
     {

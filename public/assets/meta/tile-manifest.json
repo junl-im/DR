@@ -1,0 +1,122 @@
+[
+  {
+    "type": "magic-book",
+    "label": "마법서",
+    "file": "assets/tiles/magic-book.svg"
+  },
+  {
+    "type": "gold-key",
+    "label": "황금 열쇠",
+    "file": "assets/tiles/gold-key.svg"
+  },
+  {
+    "type": "candle",
+    "label": "기억 촛불",
+    "file": "assets/tiles/candle.svg"
+  },
+  {
+    "type": "hourglass",
+    "label": "시간 모래",
+    "file": "assets/tiles/hourglass.svg"
+  },
+  {
+    "type": "crystal-orb",
+    "label": "수정 구슬",
+    "file": "assets/tiles/crystal-orb.svg"
+  },
+  {
+    "type": "rune",
+    "label": "룬 조각",
+    "file": "assets/tiles/rune.svg"
+  },
+  {
+    "type": "ink",
+    "label": "마법 잉크",
+    "file": "assets/tiles/ink.svg"
+  },
+  {
+    "type": "scroll",
+    "label": "고대 두루마리",
+    "file": "assets/tiles/scroll.svg"
+  },
+  {
+    "type": "crown",
+    "label": "왕관",
+    "file": "assets/tiles/crown.svg"
+  },
+  {
+    "type": "feather",
+    "label": "기록의 깃털",
+    "file": "assets/tiles/feather.svg"
+  },
+  {
+    "type": "potion",
+    "label": "포션 병",
+    "file": "assets/tiles/potion.svg"
+  },
+  {
+    "type": "star",
+    "label": "별자리 조각",
+    "file": "assets/tiles/star.svg"
+  },
+  {
+    "type": "music-box",
+    "label": "뮤직 박스",
+    "file": "assets/tiles/music-box.svg"
+  },
+  {
+    "type": "dragon-egg",
+    "label": "드래곤 알",
+    "file": "assets/tiles/dragon-egg.svg"
+  },
+  {
+    "type": "relic",
+    "label": "서고 유물",
+    "file": "assets/tiles/relic.svg"
+  },
+  {
+    "type": "moon",
+    "label": "달의 기억",
+    "file": "assets/tiles/moon.svg"
+  },
+  {
+    "type": "gem",
+    "label": "결정",
+    "file": "assets/tiles/gem.svg"
+  },
+  {
+    "type": "shield",
+    "label": "수호 방패",
+    "file": "assets/tiles/shield.svg"
+  },
+  {
+    "type": "flower",
+    "label": "정원 기억",
+    "file": "assets/tiles/flower.svg"
+  },
+  {
+    "type": "comet",
+    "label": "혜성 조각",
+    "file": "assets/tiles/comet.svg"
+  },
+  {
+    "type": "bell",
+    "label": "서고 종",
+    "file": "assets/tiles/bell.svg"
+  },
+  {
+    "type": "map",
+    "label": "비밀 지도",
+    "file": "assets/tiles/map.svg"
+  },
+  {
+    "type": "castle",
+    "label": "꿈의 성",
+    "file": "assets/tiles/castle.svg"
+  },
+  {
+    "type": "spark",
+    "label": "기억 파편",
+    "file": "assets/tiles/spark.svg"
+  }
+]

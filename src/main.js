@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore';
 import './styles.css';
-import { db } from './firebase.js';
+import { db, firebaseMissingKeys, firebaseReady } from './firebase.js';
 import {
   getDisplayName,
   loginAnonymously,
@@ -10,10 +10,14 @@ import {
   observeAuth,
   signupWithEmail
 } from './auth.js';
-import { DIFFICULTIES } from './game/difficulty.js';
+import { DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
 import { canConnect, countRemaining, createBoard, findHint, isCleared, removePair, shuffleRemaining } from './game/shisen.js';
+import { initBrowserGuard } from './platform/browserGuard.js';
+import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
+import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 
 const elements = {
+  app: document.querySelector('#app'),
   board: document.querySelector('#board'),
   difficultyRow: document.querySelector('#difficulty-row'),
   timeLabel: document.querySelector('#time-label'),
@@ -35,7 +39,11 @@ const elements = {
   authProvider: document.querySelector('#auth-provider'),
   leaderboardList: document.querySelector('#leaderboard-list'),
   refreshLeaderboardButton: document.querySelector('#refresh-leaderboard-button'),
-  soundToggle: document.querySelector('#sound-toggle')
+  assetGallery: document.querySelector('#asset-gallery'),
+  assetProgress: document.querySelector('#asset-progress'),
+  soundToggle: document.querySelector('#sound-toggle'),
+  fullscreenButton: document.querySelector('#fullscreen-button'),
+  installButton: document.querySelector('#install-button')
 };
 
 const state = {
@@ -53,13 +61,27 @@ const state = {
   hints: 0,
   shuffles: 0,
   locked: true,
-  soundEnabled: true
+  discoveredTiles: new Set(readJsonPreference('dream-library-discovered-tiles', [])),
+  soundEnabled: readPreference('dream-library-sound') !== 'off'
 };
 
 init();
 
 function init() {
+  const browserGuard = initBrowserGuard();
+  if (browserGuard.blocked) {
+    elements.app?.setAttribute('aria-hidden', 'true');
+    return;
+  }
+
+  registerServiceWorker();
+  applyAssetBackgrounds();
+  preloadAssets(PRELOAD_ASSETS);
+  initFullscreenControls(elements.fullscreenButton, setStatus);
+  initInstallPrompt(elements.installButton, setStatus);
+  restorePreferences();
   renderDifficultyButtons();
+  renderAssetGallery();
   bindEvents();
   observeAuth((user) => {
     state.user = user;
@@ -68,6 +90,9 @@ function init() {
   });
   resetBoardPlaceholder();
   loadLeaderboard();
+  if (!firebaseReady) {
+    setStatus('Firebase .env.local 설정 전입니다. 게임은 가능하지만 로그인/리더보드는 비활성화됩니다.');
+  }
 }
 
 function renderDifficultyButtons() {
@@ -88,17 +113,24 @@ function bindEvents() {
     const button = event.target.closest('[data-difficulty]');
     if (!button) return;
     state.difficultyKey = button.dataset.difficulty;
+    writePreference('dream-library-difficulty', state.difficultyKey);
     renderDifficultyButtons();
+    requestGameFullscreen();
     startGame();
   });
 
-  elements.newGameButton.addEventListener('click', startGame);
+  elements.newGameButton.addEventListener('click', () => {
+    requestGameFullscreen();
+    startGame();
+  });
   elements.hintButton.addEventListener('click', showHint);
   elements.shuffleButton.addEventListener('click', shuffleBoard);
   elements.refreshLeaderboardButton.addEventListener('click', loadLeaderboard);
   elements.soundToggle.addEventListener('click', () => {
     state.soundEnabled = !state.soundEnabled;
+    writePreference('dream-library-sound', state.soundEnabled ? 'on' : 'off');
     elements.soundToggle.classList.toggle('muted', !state.soundEnabled);
+    elements.soundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
   });
 
   elements.anonymousButton.addEventListener('click', () => runAuthAction(loginAnonymously));
@@ -151,6 +183,7 @@ function startGame() {
   renderBoard();
   renderStats();
   setStatus(`${difficulty.label} 난이도 시작! 같은 기억 조각을 3개 이하 직선으로 연결하세요.`);
+  vibrate(18);
 }
 
 function tickTimer() {
@@ -177,9 +210,10 @@ function renderBoard(highlight = []) {
               data-row="${rowIndex}"
               data-col="${colIndex}"
               type="button"
-              aria-label="${tile.label}"
+              aria-label="${escapeHtml(tile.label)}"
             >
-              <span>${tile.icon}</span>
+              <img src="${tile.asset}" alt="" draggable="false" loading="eager" />
+              <span class="tile-fallback" aria-hidden="true">${tile.icon}</span>
             </button>
           `;
         })
@@ -217,13 +251,17 @@ function onTileClick(event) {
 
   if (firstTile?.type === secondTile?.type && canConnect(state.board, state.selected, current)) {
     state.board = removePair(state.board, state.selected, current);
+    rememberTile(firstTile.type);
+    rememberTile(secondTile.type);
     state.selected = null;
     state.moves += 1;
     state.combo += 1;
     state.comboMax = Math.max(state.comboMax, state.combo);
     state.score += calculateMatchScore();
     playPop();
+    vibrate(12);
     renderStats();
+    renderAssetGallery();
     renderBoard();
 
     if (isCleared(state.board)) {
@@ -241,6 +279,7 @@ function onTileClick(event) {
   renderStats();
   renderBoard();
   setStatus('연결할 수 없는 조각입니다. 같은 종류를 두 번 이하로 꺾어 연결하세요.');
+  vibrate([18, 20, 18]);
 }
 
 function calculateMatchScore() {
@@ -309,6 +348,11 @@ async function endGame(cleared) {
 }
 
 async function saveScore(cleared) {
+  if (!firebaseReady || !db) {
+    setStatus('Firebase .env.local 설정 후 로그인/점수 저장을 사용할 수 있습니다.');
+    return;
+  }
+
   if (!state.user) {
     setStatus('로그인하면 리더보드에 기록을 저장할 수 있습니다.');
     return;
@@ -337,6 +381,11 @@ async function saveScore(cleared) {
 }
 
 async function loadLeaderboard() {
+  if (!firebaseReady || !db) {
+    elements.leaderboardList.innerHTML = '<li class="empty-rank">Firebase 환경변수 설정 후 리더보드가 활성화됩니다.</li>';
+    return;
+  }
+
   try {
     const scoresQuery = query(collection(db, 'leaderboards', 'global', 'scores'), orderBy('score', 'desc'), limit(10));
     const snapshot = await getDocs(scoresQuery);
@@ -352,7 +401,7 @@ async function loadLeaderboard() {
           <li>
             <span class="rank">#${index + 1}</span>
             <strong>${escapeHtml(data.displayName ?? 'Guest')}</strong>
-            <span>${data.difficulty ?? '-'} · ${data.moves ?? 0}수 · ${data.score ?? 0}점</span>
+            <span>${escapeHtml(data.difficulty ?? '-')} · ${data.moves ?? 0}수 · ${data.score ?? 0}점</span>
           </li>
         `;
       })
@@ -372,6 +421,16 @@ function renderStats() {
 }
 
 function renderAuth() {
+  if (!firebaseReady) {
+    elements.authName.textContent = 'Firebase 설정 필요';
+    elements.authProvider.textContent = `누락: ${firebaseMissingKeys.join(', ')}`;
+    elements.signoutButton.classList.add('hidden');
+    elements.anonymousButton.classList.remove('hidden');
+    elements.googleButton.classList.remove('hidden');
+    elements.emailForm.classList.remove('hidden');
+    return;
+  }
+
   if (!state.user) {
     elements.authName.textContent = '로그인 전';
     elements.authProvider.textContent = '익명, 이메일, Google 로그인을 지원합니다.';
@@ -388,6 +447,68 @@ function renderAuth() {
   elements.anonymousButton.classList.add('hidden');
   elements.googleButton.classList.add('hidden');
   elements.emailForm.classList.add('hidden');
+}
+
+function renderAssetGallery() {
+  const unlockedCount = state.discoveredTiles.size;
+  elements.assetProgress.textContent = `${unlockedCount}/${TILE_SET.length} 기억 자원 해금`;
+  elements.assetGallery.innerHTML = TILE_SET.map((tile) => {
+    const unlocked = state.discoveredTiles.has(tile.type);
+    return `
+      <figure class="asset-chip ${unlocked ? 'unlocked' : 'locked'}" title="${escapeHtml(tile.label)}">
+        <img src="${tile.asset}" alt="${escapeHtml(tile.label)}" loading="lazy" draggable="false" />
+        <figcaption>${unlocked ? escapeHtml(tile.label) : '미확인'}</figcaption>
+      </figure>
+    `;
+  }).join('');
+}
+
+function rememberTile(type) {
+  if (!type || state.discoveredTiles.has(type)) return;
+  state.discoveredTiles.add(type);
+  writeJsonPreference('dream-library-discovered-tiles', [...state.discoveredTiles]);
+}
+
+function readPreference(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writePreference(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Preferences are optional.
+  }
+}
+
+function readJsonPreference(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJsonPreference(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Preferences are optional.
+  }
+}
+
+function restorePreferences() {
+  const savedDifficulty = readPreference('dream-library-difficulty');
+  if (savedDifficulty && DIFFICULTIES[savedDifficulty]) {
+    state.difficultyKey = savedDifficulty;
+  }
+  elements.soundToggle.classList.toggle('muted', !state.soundEnabled);
+  elements.soundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
 }
 
 function resetBoardPlaceholder() {
@@ -409,6 +530,9 @@ function formatTime(seconds) {
 }
 
 function formatError(error) {
+  if (error?.code === 'firebase/missing-config') {
+    return 'Firebase 환경변수 설정이 필요합니다. .env.local과 GitHub Secrets를 확인하세요.';
+  }
   const code = error?.code?.replace('auth/', '').replaceAll('-', ' ');
   return code ? `오류: ${code}` : '처리 중 오류가 발생했습니다.';
 }
@@ -426,9 +550,17 @@ function escapeHtml(value) {
   });
 }
 
+function vibrate(pattern) {
+  if (navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
+}
+
 function playPop() {
-  if (!state.soundEnabled || !window.AudioContext) return;
-  const context = new AudioContext();
+  if (!state.soundEnabled) return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  const context = new AudioContextClass();
   const oscillator = context.createOscillator();
   const gain = context.createGain();
   oscillator.frequency.value = 720 + state.combo * 20;
@@ -437,4 +569,18 @@ function playPop() {
   oscillator.connect(gain).connect(context.destination);
   oscillator.start();
   oscillator.stop(context.currentTime + 0.08);
+}
+
+function applyAssetBackgrounds() {
+  const base = import.meta.env.BASE_URL;
+  document.documentElement.style.setProperty('--dream-bg-mist', `url('${base}assets/backgrounds/memory-mist.svg') center/cover fixed`);
+  document.documentElement.style.setProperty('--dream-bg-library', `url('${base}assets/backgrounds/library-hall.svg') center/cover fixed`);
+}
+
+function preloadAssets(urls) {
+  urls.forEach((url) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = url;
+  });
 }

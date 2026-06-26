@@ -30,7 +30,9 @@ function makeTile(tile, pairIndex, side) {
     id: `${tile.type}-${pairIndex}-${side}-${crypto.randomUUID()}`,
     type: tile.type,
     icon: tile.icon,
-    label: tile.label
+    asset: tile.asset,
+    label: tile.label,
+    theme: tile.theme
   };
 }
 

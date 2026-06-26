@@ -1,3 +1,5 @@
+const tileAsset = (name) => `${import.meta.env.BASE_URL}assets/tiles/${name}.svg`;
+
 export const DIFFICULTIES = {
   easy: {
     key: 'easy',
@@ -46,28 +48,35 @@ export const DIFFICULTIES = {
 };
 
 export const TILE_SET = [
-  { type: 'magic-book', icon: '📘', label: '마법서' },
-  { type: 'gold-key', icon: '🗝️', label: '황금 열쇠' },
-  { type: 'candle', icon: '🕯️', label: '기억 촛불' },
-  { type: 'hourglass', icon: '⌛', label: '시간 모래' },
-  { type: 'crystal-orb', icon: '🔮', label: '수정 구슬' },
-  { type: 'rune', icon: '🔯', label: '룬 조각' },
-  { type: 'ink', icon: '🖋️', label: '마법 잉크' },
-  { type: 'scroll', icon: '📜', label: '고대 두루마리' },
-  { type: 'crown', icon: '👑', label: '왕관' },
-  { type: 'feather', icon: '🪶', label: '기록의 깃털' },
-  { type: 'potion', icon: '🧪', label: '포션 병' },
-  { type: 'star', icon: '✨', label: '별자리 조각' },
-  { type: 'music-box', icon: '🎼', label: '뮤직 박스' },
-  { type: 'dragon-egg', icon: '🥚', label: '드래곤 알' },
-  { type: 'relic', icon: '🏺', label: '서고 유물' },
-  { type: 'moon', icon: '🌙', label: '달의 기억' },
-  { type: 'gem', icon: '💎', label: '결정' },
-  { type: 'shield', icon: '🛡️', label: '수호 방패' },
-  { type: 'flower', icon: '🌸', label: '정원 기억' },
-  { type: 'comet', icon: '☄️', label: '혜성 조각' },
-  { type: 'bell', icon: '🔔', label: '서고 종' },
-  { type: 'map', icon: '🗺️', label: '비밀 지도' },
-  { type: 'castle', icon: '🏰', label: '꿈의 성' },
-  { type: 'spark', icon: '🌟', label: '기억 파편' }
+  { type: 'magic-book', icon: '📘', asset: tileAsset('magic-book'), label: '마법서', theme: '서고' },
+  { type: 'gold-key', icon: '🗝️', asset: tileAsset('gold-key'), label: '황금 열쇠', theme: '해금' },
+  { type: 'candle', icon: '🕯️', asset: tileAsset('candle'), label: '기억 촛불', theme: '의식' },
+  { type: 'hourglass', icon: '⌛', asset: tileAsset('hourglass'), label: '시간 모래', theme: '시간' },
+  { type: 'crystal-orb', icon: '🔮', asset: tileAsset('crystal-orb'), label: '수정 구슬', theme: '예지' },
+  { type: 'rune', icon: '🔯', asset: tileAsset('rune'), label: '룬 조각', theme: '마법' },
+  { type: 'ink', icon: '🖋️', asset: tileAsset('ink'), label: '마법 잉크', theme: '기록' },
+  { type: 'scroll', icon: '📜', asset: tileAsset('scroll'), label: '고대 두루마리', theme: '기록' },
+  { type: 'crown', icon: '👑', asset: tileAsset('crown'), label: '왕관', theme: '왕국' },
+  { type: 'feather', icon: '🪶', asset: tileAsset('feather'), label: '기록의 깃털', theme: '기록' },
+  { type: 'potion', icon: '🧪', asset: tileAsset('potion'), label: '포션 병', theme: '연금' },
+  { type: 'star', icon: '✨', asset: tileAsset('star'), label: '별자리 조각', theme: '별빛' },
+  { type: 'music-box', icon: '🎼', asset: tileAsset('music-box'), label: '뮤직 박스', theme: '추억' },
+  { type: 'dragon-egg', icon: '🥚', asset: tileAsset('dragon-egg'), label: '드래곤 알', theme: '환수' },
+  { type: 'relic', icon: '🏺', asset: tileAsset('relic'), label: '서고 유물', theme: '유물' },
+  { type: 'moon', icon: '🌙', asset: tileAsset('moon'), label: '달의 기억', theme: '달빛' },
+  { type: 'gem', icon: '💎', asset: tileAsset('gem'), label: '결정', theme: '보석' },
+  { type: 'shield', icon: '🛡️', asset: tileAsset('shield'), label: '수호 방패', theme: '수호' },
+  { type: 'flower', icon: '🌸', asset: tileAsset('flower'), label: '정원 기억', theme: '정원' },
+  { type: 'comet', icon: '☄️', asset: tileAsset('comet'), label: '혜성 조각', theme: '별빛' },
+  { type: 'bell', icon: '🔔', asset: tileAsset('bell'), label: '서고 종', theme: '알림' },
+  { type: 'map', icon: '🗺️', asset: tileAsset('map'), label: '비밀 지도', theme: '탐험' },
+  { type: 'castle', icon: '🏰', asset: tileAsset('castle'), label: '꿈의 성', theme: '왕국' },
+  { type: 'spark', icon: '🌟', asset: tileAsset('spark'), label: '기억 파편', theme: '핵심' }
+];
+
+export const PRELOAD_ASSETS = [
+  `${import.meta.env.BASE_URL}assets/backgrounds/library-hall.svg`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/memory-mist.svg`,
+  `${import.meta.env.BASE_URL}assets/ui/panel-frame.svg`,
+  ...TILE_SET.map((tile) => tile.asset)
 ];

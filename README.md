@@ -1,10 +1,51 @@
 # Dream Library
 
-Premium casual fantasy Shisen-Sho puzzle RPG prototype.
+세로형 모바일 우선 사천성 퍼즐 RPG입니다. GitHub Pages를 기본 배포 주소로 사용하고, Firebase는 Authentication, Firestore, Analytics 용도로 사용합니다.
+
+- 기본 배포 주소: `https://junl-im.github.io/DR/`
+- GitHub 저장소: `https://github.com/junl-im/DR`
+- Firebase Project ID: `dream-library-b732a`
+- 화면 방향: 세로형 9:16 모바일 우선
 
 ## Version History
 
-### v0.1.0 - Initial playable Firebase starter
+### v1.0.2 - Asset Pack 01 + Firebase API Key 하드코딩 제거
+
+- Firebase 웹 설정값을 `src/firebase.js` 하드코딩에서 Vite 환경변수 방식으로 변경
+- `.env.example` 추가
+- GitHub Actions 빌드에 `VITE_FIREBASE_*` Secrets 주입 추가
+- Firebase 설정이 없을 때도 게임 자체는 실행되고, 로그인/리더보드만 비활성화되도록 보강
+- Firebase 설정 누락 상태를 로그인 카드와 리더보드에 표시
+- 자체 제작 SVG 타일 에셋 24종 추가
+- 자체 제작 배경 에셋 2종 추가: `library-hall`, `memory-mist`
+- 자체 제작 UI 프레임 에셋 1종 추가
+- 타일 렌더링을 이모지 중심에서 SVG 이미지 중심으로 변경
+- 타일 이미지 로딩 실패 시 이모지 fallback 유지
+- 기억 자원 도감 UI 추가
+- 매칭한 타일을 localStorage에 해금 기록으로 저장
+- service worker cache 이름을 `v1.0.2`로 갱신
+- service worker precache에 타일/배경/UI 에셋 추가
+- GitHub Pages `/DR/` base path에서 에셋 경로가 깨지지 않도록 `import.meta.env.BASE_URL` 기준 처리
+
+### v1.0.1 - GitHub Pages 기본 세팅 재정리
+
+- GitHub Pages 주소 `/DR/` 기준으로 Vite 빌드 경로 세팅
+- GitHub Actions `Deploy to GitHub Pages` 추가
+- Firebase Hosting Actions는 Firebase 루트 배포용 빌드 명령으로 분리
+- GitHub Desktop 사용 흐름에 맞춘 적용 순서 정리
+- KakaoTalk/Kakao 계열 인앱 브라우저 감지 및 게임 실행 차단 화면 추가
+- 주소 복사 및 외부 브라우저 열기 버튼 추가
+- 전체화면 버튼 추가
+- 새 게임/난이도 선택 시 전체화면 진입 시도
+- PWA manifest, 아이콘, service worker 추가
+- 홈 화면 추가/설치 버튼 대응
+- 모바일 터치 오작동 방지, safe-area, 세로 화면 UI 보강
+- 사운드 설정과 마지막 난이도 localStorage 저장
+- 진동 피드백 추가
+- Firebase Auth 프로필 저장 실패가 로그인 흐름을 깨지 않도록 보강
+- Authorized domains 목록에 GitHub Pages 도메인 추가 안내
+
+### v1.0.0 - Initial playable Firebase starter
 
 - 세로형 9:16 모바일 우선 UI
 - 사천성 연결 규칙: 같은 타일, 최대 2회 꺾기, 외곽 경로 허용
@@ -16,14 +57,90 @@ Premium casual fantasy Shisen-Sho puzzle RPG prototype.
 - GitHub Actions: main 브랜치 live 배포, PR preview 배포
 - Firestore Security Rules 기본 운영형 템플릿
 
-## Project Identity
+## Google API Key / Firebase Web Config
 
-- Project: Dream Library
-- Genre: Premium Casual Fantasy Puzzle RPG
-- Core: Shisen-Sho puzzle battle
-- Screen: Vertical 9:16 mobile-first
-- Firebase Project ID: `dream-library-b732a`
-- Repository: `junl-im/DR`
+Firebase 웹앱 초기화에는 API key가 필요합니다. 단, Firebase 웹 API key는 비밀번호처럼 숨겨야만 하는 서버 비밀키가 아니라 Firebase 프로젝트로 요청을 라우팅하는 공개 식별자 성격입니다.
+
+그래도 GitHub Secret Scanning 경고를 줄이고, 이후 다른 Google API가 붙을 때 사고를 줄이기 위해 v1.0.2부터 소스에는 실제 API key를 하드코딩하지 않습니다.
+
+### 로컬 PC 설정
+
+1. `.env.example` 파일을 복사합니다.
+2. 복사본 이름을 `.env.local`로 바꿉니다.
+3. `.env.local`의 `VITE_FIREBASE_API_KEY`에 Firebase 웹 API key를 넣습니다.
+4. `.env.local`은 `.gitignore`에 의해 GitHub에 올라가지 않습니다.
+
+```text
+VITE_FIREBASE_API_KEY=Firebase Console에서 확인한 웹 API key
+VITE_FIREBASE_AUTH_DOMAIN=dream-library-b732a.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=dream-library-b732a
+VITE_FIREBASE_STORAGE_BUCKET=dream-library-b732a.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=120637221874
+VITE_FIREBASE_APP_ID=1:120637221874:web:609a6694d4a19ac792196b
+VITE_FIREBASE_MEASUREMENT_ID=G-LM4XVDQ241
+```
+
+### GitHub Actions Secrets 설정
+
+GitHub 저장소에서 아래로 이동합니다.
+
+```text
+Settings > Secrets and variables > Actions > New repository secret
+```
+
+아래 Secrets를 추가합니다.
+
+```text
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_FIREBASE_MEASUREMENT_ID
+FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A
+```
+
+`FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A`는 Firebase Hosting Actions용입니다. GitHub Pages만 먼저 쓸 때는 `VITE_FIREBASE_*` 값부터 넣으면 됩니다.
+
+### Google Cloud API Key 제한 권장
+
+Google Cloud Console에서 해당 API key에 아래 제한을 거는 것을 권장합니다.
+
+- Application restrictions: HTTP referrers
+- 허용 referrer 예시:
+  - `https://junl-im.github.io/*`
+  - `https://dream-library-b732a.web.app/*`
+  - `https://dream-library-b732a.firebaseapp.com/*`
+  - 로컬 테스트가 필요하면 `http://localhost:*/*`
+- API restrictions: Firebase에서 실제 사용하는 API만 허용
+
+## GitHub Desktop 적용 순서
+
+### full ZIP으로 처음 세팅할 때
+
+1. GitHub Desktop에서 `junl-im/DR` 저장소를 Clone합니다.
+2. 다운로드한 full ZIP 압축을 풉니다.
+3. 압축을 푼 안쪽 파일 전체를 GitHub Desktop이 Clone한 `DR` 폴더 안에 복사합니다.
+4. 덮어쓰기 질문이 나오면 덮어씁니다.
+5. `.env.example`을 복사해서 `.env.local`을 만들고 Firebase 값을 입력합니다.
+6. GitHub Desktop에서 변경 파일을 확인합니다.
+7. Summary에 `Apply Dream Library v1.0.2 asset and config patch` 입력합니다.
+8. `Commit to main`을 누릅니다.
+9. `Push origin`을 누릅니다.
+10. GitHub 저장소 Settings > Pages에서 Source를 `GitHub Actions`로 설정합니다.
+11. GitHub 저장소 Settings > Secrets and variables > Actions에 `VITE_FIREBASE_*` Secrets를 입력합니다.
+12. Actions 탭에서 `Deploy to GitHub Pages`가 성공하면 `https://junl-im.github.io/DR/`에서 확인합니다.
+
+### patch ZIP으로 기존 파일 위에 덮을 때
+
+1. patch ZIP 압축을 풉니다.
+2. 나온 파일들을 GitHub Desktop이 Clone한 `DR` 폴더에 그대로 복사합니다.
+3. 덮어쓰기 질문이 나오면 덮어씁니다.
+4. `.env.example`을 복사해서 `.env.local`을 만들고 Firebase 값을 입력합니다.
+5. GitHub Desktop에서 변경 파일을 확인합니다.
+6. Commit 후 Push합니다.
+7. GitHub 저장소 Actions Secrets에 `VITE_FIREBASE_*` 값을 입력합니다.
 
 ## Local Development
 
@@ -32,66 +149,71 @@ npm install
 npm run dev
 ```
 
-## Production Build
+## GitHub Pages Build
 
 ```bash
 npm run build
-npm run preview
 ```
 
-## Firebase Deploy
+GitHub Pages는 저장소 하위 경로 `/DR/`에 배포되므로 기본 빌드는 `/DR/` base path로 생성됩니다.
+
+## Firebase Hosting Build
+
+Firebase Hosting 루트에 배포할 때는 별도 명령을 사용합니다.
 
 ```bash
-npm install -g firebase-tools
+npm run build:firebase
+npm run deploy:firebase
+```
+
+Firebase Hosting과 GitHub Pages를 동시에 쓰면 실제 게임 주소가 2개가 됩니다. 지금 기본 운영 주소는 GitHub Pages `https://junl-im.github.io/DR/`로 둡니다.
+
+## GitHub Actions
+
+포함된 workflow는 다음과 같습니다.
+
+```text
+.github/workflows/github-pages.yml
+.github/workflows/firebase-hosting-merge.yml
+.github/workflows/firebase-hosting-pull-request.yml
+```
+
+- `github-pages.yml`: main push 시 GitHub Pages 자동 배포
+- `firebase-hosting-merge.yml`: 수동 실행용 Firebase Hosting live 배포
+- `firebase-hosting-pull-request.yml`: PR 생성 시 Firebase preview 배포
+
+Firebase CLI로 Hosting Action secret을 생성하는 권장 명령은 다음과 같습니다.
+
+```bash
 firebase login
 firebase use dream-library-b732a
-npm run deploy
-```
-
-## GitHub Actions Setup
-
-Firebase Hosting과 GitHub Actions는 Firebase CLI가 서비스 계정과 GitHub secret을 자동 생성해 주는 방식이 가장 안전합니다.
-
-```bash
 firebase init hosting:github
 ```
 
-권장 응답:
-
-- GitHub repository: `junl-im/DR`
-- Build command: `npm install && npm run build`
-- Public directory: `dist`
-- Single-page app rewrite: `Yes`
-- Deploy to live channel on merge: `Yes`
-- Main branch: `main`
-
-CLI 실행 후 GitHub repository secret에 아래 이름이 있는지 확인하세요.
-
-```text
-FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A
-```
-
-이 스타터에는 workflow YAML이 이미 포함되어 있습니다. CLI가 다른 secret 이름을 만들면 `.github/workflows/*.yml` 안의 secret 이름만 맞춰 바꾸면 됩니다.
-
 ## Firebase Authorized Domains
 
-Firebase Console > Authentication > Settings > Authorized domains에 아래를 확인하거나 추가하세요.
+Firebase Console > Authentication > Settings > Authorized domains에 아래 도메인을 확인하거나 추가합니다.
 
 ```text
 localhost
+junl-im.github.io
 dream-library-b732a.firebaseapp.com
 dream-library-b732a.web.app
 ```
 
-커스텀 도메인을 연결한다면 예시는 다음과 같습니다.
+GitHub Pages 주소가 `https://junl-im.github.io/DR/`이더라도 Authorized domain에는 경로 `/DR/`를 넣지 않고 도메인 `junl-im.github.io`만 넣습니다.
+
+## Firebase Authentication
+
+Firebase Console에서 이미 켜둔 공급자:
 
 ```text
-dreamlibrary.app
-www.dreamlibrary.app
-game.dreamlibrary.app
+Anonymous
+Email/Password
+Google
 ```
 
-PR preview URL은 보통 매 PR마다 다른 Firebase Hosting preview 도메인이 생깁니다. Google 로그인까지 preview에서 테스트하려면 해당 preview 도메인을 Authorized domains에 추가해야 할 수 있습니다. 운영 테스트는 live 도메인에서 먼저 진행하는 것을 권장합니다.
+게임 코드도 위 3개 방식에 맞춰 연결되어 있습니다.
 
 ## Firestore Collections
 
@@ -101,17 +223,71 @@ leaderboards/global/scores/{uid}
 leaderboards/daily/scores/{uid}
 ```
 
-현재 규칙은 다음 원칙입니다.
+현재 규칙 원칙:
 
 - 사용자 프로필은 본인만 읽고 쓸 수 있습니다.
 - 리더보드는 누구나 읽을 수 있습니다.
 - 리더보드 기록은 로그인한 사용자가 자기 UID 문서에만 쓸 수 있습니다.
 - 점수, 시간, 이동 수, 콤보 수는 기본 범위 검증을 통과해야 합니다.
-- 클라이언트 게임이므로 치트 방지는 완전하지 않습니다. 서버 검증은 추후 Cloud Functions 또는 App Check 적용 단계에서 강화합니다.
+- 나머지 문서는 전부 차단합니다.
+
+Firestore Rules 배포:
+
+```bash
+npm run deploy:rules
+```
+
+## Asset Resources
+
+v1.0.2에서 들어간 자체 제작 기본 에셋입니다.
+
+```text
+public/assets/tiles/*.svg             24 files
+public/assets/backgrounds/*.svg       2 files
+public/assets/ui/panel-frame.svg      1 file
+public/assets/meta/tile-manifest.json 1 file
+```
+
+현재 타일 자원:
+
+```text
+magic-book, gold-key, candle, hourglass, crystal-orb, rune, ink, scroll,
+crown, feather, potion, star, music-box, dragon-egg, relic, moon,
+gem, shield, flower, comet, bell, map, castle, spark
+```
+
+외부 저작권 에셋을 가져오지 않고, 프로젝트 안에서 바로 쓸 수 있는 자체 SVG 자원으로 구성했습니다.
+
+## KakaoTalk / In-App Browser Policy
+
+KakaoTalk/Kakao 계열 인앱 브라우저에서는 게임을 시작하지 않습니다.
+
+이유:
+
+- Google 로그인 팝업/리다이렉트 불안정 가능
+- 전체화면 API 제한 가능
+- 사운드, 진동, PWA 설치 흐름 제한 가능
+- 주소창/뒤로가기 제어가 게임 UX를 깨뜨릴 수 있음
+
+감지되면 차단 안내 화면을 띄우고, 주소 복사와 외부 브라우저 열기만 제공합니다.
+
+## PWA / Fullscreen Policy
+
+- manifest display는 fullscreen 우선입니다.
+- 지원 브라우저에서는 전체화면 버튼과 새 게임 시작 시 `requestFullscreen()`을 시도합니다.
+- iOS Safari처럼 전체화면 API가 제한된 환경에서는 홈 화면에 추가한 뒤 실행하는 방식을 권장합니다.
+- 세로 방향 잠금은 지원 브라우저에서만 best-effort로 시도합니다.
+
+## Project Identity
+
+- Project: Dream Library
+- Genre: Premium Casual Fantasy Puzzle RPG
+- Core: Shisen-Sho puzzle battle
+- World: 기억을 보관하는 마법 서고
+- Threat: Void가 기억을 파편화함
+- Player Goal: 사천성 퍼즐을 풀어 기억 조각을 복원하고 서고를 재건
 
 ## Art Direction Seed
-
-Dream Library stores every memory in magical books. The Void shattered the library into Memory Fragments. The player restores memories and rebuilds the library.
 
 Initial tile themes:
 
@@ -133,10 +309,7 @@ Initial tile themes:
 
 ## Next Milestones
 
-1. 실제 PNG 타일 에셋 교체
-2. 보스전 연출: 연속 콤보 시 HP 감소
-3. 라이브러리 복원 메타 시스템
-4. 일일 스테이지와 daily 리더보드
-5. Firebase App Check
-6. Cloud Functions 기반 점수 검증
-7. PWA 설치 지원
+1. 보스전 연출: 연속 콤보 시 HP 감소
+2. 라이브러리 복원 메타 시스템
+3. 일일 스테이지와 daily 리더보드
+4. 스테이지 셀렉트와 챕터 맵

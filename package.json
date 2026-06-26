@@ -3,15 +3,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "vite build --base=/DR/",
+    "build:github": "vite build --base=/DR/",
+    "build:firebase": "vite build --base=/",
     "preview": "vite preview --host 0.0.0.0",
-    "deploy": "npm run build && firebase deploy --only hosting,firestore",
-    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "deploy:firebase": "npm run build:firebase && firebase deploy --only hosting,firestore",
+    "deploy:hosting": "npm run build:firebase && firebase deploy --only hosting",
     "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
-    "vite": "latest",
-    "firebase": "^12.15.0"
+    "firebase": "^12.15.0",
+    "vite": "latest"
   },
   "devDependencies": {}
 }
