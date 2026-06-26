@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-    <meta name="theme-color" content="#190f2f" />
+    <meta name="theme-color" content="#23143f" />
     <meta name="color-scheme" content="dark" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,13 +11,14 @@
     <meta name="apple-mobile-web-app-title" content="Dream Library" />
     <meta
       name="description"
-      content="Dream Library - vertical fantasy Shisen-Sho puzzle RPG prototype"
+      content="Dream Library - casual fantasy Shisen-Sho puzzle RPG"
     />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
-    <link rel="preload" href="%BASE_URL%assets/backgrounds/library-hall.svg" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/storybook-login.svg" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/lobby-garden.svg" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/characters/librarian-momo.svg" as="image" />
     <link rel="preload" href="%BASE_URL%assets/tiles/magic-book.svg" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/tiles/gold-key.svg" as="image" />
     <title>Dream Library</title>
   </head>
   <body>
@@ -36,75 +37,189 @@
       </div>
     </aside>
 
-    <div id="app" class="app-shell">
-      <header class="hero-panel">
-        <div>
-          <p class="eyebrow">Dream Library</p>
-          <h1>기억의 서고</h1>
-          <p class="subtitle">사천성 퍼즐로 조각난 기억을 복원하세요.</p>
+    <div id="app" class="app-shell" data-screen="login">
+      <div class="sky-decor" aria-hidden="true">
+        <span class="cloud cloud-a"></span>
+        <span class="cloud cloud-b"></span>
+        <span class="cloud cloud-c"></span>
+        <span class="starbits starbits-a"></span>
+        <span class="starbits starbits-b"></span>
+      </div>
+
+      <header class="topbar" aria-label="상단 메뉴">
+        <button id="back-button" class="icon-button hidden" type="button" aria-label="뒤로">‹</button>
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <span>Dream Library</span>
         </div>
-        <div class="header-actions">
-          <button id="fullscreen-button" class="ghost-button" type="button" aria-label="전체화면 시작">⛶</button>
-          <button id="install-button" class="ghost-button hidden" type="button" aria-label="앱 설치">＋</button>
-          <button id="sound-toggle" class="ghost-button" type="button" aria-label="효과음 토글">♪</button>
+        <div class="top-actions">
+          <button id="install-button" class="icon-button hidden" type="button" aria-label="앱 설치">＋</button>
+          <button id="fullscreen-button" class="icon-button" type="button" aria-label="전체화면 시작">⛶</button>
         </div>
       </header>
 
-      <section class="auth-card" aria-label="로그인">
-        <div class="auth-summary">
-          <strong id="auth-name">로그인 전</strong>
-          <span id="auth-provider">점수 저장은 로그인 후 가능합니다.</span>
-        </div>
-        <div class="auth-actions">
-          <button id="anonymous-button" type="button">익명 시작</button>
-          <button id="google-button" type="button">Google</button>
-          <button id="signout-button" type="button" class="secondary hidden">로그아웃</button>
-        </div>
-        <form id="email-form" class="email-form">
-          <input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" />
-          <input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" />
-          <div class="email-buttons">
-            <button id="email-login-button" type="submit">이메일 로그인</button>
-            <button id="email-signup-button" type="button" class="secondary">가입</button>
+      <main class="screen-stack">
+        <section id="screen-login" class="screen screen-login active" aria-label="시작 로그인 화면">
+          <div class="login-art-wrap" aria-hidden="true">
+            <img class="login-art" src="%BASE_URL%assets/characters/librarian-momo.svg" alt="" draggable="false" />
           </div>
-        </form>
-      </section>
 
-      <section class="control-panel" aria-label="게임 조작">
-        <div class="difficulty-row" id="difficulty-row"></div>
-        <div class="stats-grid">
-          <div><span>시간</span><strong id="time-label">00:00</strong></div>
-          <div><span>점수</span><strong id="score-label">0</strong></div>
-          <div><span>이동</span><strong id="moves-label">0</strong></div>
-          <div><span>콤보</span><strong id="combo-label">0</strong></div>
-        </div>
-        <div class="game-actions">
-          <button id="new-game-button" type="button">새 게임</button>
-          <button id="hint-button" type="button" class="secondary">힌트</button>
-          <button id="shuffle-button" type="button" class="secondary">섞기</button>
-        </div>
-        <p id="status-label" class="status-label">난이도를 고르고 새 게임을 시작하세요.</p>
-      </section>
+          <div class="hero-copy">
+            <p class="eyebrow">Casual Puzzle RPG</p>
+            <h1>기억의 서고</h1>
+            <p class="subtitle">작은 사서 모모와 함께 꿈의 조각을 맞춰 사라진 이야기를 복원하세요.</p>
+          </div>
 
-      <main>
-        <section id="board" class="board" aria-label="사천성 보드"></section>
+          <div class="login-card glass-card">
+            <div class="auth-summary">
+              <strong id="auth-name">로그인 전</strong>
+              <span id="auth-provider">저장과 랭킹은 로그인 후 활성화됩니다.</span>
+            </div>
+
+            <div class="primary-actions">
+              <button id="anonymous-button" type="button" class="xl-button">게스트로 바로 시작</button>
+              <button id="google-button" type="button" class="xl-button google-button">Google 로그인</button>
+              <button id="show-email-button" type="button" class="xl-button secondary">이메일 로그인</button>
+            </div>
+
+            <form id="email-form" class="email-form collapsed" aria-label="이메일 로그인">
+              <label>
+                <span>이메일</span>
+                <input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" />
+              </label>
+              <label>
+                <span>비밀번호</span>
+                <input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" />
+              </label>
+              <div class="email-buttons">
+                <button id="email-login-button" type="submit">로그인</button>
+                <button id="email-signup-button" type="button" class="secondary">새 계정 만들기</button>
+              </div>
+            </form>
+
+            <div class="login-footer-actions">
+              <button id="enter-lobby-button" type="button" class="text-button strong hidden">게임 시작 화면으로</button>
+              <button id="open-settings-button" type="button" class="text-button">설정</button>
+              <button id="signout-button" type="button" class="text-button danger hidden">로그아웃</button>
+            </div>
+          </div>
+
+          <p id="login-status" class="bubble-status">로그인 방식을 선택하세요.</p>
+        </section>
+
+        <section id="screen-settings" class="screen screen-settings" aria-label="로그인 설정 페이지">
+          <div class="page-title">
+            <p class="eyebrow">Settings</p>
+            <h2>로그인 · 실행 설정</h2>
+            <p>게임 시작 전에 저장, 전체화면, 사운드, 조작 방식을 정리합니다.</p>
+          </div>
+
+          <div class="settings-grid">
+            <article class="setting-card glass-card">
+              <h3>계정 상태</h3>
+              <p id="settings-account-text">로그인 전입니다.</p>
+              <div class="setting-actions">
+                <button id="settings-login-button" type="button">로그인 화면</button>
+                <button id="settings-lobby-button" type="button" class="secondary">게임 시작 화면</button>
+              </div>
+            </article>
+
+            <article class="setting-card glass-card">
+              <h3>전체화면</h3>
+              <p>모바일은 홈 화면 추가 또는 전체화면 버튼 사용을 권장합니다.</p>
+              <button id="settings-fullscreen-button" type="button">전체화면 켜기</button>
+            </article>
+
+            <article class="setting-card glass-card">
+              <h3>효과음</h3>
+              <p>타일 매칭과 콤보 효과음을 켜고 끕니다.</p>
+              <button id="sound-toggle" type="button" aria-pressed="true">효과음 켜짐</button>
+            </article>
+
+            <article class="setting-card glass-card">
+              <h3>터치 보정</h3>
+              <p>작은 화면에서도 실수 터치를 줄이는 큼직한 버튼, safe-area, 확대 방지를 적용했습니다.</p>
+              <button id="reset-progress-button" type="button" class="secondary">로컬 진행 초기화</button>
+            </article>
+          </div>
+        </section>
+
+        <section id="screen-lobby" class="screen screen-lobby" aria-label="게임 시작 화면">
+          <div class="lobby-hero glass-card">
+            <div>
+              <p class="eyebrow">Adventure Lobby</p>
+              <h2>오늘 복원할 기억을 고르세요</h2>
+              <p id="lobby-greeting">게스트 사서님, 준비가 끝났습니다.</p>
+            </div>
+            <img src="%BASE_URL%assets/characters/librarian-momo.svg" alt="" aria-hidden="true" draggable="false" />
+          </div>
+
+          <section class="chapter-panel glass-card" aria-label="챕터 선택">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Chapter 01</p>
+                <h3>달빛 서가의 첫 기록</h3>
+              </div>
+              <span id="asset-progress" class="asset-progress">0/24 해금</span>
+            </div>
+            <div class="difficulty-row" id="difficulty-row"></div>
+            <button id="start-selected-button" type="button" class="xl-button start-button">선택한 난이도로 시작</button>
+          </section>
+
+          <section class="lobby-grid">
+            <article class="glass-card mini-panel">
+              <h3>내 진행</h3>
+              <div class="progress-rings">
+                <div><strong id="best-score-label">0</strong><span>최고 점수</span></div>
+                <div><strong id="clear-count-label">0</strong><span>복원 성공</span></div>
+              </div>
+            </article>
+            <article class="glass-card mini-panel">
+              <div class="section-heading compact">
+                <h3>복원 기록</h3>
+                <button id="refresh-leaderboard-button" type="button" class="text-button">새로고침</button>
+              </div>
+              <ol id="leaderboard-list" class="leaderboard-list"></ol>
+            </article>
+          </section>
+        </section>
+
+        <section id="screen-game" class="screen screen-game" aria-label="사천성 게임 화면">
+          <section class="game-hud glass-card" aria-label="게임 정보">
+            <div class="hud-topline">
+              <div>
+                <p class="eyebrow" id="stage-label">Chapter 01</p>
+                <h2 id="difficulty-title">입문</h2>
+              </div>
+              <button id="exit-to-lobby-button" type="button" class="secondary">로비</button>
+            </div>
+            <div class="stats-grid">
+              <div><span>시간</span><strong id="time-label">00:00</strong></div>
+              <div><span>점수</span><strong id="score-label">0</strong></div>
+              <div><span>이동</span><strong id="moves-label">0</strong></div>
+              <div><span>콤보</span><strong id="combo-label">0</strong></div>
+            </div>
+            <div class="game-actions">
+              <button id="new-game-button" type="button">다시 시작</button>
+              <button id="hint-button" type="button" class="secondary">힌트</button>
+              <button id="shuffle-button" type="button" class="secondary">섞기</button>
+            </div>
+            <p id="status-label" class="status-label">난이도를 고르고 게임을 시작하세요.</p>
+          </section>
+
+          <main>
+            <section id="board" class="board" aria-label="사천성 보드"></section>
+          </main>
+
+          <section class="asset-card glass-card" aria-label="기억 자원 도감">
+            <div class="section-heading compact">
+              <h3>기억 자원</h3>
+              <span id="asset-progress-game" class="asset-progress">0/24 해금</span>
+            </div>
+            <div id="asset-gallery" class="asset-gallery"></div>
+          </section>
+        </section>
       </main>
-
-      <section class="asset-card" aria-label="기억 자원 도감">
-        <div class="section-heading">
-          <h2>기억 자원</h2>
-          <span id="asset-progress" class="asset-progress">0/24 기억 자원 해금</span>
-        </div>
-        <div id="asset-gallery" class="asset-gallery"></div>
-      </section>
-
-      <section class="leaderboard-card" aria-label="리더보드">
-        <div class="section-heading">
-          <h2>복원 기록</h2>
-          <button id="refresh-leaderboard-button" type="button" class="text-button">새로고침</button>
-        </div>
-        <ol id="leaderboard-list" class="leaderboard-list"></ol>
-      </section>
     </div>
 
     <script type="module" src="/src/main.js"></script>

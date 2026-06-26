@@ -18,36 +18,57 @@ import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 
 const elements = {
   app: document.querySelector('#app'),
+  backButton: document.querySelector('#back-button'),
+  screens: [...document.querySelectorAll('.screen')],
+  loginStatus: document.querySelector('#login-status'),
   board: document.querySelector('#board'),
   difficultyRow: document.querySelector('#difficulty-row'),
+  difficultyTitle: document.querySelector('#difficulty-title'),
+  lobbyGreeting: document.querySelector('#lobby-greeting'),
+  settingsAccountText: document.querySelector('#settings-account-text'),
+  bestScoreLabel: document.querySelector('#best-score-label'),
+  clearCountLabel: document.querySelector('#clear-count-label'),
   timeLabel: document.querySelector('#time-label'),
   scoreLabel: document.querySelector('#score-label'),
   movesLabel: document.querySelector('#moves-label'),
   comboLabel: document.querySelector('#combo-label'),
   statusLabel: document.querySelector('#status-label'),
   newGameButton: document.querySelector('#new-game-button'),
+  startSelectedButton: document.querySelector('#start-selected-button'),
   hintButton: document.querySelector('#hint-button'),
   shuffleButton: document.querySelector('#shuffle-button'),
+  exitToLobbyButton: document.querySelector('#exit-to-lobby-button'),
   anonymousButton: document.querySelector('#anonymous-button'),
   googleButton: document.querySelector('#google-button'),
   signoutButton: document.querySelector('#signout-button'),
+  showEmailButton: document.querySelector('#show-email-button'),
   emailForm: document.querySelector('#email-form'),
   emailInput: document.querySelector('#email-input'),
   passwordInput: document.querySelector('#password-input'),
   emailSignupButton: document.querySelector('#email-signup-button'),
+  enterLobbyButton: document.querySelector('#enter-lobby-button'),
+  openSettingsButton: document.querySelector('#open-settings-button'),
+  settingsLoginButton: document.querySelector('#settings-login-button'),
+  settingsLobbyButton: document.querySelector('#settings-lobby-button'),
+  settingsFullscreenButton: document.querySelector('#settings-fullscreen-button'),
+  resetProgressButton: document.querySelector('#reset-progress-button'),
   authName: document.querySelector('#auth-name'),
   authProvider: document.querySelector('#auth-provider'),
   leaderboardList: document.querySelector('#leaderboard-list'),
   refreshLeaderboardButton: document.querySelector('#refresh-leaderboard-button'),
   assetGallery: document.querySelector('#asset-gallery'),
   assetProgress: document.querySelector('#asset-progress'),
+  assetProgressGame: document.querySelector('#asset-progress-game'),
   soundToggle: document.querySelector('#sound-toggle'),
   fullscreenButton: document.querySelector('#fullscreen-button'),
   installButton: document.querySelector('#install-button')
 };
 
 const state = {
+  screen: 'login',
+  previousScreen: 'login',
   user: null,
+  localGuest: readJsonPreference('dream-library-local-guest', null),
   difficultyKey: 'easy',
   board: [],
   selected: null,
@@ -62,7 +83,8 @@ const state = {
   shuffles: 0,
   locked: true,
   discoveredTiles: new Set(readJsonPreference('dream-library-discovered-tiles', [])),
-  soundEnabled: readPreference('dream-library-sound') !== 'off'
+  soundEnabled: readPreference('dream-library-sound') !== 'off',
+  localStats: readJsonPreference('dream-library-local-stats', { bestScore: 0, clearCount: 0 })
 };
 
 init();
@@ -77,90 +99,191 @@ function init() {
   registerServiceWorker();
   applyAssetBackgrounds();
   preloadAssets(PRELOAD_ASSETS);
-  initFullscreenControls(elements.fullscreenButton, setStatus);
-  initInstallPrompt(elements.installButton, setStatus);
+  initFullscreenControls(elements.fullscreenButton, setGlobalStatus);
+  initInstallPrompt(elements.installButton, setGlobalStatus);
   restorePreferences();
+  bindEvents();
   renderDifficultyButtons();
   renderAssetGallery();
-  bindEvents();
+  renderLocalStats();
+  resetBoardPlaceholder();
+  updateScreen('login');
   observeAuth((user) => {
     state.user = user;
+    if (user) state.localGuest = null;
     renderAuth();
+    renderLobby();
     loadLeaderboard();
   });
-  resetBoardPlaceholder();
   loadLeaderboard();
+
   if (!firebaseReady) {
-    setStatus('Firebase .env.local 설정 전입니다. 게임은 가능하지만 로그인/리더보드는 비활성화됩니다.');
+    setLoginStatus(`Firebase 환경변수 설정 전입니다. 누락: ${firebaseMissingKeys.join(', ') || '없음'}. 게스트 플레이는 가능합니다.`);
   }
 }
 
-function renderDifficultyButtons() {
-  elements.difficultyRow.innerHTML = Object.values(DIFFICULTIES)
-    .map(
-      (difficulty) => `
-        <button class="difficulty-button ${difficulty.key === state.difficultyKey ? 'active' : ''}" data-difficulty="${difficulty.key}" type="button">
-          <strong>${difficulty.label}</strong>
-          <span>${difficulty.rows}×${difficulty.cols}</span>
-        </button>
-      `
-    )
-    .join('');
-}
-
 function bindEvents() {
+  elements.backButton.addEventListener('click', () => {
+    if (state.screen === 'settings') updateScreen(state.previousScreen || 'login');
+    else if (state.screen === 'game') updateScreen('lobby');
+    else updateScreen('login');
+  });
+
+  elements.openSettingsButton.addEventListener('click', () => updateScreen('settings'));
+  elements.settingsLoginButton.addEventListener('click', () => updateScreen('login'));
+  elements.settingsLobbyButton.addEventListener('click', () => {
+    if (hasPlayableSession()) updateScreen('lobby');
+    else updateScreen('login');
+  });
+
+  elements.showEmailButton.addEventListener('click', () => {
+    elements.emailForm.classList.toggle('collapsed');
+    elements.emailInput.focus({ preventScroll: true });
+  });
+
+  elements.anonymousButton.addEventListener('click', () => runAuthAction(async () => {
+    if (firebaseReady) {
+      await loginAnonymously();
+    } else {
+      state.localGuest = makeLocalGuest();
+      writeJsonPreference('dream-library-local-guest', state.localGuest);
+      renderAuth();
+      renderLobby();
+    }
+    updateScreen('lobby');
+  }, '게스트 입장 완료. 게임 시작 화면으로 이동합니다.'));
+
+  elements.googleButton.addEventListener('click', () => runAuthAction(async () => {
+    await loginWithGoogle();
+    updateScreen('lobby');
+  }, 'Google 로그인 완료. 게임 시작 화면으로 이동합니다.'));
+
+  elements.signoutButton.addEventListener('click', () => runAuthAction(async () => {
+    if (firebaseReady && state.user) await logout();
+    state.localGuest = null;
+    writeJsonPreference('dream-library-local-guest', null);
+    renderAuth();
+    updateScreen('login');
+  }, '로그아웃 완료.'));
+
+  elements.emailForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    runAuthAction(async () => {
+      await loginWithEmail(elements.emailInput.value, elements.passwordInput.value);
+      updateScreen('lobby');
+    }, '이메일 로그인 완료. 게임 시작 화면으로 이동합니다.');
+  });
+
+  elements.emailSignupButton.addEventListener('click', () => {
+    runAuthAction(async () => {
+      await signupWithEmail(elements.emailInput.value, elements.passwordInput.value);
+      updateScreen('lobby');
+    }, '새 계정을 만들었습니다. 게임 시작 화면으로 이동합니다.');
+  });
+
+  elements.enterLobbyButton.addEventListener('click', () => updateScreen('lobby'));
+  elements.startSelectedButton.addEventListener('click', () => startGameFromLobby());
+  elements.newGameButton.addEventListener('click', () => startGameFromLobby());
+  elements.exitToLobbyButton.addEventListener('click', () => {
+    state.locked = true;
+    clearInterval(state.timerId);
+    updateScreen('lobby');
+  });
+  elements.hintButton.addEventListener('click', showHint);
+  elements.shuffleButton.addEventListener('click', shuffleBoard);
+  elements.refreshLeaderboardButton.addEventListener('click', loadLeaderboard);
+
+  elements.settingsFullscreenButton.addEventListener('click', async () => {
+    const active = await requestGameFullscreen();
+    setLoginStatus(active ? '전체화면 모드가 적용되었습니다.' : '브라우저 정책상 전체화면이 거부되었습니다. 홈 화면 추가 실행을 권장합니다.');
+  });
+
+  elements.soundToggle.addEventListener('click', () => {
+    state.soundEnabled = !state.soundEnabled;
+    writePreference('dream-library-sound', state.soundEnabled ? 'on' : 'off');
+    renderSoundToggle();
+    playPop();
+  });
+
+  elements.resetProgressButton.addEventListener('click', () => {
+    state.discoveredTiles = new Set();
+    state.localStats = { bestScore: 0, clearCount: 0 };
+    writeJsonPreference('dream-library-discovered-tiles', []);
+    writeJsonPreference('dream-library-local-stats', state.localStats);
+    renderAssetGallery();
+    renderLocalStats();
+    setLoginStatus('로컬 진행 기록을 초기화했습니다.');
+  });
+
   elements.difficultyRow.addEventListener('click', (event) => {
     const button = event.target.closest('[data-difficulty]');
     if (!button) return;
     state.difficultyKey = button.dataset.difficulty;
     writePreference('dream-library-difficulty', state.difficultyKey);
     renderDifficultyButtons();
-    requestGameFullscreen();
-    startGame();
-  });
-
-  elements.newGameButton.addEventListener('click', () => {
-    requestGameFullscreen();
-    startGame();
-  });
-  elements.hintButton.addEventListener('click', showHint);
-  elements.shuffleButton.addEventListener('click', shuffleBoard);
-  elements.refreshLeaderboardButton.addEventListener('click', loadLeaderboard);
-  elements.soundToggle.addEventListener('click', () => {
-    state.soundEnabled = !state.soundEnabled;
-    writePreference('dream-library-sound', state.soundEnabled ? 'on' : 'off');
-    elements.soundToggle.classList.toggle('muted', !state.soundEnabled);
-    elements.soundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
-  });
-
-  elements.anonymousButton.addEventListener('click', () => runAuthAction(loginAnonymously));
-  elements.googleButton.addEventListener('click', () => runAuthAction(loginWithGoogle));
-  elements.signoutButton.addEventListener('click', () => runAuthAction(logout));
-
-  elements.emailForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    runAuthAction(() => loginWithEmail(elements.emailInput.value, elements.passwordInput.value));
-  });
-
-  elements.emailSignupButton.addEventListener('click', () => {
-    runAuthAction(() => signupWithEmail(elements.emailInput.value, elements.passwordInput.value));
+    renderLobby();
   });
 }
 
-async function runAuthAction(action) {
+function updateScreen(nextScreen) {
+  if (!['login', 'settings', 'lobby', 'game'].includes(nextScreen)) return;
+  if (nextScreen === 'lobby' && !hasPlayableSession()) {
+    setLoginStatus('먼저 게스트, 이메일, Google 중 하나로 입장하세요.');
+    nextScreen = 'login';
+  }
+  if (nextScreen === 'game' && !hasPlayableSession()) {
+    setLoginStatus('게임을 시작하려면 먼저 로그인 또는 게스트 입장이 필요합니다.');
+    nextScreen = 'login';
+  }
+
+  state.previousScreen = state.screen;
+  state.screen = nextScreen;
+  elements.app.dataset.screen = nextScreen;
+  document.body.dataset.screen = nextScreen;
+  elements.screens.forEach((screen) => screen.classList.toggle('active', screen.id === `screen-${nextScreen}`));
+  elements.backButton.classList.toggle('hidden', nextScreen === 'login');
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  renderAuth();
+  renderLobby();
+}
+
+function hasPlayableSession() {
+  return Boolean(state.user || state.localGuest || !firebaseReady);
+}
+
+function makeLocalGuest() {
+  const saved = state.localGuest;
+  if (saved?.uid) return saved;
+  return {
+    uid: `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    displayName: '게스트 사서',
+    isLocalGuest: true
+  };
+}
+
+async function runAuthAction(action, successMessage) {
+  setLoginStatus('처리 중입니다...');
   try {
     await action();
-    setStatus('인증 완료. 기록 저장이 가능합니다.');
+    setLoginStatus(successMessage || '처리 완료.');
+    vibrate(16);
   } catch (error) {
-    setStatus(formatError(error));
+    setLoginStatus(formatError(error));
+    vibrate([18, 24, 18]);
   }
+}
+
+function startGameFromLobby() {
+  requestGameFullscreen();
+  updateScreen('game');
+  startGame();
 }
 
 function startGame() {
   const difficulty = DIFFICULTIES[state.difficultyKey];
   state.board = createBoard(difficulty);
   let guard = 0;
-  while (!findHint(state.board) && guard < 20) {
+  while (!findHint(state.board) && guard < 30) {
     state.board = shuffleRemaining(state.board);
     guard += 1;
   }
@@ -180,10 +303,11 @@ function startGame() {
   state.timerId = setInterval(tickTimer, 1000);
   elements.board.style.setProperty('--rows', difficulty.rows);
   elements.board.style.setProperty('--cols', difficulty.cols);
+  elements.difficultyTitle.textContent = difficulty.label;
   renderBoard();
   renderStats();
-  setStatus(`${difficulty.label} 난이도 시작! 같은 기억 조각을 3개 이하 직선으로 연결하세요.`);
-  vibrate(18);
+  setGameStatus(`${difficulty.label} 난이도 시작! 같은 기억 조각을 최대 두 번 꺾어 연결하세요.`);
+  vibrate(20);
 }
 
 function tickTimer() {
@@ -267,9 +391,9 @@ function onTileClick(event) {
     if (isCleared(state.board)) {
       endGame(true);
     } else if (!findHint(state.board)) {
-      setStatus('연결 가능한 조각이 없습니다. 섞기를 사용하세요.');
+      setGameStatus('연결 가능한 조각이 없습니다. 섞기를 사용하세요.');
     } else {
-      setStatus(`${countRemaining(state.board)}개 남았습니다. 콤보 ${state.combo}!`);
+      setGameStatus(`${countRemaining(state.board)}개 남았습니다. 콤보 ${state.combo}!`);
     }
     return;
   }
@@ -278,7 +402,7 @@ function onTileClick(event) {
   state.selected = current;
   renderStats();
   renderBoard();
-  setStatus('연결할 수 없는 조각입니다. 같은 종류를 두 번 이하로 꺾어 연결하세요.');
+  setGameStatus('연결할 수 없는 조각입니다. 같은 종류를 두 번 이하로 꺾어 연결하세요.');
   vibrate([18, 20, 18]);
 }
 
@@ -291,13 +415,13 @@ function calculateMatchScore() {
 function showHint() {
   if (state.locked) return;
   if (state.hints <= 0) {
-    setStatus('힌트를 모두 사용했습니다.');
+    setGameStatus('힌트를 모두 사용했습니다.');
     return;
   }
 
   const hint = findHint(state.board);
   if (!hint) {
-    setStatus('현재 연결 가능한 조각이 없습니다. 섞기를 사용하세요.');
+    setGameStatus('현재 연결 가능한 조각이 없습니다. 섞기를 사용하세요.');
     return;
   }
 
@@ -305,19 +429,19 @@ function showHint() {
   state.combo = 0;
   renderStats();
   renderBoard(hint);
-  setStatus(`힌트 사용. 남은 힌트 ${state.hints}개.`);
+  setGameStatus(`힌트 사용. 남은 힌트 ${state.hints}개.`);
 }
 
 function shuffleBoard() {
   if (state.locked) return;
   if (state.shuffles <= 0) {
-    setStatus('섞기를 모두 사용했습니다.');
+    setGameStatus('섞기를 모두 사용했습니다.');
     return;
   }
 
   state.board = shuffleRemaining(state.board);
   let guard = 0;
-  while (!findHint(state.board) && guard < 20) {
+  while (!findHint(state.board) && guard < 30) {
     state.board = shuffleRemaining(state.board);
     guard += 1;
   }
@@ -327,7 +451,7 @@ function shuffleBoard() {
   state.selected = null;
   renderStats();
   renderBoard();
-  setStatus(`보드를 섞었습니다. 남은 섞기 ${state.shuffles}개.`);
+  setGameStatus(`보드를 섞었습니다. 남은 섞기 ${state.shuffles}개.`);
 }
 
 async function endGame(cleared) {
@@ -337,24 +461,28 @@ async function endGame(cleared) {
   if (cleared) {
     const finalBonus = state.remainingSeconds * 10;
     state.score += finalBonus;
+    state.localStats.bestScore = Math.max(state.localStats.bestScore || 0, state.score);
+    state.localStats.clearCount = (state.localStats.clearCount || 0) + 1;
+    writeJsonPreference('dream-library-local-stats', state.localStats);
+    renderLocalStats();
     renderStats();
-    setStatus(`복원 성공! 시간 보너스 ${finalBonus}점이 추가되었습니다.`);
+    setGameStatus(`복원 성공! 시간 보너스 ${finalBonus}점이 추가되었습니다.`);
     await saveScore(true);
     await loadLeaderboard();
   } else {
-    setStatus('시간 종료. 새 게임으로 다시 도전하세요.');
+    setGameStatus('시간 종료. 새 게임으로 다시 도전하세요.');
     await saveScore(false);
   }
 }
 
 async function saveScore(cleared) {
   if (!firebaseReady || !db) {
-    setStatus('Firebase .env.local 설정 후 로그인/점수 저장을 사용할 수 있습니다.');
+    setGameStatus('게스트 플레이 기록은 기기에 저장됩니다. Firebase 설정 후 랭킹 저장이 활성화됩니다.');
     return;
   }
 
   if (!state.user) {
-    setStatus('로그인하면 리더보드에 기록을 저장할 수 있습니다.');
+    setGameStatus('Firebase 로그인 계정으로 입장하면 리더보드에 기록을 저장할 수 있습니다.');
     return;
   }
 
@@ -376,13 +504,13 @@ async function saveScore(cleared) {
       { merge: true }
     );
   } catch (error) {
-    setStatus(`점수 저장 실패: ${formatError(error)}`);
+    setGameStatus(`점수 저장 실패: ${formatError(error)}`);
   }
 }
 
 async function loadLeaderboard() {
   if (!firebaseReady || !db) {
-    elements.leaderboardList.innerHTML = '<li class="empty-rank">Firebase 환경변수 설정 후 리더보드가 활성화됩니다.</li>';
+    elements.leaderboardList.innerHTML = '<li class="empty-rank">Firebase Secrets 설정 후 온라인 랭킹이 활성화됩니다.</li>';
     return;
   }
 
@@ -401,14 +529,29 @@ async function loadLeaderboard() {
           <li>
             <span class="rank">#${index + 1}</span>
             <strong>${escapeHtml(data.displayName ?? 'Guest')}</strong>
-            <span>${escapeHtml(data.difficulty ?? '-')} · ${data.moves ?? 0}수 · ${data.score ?? 0}점</span>
+            <span>${difficultyLabel(data.difficulty)} · ${data.moves ?? 0}수 · ${Number(data.score ?? 0).toLocaleString('ko-KR')}점</span>
           </li>
         `;
       })
       .join('');
-  } catch (error) {
+  } catch {
     elements.leaderboardList.innerHTML = '<li class="empty-rank">리더보드를 불러오지 못했습니다.</li>';
   }
+}
+
+function renderDifficultyButtons() {
+  elements.difficultyRow.innerHTML = Object.values(DIFFICULTIES)
+    .map((difficulty) => {
+      const active = difficulty.key === state.difficultyKey;
+      return `
+        <button class="difficulty-button ${active ? 'active' : ''}" data-difficulty="${difficulty.key}" type="button">
+          <strong>${difficulty.label}</strong>
+          <span>${difficulty.rows}×${difficulty.cols}</span>
+          <small>${formatTime(difficulty.timeLimitSeconds)} · 힌트 ${difficulty.hints}</small>
+        </button>
+      `;
+    })
+    .join('');
 }
 
 function renderStats() {
@@ -421,37 +564,44 @@ function renderStats() {
 }
 
 function renderAuth() {
-  if (!firebaseReady) {
+  const profileName = getSessionName();
+  const hasSession = hasPlayableSession();
+
+  if (!firebaseReady && !state.localGuest) {
     elements.authName.textContent = 'Firebase 설정 필요';
     elements.authProvider.textContent = `누락: ${firebaseMissingKeys.join(', ')}`;
-    elements.signoutButton.classList.add('hidden');
-    elements.anonymousButton.classList.remove('hidden');
-    elements.googleButton.classList.remove('hidden');
-    elements.emailForm.classList.remove('hidden');
-    return;
-  }
-
-  if (!state.user) {
+  } else if (!hasSession) {
     elements.authName.textContent = '로그인 전';
-    elements.authProvider.textContent = '익명, 이메일, Google 로그인을 지원합니다.';
-    elements.signoutButton.classList.add('hidden');
-    elements.anonymousButton.classList.remove('hidden');
-    elements.googleButton.classList.remove('hidden');
-    elements.emailForm.classList.remove('hidden');
-    return;
+    elements.authProvider.textContent = '게스트, 이메일, Google 로그인을 지원합니다.';
+  } else {
+    elements.authName.textContent = profileName;
+    elements.authProvider.textContent = state.user ? (state.user.isAnonymous ? '익명 Firebase 계정' : 'Firebase Auth 계정') : '로컬 게스트 계정';
   }
 
-  elements.authName.textContent = getDisplayName(state.user);
-  elements.authProvider.textContent = state.user.isAnonymous ? '익명 계정' : 'Firebase Auth 계정';
-  elements.signoutButton.classList.remove('hidden');
-  elements.anonymousButton.classList.add('hidden');
-  elements.googleButton.classList.add('hidden');
-  elements.emailForm.classList.add('hidden');
+  elements.enterLobbyButton.classList.toggle('hidden', !hasSession);
+  elements.signoutButton.classList.toggle('hidden', !hasSession || (!state.user && !state.localGuest));
+  elements.settingsAccountText.textContent = hasSession
+    ? `${profileName} 계정으로 입장 준비 완료.`
+    : '아직 로그인하지 않았습니다. 게스트로 바로 시작하거나 Firebase 로그인을 사용하세요.';
+}
+
+function renderLobby() {
+  const difficulty = DIFFICULTIES[state.difficultyKey];
+  elements.lobbyGreeting.textContent = `${getSessionName()}님, ${difficulty.label} 난이도로 기억 복원을 시작할 수 있습니다.`;
+  elements.difficultyTitle.textContent = difficulty.label;
+  renderLocalStats();
+}
+
+function renderLocalStats() {
+  elements.bestScoreLabel.textContent = Number(state.localStats.bestScore || 0).toLocaleString('ko-KR');
+  elements.clearCountLabel.textContent = Number(state.localStats.clearCount || 0).toLocaleString('ko-KR');
 }
 
 function renderAssetGallery() {
   const unlockedCount = state.discoveredTiles.size;
-  elements.assetProgress.textContent = `${unlockedCount}/${TILE_SET.length} 기억 자원 해금`;
+  const text = `${unlockedCount}/${TILE_SET.length} 해금`;
+  elements.assetProgress.textContent = text;
+  elements.assetProgressGame.textContent = text;
   elements.assetGallery.innerHTML = TILE_SET.map((tile) => {
     const unlocked = state.discoveredTiles.has(tile.type);
     return `
@@ -463,52 +613,16 @@ function renderAssetGallery() {
   }).join('');
 }
 
+function renderSoundToggle() {
+  elements.soundToggle.textContent = state.soundEnabled ? '효과음 켜짐' : '효과음 꺼짐';
+  elements.soundToggle.classList.toggle('muted', !state.soundEnabled);
+  elements.soundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
+}
+
 function rememberTile(type) {
   if (!type || state.discoveredTiles.has(type)) return;
   state.discoveredTiles.add(type);
   writeJsonPreference('dream-library-discovered-tiles', [...state.discoveredTiles]);
-}
-
-function readPreference(key) {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writePreference(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // Preferences are optional.
-  }
-}
-
-function readJsonPreference(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeJsonPreference(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Preferences are optional.
-  }
-}
-
-function restorePreferences() {
-  const savedDifficulty = readPreference('dream-library-difficulty');
-  if (savedDifficulty && DIFFICULTIES[savedDifficulty]) {
-    state.difficultyKey = savedDifficulty;
-  }
-  elements.soundToggle.classList.toggle('muted', !state.soundEnabled);
-  elements.soundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
 }
 
 function resetBoardPlaceholder() {
@@ -519,19 +633,48 @@ function resetBoardPlaceholder() {
   renderStats();
 }
 
-function setStatus(message) {
+function restorePreferences() {
+  const savedDifficulty = readPreference('dream-library-difficulty');
+  if (savedDifficulty && DIFFICULTIES[savedDifficulty]) {
+    state.difficultyKey = savedDifficulty;
+  }
+  renderSoundToggle();
+}
+
+function getSessionName() {
+  if (state.user) return getDisplayName(state.user);
+  if (state.localGuest?.displayName) return state.localGuest.displayName;
+  if (!firebaseReady) return '게스트 사서';
+  return '게스트 사서';
+}
+
+function difficultyLabel(key) {
+  return DIFFICULTIES[key]?.label ?? key ?? '-';
+}
+
+function setLoginStatus(message) {
+  elements.loginStatus.textContent = message;
+}
+
+function setGameStatus(message) {
   elements.statusLabel.textContent = message;
 }
 
+function setGlobalStatus(message) {
+  if (state.screen === 'game') setGameStatus(message);
+  else setLoginStatus(message);
+}
+
 function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
+  const safeSeconds = Math.max(0, Number(seconds) || 0);
+  const minutes = Math.floor(safeSeconds / 60);
+  const rest = safeSeconds % 60;
   return `${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
 }
 
 function formatError(error) {
   if (error?.code === 'firebase/missing-config') {
-    return 'Firebase 환경변수 설정이 필요합니다. .env.local과 GitHub Secrets를 확인하세요.';
+    return 'Firebase 환경변수 설정이 필요합니다. 게스트 플레이는 가능합니다.';
   }
   const code = error?.code?.replace('auth/', '').replaceAll('-', ' ');
   return code ? `오류: ${code}` : '처리 중 오류가 발생했습니다.';
@@ -564,7 +707,7 @@ function playPop() {
   const oscillator = context.createOscillator();
   const gain = context.createGain();
   oscillator.frequency.value = 720 + state.combo * 20;
-  gain.gain.setValueAtTime(0.03, context.currentTime);
+  gain.gain.setValueAtTime(0.035, context.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.08);
   oscillator.connect(gain).connect(context.destination);
   oscillator.start();
@@ -573,8 +716,10 @@ function playPop() {
 
 function applyAssetBackgrounds() {
   const base = import.meta.env.BASE_URL;
+  document.documentElement.style.setProperty('--dream-bg-login', `url('${base}assets/backgrounds/storybook-login.svg') center/cover fixed`);
+  document.documentElement.style.setProperty('--dream-bg-lobby', `url('${base}assets/backgrounds/lobby-garden.svg') center/cover fixed`);
+  document.documentElement.style.setProperty('--dream-bg-game', `url('${base}assets/backgrounds/library-hall.svg') center/cover fixed`);
   document.documentElement.style.setProperty('--dream-bg-mist', `url('${base}assets/backgrounds/memory-mist.svg') center/cover fixed`);
-  document.documentElement.style.setProperty('--dream-bg-library', `url('${base}assets/backgrounds/library-hall.svg') center/cover fixed`);
 }
 
 function preloadAssets(urls) {
@@ -583,4 +728,41 @@ function preloadAssets(urls) {
     image.decoding = 'async';
     image.src = url;
   });
+}
+
+function readPreference(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writePreference(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Preferences are optional.
+  }
+}
+
+function readJsonPreference(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJsonPreference(key, value) {
+  try {
+    if (value === null || value === undefined) {
+      localStorage.removeItem(key);
+      return;
+    }
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Preferences are optional.
+  }
 }

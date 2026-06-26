@@ -1,14 +1,14 @@
 {
   "name": "Dream Library",
   "short_name": "Dream Library",
-  "description": "Fantasy Shisen-Sho puzzle RPG",
+  "description": "Casual fantasy Shisen-Sho puzzle RPG",
   "start_url": ".",
   "scope": ".",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "orientation": "portrait",
-  "theme_color": "#190f2f",
-  "background_color": "#10091e",
+  "theme_color": "#23143f",
+  "background_color": "#160d29",
   "icons": [
     {
       "src": "icons/icon-192.png",

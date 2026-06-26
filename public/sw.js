@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.2';
+const CACHE_NAME = 'dream-library-cache-runtime';
 const scopeUrl = new URL(self.registration.scope);
 const basePath = scopeUrl.pathname.endsWith('/') ? scopeUrl.pathname : `${scopeUrl.pathname}/`;
 const tileNames = [
@@ -10,8 +10,11 @@ const PRECACHE_URLS = [
   basePath,
   `${basePath}manifest.webmanifest`,
   `${basePath}favicon.svg`,
+  `${basePath}assets/backgrounds/storybook-login.svg`,
+  `${basePath}assets/backgrounds/lobby-garden.svg`,
   `${basePath}assets/backgrounds/library-hall.svg`,
   `${basePath}assets/backgrounds/memory-mist.svg`,
+  `${basePath}assets/characters/librarian-momo.svg`,
   `${basePath}assets/ui/panel-frame.svg`,
   `${basePath}assets/meta/tile-manifest.json`,
   ...tileNames.map((name) => `${basePath}assets/tiles/${name}.svg`)
@@ -26,7 +29,7 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+    caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('dream-library-cache-') && key !== CACHE_NAME).map((key) => caches.delete(key))))
   );
   self.clients.claim();
 });
