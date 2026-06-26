@@ -60,6 +60,25 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.16 - Exit Fallback, Smooth Mobile Scroll, Local Ranking Fallback Patch
+
+- 종료 확인 팝업에서 `종료 하기`를 눌러도 일반 브라우저에서 창이 닫히지 않는 문제 대응
+- 브라우저 보안 정책으로 `window.close()`가 막히는 경우를 대비해 `exit-sleep-modal` 종료 상태 화면 추가
+- 종료 시 진행 중인 보드, 타이머, 선택 상태를 정리하고 첫 화면 상태로 저장한 뒤 종료 상태 오버레이로 전환
+- 종료 상태에서 `다시 열기` 버튼으로 첫 화면을 다시 복구할 수 있도록 처리
+- 카카오/모바일 세로 전체화면 런타임에서 스크롤이 뻑뻑해지는 문제 완화
+- `portraitLock.js`의 전체화면/세로 잠금 재시도를 모든 터치 종료마다 실행하지 않고, 탭에 가까운 제스처에서만 실행하도록 변경
+- 로비/옵션/도감/랭킹 패널에 `touch-action: pan-y`, `-webkit-overflow-scrolling: touch`, `overscroll-behavior-y: contain` 정리
+- 퍼즐판 캔버스에는 `touch-action: none`을 유지해 게임 조작과 로비 스크롤 충돌을 분리
+- Firebase 랭킹 실패 또는 미연결 상태에서 전역/일일 랭킹을 로컬 기록으로 대체 표시
+- 클리어 기록을 `dream-library-local-ranking-global`, `dream-library-local-ranking-daily`에 저장
+- `npm run check:exit-scroll` 추가 및 Actions 검사에 반영
+- Texture Atlas manifest v1.0.16 갱신
+- 이미지 리포트에 README로 붙이기 쉬운 markdown table 출력 추가
+- 현재 자산은 플레이/로비/보스/도감 구성에는 충분하나, 다음 품질 상승을 위해 표정별 마스코트, 보스 공격 프레임, 세로 배경 레이어, 버튼 상태별 PNG, 타일 파편 VFX 보강이 필요
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.15 - Kakao In-App Portrait Fullscreen, Atlas Lookup, Combat Cut-in Patch
 
 - 카카오톡/Kakao 계열 인앱 브라우저에서 외부 브라우저로 빼지 않고 그대로 실행하도록 정책 변경
@@ -558,15 +577,15 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              48 files
 public/assets/backgrounds/*.png           7 files
 public/assets/characters/*.png            12 files
 public/assets/ui/*.png                    15 files
-public/assets/effects/*.png               20+ files
-public/assets/meta/*.png                  5 files
+public/assets/effects/*.png               20 files
+public/assets/meta/*                      11 files
 public/assets/atlas/dream-objects.png     1 file
 public/assets/atlas/*.json                1 file
 public/assets/meta/tile-manifest.json     1 file
@@ -592,16 +611,17 @@ premium-01 ~ premium-24
 
 ## Next Version Plan
 
-### v1.0.16 예정 - Ranking Fallback, Atlas Rendering, Lobby Polish Patch
+### v1.0.17 예정 - Asset State Set + Boss Motion + Scroll QA Patch
 
-- Texture Atlas lookup을 타일/효과 렌더링 경로에 더 깊게 연결
-- Firebase daily ranking 실패 시 로컬 랭킹 fallback 추가
-- 로비 미션 카드에 보상 예상치와 완료 가능 표시 추가
-- 소형 화면 월드맵/선택 카드/복원 패널 밀도 추가 최적화
-- 카카오 인앱 세로 전체화면 보조 패널을 더 얇은 토스트형으로 재정리
-- 보스 피격 컷인과 콤보 컷인 타이밍 추가 다듬기
-- 이미지 리포트 결과를 README에 붙여넣기 쉬운 markdown 출력으로 확장
-- 큰 JS chunk 추가 분리와 lazy loading 범위 확대
+- 로비 마스코트 표정별 PNG 적용 지점 설계
+- 보스 공격/피격 프레임 PNG 세트가 들어올 경우 컷인 애니메이션에 배정
+- 버튼 기본/hover/pressed/selected 상태 전용 PNG 프레임 실험
+- 타일 제거 시 파편/조각 VFX 배정 강화
+- 카카오/일반 모바일에서 로비 긴 스크롤, 옵션 모달, 도감 스크롤 QA 추가
+- Texture Atlas lookup을 개별 PNG fallback보다 우선하는 실제 매핑으로 확장
+- Firebase 실패 시 로컬 랭킹과 온라인 랭킹을 함께 보여주는 혼합 표시 검토
+- 작은 화면 전투 HUD 높이 추가 압축
+- 큰 JS chunk lazy loading 범위 확대
 
 ## KakaoTalk / In-App Browser Policy
 

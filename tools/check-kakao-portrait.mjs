@@ -26,7 +26,7 @@ if (missing.length) {
   process.exit(1);
 }
 if (/intent:\/\/|makeChromeIntentUrl|open-external-button|copy-url-button/.test(Object.values(files).join('\n'))) {
-  console.error('External browser handoff tokens are forbidden in v1.0.15.');
+  console.error('External browser handoff tokens are forbidden in v1.0.16.');
   process.exit(1);
 }
 console.log('Kakao portrait fullscreen lock check passed.');

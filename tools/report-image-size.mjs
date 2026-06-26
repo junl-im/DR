@@ -21,6 +21,13 @@ images.slice(0, 18).forEach((image, index) => {
 });
 
 const oversized = images.filter((image) => image.bytes > 1_200_000);
+console.log('\nMarkdown summary:');
+console.log('| Rank | Size | Dimensions | File |');
+console.log('|---:|---:|---:|---|');
+images.slice(0, 10).forEach((image, index) => {
+  const size = image.dimensions ? `${image.dimensions.width}x${image.dimensions.height}` : 'unknown';
+  console.log(`| ${index + 1} | ${formatBytes(image.bytes)} | ${size} | ${image.file} |`);
+});
 if (oversized.length) {
   console.warn(`Large image warning: ${oversized.length} files exceed 1.2 MB. Consider WebP/atlas optimization later.`);
 }

@@ -1241,3 +1241,98 @@ body[data-quality="low"] .combo-cutin.combo-finisher { box-shadow: none; }
   .portrait-lock-card p:not(.eyebrow) { font-size: 0.78rem; }
   .portrait-device { margin-block: 0.56rem; }
 }
+
+/* v1.0.16 exit fallback, local ranking fallback and smooth mobile scroll polish */
+html,
+body {
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+}
+button,
+input,
+.icon-button,
+.mission-card,
+.stage-node,
+.chapter-tab,
+.mini-tabs button {
+  touch-action: manipulation;
+}
+.app-shell,
+.screen-stack,
+.screen-lobby,
+.options-card,
+.reward-card,
+.collection-list,
+.restoration-list,
+.leaderboard-list,
+.daily-leaderboard-list {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+html.portrait-runtime body,
+html.kakao-runtime body {
+  touch-action: pan-y;
+}
+html.portrait-runtime .app-shell,
+html.kakao-runtime .app-shell {
+  touch-action: pan-y;
+  scroll-behavior: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable both-edges;
+}
+.pixi-board-host,
+.pixi-board-host canvas {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+body[data-screen="lobby"] .app-shell {
+  scroll-behavior: auto;
+}
+body[data-app-state="sleep"] #app,
+body[data-app-state="sleep"] .browser-guard,
+body[data-app-state="sleep"] .portrait-lock-overlay {
+  pointer-events: none;
+  visibility: hidden;
+}
+.exit-sleep-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1700;
+  display: grid;
+  place-items: center;
+  padding: max(20px, env(safe-area-inset-top)) 18px max(20px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 50% 24%, rgba(245, 200, 107, 0.24), transparent 30%),
+    radial-gradient(circle at 50% 72%, rgba(125, 220, 255, 0.18), transparent 36%),
+    linear-gradient(180deg, rgba(6, 21, 45, 0.98), rgba(10, 30, 61, 0.98));
+  backdrop-filter: blur(14px);
+}
+.exit-sleep-card {
+  width: min(100%, 392px);
+  padding: 1.25rem;
+  border-radius: 30px;
+  text-align: center;
+  animation: rewardPop 0.32s cubic-bezier(.2,1.35,.2,1) both;
+}
+.exit-sleep-card h2 { margin: 0.16rem 0 0.54rem; }
+.exit-sleep-card p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.55;
+}
+.exit-card .danger,
+.exit-sleep-card button {
+  box-shadow: 0 0 34px rgba(245, 200, 107, 0.28), 0 18px 44px rgba(6, 21, 45, 0.38);
+}
+.leaderboard-list li:has(+ li),
+.daily-leaderboard-list li:has(+ li) {
+  margin-bottom: 0.24rem;
+}
+.mission-card em strong,
+.local-rank-badge {
+  color: var(--emerald-500);
+}
+@media (max-width: 430px) {
+  .exit-sleep-card { border-radius: 24px; padding: 1rem; }
+  .screen-lobby { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+}

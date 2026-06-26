@@ -12,6 +12,23 @@ export function initPortraitRuntimeGuard(options = {}) {
   const status = document.querySelector('#portrait-lock-status');
   const root = document.documentElement;
   let requestCount = 0;
+  let gestureStart = { x: 0, y: 0, time: 0 };
+
+  const readPoint = (event) => {
+    const touch = event.touches?.[0] || event.changedTouches?.[0] || event;
+    return { x: Number(touch.clientX || 0), y: Number(touch.clientY || 0), time: performance.now() };
+  };
+
+  const rememberGestureStart = (event) => {
+    gestureStart = readPoint(event);
+  };
+
+  const isTapLikeGesture = (event) => {
+    const point = readPoint(event);
+    const distance = Math.hypot(point.x - gestureStart.x, point.y - gestureStart.y);
+    const duration = point.time - gestureStart.time;
+    return distance <= 14 && duration <= 650;
+  };
 
   const setStatus = (message) => {
     if (status) status.textContent = message;
@@ -89,11 +106,14 @@ export function initPortraitRuntimeGuard(options = {}) {
     if (isKakao || isMobile) void requestLock('orientationchange');
   }, 80), { passive: true });
 
-  const gestureLock = () => {
+  const gestureLock = (event) => {
     if (!(isKakao || isMobile)) return;
+    if (!isTapLikeGesture(event)) return;
     if (requestCount >= 3 && sessionStorage.getItem(LOCK_KEY) === 'yes') return;
     void requestLock('gesture');
   };
+  document.addEventListener('pointerdown', rememberGestureStart, { passive: true });
+  document.addEventListener('touchstart', rememberGestureStart, { passive: true });
   document.addEventListener('pointerup', gestureLock, { passive: true });
   document.addEventListener('touchend', gestureLock, { passive: true });
 

@@ -117,14 +117,19 @@ const el = {
   restorationDetailCloseButton: $('#restoration-detail-close-button'),
   restorationDetailFocusButton: $('#restoration-detail-focus-button'),
   exitConfirmModal: $('#exit-confirm-modal'),
+  exitConfirmMessage: $('#exit-confirm-message'),
   exitCancelButton: $('#exit-cancel-button'),
-  exitConfirmButton: $('#exit-confirm-button')
+  exitConfirmButton: $('#exit-confirm-button'),
+  exitSleepModal: $('#exit-sleep-modal'),
+  exitSleepMessage: $('#exit-sleep-message'),
+  exitWakeButton: $('#exit-wake-button')
 };
 
 type ScreenName = 'login' | 'settings' | 'lobby' | 'game';
 type CampaignProgress = { unlocked: string[]; cleared: Record<string, { stars: number; bestScore: number }> };
 type RestorationInventory = Record<string, number>;
 type RestorationCompleted = Record<string, string>;
+type LocalRankEntry = { displayName: string; score: number; stageId: string; stars: number; dailyKey?: string; updatedAt: string };
 type BrowserRecovery = ReturnType<typeof initBrowserGuard>;
 
 const renderer = new DreamPixiRenderer();
@@ -184,6 +189,8 @@ const state = {
   shuffles: 0,
   soundEnabled: readText('dream-library-sound') !== 'off',
   localStats: readJson('dream-library-local-stats', { bestScore: 0, clearCount: 0 }),
+  localRanking: readJson<LocalRankEntry[]>('dream-library-local-ranking-global', []),
+  localDailyRanking: readJson<LocalRankEntry[]>('dream-library-local-ranking-daily', []),
   campaignProgress: normalizeCampaignProgress(readJson('dream-library-campaign-progress', null)),
   inventory: readJson<RestorationInventory>('dream-library-inventory', {}),
   restorationCompleted: readJson<RestorationCompleted>('dream-library-restoration-completed', {}),
@@ -301,8 +308,12 @@ function bindEvents() {
     state.localStats = { bestScore: 0, clearCount: 0 };
     state.inventory = {};
     state.restorationCompleted = {};
+    state.localRanking = [];
+    state.localDailyRanking = [];
     writeJson('dream-library-campaign-progress', state.campaignProgress);
     writeJson('dream-library-local-stats', state.localStats);
+    writeJson('dream-library-local-ranking-global', state.localRanking);
+    writeJson('dream-library-local-ranking-daily', state.localDailyRanking);
     writeJson('dream-library-inventory', state.inventory);
     writeJson('dream-library-restoration-completed', state.restorationCompleted);
     renderLobby();
@@ -360,6 +371,7 @@ function bindEvents() {
   el.enterLobbyButton.addEventListener('click', enterLobbyFromStart);
   el.exitCancelButton.addEventListener('click', closeExitConfirm);
   el.exitConfirmButton.addEventListener('click', confirmExitApp);
+  el.exitWakeButton.addEventListener('click', wakeFromExitSleep);
   el.exitConfirmModal.addEventListener('click', (event) => { if (event.target === el.exitConfirmModal) closeExitConfirm(); });
 
   el.chapterTabs.addEventListener('click', (event) => {
@@ -487,6 +499,7 @@ function handleSoftBack() {
   if (!el.restorationDetailModal.classList.contains('hidden')) { closeRestorationDetail(); return; }
   if (!el.optionsModal.classList.contains('hidden')) { closeOptionsPanel(); return; }
   if (!el.exitConfirmModal.classList.contains('hidden')) { closeExitConfirm(); return; }
+  if (!el.exitSleepModal.classList.contains('hidden')) { wakeFromExitSleep(); return; }
   if (state.screen === 'game') {
     exitToFirstScreen();
     setStatus('진행 중인 판을 정리하고 첫 화면으로 돌아왔습니다.');
@@ -809,6 +822,7 @@ async function clearStage() {
   state.localStats.bestScore = Math.max(state.localStats.bestScore, score);
   state.localStats.clearCount += 1;
   writeJson('dream-library-local-stats', state.localStats);
+  saveLocalScore(score, stars);
   renderStats();
   renderLobby();
   renderGameHud();
@@ -864,6 +878,9 @@ function stopCurrentBoard() {
 }
 
 function openExitConfirm() {
+  el.exitConfirmMessage.textContent = state.screen === 'login'
+    ? '첫 화면입니다. 종료를 누르면 현재 판과 타이머를 정리하고 종료 상태 화면으로 전환합니다.'
+    : '진행 화면을 정리하고 첫 화면 상태로 저장한 뒤 종료 상태 화면으로 전환합니다.';
   el.exitConfirmModal.classList.remove('hidden');
   HAPTIC.warning();
 }
@@ -875,8 +892,29 @@ function closeExitConfirm() {
 function confirmExitApp() {
   closeExitConfirm();
   writeText('dream-library-last-exit-at', new Date().toISOString());
-  setStatus('브라우저 정책상 창 닫기가 제한되면 홈 버튼이나 앱 전환으로 나가면 됩니다.');
+  stopCurrentBoard();
+  updateScreen('login');
+  showExitSleep('게임 상태를 정리했습니다. 브라우저가 창 닫기를 허용하면 자동으로 닫히고, 막히면 이 화면에서 멈춥니다.');
   try { window.close(); } catch {}
+  window.setTimeout(() => {
+    if (!document.hidden) {
+      showExitSleep('브라우저가 창 닫기를 막았습니다. 홈 버튼이나 앱 전환으로 나가면 되고, 다시 플레이하려면 아래 버튼을 누르세요.');
+    }
+  }, 260);
+}
+
+function showExitSleep(message: string) {
+  el.exitSleepMessage.textContent = message;
+  document.body.dataset.appState = 'sleep';
+  el.exitSleepModal.classList.remove('hidden');
+  setStatus('꿈의 서고를 종료 상태로 전환했습니다.');
+}
+
+function wakeFromExitSleep() {
+  document.body.dataset.appState = 'active';
+  el.exitSleepModal.classList.add('hidden');
+  updateScreen('login');
+  setStatus('다시 열었습니다. 서고 입장으로 로비에 들어갈 수 있습니다.');
 }
 
 function renderAuth() {
@@ -1271,7 +1309,7 @@ function closeReward() {
 
 async function loadLeaderboard() {
   if (!db) {
-    el.leaderboardList.innerHTML = '<li>로컬 플레이 준비 완료</li>';
+    renderLocalLeaderboard('Firebase 연결 전 로컬 기록');
     return;
   }
   try {
@@ -1280,17 +1318,26 @@ async function loadLeaderboard() {
       const data = docSnap.data() as any;
       return `<li>${index + 1}. ${escapeHtml(data.displayName || '사서')} · ${formatNumber(data.score || 0)}</li>`;
     });
-    el.leaderboardList.innerHTML = rows.length ? rows.join('') : '<li>첫 복원 기록을 남겨보세요.</li>';
+    el.leaderboardList.innerHTML = rows.length ? rows.join('') : renderLocalLeaderboard('첫 복원 기록을 남겨보세요.', true);
   } catch {
-    el.leaderboardList.innerHTML = '<li>랭킹을 불러오지 못했습니다.</li>';
+    renderLocalLeaderboard('Firebase 랭킹 실패 · 로컬 기록 표시');
   }
 }
 
+function renderLocalLeaderboard(emptyLabel = '로컬 플레이 준비 완료', returnOnly = false) {
+  const rows = [...state.localRanking]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map((entry, index) => `<li>${index + 1}. ${escapeHtml(entry.displayName)} · ${formatNumber(entry.score)} · 로컬</li>`);
+  const markup = rows.length ? rows.join('') : `<li>${escapeHtml(emptyLabel)}</li>`;
+  if (!returnOnly) el.leaderboardList.innerHTML = markup;
+  return markup;
+}
 
 async function loadDailyLeaderboard() {
   const scopeLabel = state.dailyRankScope === 'all' ? '전체 일일' : '오늘';
   if (!db) {
-    el.dailyLeaderboardList.innerHTML = `<li>로컬 ${scopeLabel} 기록 준비 완료</li>`;
+    renderLocalDailyLeaderboard(`로컬 ${scopeLabel} 기록 준비 완료`);
     return;
   }
   try {
@@ -1304,10 +1351,49 @@ async function loadDailyLeaderboard() {
       const dailyTag = state.dailyRankScope === 'all' && data.dailyKey ? ` · ${escapeHtml(String(data.dailyKey).slice(5))}` : '';
       return `<li>${index + 1}. ${escapeHtml(data.displayName || '사서')} · ${formatNumber(data.score || 0)}${dailyTag}</li>`;
     });
-    el.dailyLeaderboardList.innerHTML = rows.length ? rows.join('') : `<li>${scopeLabel} 첫 기록을 노려보세요.</li>`;
+    el.dailyLeaderboardList.innerHTML = rows.length ? rows.join('') : renderLocalDailyLeaderboard(`${scopeLabel} 첫 기록을 노려보세요.`, true);
   } catch {
-    el.dailyLeaderboardList.innerHTML = `<li>${scopeLabel} 랭킹을 불러오지 못했습니다.</li>`;
+    renderLocalDailyLeaderboard(`${scopeLabel} Firebase 실패 · 로컬 기록 표시`);
   }
+}
+
+function renderLocalDailyLeaderboard(emptyLabel = '로컬 일일 기록 준비 완료', returnOnly = false) {
+  const dailyKey = state.dailyChallenge.dateKey;
+  const rows = state.localDailyRanking
+    .filter((entry) => state.dailyRankScope === 'all' || entry.dailyKey === dailyKey)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map((entry, index) => {
+      const dailyTag = state.dailyRankScope === 'all' && entry.dailyKey ? ` · ${escapeHtml(String(entry.dailyKey).slice(5))}` : '';
+      return `<li>${index + 1}. ${escapeHtml(entry.displayName)} · ${formatNumber(entry.score)}${dailyTag} · 로컬</li>`;
+    });
+  const markup = rows.length ? rows.join('') : `<li>${escapeHtml(emptyLabel)}</li>`;
+  if (!returnOnly) el.dailyLeaderboardList.innerHTML = markup;
+  return markup;
+}
+
+function saveLocalScore(score: number, stars: number) {
+  const stage = getStageById(state.selectedStageId);
+  const baseEntry: LocalRankEntry = {
+    displayName: state.user ? getDisplayName(state.user) : state.localGuest?.name || '로컬 사서',
+    score,
+    stageId: stage.id,
+    stars,
+    updatedAt: new Date().toISOString()
+  };
+  state.localRanking = upsertLocalRank(state.localRanking, baseEntry);
+  writeJson('dream-library-local-ranking-global', state.localRanking);
+  if (state.currentBoardId === 'daily') {
+    state.localDailyRanking = upsertLocalRank(state.localDailyRanking, { ...baseEntry, dailyKey: state.dailyChallenge.dateKey });
+    writeJson('dream-library-local-ranking-daily', state.localDailyRanking);
+  }
+}
+
+function upsertLocalRank(list: LocalRankEntry[], entry: LocalRankEntry) {
+  const identity = `${entry.displayName}:${entry.stageId}:${entry.dailyKey || 'global'}`;
+  const merged = list.filter((item) => `${item.displayName}:${item.stageId}:${item.dailyKey || 'global'}` !== identity);
+  merged.push(entry);
+  return merged.sort((a, b) => b.score - a.score).slice(0, 20);
 }
 
 async function saveScore(score: number, stars: number) {

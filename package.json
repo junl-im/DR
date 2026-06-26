@@ -21,7 +21,8 @@
     "check:special-rules": "node tools/check-special-rules.mjs",
     "check:lobby-flow": "node tools/check-lobby-flow.mjs",
     "check:lobby-missions": "node tools/check-lobby-missions.mjs",
-    "check:kakao-portrait": "node tools/check-kakao-portrait.mjs"
+    "check:kakao-portrait": "node tools/check-kakao-portrait.mjs",
+    "check:exit-scroll": "node tools/check-exit-scroll.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -34,5 +35,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.15"
+  "version": "1.0.16"
 }

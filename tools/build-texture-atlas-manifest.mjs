@@ -14,12 +14,12 @@ for (const group of groups) {
   }
 }
 const manifest = {
-  version: '1.0.15',
+  version: '1.0.16',
   policy: 'PNG/WebP/JPG only. SVG is forbidden.',
   atlasStrategy: 'Prefer grouped object/effect/ui atlases after visual QA. Keep source PNGs as authoring assets.',
   total: entries.length,
   generatedAt: new Date().toISOString(),
   entries
 };
-writeFileSync(join(assetRoot, 'meta', 'texture-atlas-manifest-v1.0.15.json'), JSON.stringify(manifest, null, 2));
+writeFileSync(join(assetRoot, 'meta', 'texture-atlas-manifest-v1.0.16.json'), JSON.stringify(manifest, null, 2));
 console.log(`Texture atlas manifest written with ${entries.length} entries.`);

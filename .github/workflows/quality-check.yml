@@ -50,6 +50,7 @@ jobs:
           npm run check:special-rules
           npm run check:lobby-flow
           npm run check:lobby-missions
+          npm run check:exit-scroll
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

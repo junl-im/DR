@@ -20,7 +20,7 @@ const requiredFiles = [
   'tools/report-image-size.mjs',
   'tools/check-workflows.mjs',
   'public/assets/meta/asset-import-v1.0.11.json',
-  'public/assets/meta/texture-atlas-manifest-v1.0.15.json',
+  'public/assets/meta/texture-atlas-manifest-v1.0.16.json',
   'tools/build-texture-atlas-manifest.mjs',
   'tools/check-special-rules.mjs',
   'public/assets/backgrounds/imported-moon-library.png',
@@ -30,20 +30,21 @@ const requiredFiles = [
   'public/assets/effects/particles-01.png',
   'tools/check-lobby-missions.mjs',
   'tools/check-kakao-portrait.mjs',
+  'tools/check-exit-scroll.mjs',
   'src/platform/portraitLock.js'
 ];
 
 for (const file of requiredFiles) {
-  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.11 file: ${file}`); }
+  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.16 file: ${file}`); }
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');
-for (const id of ['mission-label', 'modifier-strip', 'combo-cutin', 'boss-hp-fill', 'boss-image', 'boss-pattern', 'chapter-tabs', 'collection-list', 'daily-leaderboard-list', 'restoration-detail-modal', 'continue-inapp-button', 'kakao-fullscreen-button', 'portrait-lock-overlay', 'exit-confirm-modal', 'exit-confirm-button', 'exit-cancel-button', 'boss-telegraph', 'lobby-mission-deck', 'lobby-deck-refresh-button']) {
+for (const id of ['mission-label', 'modifier-strip', 'combo-cutin', 'boss-hp-fill', 'boss-image', 'boss-pattern', 'chapter-tabs', 'collection-list', 'daily-leaderboard-list', 'restoration-detail-modal', 'continue-inapp-button', 'kakao-fullscreen-button', 'portrait-lock-overlay', 'exit-confirm-modal', 'exit-confirm-button', 'exit-cancel-button', 'exit-sleep-modal', 'exit-wake-button', 'boss-telegraph', 'lobby-mission-deck', 'lobby-deck-refresh-button']) {
   if (!html.includes(`id="${id}"`)) errors.push(`Missing required UI hook: ${id}`);
 }
 
 const css = readFileSync(join(root, 'src/styles.css'), 'utf8');
-for (const selector of ['.mission-strip', '.combo-cutin', '.boss-hp-meter', '.chapter-tabs', '.collection-panel', '.daily-leaderboard-list', 'body[data-quality="low"]', '.exit-card', '.premium-asset-ribbon', '.boss-telegraph', '.mission-deck-panel', '.mission-card', 'html.kakao-runtime', '.portrait-lock-overlay']) {
+for (const selector of ['.mission-strip', '.combo-cutin', '.boss-hp-meter', '.chapter-tabs', '.collection-panel', '.daily-leaderboard-list', 'body[data-quality="low"]', '.exit-card', '.exit-sleep-modal', '.premium-asset-ribbon', '.boss-telegraph', '.mission-deck-panel', '.mission-card', 'html.kakao-runtime', '.portrait-lock-overlay']) {
   if (!css.includes(selector)) errors.push(`Missing required style selector: ${selector}`);
 }
 
@@ -55,7 +56,7 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Project health check passed for v1.0.15.');
+console.log('Project health check passed for v1.0.16.');
 
 function walk(dir, visitor) {
   for (const entry of readdirSync(dir)) {
