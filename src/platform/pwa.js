@@ -22,7 +22,7 @@ export function initInstallPrompt(button, statusCallback) {
 
   button.addEventListener('click', async () => {
     if (!deferredInstallPrompt) {
-      statusCallback?.('브라우저 메뉴에서 홈 화면에 추가를 선택하면 전체화면 앱처럼 실행됩니다.');
+      statusCallback?.('메뉴에서 홈 화면에 추가를 선택하면 앱처럼 실행됩니다.');
       return;
     }
 

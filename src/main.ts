@@ -238,7 +238,7 @@ async function init() {
   if (browserRecovery.inApp) {
     browserRecovery.maybeShowSoftTip();
     requestKakaoPortraitLock('init');
-    setStatus('카카오톡 안에서 세로 전체화면으로 로비에 입장합니다.');
+    setStatus('로비 준비가 끝났습니다.');
   }
 
   registerServiceWorker();
@@ -342,7 +342,7 @@ function bindEvents() {
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
-    suggestKakaoAssist('카카오톡 안에서 그대로 로비로 입장합니다. 화면은 세로 전체화면 기준으로 고정됩니다.');
+    suggestKakaoAssist('게임 화면을 정리한 뒤 로비로 입장합니다.');
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();
@@ -546,10 +546,10 @@ async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
   if (!browserRecovery?.inApp) return false;
   audio.play('tap');
   if (mode === 'auth') {
-    browserRecovery.showRecovery('카카오톡 안에서 로그인과 저장을 그대로 시도합니다. 화면은 세로 전체화면으로 유지합니다.');
-    setStatus('카카오톡 인앱에서 계정 저장을 시도합니다.');
+    browserRecovery.showRecovery('게임 화면을 정리합니다.');
+    setStatus('계정 저장을 시도합니다.');
   } else {
-    browserRecovery.showRecovery('카카오톡 안에서 그대로 플레이합니다. 세로 전체화면을 다시 적용합니다.');
+    browserRecovery.showRecovery('게임 화면을 정리합니다.');
   }
   await requestKakaoPortraitLock(mode);
   return false;
@@ -909,11 +909,11 @@ function confirmExitApp() {
   writeText('dream-library-last-exit-at', new Date().toISOString());
   stopCurrentBoard();
   updateScreen('login');
-  showExitSleep('게임 상태를 정리했습니다. 브라우저가 창 닫기를 허용하면 자동으로 닫히고, 막히면 이 화면에서 멈춥니다.');
+  showExitSleep('게임 상태를 정리했습니다. 홈 버튼이나 앱 전환으로 나가면 됩니다.');
   try { window.close(); } catch {}
   window.setTimeout(() => {
     if (!document.hidden) {
-      showExitSleep('브라우저가 창 닫기를 막았습니다. 홈 버튼이나 앱 전환으로 나가면 되고, 다시 플레이하려면 아래 버튼을 누르세요.');
+      showExitSleep('홈 버튼이나 앱 전환으로 나가면 되고, 다시 플레이하려면 아래 버튼을 누르세요.');
     }
   }, 260);
 }

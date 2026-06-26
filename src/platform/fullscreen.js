@@ -1,13 +1,8 @@
 import { isStandaloneDisplayMode } from './browserGuard.js';
+import { applyPortraitFrame } from './viewportFrame.js';
 
 function syncAppViewport() {
-  const vv = window.visualViewport;
-  const width = Math.round(vv?.width || window.innerWidth || document.documentElement.clientWidth || 390);
-  const height = Math.round(vv?.height || window.innerHeight || document.documentElement.clientHeight || 844);
-  document.documentElement.style.setProperty('--app-width', `${width}px`);
-  document.documentElement.style.setProperty('--app-height', `${height}px`);
-  document.body.dataset.orientation = width > height ? 'landscape' : 'portrait';
-  return { width, height };
+  return applyPortraitFrame();
 }
 
 export async function requestGameFullscreen() {
@@ -19,7 +14,7 @@ export async function requestGameFullscreen() {
       await root.requestFullscreen({ navigationUI: 'hide' });
     }
   } catch {
-    // iOS Safari and some in-app browsers do not allow requestFullscreen.
+    // Some in-app browsers reject fullscreen. The virtual portrait frame keeps the UI stable.
   }
 
   try {
@@ -27,7 +22,7 @@ export async function requestGameFullscreen() {
       await screen.orientation.lock('portrait');
     }
   } catch {
-    // Orientation lock is best-effort only. CSS and the portrait overlay keep layout stable.
+    // Best effort only. Layout does not depend on this succeeding.
   }
 
   syncAppViewport();
@@ -51,7 +46,7 @@ export function initFullscreenControls(button, statusCallback) {
     const active = await requestGameFullscreen();
     updateLabel();
     if (statusCallback) {
-      statusCallback(active ? '전체화면 모드가 적용되었습니다.' : '브라우저 제한으로 전체화면이 거부되어도 세로 고정 레이아웃을 유지합니다.');
+      statusCallback(active ? '게임 화면을 맞췄습니다.' : '화면 크기에 맞춰 게임 프레임을 유지합니다.');
     }
   });
 

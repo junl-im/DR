@@ -3,18 +3,20 @@ import { readFileSync } from 'node:fs';
 const guard = readFileSync('src/platform/browserGuard.js', 'utf8');
 const index = readFileSync('index.html', 'utf8');
 const main = readFileSync('src/main.ts', 'utf8');
-const required = ['kakao-fullscreen-button', 'continue-inapp-button', 'Kakao In-App Play', 'blocked: false', 'requestPortraitFullscreen'];
-const missing = required.filter((token) => !guard.includes(token) && !index.includes(token) && !main.includes(token));
+const css = readFileSync('src/styles.css', 'utf8');
+const required = ['blocked: false', 'requestPortraitFullscreen', 'viewport-frame', 'virtual-portrait'];
+const combined = `${guard}\n${index}\n${main}\n${css}`;
+const missing = required.filter((token) => !combined.includes(token));
 if (missing.length) {
-  console.error(`Kakao in-app check failed. Missing: ${missing.join(', ')}`);
+  console.error(`In-app policy check failed. Missing: ${missing.join(', ')}`);
   process.exit(1);
 }
-if (/intent:\/\/|makeChromeIntentUrl|open-external-button|copy-url-button|외부 브라우저|Chrome\/Safari|Chrome으로|Safari/.test(guard + index + main)) {
-  console.error('Kakao must stay in-app for v1.0.17. Remove external-browser handoff copy and intent URLs.');
+if (/intent:\/\/|makeChromeIntentUrl|open-external-button|copy-url-button|외부 브라우저|Chrome\/Safari|Chrome으로|Safari/.test(combined)) {
+  console.error('External-browser handoff tokens are forbidden. The game must stay in-app.');
   process.exit(1);
 }
-if (/실행하지 않습니다|차단|경고/.test(index)) {
-  console.error('Kakao copy should not use warning/blocking language.');
+if (/카카오|Kakao In-App Play|세로 전체화면|전체화면 고정|세로 잠금/.test(index + main)) {
+  console.error('Visible in-game copy must not mention Kakao or fullscreen/portrait helper wording.');
   process.exit(1);
 }
-console.log('Kakao in-app portrait policy passed. No external browser handoff remains.');
+console.log('In-app quiet layout policy passed. No external handoff or visible helper copy remains.');

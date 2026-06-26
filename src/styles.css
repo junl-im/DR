@@ -461,25 +461,13 @@ body[data-quality="low"] .luxury-panel { backdrop-filter: blur(8px); box-shadow:
   .mission-strip strong { font-size: 0.72rem; }
 }
 
-/* v1.0.9 restoration, daily content and Kakao handoff solution */
+/* v1.0.9 restoration, daily content and mobile assist solution */
 .browser-guard { background: radial-gradient(circle at 50% 18%, rgba(125, 220, 255, 0.18), transparent 36%), rgba(6, 21, 45, 0.88); }
 .handoff-card { border-radius: 30px; text-align: left; }
 .handoff-card p { color: var(--muted); line-height: 1.55; }
 .guard-actions { grid-template-columns: 1fr; }
 html.handoff-browser body { overflow: hidden; }
 body[data-browser="kakao"] .gear-button::after { border-color: rgba(54, 214, 164, 0.42); opacity: 1; transform: scale(1); }
-body[data-browser="kakao"] .start-now-button::before {
-  content: '카카오 세로 고정';
-  position: absolute;
-  right: 14px;
-  top: -11px;
-  padding: 0.18rem 0.45rem;
-  border-radius: 999px;
-  color: var(--navy-950);
-  background: linear-gradient(135deg, var(--emerald-500), var(--sky-500));
-  font-size: 0.64rem;
-  box-shadow: 0 0 18px rgba(54, 214, 164, 0.32);
-}
 .lobby-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; }
 .lobby-quick-actions { display: grid; gap: 0.42rem; min-width: 112px; }
 .lobby-quick-actions button { min-height: 40px; padding: 0.54rem 0.7rem; font-size: 0.78rem; }
@@ -839,7 +827,7 @@ body[data-quality="low"] .battle-stage::after { box-shadow: none; filter: none; 
 .guard-actions button { min-height: 34px; padding: 0.42rem 0.46rem; font-size: 0.72rem; }
 .guard-status { margin-top: 0.18rem !important; color: var(--gold-300) !important; }
 html.handoff-browser body { overflow: auto; }
-body[data-browser="kakao"] .start-now-button::before { content: '로비 먼저 입장'; }
+
 .lobby-flow-note {
   display: block;
   margin-top: 0.34rem;
@@ -1117,6 +1105,7 @@ html.kakao-runtime .app-shell {
   -webkit-overflow-scrolling: touch;
   scroll-padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
+html.portrait-runtime .topbar,
 html.kakao-runtime .topbar {
   top: max(6px, env(safe-area-inset-top));
   backdrop-filter: blur(20px);
@@ -1130,11 +1119,7 @@ html.kakao-runtime .topbar {
 }
 .kakao-portrait-card .eyebrow { color: var(--emerald-500); }
 .compact-guard-actions { grid-template-columns: 1fr 0.75fr 0.56fr; }
-body[data-browser="kakao"] .start-now-button::before { content: '카카오 인앱 실행'; }
-body[data-browser="kakao"] .lobby-flow-note::after {
-  content: ' · 카카오톡에서는 외부 이동 없이 세로 전체화면으로 유지됩니다.';
-  color: var(--emerald-500);
-}
+
 body[data-browser="kakao"] .browser-guard-card {
   transform: translateY(0);
   animation: kakaoAssistIn 0.32s cubic-bezier(.2,1.24,.2,1) both;
@@ -1177,10 +1162,6 @@ body[data-browser="kakao"] .browser-guard-card {
   border-radius: 50%;
   border: 2px solid rgba(54, 214, 164, 0.66);
   box-shadow: 0 0 24px rgba(54, 214, 164, 0.28);
-}
-html.landscape-locked .app-shell {
-  pointer-events: none;
-  filter: blur(5px) saturate(0.8);
 }
 .mission-card em::before {
   content: '보상 '; 
@@ -1491,4 +1472,78 @@ body[data-screen="lobby"] .lobby-hero img {
   .title-logo-v2 { width: min(82vw, 330px); }
   .boss-hit-cutin { top: 94px; }
   body[data-screen="login"] .login-composition { min-height: 210px; }
+}
+
+/* v1.0.18 virtual portrait frame and quiet in-app layout fix */
+:root {
+  --raw-width: 100vw;
+  --raw-height: 100dvh;
+  --app-width: min(100vw, 560px);
+  --app-height: 100dvh;
+}
+html.portrait-runtime,
+html.kakao-runtime {
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+html.portrait-runtime body,
+html.kakao-runtime body {
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+  align-items: start;
+}
+html.portrait-runtime .app-shell,
+html.kakao-runtime .app-shell {
+  width: var(--app-width);
+  min-width: var(--app-width);
+  max-width: var(--app-width);
+  height: var(--app-height);
+  min-height: var(--app-height);
+  max-height: var(--app-height);
+  margin-inline: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  contain: layout paint;
+}
+html.source-landscape .app-shell {
+  border-inline: 1px solid rgba(255, 231, 164, 0.18);
+  box-shadow: 0 0 52px rgba(6, 21, 45, 0.44), 0 0 38px rgba(125, 220, 255, 0.09);
+}
+html.landscape-locked .app-shell {
+  pointer-events: auto;
+  filter: none;
+}
+body[data-viewport-frame="virtual-portrait"] .pixi-stage canvas {
+  width: var(--app-width) !important;
+  height: var(--app-height) !important;
+}
+body[data-browser="kakao"] .start-now-button::before,
+body[data-browser="kakao"] .lobby-flow-note::after {
+  content: none !important;
+  display: none !important;
+}
+.browser-guard {
+  pointer-events: none;
+}
+.browser-guard:not(.hidden) {
+  display: none !important;
+}
+.portrait-lock-overlay:not(.hidden) {
+  display: none !important;
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  html.portrait-runtime .portrait-lock-overlay,
+  html.kakao-runtime .portrait-lock-overlay { display: none !important; }
+}
+@media (orientation: landscape) {
+  html.portrait-runtime .app-shell,
+  html.kakao-runtime .app-shell {
+    border-radius: 24px;
+  }
 }

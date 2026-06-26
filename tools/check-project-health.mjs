@@ -20,7 +20,7 @@ const requiredFiles = [
   'tools/report-image-size.mjs',
   'tools/check-workflows.mjs',
   'public/assets/meta/asset-import-v1.0.11.json',
-  'public/assets/meta/texture-atlas-manifest-v1.0.17.json',
+  'public/assets/meta/texture-atlas-manifest-v1.0.18.json',
   'tools/build-texture-atlas-manifest.mjs',
   'tools/check-special-rules.mjs',
   'public/assets/backgrounds/imported-moon-library.png',
@@ -35,7 +35,7 @@ const requiredFiles = [
 ];
 
 for (const file of requiredFiles) {
-  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.17 file: ${file}`); }
+  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.18 file: ${file}`); }
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');
@@ -56,7 +56,7 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Project health check passed for v1.0.17.');
+console.log('Project health check passed for v1.0.18.');
 
 function walk(dir, visitor) {
   for (const entry of readdirSync(dir)) {

@@ -60,6 +60,23 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.18 - Virtual Portrait Frame, Quiet In-App Copy and Layout Root Cause Fix Patch
+
+- 카카오/모바일 환경에서 보조 안내 문구가 과하게 노출되던 문제를 정리하고, 게임 화면에서는 카카오/세로모드/전체화면 고정 류의 문구가 보이지 않도록 수정
+- 회전 차단 오버레이로 막는 방식이 아니라, 실제 레이아웃이 가로 기준으로 재계산되던 원인을 수정
+- 원인: `portraitLock.js`가 세로 프레임을 적용한 직후 `fullscreen.js`가 실제 가로 viewport 값을 다시 `--app-width`, `--app-height`에 덮어쓰면서 앱이 가로 화면 기준으로 돌아갈 수 있었음
+- `src/platform/viewportFrame.js` 추가: `computePortraitFrame()`, `applyPortraitFrame()`로 모바일/인앱 viewport 계산을 단일화
+- `fullscreen.js`와 `portraitLock.js`가 모두 같은 virtual portrait frame 계산을 사용하도록 변경
+- 실제 기기가 가로로 돌아가도 앱은 실제 가로 폭을 그대로 쓰지 않고, 9:16 비율의 가상 세로 프레임을 중앙에 유지
+- `portrait-lock-overlay`는 더 이상 화면을 덮거나 게임 입력을 막지 않도록 숨김 fallback으로 전환
+- `browser-guard` 보조 패널은 자동 노출하지 않고 내부 화면 보정 이벤트만 수행하도록 변경
+- 설정 화면의 화면 관련 문구와 버튼명을 일반적인 `화면 맞춤` 흐름으로 정리
+- `npm run check:viewport-frame` 추가 및 GitHub Actions 검사에 반영
+- Texture Atlas manifest v1.0.18 갱신
+- service worker 캐시를 v1.0.18로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.17 - Asset State Set, Boss Motion, Button Frame and VFX Polish Patch
 
 - 업로드한 `dream_library_massive_asset_pack_v2.zip`에서 런타임에 바로 쓰는 PNG 자산을 선별 반영
@@ -595,7 +612,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              84+ files
@@ -629,28 +646,28 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 
 ## Next Version Plan
 
-### v1.0.18 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
+### v1.0.19 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
 
 - v2 상태별 타일을 실제 Texture Atlas로 패킹하고 atlas JSON lookup을 우선 적용
 - 보스 공격 시퀀스 시트를 자동 분할해 공격/피격 컷인 프레임으로 배정
 - 로비 마스코트 표정/동작 카드 추가
 - 버튼 hover/pressed PNG를 pointer 상태에 더 깊게 연결
 - 작은 화면 전투 HUD 높이 추가 압축
-- 카카오 인앱 보조 패널을 더 얇은 토스트형으로 정리
+- 모바일/인앱 화면 보정은 문구 노출 없이 내부적으로 처리하고, 게임 UI에는 표시하지 않음
 - Firebase/로컬 랭킹 혼합 표시 UX 개선
 - 큰 JS chunk lazy loading 범위 확대
 
 ## KakaoTalk / In-App Browser Policy
 
-v1.0.15부터 카카오톡/Kakao 계열 인앱 브라우저는 외부 브라우저로 빼지 않고 게임을 그대로 실행합니다.
+v1.0.18부터 카카오톡/Kakao 계열 인앱 브라우저는 외부 브라우저로 빼지 않고, 별도 보조 문구를 노출하지 않은 채 게임을 그대로 실행합니다.
 
 원칙:
 
 - 첫 화면 진입 즉시 경고로 막지 않습니다.
 - 카카오톡 안에서도 로비, 게스트 플레이, 퍼즐 진행을 허용합니다.
 - 외부 브라우저 전환, Chrome intent, 주소 복사 handoff를 사용하지 않습니다.
-- 대신 세로 9:16 전체화면 프레임, CSS viewport lock, orientation lock best-effort, 가로 전환 차단 레이어를 적용합니다.
-- 브라우저가 `requestFullscreen()` 또는 `screen.orientation.lock()`을 거부해도 UI는 가로 레이아웃으로 무너지지 않게 유지합니다.
+- `fullscreen.js`와 `portraitLock.js`가 같은 virtual portrait frame을 사용해, 실제 viewport가 가로값을 반환해도 앱 레이아웃은 9:16 프레임 기준을 유지합니다.
+- 보조 패널이나 차단 레이어를 먼저 띄우지 않고 내부 계산으로 화면 흔들림을 줄입니다.
 
 ## PWA / Fullscreen Policy
 
@@ -693,6 +710,6 @@ Initial tile themes:
 1. v2 상태별 타일 Atlas 패킹 자동화
 2. 보스 공격 시퀀스 시트 분할/컷인 적용
 3. 로비 마스코트 모션과 카드형 가이드 추가
-4. 카카오 인앱 세로 전체화면 보조 패널을 토스트형으로 더 세련되게 정리
+4. 모바일/인앱 화면 보정 QA와 실제 기기별 viewport 기록 정리
 
 

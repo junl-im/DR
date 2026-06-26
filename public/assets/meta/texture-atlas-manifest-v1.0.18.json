@@ -1,0 +1,529 @@
+{
+  "version": "1.0.18",
+  "policy": "PNG/WebP/JPG only. SVG is forbidden.",
+  "atlasStrategy": "Prefer grouped object/effect/ui atlases after visual QA. Keep source PNGs as authoring assets.",
+  "total": 104,
+  "generatedAt": "2026-06-26T18:17:25.016Z",
+  "entries": [
+    {
+      "group": "objects",
+      "file": "assets/objects/bell.png",
+      "bytes": 46467
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/candle.png",
+      "bytes": 46424
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/castle.png",
+      "bytes": 45209
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/comet.png",
+      "bytes": 45737
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/crown.png",
+      "bytes": 46431
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/crystal-orb.png",
+      "bytes": 47315
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/dragon-egg.png",
+      "bytes": 46289
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/feather.png",
+      "bytes": 45495
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/flower.png",
+      "bytes": 52739
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/gem.png",
+      "bytes": 46712
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/gold-key.png",
+      "bytes": 45087
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/hourglass.png",
+      "bytes": 42952
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/ink.png",
+      "bytes": 45350
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/magic-book.png",
+      "bytes": 44595
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/map.png",
+      "bytes": 43003
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/moon.png",
+      "bytes": 44759
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/music-box.png",
+      "bytes": 47897
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/potion.png",
+      "bytes": 46975
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-01.png",
+      "bytes": 138509
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-02.png",
+      "bytes": 50448
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-03.png",
+      "bytes": 56430
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-04.png",
+      "bytes": 83187
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-05.png",
+      "bytes": 88328
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-06.png",
+      "bytes": 41907
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-07.png",
+      "bytes": 71210
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-08.png",
+      "bytes": 58676
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-09.png",
+      "bytes": 98336
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-10.png",
+      "bytes": 79859
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-11.png",
+      "bytes": 105679
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-12.png",
+      "bytes": 73455
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-13.png",
+      "bytes": 47304
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-14.png",
+      "bytes": 102682
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-15.png",
+      "bytes": 107407
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-16.png",
+      "bytes": 73469
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-17.png",
+      "bytes": 56264
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-18.png",
+      "bytes": 75607
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-19.png",
+      "bytes": 78150
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-20.png",
+      "bytes": 88296
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-21.png",
+      "bytes": 81955
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-22.png",
+      "bytes": 105412
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-23.png",
+      "bytes": 44381
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-24.png",
+      "bytes": 63209
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/relic.png",
+      "bytes": 45026
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/rune.png",
+      "bytes": 45132
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/scroll.png",
+      "bytes": 44722
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/shield.png",
+      "bytes": 43006
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/spark.png",
+      "bytes": 46727
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/star.png",
+      "bytes": 50498
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/boss-warning.png",
+      "bytes": 143358
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/combo-flash.png",
+      "bytes": 131818
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/hit-burst.png",
+      "bytes": 21010
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-01.png",
+      "bytes": 64909
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-02.png",
+      "bytes": 92010
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-03.png",
+      "bytes": 83139
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-04.png",
+      "bytes": 80561
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-05.png",
+      "bytes": 86639
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-06.png",
+      "bytes": 46174
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/magic-wave.png",
+      "bytes": 142486
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-01.png",
+      "bytes": 2428
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-02.png",
+      "bytes": 3900
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-03.png",
+      "bytes": 1909
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-04.png",
+      "bytes": 4540
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-05.png",
+      "bytes": 1382
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-06.png",
+      "bytes": 2386
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-07.png",
+      "bytes": 3851
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-08.png",
+      "bytes": 1888
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-09.png",
+      "bytes": 4498
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-10.png",
+      "bytes": 1440
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/button-google-v2.png",
+      "bytes": 167021
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/button-start-v2.png",
+      "bytes": 197129
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frame-library-v2.png",
+      "bytes": 983151
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frame-ornate-v2.png",
+      "bytes": 492376
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/hp-frame.png",
+      "bytes": 1595
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-back.png",
+      "bytes": 17491
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-calendar.png",
+      "bytes": 17098
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-chest.png",
+      "bytes": 17878
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-close.png",
+      "bytes": 16556
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-fullscreen.png",
+      "bytes": 16394
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-hint.png",
+      "bytes": 18461
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-home.png",
+      "bytes": 18078
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-logout.png",
+      "bytes": 16636
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-play.png",
+      "bytes": 16577
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-ranking.png",
+      "bytes": 16019
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-refresh.png",
+      "bytes": 19187
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-settings.png",
+      "bytes": 20661
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/logo-dream-library-v2.png",
+      "bytes": 397123
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/panel-frame.png",
+      "bytes": 3381
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/reward-badge.png",
+      "bytes": 2474
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-01.png",
+      "bytes": 120202
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-02.png",
+      "bytes": 282356
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-03.png",
+      "bytes": 249133
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-04.png",
+      "bytes": 208508
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-01.png",
+      "bytes": 358969
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-02.png",
+      "bytes": 336554
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-03.png",
+      "bytes": 115485
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-04.png",
+      "bytes": 110989
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-motion-sheet-v2.png",
+      "bytes": 936590
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-sticker-sheet-v2.png",
+      "bytes": 924126
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/forgotten-spirit.png",
+      "bytes": 102378
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/librarian-momo.png",
+      "bytes": 69160
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/mascot-companions-v2.png",
+      "bytes": 570679
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/mascot-scholar-v2.png",
+      "bytes": 414928
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/sealed-page-golem.png",
+      "bytes": 134604
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/shadow-librarian.png",
+      "bytes": 130441
+    }
+  ]
+}

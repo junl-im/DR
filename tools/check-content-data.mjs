@@ -19,4 +19,4 @@ if (missing.length) {
   console.error(`Content data check failed. Missing: ${missing.join(', ')}`);
   process.exit(1);
 }
-console.log('Content data policy passed for v1.0.17.');
+console.log('Content data policy passed for v1.0.18.');
