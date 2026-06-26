@@ -17,19 +17,23 @@
     <link rel="preload" href="%BASE_URL%assets/objects/magic-book.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/forgotten-spirit.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/effects/combo-flash.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/meta/restoration-shelf.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/meta/daily-badge.png" as="image" />
     <title>꿈의 서고</title>
   </head>
   <body>
-    <aside id="browser-guard" class="browser-guard hidden" aria-label="브라우저 안내" role="dialog" aria-modal="true">
-      <div class="browser-guard-card luxury-panel">
-        <p class="eyebrow">Browser Guard</p>
-        <h2>카카오톡 인앱 브라우저에서는 실행하지 않습니다</h2>
-        <p>로그인, 전체화면, 사운드, 저장 기능을 안정적으로 사용하기 위해 외부 브라우저에서만 게임을 시작합니다.</p>
+    <aside id="browser-guard" class="browser-guard hidden" aria-label="카카오 브라우저 이어하기" role="dialog" aria-modal="true">
+      <div class="browser-guard-card luxury-panel handoff-card">
+        <img class="handoff-icon" src="%BASE_URL%assets/meta/browser-handoff.png" alt="" aria-hidden="true" draggable="false" />
+        <p class="eyebrow">Browser Handoff</p>
+        <h2>외부 브라우저로 이어서 시작합니다</h2>
+        <p>카카오톡 안에서도 시작 버튼을 누르면 가능한 경우 Chrome으로 자동 전환합니다. 전환이 막히면 주소 복사 또는 임시 플레이로 계속할 수 있습니다.</p>
         <div class="guard-actions">
-          <button id="copy-url-button" type="button">주소 복사</button>
-          <button id="open-external-button" type="button" class="secondary">외부 브라우저 열기</button>
+          <button id="open-external-button" type="button" class="primary-glow">외부 브라우저로 계속</button>
+          <button id="copy-url-button" type="button" class="secondary">주소 복사</button>
+          <button id="continue-inapp-button" type="button" class="secondary">임시 플레이</button>
         </div>
-        <p id="guard-status" class="guard-status">Chrome 또는 Safari 주소창에 붙여넣어 실행하세요.</p>
+        <p id="guard-status" class="guard-status">브라우저 전환을 준비하고 있습니다.</p>
       </div>
     </aside>
 
@@ -101,6 +105,10 @@
         <section id="screen-lobby" class="screen screen-lobby" aria-label="게임 시작 화면">
           <div class="lobby-hero luxury-panel alive-panel">
             <div><p class="eyebrow">Adventure Lobby</p><h2>오늘 복원할 기억을 고르세요</h2><p id="lobby-greeting">사서님, 서고의 문이 열렸습니다.</p></div>
+            <div class="lobby-quick-actions">
+              <button id="daily-stage-button" type="button" class="daily-stage-button">오늘의 복원</button>
+              <button id="restoration-focus-button" type="button" class="secondary">복원 작업대</button>
+            </div>
             <img src="%BASE_URL%assets/characters/librarian-momo.png" alt="" aria-hidden="true" draggable="false" />
           </div>
           <section class="chapter-panel campaign-panel luxury-panel" aria-label="캠페인 월드맵">
@@ -112,6 +120,22 @@
               <button id="start-selected-button" type="button" class="xl-button start-button primary-glow">선택한 스테이지 시작</button>
             </article>
           </section>
+          <section class="restoration-panel luxury-panel alive-panel" aria-label="도서관 복원 작업대">
+            <div class="restoration-copy">
+              <p class="eyebrow">Restoration Meta</p>
+              <h3>서고 복원 작업대</h3>
+              <p id="restoration-summary">스테이지 보상으로 서고를 복원하세요.</p>
+            </div>
+            <div class="restoration-art" aria-hidden="true"><img src="%BASE_URL%assets/meta/restoration-shelf.png" alt="" draggable="false" /></div>
+            <div id="restoration-list" class="restoration-list"></div>
+          </section>
+
+          <section class="daily-panel luxury-panel" aria-label="일일 콘텐츠">
+            <img src="%BASE_URL%assets/meta/daily-badge.png" alt="" aria-hidden="true" draggable="false" />
+            <div><p class="eyebrow">Daily Content</p><h3 id="daily-title">오늘의 복원</h3><p id="daily-desc">매일 바뀌는 보상 스테이지가 준비 중입니다.</p></div>
+            <button id="daily-start-button" type="button" class="secondary">오늘 스테이지 시작</button>
+          </section>
+
           <section class="lobby-grid">
             <article class="luxury-panel mini-panel"><h3>내 진행</h3><div class="progress-rings triple"><div><strong id="best-score-label">0</strong><span>최고 점수</span></div><div><strong id="clear-count-label">0</strong><span>복원 성공</span></div><div><strong id="star-count-label">0</strong><span>별 조각</span></div></div></article>
             <article class="luxury-panel mini-panel"><div class="section-heading compact"><h3>복원 기록</h3><button id="refresh-leaderboard-button" type="button" class="text-button">새로고침</button></div><ol id="leaderboard-list" class="leaderboard-list"></ol></article>
@@ -123,6 +147,7 @@
             <div class="hud-topline"><div><p class="eyebrow" id="stage-label">Chapter 01</p><h2 id="difficulty-title">입문</h2></div><button id="exit-to-lobby-button" type="button" class="secondary">로비</button></div>
             <div class="hud-meters"><div><span>시간</span><strong id="time-label">00:00</strong></div><div><span>점수</span><strong id="score-label">0</strong></div><div><span>콤보</span><strong id="combo-label">0</strong></div><div><span>이동</span><strong id="moves-label">0</strong></div></div>
             <div class="mission-strip"><span>미션</span><strong id="mission-label">남은 오브젝트 0개 · 3콤보 이상 노리기</strong></div>
+            <div id="modifier-strip" class="modifier-strip" aria-live="polite"></div>
           </section>
 
           <section class="battle-stage luxury-panel" aria-label="마법 전투 퍼즐판">

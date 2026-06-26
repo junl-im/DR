@@ -460,3 +460,114 @@ body[data-quality="low"] .luxury-panel { backdrop-filter: blur(8px); box-shadow:
   .pixi-board-host { min-height: clamp(276px, 47svh, 420px); border-radius: 20px; }
   .mission-strip strong { font-size: 0.72rem; }
 }
+
+/* v1.0.9 restoration, daily content and Kakao handoff solution */
+.browser-guard { background: radial-gradient(circle at 50% 18%, rgba(125, 220, 255, 0.18), transparent 36%), rgba(6, 21, 45, 0.88); }
+.handoff-card { border-radius: 30px; text-align: left; }
+.handoff-card p { color: var(--muted); line-height: 1.55; }
+.guard-actions { grid-template-columns: 1fr; }
+html.handoff-browser body { overflow: hidden; }
+body[data-browser="kakao"] .gear-button::after { border-color: rgba(54, 214, 164, 0.42); opacity: 1; transform: scale(1); }
+body[data-browser="kakao"] .start-now-button::before {
+  content: '카카오 자동 전환 준비';
+  position: absolute;
+  right: 14px;
+  top: -11px;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--emerald-500), var(--sky-500));
+  font-size: 0.64rem;
+  box-shadow: 0 0 18px rgba(54, 214, 164, 0.32);
+}
+.lobby-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; }
+.lobby-quick-actions { display: grid; gap: 0.42rem; min-width: 112px; }
+.lobby-quick-actions button { min-height: 40px; padding: 0.54rem 0.7rem; font-size: 0.78rem; }
+.daily-stage-button { background: linear-gradient(135deg, var(--emerald-500), var(--sky-500)); }
+.restoration-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) 86px;
+  gap: 0.85rem;
+  align-items: center;
+  border-radius: 30px;
+  padding: 1rem;
+  margin: 0.85rem 0;
+  overflow: hidden;
+}
+.restoration-copy p { color: var(--muted); margin: 0.28rem 0 0; line-height: 1.45; }
+.restoration-art { position: relative; display: grid; place-items: center; }
+.restoration-art img { width: 110px; max-width: 34vw; filter: drop-shadow(0 16px 22px rgba(6, 21, 45, 0.5)); animation: floatSlow 5s ease-in-out infinite; }
+.restoration-list { grid-column: 1 / -1; display: grid; gap: 0.5rem; }
+.restore-node {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.42rem;
+  align-items: center;
+  min-height: 46px;
+  padding: 0.58rem 0.72rem;
+  color: var(--text);
+  background: rgba(16, 43, 87, 0.62);
+  border-color: rgba(125, 220, 255, 0.18);
+  text-align: left;
+  overflow: hidden;
+}
+.restore-node strong, .restore-node span { position: relative; z-index: 2; }
+.restore-node span { color: var(--gold-300); font-weight: 950; }
+.restore-node i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--restore-progress, 0%);
+  background: linear-gradient(90deg, rgba(54, 214, 164, 0.24), rgba(245, 200, 107, 0.22));
+  border-radius: inherit;
+  z-index: 1;
+}
+.restore-node.complete { border-color: rgba(245, 200, 107, 0.52); box-shadow: 0 0 28px rgba(245, 200, 107, 0.22); }
+.daily-panel {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 26px;
+  padding: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+.daily-panel img { width: 58px; height: 58px; object-fit: contain; filter: drop-shadow(0 10px 16px rgba(6, 21, 45, 0.4)); }
+.daily-panel p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+.daily-panel button { min-height: 40px; padding: 0.52rem 0.68rem; font-size: 0.8rem; }
+.modifier-strip {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.36rem;
+  margin-top: 0.42rem;
+  overflow: hidden;
+}
+.modifier-strip span {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0.24rem 0.5rem;
+  border: 1px solid rgba(143, 107, 255, 0.24);
+  border-radius: 999px;
+  color: var(--gold-300);
+  background: rgba(16, 43, 87, 0.44);
+  font-size: 0.68rem;
+  font-weight: 950;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+@media (max-width: 430px) {
+  .lobby-hero { grid-template-columns: minmax(0, 1fr) 82px; }
+  .lobby-quick-actions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; order: 3; }
+  .lobby-hero img { grid-column: 2; grid-row: 1; width: 82px; max-width: 82px; }
+  .daily-panel { grid-template-columns: 46px minmax(0, 1fr); }
+  .daily-panel button { grid-column: 1 / -1; }
+  .daily-panel img { width: 46px; height: 46px; }
+  .restoration-panel { grid-template-columns: minmax(0, 1fr) 70px; }
+  .restoration-art img { width: 88px; }
+}
+@media (max-height: 720px) {
+  .modifier-strip { display: none; }
+  .daily-panel { padding: 0.66rem; }
+  .restoration-panel { padding: 0.78rem; }
+}
+.handoff-icon { display: block; width: 74px; height: 74px; object-fit: contain; margin: 0 auto 0.55rem; filter: drop-shadow(0 12px 18px rgba(6, 21, 45, 0.48)); }

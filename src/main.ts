@@ -3,8 +3,8 @@ import './styles.css';
 import { db, firebaseReady } from './firebase.js';
 import { getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
 import { DIFFICULTIES, PRELOAD_ASSETS } from './game/difficulty.js';
-import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getNextStage, getStageById } from './game/stages.js';
-import { countRemaining, createBoard, findConnectionPath, findHint, isCleared, removePair, shuffleRemaining } from './game/shisen.js';
+import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
+import { countRemaining, createBoard, findConnectionPath, findHint, isCleared, revealPairSpecials, removePair, shuffleRemaining } from './game/shisen.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
@@ -66,6 +66,13 @@ const el = {
   starCountLabel: $('#star-count-label'),
   leaderboardList: $('#leaderboard-list'),
   refreshLeaderboardButton: $('#refresh-leaderboard-button'),
+  dailyStageButton: $('#daily-stage-button'),
+  restorationFocusButton: $('#restoration-focus-button'),
+  restorationSummary: $('#restoration-summary'),
+  restorationList: $('#restoration-list'),
+  dailyTitle: $('#daily-title'),
+  dailyDesc: $('#daily-desc'),
+  dailyStartButton: $('#daily-start-button'),
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
   timeLabel: $('#time-label'),
@@ -75,6 +82,7 @@ const el = {
   statusLabel: $('#status-label'),
   bossHpLabel: $('#boss-hp-label'),
   missionLabel: $('#mission-label'),
+  modifierStrip: $('#modifier-strip'),
   comboCutin: $('#combo-cutin'),
   hintButton: $('#hint-button'),
   shuffleButton: $('#shuffle-button'),
@@ -90,9 +98,12 @@ const el = {
 
 type ScreenName = 'login' | 'settings' | 'lobby' | 'game';
 type CampaignProgress = { unlocked: string[]; cleared: Record<string, { stars: number; bestScore: number }> };
+type RestorationInventory = Record<string, number>;
+type BrowserRecovery = ReturnType<typeof initBrowserGuard>;
 
 const renderer = new DreamPixiRenderer();
 const audio = new DreamAudio();
+let browserRecovery: BrowserRecovery | null = null;
 
 const state = {
   screen: 'login' as ScreenName,
@@ -115,6 +126,10 @@ const state = {
   soundEnabled: readText('dream-library-sound') !== 'off',
   localStats: readJson('dream-library-local-stats', { bestScore: 0, clearCount: 0 }),
   campaignProgress: normalizeCampaignProgress(readJson('dream-library-campaign-progress', null)),
+  inventory: readJson<RestorationInventory>('dream-library-inventory', {}),
+  restorationFocus: readText('dream-library-restoration-focus') || 'shelf',
+  dailyChallenge: getDailyChallenge(new Date()),
+  currentBoardId: 'global' as 'global' | 'daily',
   qualityProfile: detectDeviceProfile(),
   warnedLowTime: false,
   lastClearedStageId: ''
@@ -124,10 +139,9 @@ init();
 
 async function init() {
   document.title = GAME_TITLE;
-  const browserGuard = initBrowserGuard();
-  if (browserGuard.blocked) {
-    el.app.setAttribute('aria-hidden', 'true');
-    return;
+  browserRecovery = initBrowserGuard();
+  if (browserRecovery.inApp) {
+    setStatus('카카오톡에서는 시작 버튼을 누르면 외부 브라우저로 이어서 여는 대책을 사용합니다.');
   }
 
   registerServiceWorker();
@@ -187,8 +201,10 @@ function bindEvents() {
   el.resetProgressButton.addEventListener('click', () => {
     state.campaignProgress = normalizeCampaignProgress(null);
     state.localStats = { bestScore: 0, clearCount: 0 };
+    state.inventory = {};
     writeJson('dream-library-campaign-progress', state.campaignProgress);
     writeJson('dream-library-local-stats', state.localStats);
+    writeJson('dream-library-inventory', state.inventory);
     renderLobby();
     renderStats();
     setStatus('로컬 진행을 초기화했습니다.');
@@ -201,6 +217,7 @@ function bindEvents() {
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
+    if (await handoffIfNeeded()) return;
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();
@@ -213,6 +230,7 @@ function bindEvents() {
     audio.play('tap');
     HAPTIC.tap();
     if (!firebaseReady) throw new Error('login-disabled');
+    if (await handoffIfNeeded()) return;
     await loginWithGoogle();
     await startSelectedStage();
   }, 'Google 로그인 후 게임을 시작합니다.'));
@@ -220,12 +238,14 @@ function bindEvents() {
     event.preventDefault();
     runAuth(async () => {
       if (!firebaseReady) throw new Error('login-disabled');
+      if (await handoffIfNeeded()) return;
       await loginWithEmail(el.emailInput.value, el.passwordInput.value);
       await startSelectedStage();
     }, '이메일 로그인 후 게임을 시작합니다.');
   });
   el.emailSignupButton.addEventListener('click', () => runAuth(async () => {
     if (!firebaseReady) throw new Error('login-disabled');
+    if (await handoffIfNeeded()) return;
     await signupWithEmail(el.emailInput.value, el.passwordInput.value);
     await startSelectedStage();
   }, '새 계정을 만들고 게임을 시작합니다.'));
@@ -252,8 +272,14 @@ function bindEvents() {
     audio.play('select');
     renderLobby();
   });
-  el.startSelectedButton.addEventListener('click', startSelectedStage);
-  el.newGameButton.addEventListener('click', startSelectedStage);
+  el.startSelectedButton.addEventListener('click', () => startSelectedStage());
+  el.dailyStageButton.addEventListener('click', startDailyStage);
+  el.dailyStartButton.addEventListener('click', startDailyStage);
+  el.restorationFocusButton.addEventListener('click', () => {
+    document.querySelector('.restoration-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setStatus('복원 작업대를 확인하세요.');
+  });
+  el.newGameButton.addEventListener('click', () => startSelectedStage());
   el.exitToLobbyButton.addEventListener('click', exitToLobby);
   el.hintButton.addEventListener('click', showHint);
   el.shuffleButton.addEventListener('click', shuffleBoard);
@@ -277,13 +303,33 @@ function bindEvents() {
   });
 }
 
-async function startSelectedStage() {
-  const stage = getStageById(state.selectedStageId);
+
+async function handoffIfNeeded() {
+  if (!browserRecovery?.shouldUseHandoff()) return false;
+  audio.play('tap');
+  HAPTIC.tap();
+  await browserRecovery.startHandoff();
+  setStatus('외부 브라우저 전환을 시도했습니다. 전환이 막히면 임시 플레이를 선택하세요.');
+  return true;
+}
+
+async function startDailyStage() {
+  const daily = state.dailyChallenge;
+  state.selectedStageId = daily.stageId;
+  writeText('dream-library-selected-stage', daily.stageId);
+  renderLobby();
+  await startSelectedStage({ daily: true });
+}
+
+async function startSelectedStage(options: { daily?: boolean } = {}) {
+  if (await handoffIfNeeded()) return;
+  state.currentBoardId = options.daily ? 'daily' : 'global';
+  const stage = options.daily ? { ...getStageById(state.selectedStageId), modifiers: state.dailyChallenge.modifiers, dailySeed: state.dailyChallenge.seed } : getStageById(state.selectedStageId);
   const difficulty = DIFFICULTIES[stage.difficultyKey];
   audio.unlock();
   audio.play('tap');
   requestGameFullscreen();
-  state.board = createBoard(difficulty);
+  state.board = createBoard(difficulty, stage.modifiers || []);
   state.selected = null;
   state.locked = false;
   state.moves = 0;
@@ -304,7 +350,9 @@ async function startSelectedStage() {
   renderGameHud();
   setStatus('같은 마법 오브젝트를 연결하세요.');
   updateMissionLabel();
+  renderModifierStrip(stage.modifiers || []);
 }
+
 
 function handleTileTap(point: BoardPoint) {
   if (state.locked) return;
@@ -333,6 +381,7 @@ function handleTileTap(point: BoardPoint) {
     state.comboMax = Math.max(state.comboMax, state.combo);
     state.score += 100 * state.combo;
     renderer.setSelected(null);
+    state.board = revealPairSpecials(state.board, first, point);
     audio.play('match');
     window.setTimeout(() => audio.play('beam'), 90);
     window.setTimeout(() => audio.play('burst'), 220);
@@ -414,6 +463,7 @@ async function clearStage() {
   const stars = state.remainingSeconds > difficulty.timeLimitSeconds * 0.5 ? 3 : state.remainingSeconds > difficulty.timeLimitSeconds * 0.25 ? 2 : 1;
   state.lastClearedStageId = stage.id;
   unlockStage(stage.id, stars, score);
+  addReward(stage.reward.type, stage.reward.amount);
   state.localStats.bestScore = Math.max(state.localStats.bestScore, score);
   state.localStats.clearCount += 1;
   writeJson('dream-library-local-stats', state.localStats);
@@ -502,6 +552,8 @@ function renderLobby() {
     return `<button type="button" class="stage-node ${unlocked ? 'unlocked' : 'locked'} ${cleared ? 'cleared' : ''} ${selected ? 'selected' : ''}" data-stage-id="${item.id}" aria-label="${item.number} 스테이지 ${item.title}"><strong>${item.number}</strong><span>${cleared ? '★'.repeat(stars) : unlocked ? 'Open' : 'Lock'}</span></button>`;
   }).join('');
   renderStats();
+  renderRestoration();
+  renderDailyPanel();
 }
 
 function renderStats() {
@@ -530,6 +582,48 @@ function updateMissionLabel() {
   const remaining = state.board.length ? countRemaining(state.board) : difficulty.rows * difficulty.cols;
   const targetCombo = difficulty.key === 'easy' ? 3 : difficulty.key === 'normal' ? 4 : difficulty.key === 'hard' ? 5 : 6;
   el.missionLabel.textContent = `남은 오브젝트 ${remaining}개 · ${targetCombo}콤보 이상 노리기`;
+}
+
+
+function renderModifierStrip(modifiers: string[]) {
+  const labels: Record<string, string> = {
+    fog: '안개 타일',
+    locked: '잠긴 타일',
+    timeSeal: '시간 봉인',
+    bossPressure: '보스 압박'
+  };
+  if (!modifiers.length) {
+    el.modifierStrip.innerHTML = '<span>기본 규칙</span>';
+    return;
+  }
+  el.modifierStrip.innerHTML = modifiers.map((modifier) => `<span>${labels[modifier] || modifier}</span>`).join('');
+}
+
+function addReward(type: string, amount: number) {
+  state.inventory[type] = (state.inventory[type] || 0) + amount;
+  writeJson('dream-library-inventory', state.inventory);
+}
+
+function renderRestoration() {
+  const totalItems = Object.values(state.inventory).reduce((sum: number, value: any) => sum + Number(value || 0), 0);
+  const projects = [
+    { id: 'shelf', label: '달빛 책장', need: 6, types: ['magic-book', 'scroll', 'ink'] },
+    { id: 'garden', label: '구름 정원', need: 8, types: ['flower', 'music-box', 'feather'] },
+    { id: 'tower', label: '별빛 탑', need: 10, types: ['comet', 'rune', 'crown', 'map'] }
+  ];
+  el.restorationSummary.textContent = `보유 복원 재료 ${formatNumber(totalItems)}개 · 보상으로 서고가 조금씩 살아납니다.`;
+  el.restorationList.innerHTML = projects.map((project) => {
+    const current = project.types.reduce((sum, type) => sum + Number(state.inventory[type] || 0), 0);
+    const ratio = Math.min(100, Math.round((current / project.need) * 100));
+    return `<button type="button" class="restore-node ${ratio >= 100 ? 'complete' : ''}" data-restore-id="${project.id}"><strong>${project.label}</strong><span>${current}/${project.need}</span><i style="--restore-progress:${ratio}%"></i></button>`;
+  }).join('');
+}
+
+function renderDailyPanel() {
+  const daily = state.dailyChallenge;
+  const stage = getStageById(daily.stageId);
+  el.dailyTitle.textContent = `오늘의 복원 · ${stage.title}`;
+  el.dailyDesc.textContent = `${daily.label} · ${daily.rewardLabel}`;
 }
 
 function showComboCutin(combo: number) {
@@ -582,13 +676,18 @@ async function saveScore(score: number, stars: number) {
     score,
     comboMax: state.comboMax,
     moves: state.moves,
-    remainingSeconds: state.remainingSeconds,
+    difficulty: stage.difficultyKey,
+    timeSeconds: state.remainingSeconds,
+    cleared: true,
     stageId: stage.id,
     stageNumber: stage.number,
     stars,
     updatedAt: serverTimestamp()
   };
   await setDoc(doc(db, 'leaderboards/global/scores', state.user.uid), payload, { merge: true }).catch(() => null);
+  if (state.currentBoardId === 'daily') {
+    await setDoc(doc(db, 'leaderboards/daily/scores', state.user.uid), { ...payload, dailyKey: state.dailyChallenge.dateKey }, { merge: true }).catch(() => null);
+  }
 }
 
 function unlockStage(stageId: string, stars: number, score: number) {

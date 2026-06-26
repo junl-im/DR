@@ -88,5 +88,8 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/effects/hit-burst.png`,
   `${import.meta.env.BASE_URL}assets/effects/combo-flash.png`,
   `${import.meta.env.BASE_URL}assets/effects/magic-wave.png`,
+  `${import.meta.env.BASE_URL}assets/meta/restoration-shelf.png`,
+  `${import.meta.env.BASE_URL}assets/meta/daily-badge.png`,
+  `${import.meta.env.BASE_URL}assets/meta/browser-handoff.png`,
   ...TILE_SET.map((tile) => tile.asset)
 ];

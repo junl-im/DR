@@ -60,6 +60,30 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.9 - Restoration Meta, Daily Content, Special Rules, Kakao Handoff Patch
+
+- 카카오톡 인앱 브라우저 대응을 차단/경고 방식에서 외부 브라우저 이어하기 대책으로 변경
+- Android 카카오톡에서는 사용자가 시작 버튼을 누른 순간 Chrome `intent://` handoff를 시도하도록 변경
+- iOS/전환 실패 환경에서는 주소 복사와 임시 플레이를 제공하는 브라우저 handoff 패널 추가
+- 첫 진입 시 강제 경고 화면을 띄우지 않고, 실제 시작 액션 시점에만 전환 대책을 실행하도록 변경
+- 브라우저 handoff 전용 PNG 자산 `browser-handoff.png` 추가
+- 도서관 복원 메타 시스템 추가: 클리어 보상 자원을 localStorage 인벤토리에 누적
+- 로비에 `서고 복원 작업대` 패널 추가
+- 복원 프로젝트 3종 추가: 달빛 책장 / 구름 정원 / 별빛 탑
+- 복원 재료 보유량에 따라 프로젝트 진행률 바가 채워지도록 구현
+- 일일 콘텐츠 패널 추가: 날짜 기반 daily stage와 특수 규칙 조합 생성
+- 오늘의 복원 버튼 추가: 일일 스테이지 바로 시작
+- 스테이지별 특수 규칙 데이터 추가: 안개 타일, 잠긴 타일, 시간 봉인, 보스 압박
+- 사천성 보드 생성 시 특수 타일 플래그를 주입하는 구조 추가
+- PixiJS 타일 렌더링에 특수 타일 badge, veil, 색상 rim 표시 추가
+- 게임 HUD에 modifier strip 추가로 현재 특수 규칙 표시
+- Firestore score payload와 rules 필드 불일치 수정: `timeSeconds`, `difficulty`, `cleared` 저장
+- service worker 캐시를 v1.0.9로 갱신하고 신규 meta PNG를 precache에 추가
+- `npm run check:kakao` 추가: 카카오 handoff 정책 검사
+- `npm run check:content` 추가: 일일 콘텐츠/복원 메타 데이터 검사
+- `npm run check:health`를 v1.0.9 필수 자산과 UI hook 기준으로 갱신
+- SVG 금지 정책 유지: full ZIP과 patch ZIP 내부에 SVG 파일 없음
+
 ### v1.0.8 - Full Polish, Combat Feedback, Engine Quality Patch
 
 - 작은 모바일 화면에서 로그인/게임 UI가 겹치지 않도록 `screen-game`, HUD, 보스 영역, 퍼즐판, 하단 버튼 레이아웃을 재조정
@@ -411,7 +435,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              24 files
@@ -419,6 +443,7 @@ public/assets/backgrounds/*.png           6 files
 public/assets/characters/*.png            2 files
 public/assets/ui/*.png                    3 files
 public/assets/effects/*.png               4 files
+public/assets/meta/*.png                  4 files
 public/assets/atlas/dream-objects.png     1 file
 public/assets/atlas/*.json                1 file
 public/assets/meta/tile-manifest.json     1 file
@@ -443,30 +468,29 @@ gem, shield, flower, comet, bell, map, castle, spark
 
 ## Next Version Plan
 
-### v1.0.9 예정 - Restoration Meta + Daily Content Patch
+### v1.0.10 예정 - Boss Types + Collection Upgrade Patch
 
-- 도서관 복원 메타 시스템 추가
-- 스테이지 클리어 보상을 실제 복원 재화/오브젝트로 누적
-- 일일 스테이지와 daily 리더보드 구조 추가
-- 보스 타입 3종 분리: 망각 / 그림자 / 봉인
-- 스테이지별 특수 규칙 추가: 안개 타일, 잠긴 타일, 시간 봉인
-- 보상 인벤토리와 컬렉션 화면 추가
-- 로비 월드맵을 챕터 단위 탭 구조로 정리
-- Texture Atlas 로딩 경로를 개별 PNG에서 atlas 우선 구조로 전환 준비
-- 빌드 결과물 크기 점검과 이미지 용량 최적화 스크립트 추가
+- 보스 타입 3종 분리: 망각의 서고령 / 그림자 장서관장 / 봉인된 페이지 골렘
+- 보스별 HP 패턴, 반격 예고, 피격 연출 분리
+- 보상 인벤토리를 컬렉션 화면으로 확장
+- 복원 프로젝트를 클릭하면 세부 보상과 필요 재료를 보여주는 상세 모달 추가
+- daily 리더보드 저장 경로 추가
+- 챕터별 월드맵 탭 구조 추가
+- Texture Atlas 우선 로딩 실험 적용
+- 이미지 용량 점검 리포트 스크립트 추가
+- 작은 화면에서 로비 패널 밀도 추가 최적화
 
 ## KakaoTalk / In-App Browser Policy
 
-KakaoTalk/Kakao 계열 인앱 브라우저에서는 게임을 시작하지 않습니다.
+v1.0.9부터 카카오톡/Kakao 계열 인앱 브라우저는 차단 경고가 아니라 `Browser Handoff` 방식으로 대응합니다.
 
-이유:
+원칙:
 
-- Google 로그인 팝업/리다이렉트 불안정 가능
-- 전체화면 API 제한 가능
-- 사운드, 진동, PWA 설치 흐름 제한 가능
-- 주소창/뒤로가기 제어가 게임 UX를 깨뜨릴 수 있음
-
-감지되면 차단 안내 화면을 띄우고, 주소 복사와 외부 브라우저 열기만 제공합니다.
+- 첫 화면 진입 즉시 경고로 막지 않습니다.
+- 사용자가 `게임 시작` 또는 로그인을 누른 실제 액션 시점에 외부 브라우저 전환을 시도합니다.
+- Android는 Chrome `intent://` URL로 외부 브라우저 이어 열기를 시도합니다.
+- iOS처럼 자동 전환이 제한될 수 있는 환경은 주소 복사와 임시 플레이를 제공합니다.
+- 임시 플레이는 가능하지만, Google 로그인/전체화면/PWA/사운드 정책은 외부 브라우저보다 제한될 수 있습니다.
 
 ## PWA / Fullscreen Policy
 
@@ -506,7 +530,7 @@ Initial tile themes:
 
 ## Next Milestones
 
-1. 보스전 연출: 연속 콤보 시 HP 감소
-2. 라이브러리 복원 메타 시스템
-3. 일일 스테이지와 daily 리더보드
-4. 스테이지 셀렉트와 챕터 맵
+1. 보스 타입 3종과 패턴 분리
+2. 컬렉션/복원 상세 모달
+3. daily 리더보드 저장
+4. 챕터 탭 월드맵과 atlas 우선 로딩

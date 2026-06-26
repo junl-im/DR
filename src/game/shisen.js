@@ -1,16 +1,16 @@
 import { TILE_SET } from './difficulty.js';
 
-export function createBoard(difficulty) {
-  return createPlayableBoard(difficulty);
+export function createBoard(difficulty, modifiers = []) {
+  return createPlayableBoard(difficulty, modifiers);
 }
 
-export function createPlayableBoard(difficulty, attempts = 40) {
+export function createPlayableBoard(difficulty, modifiers = [], attempts = 40) {
   let board = null;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    board = buildRandomBoard(difficulty);
+    board = applySpecialTiles(buildRandomBoard(difficulty), modifiers);
     if (findHint(board)) return board;
   }
-  return board ?? buildRandomBoard(difficulty);
+  return board ?? applySpecialTiles(buildRandomBoard(difficulty), modifiers);
 }
 
 function buildRandomBoard(difficulty) {
@@ -47,6 +47,54 @@ function makeTile(tile, pairIndex, side) {
     label: tile.label,
     theme: tile.theme
   };
+}
+
+
+function applySpecialTiles(board, modifiers = []) {
+  const next = cloneBoard(board);
+  const positions = [];
+  next.forEach((row, rowIndex) => row.forEach((tile, colIndex) => {
+    if (tile) positions.push({ row: rowIndex, col: colIndex });
+  }));
+  shuffle(positions);
+  const pairsByType = new Map();
+  next.flat().filter(Boolean).forEach((tile) => {
+    if (!pairsByType.has(tile.type)) pairsByType.set(tile.type, []);
+    pairsByType.get(tile.type).push(tile.id);
+  });
+
+  if (modifiers.includes('fog')) markPositions(next, positions.splice(0, 8), 'fog');
+  if (modifiers.includes('locked')) markMatchingPair(next, pairsByType, 'locked');
+  if (modifiers.includes('timeSeal')) markPositions(next, positions.splice(0, 4), 'timeSeal');
+  return next;
+}
+
+function markPositions(board, positions, special) {
+  positions.forEach((position) => {
+    const tile = board[position.row]?.[position.col];
+    if (tile) tile.special = special;
+  });
+}
+
+function markMatchingPair(board, pairsByType, special) {
+  const candidate = [...pairsByType.values()].find((ids) => ids.length >= 2);
+  if (!candidate) return;
+  let marked = 0;
+  board.forEach((row) => row.forEach((tile) => {
+    if (tile && candidate.includes(tile.id) && marked < 2) {
+      tile.special = special;
+      marked += 1;
+    }
+  }));
+}
+
+export function revealPairSpecials(board, first, second) {
+  const next = cloneBoard(board);
+  [first, second].forEach((point) => {
+    const tile = next[point.row]?.[point.col];
+    if (tile?.special) tile.specialRevealed = true;
+  });
+  return next;
 }
 
 export function cloneBoard(board) {

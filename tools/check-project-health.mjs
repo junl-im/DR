@@ -9,15 +9,18 @@ const requiredFiles = [
   'public/assets/characters/forgotten-spirit.png',
   'public/assets/effects/combo-flash.png',
   'public/assets/effects/magic-wave.png',
-  'public/assets/ui/hp-frame.png'
+  'public/assets/ui/hp-frame.png',
+  'public/assets/meta/restoration-shelf.png',
+  'public/assets/meta/daily-badge.png',
+  'public/assets/meta/browser-handoff.png'
 ];
 
 for (const file of requiredFiles) {
-  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.8 file: ${file}`); }
+  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.9 file: ${file}`); }
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');
-for (const id of ['mission-label', 'combo-cutin', 'boss-hp-fill', 'quality-toggle']) {
+for (const id of ['mission-label', 'modifier-strip', 'combo-cutin', 'boss-hp-fill', 'quality-toggle', 'daily-stage-button', 'continue-inapp-button']) {
   if (!html.includes(`id="${id}"`)) errors.push(`Missing required UI hook: ${id}`);
 }
 
@@ -34,7 +37,7 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Project health check passed for v1.0.8.');
+console.log('Project health check passed for v1.0.9.');
 
 function walk(dir, visitor) {
   for (const entry of readdirSync(dir)) {

@@ -9,6 +9,8 @@ export type BoardTile = {
   label: string;
   asset: string;
   theme?: string;
+  special?: 'fog' | 'locked' | 'timeSeal';
+  specialRevealed?: boolean;
 };
 
 export type BoardCell = BoardTile | null;
@@ -248,7 +250,8 @@ export class DreamPixiRenderer {
 
     const shadow = new Graphics().ellipse(0, this.tileSize * 0.34, this.tileSize * 0.38, this.tileSize * 0.12).fill({ color: PALETTE.navyDeep, alpha: 0.35 });
     const frame = new Graphics().roundRect(-this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize, this.tileSize * 0.24).fill({ color: PALETTE.navySoft, alpha: 0.72 }).stroke({ color: PALETTE.gold, width: 1.5, alpha: 0.45 });
-    const glow = new Graphics().circle(0, 0, this.tileSize * 0.62).fill({ color: PALETTE.sky, alpha: 0.2 });
+    const specialColor = tile.special === 'locked' ? PALETTE.gold : tile.special === 'timeSeal' ? PALETTE.violet : tile.special === 'fog' ? PALETTE.sky : PALETTE.sky;
+    const glow = new Graphics().circle(0, 0, this.tileSize * 0.62).fill({ color: specialColor, alpha: tile.special ? 0.28 : 0.2 });
     glow.alpha = 0.16;
     const texture = Texture.from(tile.asset);
     const sprite = new Sprite(texture);
