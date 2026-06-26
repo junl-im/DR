@@ -13,6 +13,8 @@ import { GAME_TITLE } from './config/design';
 import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
 import { prepareSpineRuntime } from './engine/SpineBridge';
 
+document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/dream-library-25d.png)`);
+
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector(selector) as T;
 const $$ = <T extends HTMLElement>(selector: string) => Array.from(document.querySelectorAll(selector)) as T[];
 

@@ -37,7 +37,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -3;
-  background-image: url('/assets/backgrounds/dream-library-25d.svg');
+  background-image: var(--library-background-url, radial-gradient(circle at 50% 20%, rgba(125, 220, 255, 0.12), transparent 60%));
   background-size: cover;
   background-position: center top;
   opacity: 0.58;

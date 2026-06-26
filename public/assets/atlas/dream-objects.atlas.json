@@ -1,231 +1,495 @@
 {
   "meta": {
-    "image": "dream-objects.generated-from-svg",
-    "style": "premium-casual-fantasy",
-    "palette": [
-      "navy",
-      "gold",
-      "emerald",
-      "violet",
-      "skyblue"
-    ]
+    "app": "Dream Library Atlas Builder",
+    "version": "1.0.6",
+    "image": "dream-objects.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
   },
   "frames": {
     "magic-book": {
-      "asset": "assets/objects/magic-book.svg",
-      "label": "떠 있는 마법서",
-      "trimmed": false,
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/magic-book.png",
+      "label": "마법서"
     },
     "gold-key": {
-      "asset": "assets/objects/gold-key.svg",
-      "label": "황금 열쇠",
-      "trimmed": false,
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/gold-key.png",
+      "label": "황금 열쇠"
     },
     "candle": {
-      "asset": "assets/objects/candle.svg",
-      "label": "기억 촛불",
-      "trimmed": false,
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/candle.png",
+      "label": "기억 촛불"
     },
     "hourglass": {
-      "asset": "assets/objects/hourglass.svg",
-      "label": "시간 모래",
-      "trimmed": false,
+      "frame": {
+        "x": 768,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/hourglass.png",
+      "label": "시간 모래"
     },
     "crystal-orb": {
-      "asset": "assets/objects/crystal-orb.svg",
-      "label": "수정 구슬",
-      "trimmed": false,
+      "frame": {
+        "x": 1024,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/crystal-orb.png",
+      "label": "수정 구슬"
     },
     "rune": {
-      "asset": "assets/objects/rune.svg",
-      "label": "룬 조각",
-      "trimmed": false,
+      "frame": {
+        "x": 1280,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/rune.png",
+      "label": "룬 조각"
     },
     "ink": {
-      "asset": "assets/objects/ink.svg",
-      "label": "마법 잉크",
-      "trimmed": false,
+      "frame": {
+        "x": 0,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/ink.png",
+      "label": "마법 잉크"
     },
     "scroll": {
-      "asset": "assets/objects/scroll.svg",
-      "label": "고대 두루마리",
-      "trimmed": false,
+      "frame": {
+        "x": 256,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/scroll.png",
+      "label": "고대 두루마리"
     },
     "crown": {
-      "asset": "assets/objects/crown.svg",
-      "label": "왕관",
-      "trimmed": false,
+      "frame": {
+        "x": 512,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/crown.png",
+      "label": "왕관"
     },
     "feather": {
-      "asset": "assets/objects/feather.svg",
-      "label": "기록의 깃털",
-      "trimmed": false,
+      "frame": {
+        "x": 768,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/feather.png",
+      "label": "기록의 깃털"
     },
     "potion": {
-      "asset": "assets/objects/potion.svg",
-      "label": "포션 병",
-      "trimmed": false,
+      "frame": {
+        "x": 1024,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/potion.png",
+      "label": "포션 병"
     },
     "star": {
-      "asset": "assets/objects/star.svg",
-      "label": "별자리 조각",
-      "trimmed": false,
+      "frame": {
+        "x": 1280,
+        "y": 256,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/star.png",
+      "label": "별자리 조각"
     },
     "music-box": {
-      "asset": "assets/objects/music-box.svg",
-      "label": "뮤직 박스",
-      "trimmed": false,
+      "frame": {
+        "x": 0,
+        "y": 512,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/music-box.png",
+      "label": "뮤직 박스"
     },
     "dragon-egg": {
-      "asset": "assets/objects/dragon-egg.svg",
-      "label": "드래곤 알",
-      "trimmed": false,
+      "frame": {
+        "x": 256,
+        "y": 512,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/dragon-egg.png",
+      "label": "드래곤 알"
     },
     "relic": {
-      "asset": "assets/objects/relic.svg",
-      "label": "서고 유물",
-      "trimmed": false,
+      "frame": {
+        "x": 512,
+        "y": 512,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/relic.png",
+      "label": "서고 유물"
     },
     "moon": {
-      "asset": "assets/objects/moon.svg",
-      "label": "달의 기억",
-      "trimmed": false,
+      "frame": {
+        "x": 768,
+        "y": 512,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/moon.png",
+      "label": "달의 기억"
     },
     "gem": {
-      "asset": "assets/objects/gem.svg",
-      "label": "결정",
-      "trimmed": false,
+      "frame": {
+        "x": 1024,
+        "y": 512,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/gem.png",
+      "label": "결정"
     },
     "shield": {
-      "asset": "assets/objects/shield.svg",
-      "label": "수호 방패",
-      "trimmed": false,
+      "frame": {
+        "x": 1280,
+        "y": 512,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/shield.png",
+      "label": "수호 방패"
     },
     "flower": {
-      "asset": "assets/objects/flower.svg",
-      "label": "정원 기억",
-      "trimmed": false,
+      "frame": {
+        "x": 0,
+        "y": 768,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/flower.png",
+      "label": "정원 기억"
     },
     "comet": {
-      "asset": "assets/objects/comet.svg",
-      "label": "혜성 조각",
-      "trimmed": false,
+      "frame": {
+        "x": 256,
+        "y": 768,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/comet.png",
+      "label": "혜성 조각"
     },
     "bell": {
-      "asset": "assets/objects/bell.svg",
-      "label": "서고 종",
-      "trimmed": false,
+      "frame": {
+        "x": 512,
+        "y": 768,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/bell.png",
+      "label": "서고 종"
     },
     "map": {
-      "asset": "assets/objects/map.svg",
-      "label": "비밀 지도",
-      "trimmed": false,
+      "frame": {
+        "x": 768,
+        "y": 768,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/map.png",
+      "label": "비밀 지도"
     },
     "castle": {
-      "asset": "assets/objects/castle.svg",
-      "label": "꿈의 성",
-      "trimmed": false,
+      "frame": {
+        "x": 1024,
+        "y": 768,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/castle.png",
+      "label": "꿈의 성"
     },
     "spark": {
-      "asset": "assets/objects/spark.svg",
-      "label": "기억 파편",
-      "trimmed": false,
+      "frame": {
+        "x": 1280,
+        "y": 768,
+        "w": 256,
+        "h": 256
+      },
       "sourceSize": {
-        "w": 128,
-        "h": 128
-      }
+        "w": 256,
+        "h": 256
+      },
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 256,
+        "h": 256
+      },
+      "asset": "assets/objects/spark.png",
+      "label": "기억 파편"
     }
   }
 }

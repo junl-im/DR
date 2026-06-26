@@ -12,9 +12,9 @@
     "Art Bible",
     "Master Style Prompt",
     "Object Prompt",
-    "PNG generation",
+    "PNG/WebP render generation",
     "Background removal check",
-    "Shadow removal",
+    "Alpha edge cleanup",
     "Texture Atlas",
     "Game integration"
   ],
@@ -26,5 +26,15 @@
     "puzzle board",
     "particles",
     "UI"
-  ]
+  ],
+  "assetRules": {
+    "svgAllowed": false,
+    "finalFormats": [
+      "png",
+      "webp",
+      "texture-atlas"
+    ],
+    "renderingOnly": "2D to 3D raster rendering output only",
+    "objectRule": "tiles must read as floating magical objects, not flat icons"
+  }
 }

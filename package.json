@@ -10,7 +10,9 @@
     "deploy:firebase": "npm run build:firebase && firebase deploy --only hosting,firestore",
     "deploy:hosting": "npm run build:firebase && firebase deploy --only hosting",
     "deploy:rules": "firebase deploy --only firestore:rules",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:assets": "node tools/check-no-svg.mjs",
+    "clean:legacy-assets": "node tools/clean-v1.0.6.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -22,5 +24,6 @@
   },
   "devDependencies": {
     "typescript": "^5.8.0"
-  }
+  },
+  "version": "1.0.6"
 }
