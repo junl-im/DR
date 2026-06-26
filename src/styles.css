@@ -951,3 +951,281 @@ h3 {
     top: max(10px, env(safe-area-inset-top));
   }
 }
+
+/* v1.0.4 campaign world map */
+.campaign-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.campaign-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 242, 168, 0.18), transparent 24%),
+    radial-gradient(circle at 82% 0%, rgba(153, 228, 255, 0.18), transparent 24%);
+}
+
+.campaign-panel > * {
+  position: relative;
+}
+
+.chapter-story,
+.helper-text,
+#selected-stage-subtitle {
+  color: #eadcff;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.world-map {
+  display: grid;
+  gap: 0.74rem;
+  margin: 0.78rem 0 0.9rem;
+}
+
+.chapter-map {
+  padding: 0.78rem;
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08)),
+    radial-gradient(circle at 0% 0%, rgba(255, 226, 142, 0.16), transparent 45%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.chapter-map-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.58rem;
+}
+
+.chapter-map-head h4 {
+  margin: 0.12rem 0 0;
+  font-size: 1rem;
+}
+
+.chapter-map-head > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff2a8;
+  font-weight: 950;
+  font-size: 0.78rem;
+}
+
+.stage-path {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.stage-node {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.58rem;
+  width: 100%;
+  min-height: 72px;
+  padding: 0.58rem 0.66rem;
+  border-radius: 24px;
+  text-align: left;
+  color: #fffaf2;
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+
+.stage-node.locked {
+  opacity: 0.54;
+  filter: saturate(0.7);
+}
+
+.stage-node.active {
+  border-color: rgba(255, 242, 168, 0.72);
+  background: linear-gradient(135deg, rgba(255, 226, 142, 0.32), rgba(255, 120, 188, 0.18));
+  box-shadow: 0 16px 34px rgba(255, 176, 118, 0.16);
+}
+
+.stage-node.cleared {
+  background: linear-gradient(135deg, rgba(148, 255, 208, 0.22), rgba(153, 228, 255, 0.13));
+}
+
+.stage-number {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  color: #321c49;
+  background: linear-gradient(135deg, #fff2a8, #ffb076);
+  font-weight: 950;
+}
+
+.stage-copy {
+  display: grid;
+  gap: 0.14rem;
+}
+
+.stage-copy strong {
+  font-size: 0.95rem;
+}
+
+.stage-copy small {
+  color: #eadcff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.stage-stars {
+  color: #fff2a8;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  min-width: 36px;
+  text-align: right;
+}
+
+.selected-stage-card {
+  display: grid;
+  gap: 0.78rem;
+  padding: 0.86rem;
+  border-radius: 26px;
+  background: rgba(35, 15, 59, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.selected-stage-card h3 {
+  margin: 0.14rem 0 0.2rem;
+}
+
+.stage-meta-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.54rem;
+  margin: 0;
+}
+
+.stage-meta-list div {
+  min-height: 66px;
+  padding: 0.58rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.stage-meta-list dt {
+  color: #e8d7ff;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.stage-meta-list dd {
+  margin: 0.16rem 0 0;
+  color: #fff4ac;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.progress-rings.triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.progress-rings.triple div {
+  min-height: 78px;
+}
+
+.reward-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  background: rgba(14, 7, 28, 0.68);
+  backdrop-filter: blur(12px);
+}
+
+.reward-modal.hidden {
+  display: none;
+}
+
+.reward-card {
+  width: min(100%, 420px);
+  padding: 1.2rem;
+  border-radius: 34px;
+  text-align: center;
+  animation: reward-pop 0.28s ease-out both;
+}
+
+.reward-card > img {
+  width: 112px;
+  height: 112px;
+  margin: -0.1rem auto 0.2rem;
+  filter: drop-shadow(0 18px 28px rgba(20, 8, 36, 0.28));
+}
+
+.reward-card h2 {
+  margin: 0.22rem 0 0.42rem;
+}
+
+.reward-card p {
+  color: #eadcff;
+  line-height: 1.5;
+}
+
+.reward-items {
+  display: grid;
+  gap: 0.46rem;
+  margin: 0.86rem 0;
+}
+
+.reward-items span {
+  display: block;
+  padding: 0.72rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff3a8;
+  font-weight: 950;
+}
+
+.reward-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.56rem;
+}
+
+@keyframes reward-pop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (min-width: 760px) {
+  .world-map {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .stage-path {
+    min-height: 314px;
+  }
+}
+
+@media (max-width: 390px) {
+  .stage-meta-list,
+  .reward-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-rings.triple {
+    grid-template-columns: 1fr;
+  }
+}

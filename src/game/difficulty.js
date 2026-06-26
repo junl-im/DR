@@ -77,9 +77,11 @@ export const TILE_SET = [
 export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.svg`,
   `${import.meta.env.BASE_URL}assets/backgrounds/lobby-garden.svg`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/world-map.svg`,
   `${import.meta.env.BASE_URL}assets/backgrounds/library-hall.svg`,
   `${import.meta.env.BASE_URL}assets/backgrounds/memory-mist.svg`,
   `${import.meta.env.BASE_URL}assets/characters/librarian-momo.svg`,
   `${import.meta.env.BASE_URL}assets/ui/panel-frame.svg`,
+  `${import.meta.env.BASE_URL}assets/ui/reward-badge.svg`,
   ...TILE_SET.map((tile) => tile.asset)
 ];

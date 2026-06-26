@@ -12,10 +12,12 @@ const PRECACHE_URLS = [
   `${basePath}favicon.svg`,
   `${basePath}assets/backgrounds/storybook-login.svg`,
   `${basePath}assets/backgrounds/lobby-garden.svg`,
+  `${basePath}assets/backgrounds/world-map.svg`,
   `${basePath}assets/backgrounds/library-hall.svg`,
   `${basePath}assets/backgrounds/memory-mist.svg`,
   `${basePath}assets/characters/librarian-momo.svg`,
   `${basePath}assets/ui/panel-frame.svg`,
+  `${basePath}assets/ui/reward-badge.svg`,
   `${basePath}assets/meta/tile-manifest.json`,
   ...tileNames.map((name) => `${basePath}assets/tiles/${name}.svg`)
 ];

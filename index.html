@@ -17,6 +17,7 @@
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
     <link rel="preload" href="%BASE_URL%assets/backgrounds/storybook-login.svg" as="image" />
     <link rel="preload" href="%BASE_URL%assets/backgrounds/lobby-garden.svg" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/world-map.svg" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/librarian-momo.svg" as="image" />
     <link rel="preload" href="%BASE_URL%assets/tiles/magic-book.svg" as="image" />
     <title>Dream Library</title>
@@ -154,24 +155,51 @@
             <img src="%BASE_URL%assets/characters/librarian-momo.svg" alt="" aria-hidden="true" draggable="false" />
           </div>
 
-          <section class="chapter-panel glass-card" aria-label="챕터 선택">
+          <section class="chapter-panel campaign-panel glass-card" aria-label="캠페인 월드맵">
             <div class="section-heading">
               <div>
-                <p class="eyebrow">Chapter 01</p>
-                <h3>달빛 서가의 첫 기록</h3>
+                <p class="eyebrow">Campaign Map</p>
+                <h3 id="selected-chapter-name">달빛 서가의 첫 기록</h3>
+                <p id="chapter-story-text" class="chapter-story">흩어진 꿈 조각을 모아 첫 번째 기록장을 되살립니다.</p>
+              </div>
+              <span id="stage-progress-label" class="asset-progress">0/12 클리어</span>
+            </div>
+
+            <div id="world-map" class="world-map" aria-label="스테이지 선택 지도"></div>
+
+            <article class="selected-stage-card">
+              <div>
+                <p class="eyebrow">Selected Stage</p>
+                <h3 id="selected-stage-title">1. 잠에서 깬 책갈피</h3>
+                <p id="selected-stage-subtitle">첫 연결 규칙을 익히는 가벼운 복원</p>
+              </div>
+              <dl class="stage-meta-list">
+                <div><dt>난이도</dt><dd id="selected-stage-meta">입문 · 6×6</dd></div>
+                <div><dt>보상</dt><dd id="selected-stage-reward">마법서 표지 ×1</dd></div>
+              </dl>
+              <button id="start-selected-button" type="button" class="xl-button start-button">선택한 스테이지 시작</button>
+            </article>
+          </section>
+
+          <section class="chapter-panel glass-card" aria-label="난이도 프리셋">
+            <div class="section-heading compact">
+              <div>
+                <p class="eyebrow">Practice Preset</p>
+                <h3>스테이지 난이도 프리셋</h3>
               </div>
               <span id="asset-progress" class="asset-progress">0/24 해금</span>
             </div>
+            <p class="helper-text">스테이지를 누르면 해당 난이도가 자동 선택됩니다. 아래 버튼으로 연습 난이도도 직접 바꿀 수 있습니다.</p>
             <div class="difficulty-row" id="difficulty-row"></div>
-            <button id="start-selected-button" type="button" class="xl-button start-button">선택한 난이도로 시작</button>
           </section>
 
           <section class="lobby-grid">
             <article class="glass-card mini-panel">
               <h3>내 진행</h3>
-              <div class="progress-rings">
+              <div class="progress-rings triple">
                 <div><strong id="best-score-label">0</strong><span>최고 점수</span></div>
                 <div><strong id="clear-count-label">0</strong><span>복원 성공</span></div>
+                <div><strong id="star-count-label">0</strong><span>별 조각</span></div>
               </div>
             </article>
             <article class="glass-card mini-panel">
@@ -220,6 +248,20 @@
           </section>
         </section>
       </main>
+
+      <aside id="reward-modal" class="reward-modal hidden" aria-label="스테이지 보상" role="dialog" aria-modal="true">
+        <div class="reward-card glass-card">
+          <img src="%BASE_URL%assets/ui/reward-badge.svg" alt="" aria-hidden="true" draggable="false" />
+          <p class="eyebrow">Stage Clear</p>
+          <h2 id="reward-title">기억 복원 성공!</h2>
+          <p id="reward-message">새로운 스테이지가 열렸습니다.</p>
+          <div id="reward-items" class="reward-items"></div>
+          <div class="reward-actions">
+            <button id="next-stage-button" type="button">다음 스테이지</button>
+            <button id="replay-stage-button" type="button" class="secondary">로비에서 확인</button>
+          </div>
+        </div>
+      </aside>
     </div>
 
     <script type="module" src="/src/main.js"></script>

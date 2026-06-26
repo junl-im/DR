@@ -50,6 +50,9 @@ service cloud.firestore {
           'uid',
           'displayName',
           'difficulty',
+          'stageId',
+          'stageNumber',
+          'stars',
           'score',
           'timeSeconds',
           'moves',
@@ -61,6 +64,9 @@ service cloud.firestore {
           'uid',
           'displayName',
           'difficulty',
+          'stageId',
+          'stageNumber',
+          'stars',
           'score',
           'timeSeconds',
           'moves',
@@ -73,6 +79,15 @@ service cloud.firestore {
         && data.displayName.size() >= 1
         && data.displayName.size() <= 32
         && validDifficulty(data.difficulty)
+        && data.stageId is string
+        && data.stageId.size() >= 5
+        && data.stageId.size() <= 24
+        && data.stageNumber is int
+        && data.stageNumber >= 1
+        && data.stageNumber <= 999
+        && data.stars is int
+        && data.stars >= 0
+        && data.stars <= 3
         && data.score is int
         && data.score >= 0
         && data.score <= 10000000

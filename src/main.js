@@ -11,6 +11,7 @@ import {
   signupWithEmail
 } from './auth.js';
 import { DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
+import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getNextStage, getStageById } from './game/stages.js';
 import { canConnect, countRemaining, createBoard, findHint, isCleared, removePair, shuffleRemaining } from './game/shisen.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
@@ -35,6 +36,21 @@ const elements = {
   statusLabel: document.querySelector('#status-label'),
   newGameButton: document.querySelector('#new-game-button'),
   startSelectedButton: document.querySelector('#start-selected-button'),
+  worldMap: document.querySelector('#world-map'),
+  stageProgressLabel: document.querySelector('#stage-progress-label'),
+  selectedChapterName: document.querySelector('#selected-chapter-name'),
+  chapterStoryText: document.querySelector('#chapter-story-text'),
+  selectedStageTitle: document.querySelector('#selected-stage-title'),
+  selectedStageSubtitle: document.querySelector('#selected-stage-subtitle'),
+  selectedStageMeta: document.querySelector('#selected-stage-meta'),
+  selectedStageReward: document.querySelector('#selected-stage-reward'),
+  starCountLabel: document.querySelector('#star-count-label'),
+  rewardModal: document.querySelector('#reward-modal'),
+  rewardTitle: document.querySelector('#reward-title'),
+  rewardMessage: document.querySelector('#reward-message'),
+  rewardItems: document.querySelector('#reward-items'),
+  nextStageButton: document.querySelector('#next-stage-button'),
+  replayStageButton: document.querySelector('#replay-stage-button'),
   hintButton: document.querySelector('#hint-button'),
   shuffleButton: document.querySelector('#shuffle-button'),
   exitToLobbyButton: document.querySelector('#exit-to-lobby-button'),
@@ -84,7 +100,10 @@ const state = {
   locked: true,
   discoveredTiles: new Set(readJsonPreference('dream-library-discovered-tiles', [])),
   soundEnabled: readPreference('dream-library-sound') !== 'off',
-  localStats: readJsonPreference('dream-library-local-stats', { bestScore: 0, clearCount: 0 })
+  localStats: readJsonPreference('dream-library-local-stats', { bestScore: 0, clearCount: 0 }),
+  selectedStageId: readPreference('dream-library-selected-stage') || DEFAULT_STAGE_ID,
+  campaignProgress: normalizeCampaignProgress(readJsonPreference('dream-library-campaign-progress', null)),
+  lastReward: null
 };
 
 init();
@@ -104,6 +123,8 @@ function init() {
   restorePreferences();
   bindEvents();
   renderDifficultyButtons();
+  renderWorldMap();
+  renderSelectedStage();
   renderAssetGallery();
   renderLocalStats();
   resetBoardPlaceholder();
@@ -193,6 +214,28 @@ function bindEvents() {
   elements.shuffleButton.addEventListener('click', shuffleBoard);
   elements.refreshLeaderboardButton.addEventListener('click', loadLeaderboard);
 
+  elements.worldMap.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-stage-id]');
+    if (!button) return;
+    selectStage(button.dataset.stageId);
+  });
+
+  elements.nextStageButton.addEventListener('click', () => {
+    closeRewardModal();
+    const nextStage = getNextStage(state.selectedStageId);
+    if (nextStage && isStageUnlocked(nextStage.id)) {
+      selectStage(nextStage.id);
+      startGameFromLobby();
+    } else {
+      updateScreen('lobby');
+    }
+  });
+
+  elements.replayStageButton.addEventListener('click', () => {
+    closeRewardModal();
+    updateScreen('lobby');
+  });
+
   elements.settingsFullscreenButton.addEventListener('click', async () => {
     const active = await requestGameFullscreen();
     setLoginStatus(active ? '전체화면 모드가 적용되었습니다.' : '브라우저 정책상 전체화면이 거부되었습니다. 홈 화면 추가 실행을 권장합니다.');
@@ -208,8 +251,16 @@ function bindEvents() {
   elements.resetProgressButton.addEventListener('click', () => {
     state.discoveredTiles = new Set();
     state.localStats = { bestScore: 0, clearCount: 0 };
+    state.selectedStageId = DEFAULT_STAGE_ID;
+    state.difficultyKey = getStageById(DEFAULT_STAGE_ID).difficultyKey;
+    state.campaignProgress = normalizeCampaignProgress(null);
     writeJsonPreference('dream-library-discovered-tiles', []);
     writeJsonPreference('dream-library-local-stats', state.localStats);
+    writePreference('dream-library-selected-stage', state.selectedStageId);
+    writePreference('dream-library-difficulty', state.difficultyKey);
+    writeJsonPreference('dream-library-campaign-progress', state.campaignProgress);
+    renderWorldMap();
+    renderSelectedStage();
     renderAssetGallery();
     renderLocalStats();
     setLoginStatus('로컬 진행 기록을 초기화했습니다.');
@@ -221,6 +272,7 @@ function bindEvents() {
     state.difficultyKey = button.dataset.difficulty;
     writePreference('dream-library-difficulty', state.difficultyKey);
     renderDifficultyButtons();
+    renderSelectedStage();
     renderLobby();
   });
 }
@@ -280,7 +332,8 @@ function startGameFromLobby() {
 }
 
 function startGame() {
-  const difficulty = DIFFICULTIES[state.difficultyKey];
+  const stage = getStageById(state.selectedStageId);
+  const difficulty = DIFFICULTIES[state.difficultyKey] || DIFFICULTIES[stage.difficultyKey];
   state.board = createBoard(difficulty);
   let guard = 0;
   while (!findHint(state.board) && guard < 30) {
@@ -303,10 +356,12 @@ function startGame() {
   state.timerId = setInterval(tickTimer, 1000);
   elements.board.style.setProperty('--rows', difficulty.rows);
   elements.board.style.setProperty('--cols', difficulty.cols);
-  elements.difficultyTitle.textContent = difficulty.label;
+  elements.difficultyTitle.textContent = `${stage.number}. ${stage.title}`;
+  const chapter = getChapterById(stage.chapterId);
+  document.querySelector('#stage-label').textContent = `Chapter ${String(chapter.number).padStart(2, '0')} · ${difficulty.label}`;
   renderBoard();
   renderStats();
-  setGameStatus(`${difficulty.label} 난이도 시작! 같은 기억 조각을 최대 두 번 꺾어 연결하세요.`);
+  setGameStatus(`${stage.title} 시작! 같은 기억 조각을 최대 두 번 꺾어 연결하세요.`);
   vibrate(20);
 }
 
@@ -463,12 +518,16 @@ async function endGame(cleared) {
     state.score += finalBonus;
     state.localStats.bestScore = Math.max(state.localStats.bestScore || 0, state.score);
     state.localStats.clearCount = (state.localStats.clearCount || 0) + 1;
+    const reward = completeSelectedStage();
     writeJsonPreference('dream-library-local-stats', state.localStats);
     renderLocalStats();
+    renderWorldMap();
+    renderSelectedStage();
     renderStats();
     setGameStatus(`복원 성공! 시간 보너스 ${finalBonus}점이 추가되었습니다.`);
     await saveScore(true);
     await loadLeaderboard();
+    showRewardModal(reward, finalBonus);
   } else {
     setGameStatus('시간 종료. 새 게임으로 다시 도전하세요.');
     await saveScore(false);
@@ -476,6 +535,7 @@ async function endGame(cleared) {
 }
 
 async function saveScore(cleared) {
+  const stage = getStageById(state.selectedStageId);
   if (!firebaseReady || !db) {
     setGameStatus('게스트 플레이 기록은 기기에 저장됩니다. Firebase 설정 후 랭킹 저장이 활성화됩니다.');
     return;
@@ -494,6 +554,9 @@ async function saveScore(cleared) {
         uid: state.user.uid,
         displayName: getDisplayName(state.user),
         difficulty: state.difficultyKey,
+        stageId: stage.id,
+        stageNumber: stage.number,
+        stars: state.campaignProgress.starsByStage?.[stage.id] || 0,
         score: Math.max(0, Math.round(state.score)),
         timeSeconds,
         moves: state.moves,
@@ -529,7 +592,7 @@ async function loadLeaderboard() {
           <li>
             <span class="rank">#${index + 1}</span>
             <strong>${escapeHtml(data.displayName ?? 'Guest')}</strong>
-            <span>${difficultyLabel(data.difficulty)} · ${data.moves ?? 0}수 · ${Number(data.score ?? 0).toLocaleString('ko-KR')}점</span>
+            <span>${data.stageNumber ? `Stage ${data.stageNumber} · ` : ''}${difficultyLabel(data.difficulty)} · ★ ${data.stars ?? 0} · ${data.moves ?? 0}수 · ${Number(data.score ?? 0).toLocaleString('ko-KR')}점</span>
           </li>
         `;
       })
@@ -537,6 +600,166 @@ async function loadLeaderboard() {
   } catch {
     elements.leaderboardList.innerHTML = '<li class="empty-rank">리더보드를 불러오지 못했습니다.</li>';
   }
+}
+
+
+function selectStage(stageId) {
+  const stage = getStageById(stageId);
+  if (!isStageUnlocked(stage.id)) {
+    const required = stage.unlockAfter ? getStageById(stage.unlockAfter) : null;
+    setLoginStatus(required ? `${required.number}. ${required.title} 클리어 후 열립니다.` : '아직 잠긴 스테이지입니다.');
+    vibrate([12, 18, 12]);
+    return;
+  }
+
+  state.selectedStageId = stage.id;
+  state.difficultyKey = stage.difficultyKey;
+  writePreference('dream-library-selected-stage', state.selectedStageId);
+  writePreference('dream-library-difficulty', state.difficultyKey);
+  renderDifficultyButtons();
+  renderWorldMap();
+  renderSelectedStage();
+}
+
+function renderWorldMap() {
+  const completed = new Set(state.campaignProgress.completedStageIds);
+  const totalStars = getTotalStars();
+  elements.stageProgressLabel.textContent = `${completed.size}/${STAGES.length} 클리어 · ★ ${totalStars}`;
+
+  elements.worldMap.innerHTML = CHAPTERS.map((chapter) => {
+    const stages = getChapterStages(chapter.id);
+    const clearedInChapter = stages.filter((stage) => completed.has(stage.id)).length;
+    return `
+      <section class="chapter-map" style="--chapter-accent: ${chapter.accent}">
+        <div class="chapter-map-head">
+          <div>
+            <p class="eyebrow">Chapter ${String(chapter.number).padStart(2, '0')}</p>
+            <h4>${escapeHtml(chapter.shortTitle)}</h4>
+          </div>
+          <span>${clearedInChapter}/${stages.length}</span>
+        </div>
+        <div class="stage-path">
+          ${stages.map((stage) => renderStageNode(stage)).join('')}
+        </div>
+      </section>
+    `;
+  }).join('');
+}
+
+function renderStageNode(stage) {
+  const unlocked = isStageUnlocked(stage.id);
+  const cleared = state.campaignProgress.completedStageIds.includes(stage.id);
+  const active = state.selectedStageId === stage.id;
+  const stars = state.campaignProgress.starsByStage[stage.id] || 0;
+  const difficulty = DIFFICULTIES[stage.difficultyKey];
+  return `
+    <button
+      class="stage-node ${active ? 'active' : ''} ${cleared ? 'cleared' : ''} ${unlocked ? 'unlocked' : 'locked'}"
+      data-stage-id="${stage.id}"
+      type="button"
+      aria-label="${escapeHtml(stage.title)} ${unlocked ? '선택 가능' : '잠김'}"
+      ${unlocked ? '' : 'aria-disabled="true"'}
+    >
+      <span class="stage-number">${stage.number}</span>
+      <span class="stage-copy">
+        <strong>${escapeHtml(stage.title)}</strong>
+        <small>${difficulty.label} · ${difficulty.rows}×${difficulty.cols}</small>
+      </span>
+      <span class="stage-stars" aria-label="별 ${stars}개">${cleared ? '★'.repeat(Math.max(1, stars)) : unlocked ? '●' : '🔒'}</span>
+    </button>
+  `;
+}
+
+function renderSelectedStage() {
+  const stage = getStageById(state.selectedStageId);
+  const chapter = getChapterById(stage.chapterId);
+  const difficulty = DIFFICULTIES[state.difficultyKey] || DIFFICULTIES[stage.difficultyKey];
+  elements.selectedChapterName.textContent = chapter.title;
+  elements.chapterStoryText.textContent = chapter.story;
+  elements.selectedStageTitle.textContent = `${stage.number}. ${stage.title}`;
+  elements.selectedStageSubtitle.textContent = stage.subtitle;
+  elements.selectedStageMeta.textContent = `${difficulty.label} · ${difficulty.rows}×${difficulty.cols} · ${formatTime(difficulty.timeLimitSeconds)}`;
+  elements.selectedStageReward.textContent = `${stage.reward.label} ×${stage.reward.amount}`;
+  elements.startSelectedButton.disabled = !isStageUnlocked(stage.id);
+  elements.startSelectedButton.textContent = isStageUnlocked(stage.id) ? '선택한 스테이지 시작' : '이전 스테이지 클리어 필요';
+}
+
+function isStageUnlocked(stageId) {
+  return state.campaignProgress.unlockedStageIds.includes(stageId);
+}
+
+function completeSelectedStage() {
+  const stage = getStageById(state.selectedStageId);
+  const nextStage = getNextStage(stage.id);
+  const stars = calculateStars();
+  const progress = state.campaignProgress;
+  const wasFirstClear = !progress.completedStageIds.includes(stage.id);
+
+  if (wasFirstClear) progress.completedStageIds.push(stage.id);
+  progress.starsByStage[stage.id] = Math.max(progress.starsByStage[stage.id] || 0, stars);
+  progress.bestScoresByStage[stage.id] = Math.max(progress.bestScoresByStage[stage.id] || 0, state.score);
+
+  if (nextStage && !progress.unlockedStageIds.includes(nextStage.id)) {
+    progress.unlockedStageIds.push(nextStage.id);
+  }
+
+  if (stage.reward?.type) rememberTile(stage.reward.type);
+  writeJsonPreference('dream-library-campaign-progress', progress);
+  writeJsonPreference('dream-library-discovered-tiles', [...state.discoveredTiles]);
+
+  return {
+    stage,
+    nextStage,
+    stars,
+    wasFirstClear,
+    reward: stage.reward,
+    totalStars: getTotalStars()
+  };
+}
+
+function calculateStars() {
+  const difficulty = DIFFICULTIES[state.difficultyKey];
+  const timeRatio = difficulty.timeLimitSeconds > 0 ? state.remainingSeconds / difficulty.timeLimitSeconds : 0;
+  if (timeRatio >= 0.42 && state.comboMax >= 5) return 3;
+  if (timeRatio >= 0.22 || state.comboMax >= 3) return 2;
+  return 1;
+}
+
+function getTotalStars() {
+  return Object.values(state.campaignProgress.starsByStage || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+}
+
+function showRewardModal(result, finalBonus) {
+  if (!result) return;
+  state.lastReward = result;
+  elements.rewardTitle.textContent = `${result.stage.number}. ${result.stage.title} 복원 성공!`;
+  elements.rewardMessage.textContent = result.nextStage
+    ? `${result.nextStage.number}. ${result.nextStage.title} 스테이지가 열렸습니다.`
+    : '현재 캠페인 끝까지 복원했습니다. 다음 챕터 업데이트를 준비하세요.';
+  elements.rewardItems.innerHTML = `
+    <span>★ ${result.stars} 획득</span>
+    <span>${escapeHtml(result.reward.label)} ×${result.reward.amount}</span>
+    <span>시간 보너스 ${Number(finalBonus).toLocaleString('ko-KR')}점</span>
+  `;
+  elements.nextStageButton.textContent = result.nextStage ? '다음 스테이지' : '로비로 이동';
+  elements.rewardModal.classList.remove('hidden');
+}
+
+function closeRewardModal() {
+  elements.rewardModal.classList.add('hidden');
+}
+
+function normalizeCampaignProgress(raw) {
+  const firstId = DEFAULT_STAGE_ID;
+  const progress = raw && typeof raw === 'object' ? raw : {};
+  const unlocked = Array.isArray(progress.unlockedStageIds) ? progress.unlockedStageIds.filter((id) => STAGES.some((stage) => stage.id === id)) : [];
+  if (!unlocked.includes(firstId)) unlocked.unshift(firstId);
+  return {
+    unlockedStageIds: [...new Set(unlocked)],
+    completedStageIds: Array.isArray(progress.completedStageIds) ? [...new Set(progress.completedStageIds.filter((id) => STAGES.some((stage) => stage.id === id)))] : [],
+    starsByStage: progress.starsByStage && typeof progress.starsByStage === 'object' ? progress.starsByStage : {},
+    bestScoresByStage: progress.bestScoresByStage && typeof progress.bestScoresByStage === 'object' ? progress.bestScoresByStage : {}
+  };
 }
 
 function renderDifficultyButtons() {
@@ -586,16 +809,21 @@ function renderAuth() {
 }
 
 function renderLobby() {
-  const difficulty = DIFFICULTIES[state.difficultyKey];
-  elements.lobbyGreeting.textContent = `${getSessionName()}님, ${difficulty.label} 난이도로 기억 복원을 시작할 수 있습니다.`;
+  const stage = getStageById(state.selectedStageId);
+  const difficulty = DIFFICULTIES[state.difficultyKey] || DIFFICULTIES[stage.difficultyKey];
+  elements.lobbyGreeting.textContent = `${getSessionName()}님, ${stage.number}. ${stage.title} 복원을 시작할 수 있습니다.`;
   elements.difficultyTitle.textContent = difficulty.label;
+  renderWorldMap();
+  renderSelectedStage();
   renderLocalStats();
 }
 
 function renderLocalStats() {
   elements.bestScoreLabel.textContent = Number(state.localStats.bestScore || 0).toLocaleString('ko-KR');
   elements.clearCountLabel.textContent = Number(state.localStats.clearCount || 0).toLocaleString('ko-KR');
+  if (elements.starCountLabel) elements.starCountLabel.textContent = Number(getTotalStars()).toLocaleString('ko-KR');
 }
+
 
 function renderAssetGallery() {
   const unlockedCount = state.discoveredTiles.size;
@@ -634,10 +862,13 @@ function resetBoardPlaceholder() {
 }
 
 function restorePreferences() {
-  const savedDifficulty = readPreference('dream-library-difficulty');
-  if (savedDifficulty && DIFFICULTIES[savedDifficulty]) {
-    state.difficultyKey = savedDifficulty;
+  const savedStage = readPreference('dream-library-selected-stage');
+  if (savedStage && STAGES.some((stage) => stage.id === savedStage) && isStageUnlocked(savedStage)) {
+    state.selectedStageId = savedStage;
   }
+  const selectedStage = getStageById(state.selectedStageId);
+  const savedDifficulty = readPreference('dream-library-difficulty');
+  state.difficultyKey = savedDifficulty && DIFFICULTIES[savedDifficulty] ? savedDifficulty : selectedStage.difficultyKey;
   renderSoundToggle();
 }
 
@@ -717,7 +948,7 @@ function playPop() {
 function applyAssetBackgrounds() {
   const base = import.meta.env.BASE_URL;
   document.documentElement.style.setProperty('--dream-bg-login', `url('${base}assets/backgrounds/storybook-login.svg') center/cover fixed`);
-  document.documentElement.style.setProperty('--dream-bg-lobby', `url('${base}assets/backgrounds/lobby-garden.svg') center/cover fixed`);
+  document.documentElement.style.setProperty('--dream-bg-lobby', `url('${base}assets/backgrounds/world-map.svg') center/cover fixed, url('${base}assets/backgrounds/lobby-garden.svg') center/cover fixed`);
   document.documentElement.style.setProperty('--dream-bg-game', `url('${base}assets/backgrounds/library-hall.svg') center/cover fixed`);
   document.documentElement.style.setProperty('--dream-bg-mist', `url('${base}assets/backgrounds/memory-mist.svg') center/cover fixed`);
 }
