@@ -1,0 +1,371 @@
+{
+  "version": "1.0.17",
+  "source_pack": "dream_library_massive_asset_pack_v2.zip",
+  "note": "Selected PNG-only runtime assets. SVG is not used.",
+  "state_tile_count": 36,
+  "menu_key_count": 17,
+  "fragment_count": 24,
+  "large_source_sheet_tail_truncated": true,
+  "assets": [
+    {
+      "id": "v2-tile-01",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-01-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-01-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-01-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-01-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-01-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-02",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-02-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-02-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-02-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-02-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-02-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-03",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-03-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-03-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-03-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-03-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-03-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-04",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-04-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-04-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-04-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-04-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-04-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-05",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-05-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-05-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-05-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-05-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-05-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-06",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-06-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-06-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-06-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-06-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-06-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-07",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-07-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-07-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-07-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-07-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-07-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-08",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-08-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-08-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-08-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-08-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-08-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-09",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-09-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-09-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-09-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-09-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-09-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-10",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-10-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-10-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-10-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-10-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-10-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-11",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-11-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-11-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-11-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-11-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-11-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-12",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-12-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-12-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-12-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-12-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-12-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-13",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-13-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-13-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-13-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-13-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-13-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-14",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-14-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-14-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-14-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-14-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-14-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-15",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-15-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-15-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-15-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-15-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-15-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-16",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-16-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-16-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-16-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-16-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-16-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-17",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-17-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-17-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-17-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-17-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-17-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-18",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-18-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-18-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-18-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-18-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-18-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-19",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-19-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-19-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-19-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-19-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-19-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-20",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-20-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-20-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-20-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-20-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-20-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-21",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-21-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-21-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-21-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-21-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-21-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-22",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-22-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-22-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-22-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-22-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-22-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-23",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-23-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-23-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-23-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-23-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-23-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-24",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-24-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-24-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-24-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-24-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-24-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-25",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-25-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-25-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-25-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-25-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-25-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-26",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-26-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-26-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-26-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-26-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-26-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-27",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-27-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-27-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-27-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-27-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-27-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-28",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-28-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-28-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-28-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-28-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-28-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-29",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-29-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-29-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-29-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-29-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-29-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-30",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-30-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-30-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-30-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-30-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-30-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-31",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-31-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-31-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-31-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-31-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-31-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-32",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-32-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-32-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-32-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-32-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-32-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-33",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-33-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-33-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-33-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-33-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-33-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-34",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-34-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-34-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-34-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-34-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-34-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-35",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-35-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-35-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-35-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-35-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-35-disabled.png"
+      }
+    },
+    {
+      "id": "v2-tile-36",
+      "states": {
+        "normal": "assets/objects/v2-state/v2-tile-36-normal.png",
+        "selected": "assets/objects/v2-state/v2-tile-36-selected.png",
+        "hint": "assets/objects/v2-state/v2-tile-36-hint.png",
+        "locked": "assets/objects/v2-state/v2-tile-36-locked.png",
+        "disabled": "assets/objects/v2-state/v2-tile-36-disabled.png"
+      }
+    }
+  ]
+}

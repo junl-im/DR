@@ -45,7 +45,8 @@ function makeTile(tile, pairIndex, side) {
     icon: tile.icon,
     asset: tile.asset,
     label: tile.label,
-    theme: tile.theme
+    theme: tile.theme,
+    stateAssets: tile.stateAssets
   };
 }
 

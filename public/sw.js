@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1-0-16';
+const CACHE_NAME = 'dream-library-cache-v1-0-17';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -7,6 +7,18 @@ const CORE_ASSETS = [
   './assets/backgrounds/library-hall.png',
   './assets/backgrounds/world-map.png',
   './assets/backgrounds/imported-moon-library.png',
+  './assets/backgrounds/moon-library-v2.png',
+  './assets/backgrounds/gothic-window-v2.png',
+  './assets/characters/mascot-scholar-v2.png',
+  './assets/characters/mascot-companions-v2.png',
+  './assets/characters/boss-motion-sheet-v2.png',
+  './assets/ui/logo-dream-library-v2.png',
+  './assets/ui/keys-v2/back-normal.png',
+  './assets/ui/keys-v2/hint-normal.png',
+  './assets/objects/v2-state/v2-tile-01-normal.png',
+  './assets/objects/v2-state/v2-tile-01-selected.png',
+  './assets/effects/v2-fragments/v2-fragment-01.png',
+  './assets/meta/asset-import-v1.0.17.json',
   './assets/characters/librarian-momo.png',
   './assets/characters/forgotten-spirit.png',
   './assets/characters/shadow-librarian.png',
@@ -27,7 +39,7 @@ const CORE_ASSETS = [
   './assets/meta/browser-handoff.png',
   './assets/meta/collection-codex.png',
   './assets/meta/asset-import-v1.0.11.json',
-  './assets/meta/texture-atlas-manifest-v1.0.16.json',
+  './assets/meta/texture-atlas-manifest-v1.0.17.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',

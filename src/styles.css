@@ -469,7 +469,7 @@ body[data-quality="low"] .luxury-panel { backdrop-filter: blur(8px); box-shadow:
 html.handoff-browser body { overflow: hidden; }
 body[data-browser="kakao"] .gear-button::after { border-color: rgba(54, 214, 164, 0.42); opacity: 1; transform: scale(1); }
 body[data-browser="kakao"] .start-now-button::before {
-  content: '카카오 자동 전환 준비';
+  content: '카카오 세로 고정';
   position: absolute;
   right: 14px;
   top: -11px;
@@ -1335,4 +1335,160 @@ body[data-app-state="sleep"] .portrait-lock-overlay {
 @media (max-width: 430px) {
   .exit-sleep-card { border-radius: 24px; padding: 1rem; }
   .screen-lobby { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+}
+
+/* v1.0.17 asset state set, boss motion and design density polish */
+.sr-only-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.title-logo-v2 {
+  display: block;
+  width: min(88vw, 420px);
+  margin: 0 auto;
+  filter: drop-shadow(0 20px 28px rgba(6, 21, 45, 0.58)) drop-shadow(0 0 28px rgba(245, 200, 107, 0.26));
+  animation: titleLogoFloat 4.8s ease-in-out infinite;
+}
+.login-stage-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 34px;
+}
+.login-hero-bg {
+  opacity: 0.72;
+  filter: saturate(1.08) contrast(1.04);
+}
+.login-card,
+.mission-deck-panel,
+.selected-stage-card,
+.collection-panel,
+.restoration-panel,
+.daily-panel,
+.game-hud,
+.battle-stage,
+.options-card,
+.reward-card {
+  background-image:
+    linear-gradient(180deg, rgba(16, 43, 87, 0.8), rgba(6, 21, 45, 0.64)),
+    var(--frame-v2-url);
+  background-size: cover;
+  background-position: center;
+}
+.asset-button-start,
+.asset-button-google,
+.asset-button-email {
+  overflow: hidden;
+  isolation: isolate;
+}
+.asset-button-start::before,
+.asset-button-google::before,
+.asset-button-email::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.34;
+  mix-blend-mode: screen;
+}
+.asset-button-start::before { background-image: var(--start-button-v2-url); }
+.asset-button-google::before { background-image: var(--google-button-v2-url); }
+.asset-button-email::before { background-image: var(--email-button-v2-url); }
+.icon-button {
+  background-image: var(--ui-back-url), linear-gradient(135deg, rgba(16, 43, 87, 0.72), rgba(6, 21, 45, 0.5));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 62%, cover;
+  color: transparent;
+  text-shadow: none;
+}
+.gear-button { background-image: var(--ui-settings-url), linear-gradient(135deg, rgba(16, 43, 87, 0.72), rgba(6, 21, 45, 0.5)); }
+#hint-button::before,
+#shuffle-button::before,
+#exit-to-lobby-button::before,
+#new-game-button::before {
+  content: '';
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 0.25rem;
+  vertical-align: -0.18em;
+  background: center / contain no-repeat;
+  filter: drop-shadow(0 0 8px rgba(125, 220, 255, 0.28));
+}
+#hint-button::before { background-image: var(--ui-hint-url); }
+#shuffle-button::before { background-image: var(--ui-refresh-url); }
+#exit-to-lobby-button::before { background-image: var(--ui-home-url); }
+#new-game-button::before { background-image: var(--ui-play-url); }
+.collection-tile[data-theme="v2 에셋"],
+.collection-tile.v2-asset {
+  border-color: rgba(125, 220, 255, 0.42);
+  box-shadow: inset 0 0 22px rgba(125, 220, 255, 0.12), 0 0 18px rgba(54, 214, 164, 0.1);
+}
+.boss-hit-cutin {
+  position: absolute;
+  left: 50%;
+  top: 146px;
+  z-index: 9;
+  transform: translateX(-50%);
+  min-width: 168px;
+  padding: 0.52rem 0.86rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 231, 164, 0.5);
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--sky-500), var(--gold-300));
+  text-align: center;
+  font-weight: 1000;
+  letter-spacing: -0.04em;
+  box-shadow: 0 0 36px rgba(125, 220, 255, 0.48), 0 0 64px rgba(245, 200, 107, 0.26);
+  pointer-events: none;
+}
+.boss-hit-cutin.boss-hit-pop { animation: bossHitCutinPop 0.72s cubic-bezier(.18,1.45,.22,1) both; }
+.boss-hit-cutin.boss-break-pop { background: linear-gradient(135deg, var(--gold-300), var(--violet-500), var(--sky-500)); }
+body[data-screen="login"] .topbar {
+  background: rgba(6, 21, 45, 0.28);
+}
+body[data-screen="lobby"] .lobby-hero img {
+  width: min(34vw, 148px);
+  filter: drop-shadow(0 22px 24px rgba(6, 21, 45, 0.45));
+}
+.screen-lobby,
+.options-card,
+.collection-list,
+.restoration-list,
+.leaderboard-list,
+.daily-leaderboard-list {
+  touch-action: pan-y;
+  scroll-snap-type: none;
+}
+.collection-list::-webkit-scrollbar,
+.restoration-list::-webkit-scrollbar,
+.app-shell::-webkit-scrollbar { width: 6px; }
+.collection-list::-webkit-scrollbar-thumb,
+.restoration-list::-webkit-scrollbar-thumb,
+.app-shell::-webkit-scrollbar-thumb { background: rgba(125, 220, 255, 0.22); border-radius: 999px; }
+@keyframes titleLogoFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.015); }
+}
+@keyframes bossHitCutinPop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.76); }
+  24% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.08); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-28px) scale(0.96); }
+}
+@media (max-width: 430px) {
+  .title-logo-v2 { width: min(92vw, 360px); }
+  .boss-hit-cutin { top: 126px; font-size: 0.9rem; }
+  .login-card, .mission-deck-panel, .selected-stage-card { border-radius: 24px; }
+}
+@media (max-height: 690px) {
+  .title-logo-v2 { width: min(82vw, 330px); }
+  .boss-hit-cutin { top: 94px; }
+  body[data-screen="login"] .login-composition { min-height: 210px; }
 }

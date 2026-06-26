@@ -10,7 +10,7 @@ if (missing.length) {
   process.exit(1);
 }
 if (/intent:\/\/|makeChromeIntentUrl|open-external-button|copy-url-button|외부 브라우저|Chrome\/Safari|Chrome으로|Safari/.test(guard + index + main)) {
-  console.error('Kakao must stay in-app for v1.0.16. Remove external-browser handoff copy and intent URLs.');
+  console.error('Kakao must stay in-app for v1.0.17. Remove external-browser handoff copy and intent URLs.');
   process.exit(1);
 }
 if (/실행하지 않습니다|차단|경고/.test(index)) {

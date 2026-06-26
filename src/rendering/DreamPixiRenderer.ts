@@ -13,6 +13,7 @@ export type BoardTile = {
   theme?: string;
   special?: 'fog' | 'locked' | 'timeSeal';
   specialRevealed?: boolean;
+  stateAssets?: Partial<Record<'normal' | 'selected' | 'hint' | 'locked' | 'disabled', string>>;
 };
 
 export type BoardCell = BoardTile | null;
@@ -128,7 +129,7 @@ export class DreamPixiRenderer {
     const rows = board.length;
     const cols = board[0]?.length ?? 0;
     this.layout = this.calculateLayout(rows, cols);
-    const uniqueAssets = [...new Set(board.flat().filter(Boolean).map((tile: any) => tile.asset))];
+    const uniqueAssets = [...new Set(board.flat().filter(Boolean).flatMap((tile: any) => tile.stateAssets ? Object.values(tile.stateAssets) : [tile.asset]))];
     await this.preloadAssets(uniqueAssets);
 
     for (let row = 0; row < rows; row += 1) {
@@ -147,6 +148,7 @@ export class DreamPixiRenderer {
       const previous = this.tileViews.get(this.selectedKey);
       if (previous && !previous.removing) {
         gsap.to(previous.root.scale, { x: 1, y: 1, duration: 0.16 * this.quality.motionScale, ease: 'power2.out' });
+        this.applyTileStateTexture(previous, previous.tile.special && !previous.tile.specialRevealed ? previous.tile.special === 'locked' ? 'locked' : 'disabled' : 'normal');
         gsap.to(previous.glow, { alpha: 0.16, duration: 0.18 * this.quality.motionScale });
       }
     }
@@ -154,6 +156,7 @@ export class DreamPixiRenderer {
     if (!point) return;
     const view = this.tileViews.get(keyOf(point));
     if (!view || view.removing) return;
+    this.applyTileStateTexture(view, 'selected');
     gsap.to(view.root.scale, { x: 1.1, y: 1.1, duration: 0.1 * this.quality.motionScale, ease: 'back.out(3)' });
     gsap.to(view.glow, { alpha: 0.92, duration: 0.12 * this.quality.motionScale });
     this.emitSelectionWave(view.root.x, view.root.y, PALETTE.sky);
@@ -163,6 +166,8 @@ export class DreamPixiRenderer {
     points.forEach((point, index) => {
       const view = this.tileViews.get(keyOf(point));
       if (!view || view.removing) return;
+      this.applyTileStateTexture(view, 'hint');
+      window.setTimeout(() => this.applyTileStateTexture(view, 'normal'), 740);
       gsap.fromTo(view.root.scale, { x: 1, y: 1 }, { x: 1.14, y: 1.14, yoyo: true, repeat: 3, delay: index * 0.05, duration: 0.16 * this.quality.motionScale, ease: 'sine.inOut' });
       this.emitSelectionWave(view.root.x, view.root.y, PALETTE.emerald);
     });
@@ -184,6 +189,8 @@ export class DreamPixiRenderer {
         .to([a.glow, b.glow], { alpha: 1, duration: 0.08 * this.quality.motionScale }, '<')
         .add(() => this.drawConnectionBeamByPath(path, a.root.x, a.root.y, b.root.x, b.root.y), '>-0.01')
         .add(() => this.emitBoardPulse(combo), '>-0.01')
+        .add(() => this.emitTileFragments(a.root.x, a.root.y, combo), '>-0.02')
+        .add(() => this.emitTileFragments(b.root.x, b.root.y, combo), '<')
         .to([a.root, b.root], { alpha: 0.3, duration: 0.12 * this.quality.motionScale, ease: 'power2.out' })
         .add(() => this.fireAtBoss((a.root.x + b.root.x) / 2, (a.root.y + b.root.y) / 2, combo))
         .to([a.root.scale, b.root.scale], { x: 0.55, y: 0.55, duration: 0.15 * this.quality.motionScale, ease: 'back.in(2)' }, '<')
@@ -244,15 +251,21 @@ export class DreamPixiRenderer {
   }
 
 
-  private resolveTileTexture(asset: string) {
+  private resolveTileTexture(tile: BoardTile, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled' = 'normal') {
+    const asset = tile.stateAssets?.[state] || tile.stateAssets?.normal || tile.asset;
     const filename = asset.split('/').pop() || asset;
     try {
-      const atlasTexture = Assets.get(filename) || Assets.get(`assets/objects/${filename}`);
+      const atlasTexture = Assets.get(filename) || Assets.get(`assets/objects/${filename}`) || Assets.get(asset);
       if (atlasTexture instanceof Texture) return atlasTexture;
     } catch {
       // Atlas lookup is an optimization only. Individual PNG remains the safe fallback.
     }
     return Texture.from(asset);
+  }
+
+  private applyTileStateTexture(view: TileView, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled') {
+    if (!view.tile.stateAssets) return;
+    view.sprite.texture = this.resolveTileTexture(view.tile, state);
   }
 
   private addTile(tile: BoardTile, row: number, col: number, x: number, y: number) {
@@ -266,14 +279,15 @@ export class DreamPixiRenderer {
     const shadow = new Graphics().ellipse(0, this.tileSize * 0.34, this.tileSize * 0.38, this.tileSize * 0.12).fill({ color: PALETTE.navyDeep, alpha: 0.35 });
     const frame = new Graphics().roundRect(-this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize, this.tileSize * 0.24).fill({ color: PALETTE.navySoft, alpha: 0.72 }).stroke({ color: PALETTE.gold, width: 1.5, alpha: 0.45 });
     const specialColor = tile.special === 'locked' ? PALETTE.gold : tile.special === 'timeSeal' ? PALETTE.violet : tile.special === 'fog' ? PALETTE.sky : PALETTE.sky;
+    const hiddenSpecial = Boolean(tile.special && !tile.specialRevealed);
     const glow = new Graphics().circle(0, 0, this.tileSize * 0.62).fill({ color: specialColor, alpha: tile.special ? 0.28 : 0.2 });
     glow.alpha = 0.16;
-    const texture = this.resolveTileTexture(tile.asset);
+    const startState = hiddenSpecial ? tile.special === 'locked' ? 'locked' : 'disabled' : 'normal';
+    const texture = this.resolveTileTexture(tile, startState);
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
     sprite.width = this.tileSize * 0.92;
     sprite.height = this.tileSize * 0.92;
-    const hiddenSpecial = Boolean(tile.special && !tile.specialRevealed);
     sprite.alpha = hiddenSpecial && tile.special === 'fog' ? 0.16 : hiddenSpecial ? 0.46 : 1;
     const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: specialColor, width: tile.special ? 2.2 : 1.4, alpha: tile.special ? 0.58 : 0.2 });
 
@@ -425,6 +439,31 @@ export class DreamPixiRenderer {
     this.boardLayers.particles.addChild(sprite);
     gsap.to(sprite.scale, { x: scale * 1.8, y: scale * 1.8, duration: 0.38 * this.quality.motionScale, ease: 'power2.out' });
     gsap.to(sprite, { alpha: 0, rotation: Math.random() * 0.5 - 0.25, duration: 0.42 * this.quality.motionScale, ease: 'power2.out', onComplete: () => sprite.destroy() });
+  }
+
+
+  private emitTileFragments(x: number, y: number, combo: number) {
+    const count = Math.max(3, Math.min(9, Math.round((4 + combo) * this.quality.particleScale)));
+    for (let i = 0; i < count; i += 1) {
+      const index = ((i + combo * 3) % 24) + 1;
+      const sprite = new Sprite(Texture.from(effectAsset(`v2-fragments/v2-fragment-${String(index).padStart(2, '0')}`)));
+      sprite.anchor.set(0.5);
+      sprite.x = x;
+      sprite.y = y;
+      const scale = (0.28 + Math.random() * 0.2) * this.quality.motionScale;
+      sprite.scale.set(scale);
+      sprite.alpha = 0.86;
+      this.boardLayers.particles.addChild(sprite);
+      gsap.to(sprite, {
+        x: x + (Math.random() - 0.5) * 128,
+        y: y + (Math.random() - 0.55) * 118,
+        rotation: (Math.random() - 0.5) * 3.2,
+        alpha: 0,
+        duration: (0.42 + Math.random() * 0.22) * this.quality.motionScale,
+        ease: 'power2.out',
+        onComplete: () => sprite.destroy()
+      });
+    }
   }
 
   private emitParticles(x: number, y: number, count: number, color: number) {

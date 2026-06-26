@@ -60,6 +60,24 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.17 - Asset State Set, Boss Motion, Button Frame and VFX Polish Patch
+
+- 업로드한 `dream_library_massive_asset_pack_v2.zip`에서 런타임에 바로 쓰는 PNG 자산을 선별 반영
+- 적용 중 대형 원본 시트 1개는 ZIP 꼬리 손상으로 완전 추출되지 않아 프로젝트에는 넣지 않았고, 정상 추출된 개별 PNG/상태 PNG만 사용
+- v2 상태별 사천성 타일 36종 × 5상태 추가: normal, selected, hint, locked, disabled
+- `TILE_SET`에 `v2-tile-01` ~ `v2-tile-36` 오브젝트 추가
+- 난이도별 타일 다양성 확대: 일반 16종, 어려움 26종, 악몽 36종
+- `DreamPixiRenderer`가 타일 선택/힌트/잠금/비활성 상태에 맞는 PNG를 실제로 교체하도록 수정
+- 타일 제거 시 v2 fragment particle PNG를 뿌려 오브젝트가 깨지는 느낌 강화
+- 보스 피격 컷인 `boss-hit-cutin` 추가: 3콤보 이상은 BOSS HIT, 5콤보 이상은 BOSS BREAK로 표시
+- 로그인/로비 디자인에 v2 배경, 로고, 마스코트, 버튼 아트, 장식 프레임을 적용
+- UI 키 PNG 상태 세트 일부를 실제 버튼/힌트/섞기/로비/다시 시작 버튼에 연결
+- 신규 복원 프로젝트 `아케인 무대` 추가: v2 오브젝트를 수집해 전투 무대 복원 목표로 사용
+- `npm run check:v2-assets` 추가 및 GitHub Actions 검사에 반영
+- service worker 캐시를 v1.0.17로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.16 - Exit Fallback, Smooth Mobile Scroll, Local Ranking Fallback Patch
 
 - 종료 확인 팝업에서 `종료 하기`를 눌러도 일반 브라우저에서 창이 닫히지 않는 문제 대응
@@ -577,14 +595,14 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
-public/assets/objects/*.png              48 files
-public/assets/backgrounds/*.png           7 files
-public/assets/characters/*.png            12 files
-public/assets/ui/*.png                    15 files
-public/assets/effects/*.png               20 files
+public/assets/objects/*.png              84+ files
+public/assets/backgrounds/*.png           10+ files
+public/assets/characters/*.png            16+ files
+public/assets/ui/*.png                    80+ files
+public/assets/effects/*.png               44+ files
 public/assets/meta/*                      11 files
 public/assets/atlas/dream-objects.png     1 file
 public/assets/atlas/*.json                1 file
@@ -597,7 +615,7 @@ public/assets/meta/tile-manifest.json     1 file
 magic-book, gold-key, candle, hourglass, crystal-orb, rune, ink, scroll,
 crown, feather, potion, star, music-box, dragon-egg, relic, moon,
 gem, shield, flower, comet, bell, map, castle, spark,
-premium-01 ~ premium-24
+premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 ```
 
 외부 저작권 에셋을 가져오지 않고, 프로젝트 안에서 바로 쓸 수 있는 자체 렌더링 자원으로 구성합니다. 로그인 배경, 로비 배경, 월드맵, 마스코트 캐릭터도 PNG 렌더링 자산입니다.
@@ -611,16 +629,15 @@ premium-01 ~ premium-24
 
 ## Next Version Plan
 
-### v1.0.17 예정 - Asset State Set + Boss Motion + Scroll QA Patch
+### v1.0.18 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
 
-- 로비 마스코트 표정별 PNG 적용 지점 설계
-- 보스 공격/피격 프레임 PNG 세트가 들어올 경우 컷인 애니메이션에 배정
-- 버튼 기본/hover/pressed/selected 상태 전용 PNG 프레임 실험
-- 타일 제거 시 파편/조각 VFX 배정 강화
-- 카카오/일반 모바일에서 로비 긴 스크롤, 옵션 모달, 도감 스크롤 QA 추가
-- Texture Atlas lookup을 개별 PNG fallback보다 우선하는 실제 매핑으로 확장
-- Firebase 실패 시 로컬 랭킹과 온라인 랭킹을 함께 보여주는 혼합 표시 검토
+- v2 상태별 타일을 실제 Texture Atlas로 패킹하고 atlas JSON lookup을 우선 적용
+- 보스 공격 시퀀스 시트를 자동 분할해 공격/피격 컷인 프레임으로 배정
+- 로비 마스코트 표정/동작 카드 추가
+- 버튼 hover/pressed PNG를 pointer 상태에 더 깊게 연결
 - 작은 화면 전투 HUD 높이 추가 압축
+- 카카오 인앱 보조 패널을 더 얇은 토스트형으로 정리
+- Firebase/로컬 랭킹 혼합 표시 UX 개선
 - 큰 JS chunk lazy loading 범위 확대
 
 ## KakaoTalk / In-App Browser Policy
@@ -673,9 +690,9 @@ Initial tile themes:
 
 ## Next Milestones
 
-1. Texture Atlas lookup을 실제 렌더링 경로에 연결
-2. 보스 피격/콤보 컷인 추가 다듬기
-3. 소형 화면 월드맵/선택 카드 밀도 최적화
+1. v2 상태별 타일 Atlas 패킹 자동화
+2. 보스 공격 시퀀스 시트 분할/컷인 적용
+3. 로비 마스코트 모션과 카드형 가이드 추가
 4. 카카오 인앱 세로 전체화면 보조 패널을 토스트형으로 더 세련되게 정리
 
 

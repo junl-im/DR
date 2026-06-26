@@ -51,6 +51,7 @@ jobs:
           npm run check:lobby-flow
           npm run check:lobby-missions
           npm run check:exit-scroll
+          npm run check:v2-assets
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

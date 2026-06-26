@@ -1,4 +1,12 @@
 const tileAsset = (name) => `${import.meta.env.BASE_URL}assets/objects/${name}.png`;
+const stateTileAsset = (name, state = 'normal') => `${import.meta.env.BASE_URL}assets/objects/v2-state/${name}-${state}.png`;
+const stateTileSet = (name) => ({
+  normal: stateTileAsset(name, 'normal'),
+  selected: stateTileAsset(name, 'selected'),
+  hint: stateTileAsset(name, 'hint'),
+  locked: stateTileAsset(name, 'locked'),
+  disabled: stateTileAsset(name, 'disabled')
+});
 
 export const DIFFICULTIES = {
   easy: {
@@ -17,7 +25,7 @@ export const DIFFICULTIES = {
     label: '일반',
     rows: 8,
     cols: 8,
-    iconTypes: 14,
+    iconTypes: 16,
     timeLimitSeconds: 300,
     hints: 4,
     shuffles: 4,
@@ -28,7 +36,7 @@ export const DIFFICULTIES = {
     label: '어려움',
     rows: 8,
     cols: 10,
-    iconTypes: 18,
+    iconTypes: 26,
     timeLimitSeconds: 360,
     hints: 3,
     shuffles: 3,
@@ -39,7 +47,7 @@ export const DIFFICULTIES = {
     label: '악몽',
     rows: 10,
     cols: 12,
-    iconTypes: 24,
+    iconTypes: 36,
     timeLimitSeconds: 480,
     hints: 2,
     shuffles: 2,
@@ -97,12 +105,49 @@ export const TILE_SET = [
   { type: 'premium-22', icon: '✦', asset: tileAsset('premium-22'), label: '푸른 결정핵', theme: '프리미엄' },
   { type: 'premium-23', icon: '✦', asset: tileAsset('premium-23'), label: '고대 장서핀', theme: '프리미엄' },
   { type: 'premium-24', icon: '✦', asset: tileAsset('premium-24'), label: '서고 심장', theme: '프리미엄' },
+
+  { type: 'v2-tile-01', icon: '✦', asset: stateTileAsset('v2-tile-01'), stateAssets: stateTileSet('v2-tile-01'), label: '달빛 사서의 펜', theme: 'v2 에셋' },
+  { type: 'v2-tile-02', icon: '✦', asset: stateTileAsset('v2-tile-02'), stateAssets: stateTileSet('v2-tile-02'), label: '에메랄드 비전서', theme: 'v2 에셋' },
+  { type: 'v2-tile-03', icon: '✦', asset: stateTileAsset('v2-tile-03'), stateAssets: stateTileSet('v2-tile-03'), label: '황금 룬 촛대', theme: 'v2 에셋' },
+  { type: 'v2-tile-04', icon: '✦', asset: stateTileAsset('v2-tile-04'), stateAssets: stateTileSet('v2-tile-04'), label: '바이올렛 봉인장', theme: 'v2 에셋' },
+  { type: 'v2-tile-05', icon: '✦', asset: stateTileAsset('v2-tile-05'), stateAssets: stateTileSet('v2-tile-05'), label: '스카이블루 수정핵', theme: 'v2 에셋' },
+  { type: 'v2-tile-06', icon: '✦', asset: stateTileAsset('v2-tile-06'), stateAssets: stateTileSet('v2-tile-06'), label: '네이비 별지도', theme: 'v2 에셋' },
+  { type: 'v2-tile-07', icon: '✦', asset: stateTileAsset('v2-tile-07'), stateAssets: stateTileSet('v2-tile-07'), label: '마법 꽃갈피', theme: 'v2 에셋' },
+  { type: 'v2-tile-08', icon: '✦', asset: stateTileAsset('v2-tile-08'), stateAssets: stateTileSet('v2-tile-08'), label: '꿈결 장서핀', theme: 'v2 에셋' },
+  { type: 'v2-tile-09', icon: '✦', asset: stateTileAsset('v2-tile-09'), stateAssets: stateTileSet('v2-tile-09'), label: '시간의 작은 종', theme: 'v2 에셋' },
+  { type: 'v2-tile-10', icon: '✦', asset: stateTileAsset('v2-tile-10'), stateAssets: stateTileSet('v2-tile-10'), label: '고대 유리병', theme: 'v2 에셋' },
+  { type: 'v2-tile-11', icon: '✦', asset: stateTileAsset('v2-tile-11'), stateAssets: stateTileSet('v2-tile-11'), label: '금빛 마법 원반', theme: 'v2 에셋' },
+  { type: 'v2-tile-12', icon: '✦', asset: stateTileAsset('v2-tile-12'), stateAssets: stateTileSet('v2-tile-12'), label: '푸른 조율석', theme: 'v2 에셋' },
+  { type: 'v2-tile-13', icon: '✦', asset: stateTileAsset('v2-tile-13'), stateAssets: stateTileSet('v2-tile-13'), label: '별가루 사과', theme: 'v2 에셋' },
+  { type: 'v2-tile-14', icon: '✦', asset: stateTileAsset('v2-tile-14'), stateAssets: stateTileSet('v2-tile-14'), label: '흐르는 잉크병', theme: 'v2 에셋' },
+  { type: 'v2-tile-15', icon: '✦', asset: stateTileAsset('v2-tile-15'), stateAssets: stateTileSet('v2-tile-15'), label: '달의 손거울', theme: 'v2 에셋' },
+  { type: 'v2-tile-16', icon: '✦', asset: stateTileAsset('v2-tile-16'), stateAssets: stateTileSet('v2-tile-16'), label: '봉인된 카드', theme: 'v2 에셋' },
+  { type: 'v2-tile-17', icon: '✦', asset: stateTileAsset('v2-tile-17'), stateAssets: stateTileSet('v2-tile-17'), label: '요정의 깃털', theme: 'v2 에셋' },
+  { type: 'v2-tile-18', icon: '✦', asset: stateTileAsset('v2-tile-18'), stateAssets: stateTileSet('v2-tile-18'), label: '마력 등불', theme: 'v2 에셋' },
+  { type: 'v2-tile-19', icon: '✦', asset: stateTileAsset('v2-tile-19'), stateAssets: stateTileSet('v2-tile-19'), label: '구름 정원 씨앗', theme: 'v2 에셋' },
+  { type: 'v2-tile-20', icon: '✦', asset: stateTileAsset('v2-tile-20'), stateAssets: stateTileSet('v2-tile-20'), label: '비밀 서가 문장', theme: 'v2 에셋' },
+  { type: 'v2-tile-21', icon: '✦', asset: stateTileAsset('v2-tile-21'), stateAssets: stateTileSet('v2-tile-21'), label: '초승달 구슬', theme: 'v2 에셋' },
+  { type: 'v2-tile-22', icon: '✦', asset: stateTileAsset('v2-tile-22'), stateAssets: stateTileSet('v2-tile-22'), label: '고양이 사서 배지', theme: 'v2 에셋' },
+  { type: 'v2-tile-23', icon: '✦', asset: stateTileAsset('v2-tile-23'), stateAssets: stateTileSet('v2-tile-23'), label: '작은 보스 토템', theme: 'v2 에셋' },
+  { type: 'v2-tile-24', icon: '✦', asset: stateTileAsset('v2-tile-24'), stateAssets: stateTileSet('v2-tile-24'), label: '아케인 종이학', theme: 'v2 에셋' },
+  { type: 'v2-tile-25', icon: '✦', asset: stateTileAsset('v2-tile-25'), stateAssets: stateTileSet('v2-tile-25'), label: '밤하늘 책갈피', theme: 'v2 에셋' },
+  { type: 'v2-tile-26', icon: '✦', asset: stateTileAsset('v2-tile-26'), stateAssets: stateTileSet('v2-tile-26'), label: '서고 열쇠고리', theme: 'v2 에셋' },
+  { type: 'v2-tile-27', icon: '✦', asset: stateTileAsset('v2-tile-27'), stateAssets: stateTileSet('v2-tile-27'), label: '심연 보석함', theme: 'v2 에셋' },
+  { type: 'v2-tile-28', icon: '✦', asset: stateTileAsset('v2-tile-28'), stateAssets: stateTileSet('v2-tile-28'), label: '회복의 물약잔', theme: 'v2 에셋' },
+  { type: 'v2-tile-29', icon: '✦', asset: stateTileAsset('v2-tile-29'), stateAssets: stateTileSet('v2-tile-29'), label: '왕관 장서표', theme: 'v2 에셋' },
+  { type: 'v2-tile-30', icon: '✦', asset: stateTileAsset('v2-tile-30'), stateAssets: stateTileSet('v2-tile-30'), label: '빛의 스크롤', theme: 'v2 에셋' },
+  { type: 'v2-tile-31', icon: '✦', asset: stateTileAsset('v2-tile-31'), stateAssets: stateTileSet('v2-tile-31'), label: '마법진 조각', theme: 'v2 에셋' },
+  { type: 'v2-tile-32', icon: '✦', asset: stateTileAsset('v2-tile-32'), stateAssets: stateTileSet('v2-tile-32'), label: '은하 모래시계', theme: 'v2 에셋' },
+  { type: 'v2-tile-33', icon: '✦', asset: stateTileAsset('v2-tile-33'), stateAssets: stateTileSet('v2-tile-33'), label: '골렘 심장석', theme: 'v2 에셋' },
+  { type: 'v2-tile-34', icon: '✦', asset: stateTileAsset('v2-tile-34'), stateAssets: stateTileSet('v2-tile-34'), label: '그림자 잉크', theme: 'v2 에셋' },
+  { type: 'v2-tile-35', icon: '✦', asset: stateTileAsset('v2-tile-35'), stateAssets: stateTileSet('v2-tile-35'), label: '별빛 오르골', theme: 'v2 에셋' },
+  { type: 'v2-tile-36', icon: '✦', asset: stateTileAsset('v2-tile-36'), stateAssets: stateTileSet('v2-tile-36'), label: '마지막 기억핵', theme: 'v2 에셋' }
 ];
 
 export const ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.16.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.17.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -141,6 +186,17 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.16.json`,
-  ...TILE_SET.map((tile) => tile.asset)
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.17.json`,
+  `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/gothic-window-v2.png`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/bookshelf-v2.png`,
+  `${import.meta.env.BASE_URL}assets/characters/mascot-scholar-v2.png`,
+  `${import.meta.env.BASE_URL}assets/characters/mascot-companions-v2.png`,
+  `${import.meta.env.BASE_URL}assets/characters/boss-motion-sheet-v2.png`,
+  `${import.meta.env.BASE_URL}assets/characters/boss-sticker-sheet-v2.png`,
+  `${import.meta.env.BASE_URL}assets/ui/logo-dream-library-v2.png`,
+  `${import.meta.env.BASE_URL}assets/ui/frame-ornate-v2.png`,
+  ...Array.from({ length: 24 }, (_, index) => `${import.meta.env.BASE_URL}assets/effects/v2-fragments/v2-fragment-${String(index + 1).padStart(2, '0')}.png`),
+  ...TILE_SET.flatMap((tile) => tile.stateAssets ? Object.values(tile.stateAssets) : [tile.asset])
 ];

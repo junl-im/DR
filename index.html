@@ -17,7 +17,10 @@
     <meta name="description" content="꿈의 서고 - 사천성 퍼즐과 마법 전투가 결합된 프리미엄 캐주얼 모바일 웹 게임" />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
-    <link rel="preload" href="%BASE_URL%assets/backgrounds/storybook-login.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/moon-library-v2.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/characters/mascot-scholar-v2.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/characters/mascot-companions-v2.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/ui/logo-dream-library-v2.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/librarian-momo.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/objects/magic-book.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/forgotten-spirit.png" as="image" />
@@ -78,18 +81,18 @@
       <main class="screen-stack">
         <section id="screen-login" class="screen screen-login active" aria-label="게임 시작 로그인 화면">
           <div class="login-stage-card">
-            <img class="login-hero-bg" src="%BASE_URL%assets/backgrounds/storybook-login.png" alt="" aria-hidden="true" draggable="false" />
+            <img class="login-hero-bg" src="%BASE_URL%assets/backgrounds/moon-library-v2.png" alt="" aria-hidden="true" draggable="false" />
             <div class="login-composition compact-login-art">
               <div class="floating-book-card" aria-hidden="true">
                 <img src="%BASE_URL%assets/objects/magic-book.png" alt="" draggable="false" />
                 <span class="magic-ring"></span>
               </div>
-              <img class="login-mascot" src="%BASE_URL%assets/characters/librarian-momo.png" alt="꿈의 서고 사서 모모" draggable="false" />
+              <img class="login-mascot" src="%BASE_URL%assets/characters/mascot-scholar-v2.png" alt="꿈의 서고 마법 사서" draggable="false" />
             </div>
 
             <div class="hero-copy compact-title">
               <p class="eyebrow">Premium Casual</p>
-              <h1>꿈의 서고</h1>
+              <img class="title-logo-v2" src="%BASE_URL%assets/ui/logo-dream-library-v2.png" alt="꿈의 서고" draggable="false" /><h1 class="sr-only-title">꿈의 서고</h1>
             </div>
 
             <div class="login-card luxury-panel alive-panel compact-login-card">
@@ -99,10 +102,10 @@
               </div>
 
               <div class="primary-actions compact-actions">
-                <button id="anonymous-button" type="button" class="xl-button primary-glow start-now-button">서고 입장</button>
+                <button id="anonymous-button" type="button" class="xl-button primary-glow start-now-button asset-button-start">서고 입장</button>
                 <div class="login-provider-row" aria-label="로그인 방식">
-                  <button id="google-button" type="button" class="sky-button">Google 저장</button>
-                  <button id="show-email-button" type="button" class="secondary">Email 저장</button>
+                  <button id="google-button" type="button" class="sky-button asset-button-google">Google 저장</button>
+                  <button id="show-email-button" type="button" class="secondary asset-button-email">Email 저장</button>
                 </div>
               </div>
 
@@ -132,7 +135,7 @@
               <button id="daily-stage-button" type="button" class="daily-stage-button">오늘의 복원</button>
               <button id="restoration-focus-button" type="button" class="secondary">복원 작업대</button>
             </div>
-            <img src="%BASE_URL%assets/characters/librarian-momo.png" alt="" aria-hidden="true" draggable="false" />
+            <img src="%BASE_URL%assets/characters/mascot-companions-v2.png" alt="" aria-hidden="true" draggable="false" />
           </div>
           <section class="mission-deck-panel luxury-panel alive-panel" aria-label="로비 추천 미션" data-lobby-panel="mission">
             <div class="section-heading compact"><div><p class="eyebrow">Mission Deck</p><h3>오늘 먼저 할 일</h3><p class="deck-helper">진행 상황을 보고 스테이지, daily, 복원, 컬렉션 목표를 자동 배치합니다.</p></div><div class="section-actions"><button id="lobby-deck-refresh-button" type="button" class="text-button">다시 배치</button><button type="button" class="text-button" data-collapse-target="mission">접기</button></div></div>

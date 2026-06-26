@@ -15,9 +15,14 @@ import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
 import { detectDeviceProfile, nextQualityTier, saveQualityTier } from './systems/performance';
 import { HAPTIC } from './systems/haptics';
 
-document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.png)`);
-for (const iconName of ['back', 'settings', 'hint', 'refresh', 'fullscreen', 'logout']) {
-  document.documentElement.style.setProperty(`--ui-${iconName}-url`, `url(${import.meta.env.BASE_URL}assets/ui/icon-${iconName}.png)`);
+document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png)`);
+document.documentElement.style.setProperty('--title-logo-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/logo-dream-library-v2.png)`);
+document.documentElement.style.setProperty('--start-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-start-v2.png)`);
+document.documentElement.style.setProperty('--google-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-google-v2.png)`);
+document.documentElement.style.setProperty('--email-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-email-v2.png)`);
+document.documentElement.style.setProperty('--frame-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/frames-v2/frame-04.png)`);
+for (const iconName of ['back', 'settings', 'hint', 'refresh', 'fullscreen', 'logout', 'home', 'play', 'collection', 'restore', 'ranking', 'close']) {
+  document.documentElement.style.setProperty(`--ui-${iconName}-url`, `url(${import.meta.env.BASE_URL}assets/ui/keys-v2/${iconName}-normal.png)`);
 }
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector(selector) as T;
@@ -100,6 +105,7 @@ const el = {
   missionLabel: $('#mission-label'),
   modifierStrip: $('#modifier-strip'),
   comboCutin: $('#combo-cutin'),
+  bossHitCutin: $('#boss-hit-cutin'),
   hintButton: $('#hint-button'),
   shuffleButton: $('#shuffle-button'),
   newGameButton: $('#new-game-button'),
@@ -165,6 +171,14 @@ const RESTORATION_PROJECTS = [
     types: ['comet', 'rune', 'crown', 'map'],
     reward: '별빛 탑 챕터 연출 강화',
     description: '봉인과 지도의 조각을 모아 마지막 탑의 문양을 밝힙니다.'
+  },
+  {
+    id: 'arcane-stage',
+    label: '아케인 무대',
+    need: 12,
+    types: ['v2-tile-01', 'v2-tile-05', 'v2-tile-12', 'v2-tile-18'],
+    reward: 'v2 전투 컷인과 로비 장식 강화',
+    description: '새로 발견된 v2 오브젝트를 모아 보스전 무대를 더 화려하게 복원합니다.'
   }
 ];
 
@@ -729,6 +743,7 @@ function handleTileTap(point: BoardPoint) {
       audio.play('combo');
       HAPTIC.combo();
       showComboCutin(state.combo);
+      if (state.combo >= 3) showBossHitCutin(state.combo);
     } else HAPTIC.match();
     renderer.playMatchSequence(first, point, state.combo, () => {
       state.board = removePair(state.board, first, point);
@@ -836,7 +851,7 @@ function updateScreen(screen: ScreenName) {
   state.screen = screen;
   el.app.dataset.screen = screen;
   document.body.dataset.screen = screen;
-  const bg = screen === 'login' ? 'storybook-login' : screen === 'lobby' ? 'world-map' : 'library-hall';
+  const bg = screen === 'login' ? 'moon-library-v2' : screen === 'lobby' ? 'gothic-window-v2' : 'library-hall';
   if (screen === 'lobby' || screen === 'game') requestKakaoPortraitLock(`screen-${screen}`);
   document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
@@ -1224,8 +1239,11 @@ function completeRestorationProject(projectId: string) {
 
 function renderCollection() {
   const collected = TILE_SET.filter((tile: any) => Number(state.inventory[tile.type] || 0) > 0);
+  const premiumTotal = TILE_SET.filter((tile: any) => tile.theme === '프리미엄').length;
   const premiumOwned = collected.filter((tile: any) => tile.theme === '프리미엄').length;
-  el.collectionSummary.textContent = `${collected.length}/${TILE_SET.length} 수집 · 프리미엄 ${premiumOwned}/24 · 필터로 미수집 재료를 빠르게 확인하세요.`;
+  const v2Owned = collected.filter((tile: any) => tile.theme === 'v2 에셋').length;
+  const v2Total = TILE_SET.filter((tile: any) => tile.theme === 'v2 에셋').length;
+  el.collectionSummary.textContent = `${collected.length}/${TILE_SET.length} 수집 · 프리미엄 ${premiumOwned}/${premiumTotal} · v2 오브젝트 ${v2Owned}/${v2Total}`;
   el.collectionFilter.querySelectorAll('[data-collection-filter]').forEach((button: Element) => {
     button.classList.toggle('selected', (button as HTMLElement).dataset.collectionFilter === state.collectionFilter);
   });
@@ -1240,7 +1258,7 @@ function renderCollection() {
     .sort((a: any, b: any) => Number(state.inventory[b.type] || 0) - Number(state.inventory[a.type] || 0));
   el.collectionList.innerHTML = filtered.map((tile: any) => {
     const count = Number(state.inventory[tile.type] || 0);
-    return `<article class="collection-tile ${count > 0 ? 'owned' : 'locked'} ${tile.theme === '프리미엄' ? 'premium' : ''}"><img src="${tile.asset}" alt="" draggable="false" /><strong>${escapeHtml(tile.label)}</strong><span>${count > 0 ? `${count}개 · ${escapeHtml(tile.theme)}` : '미수집'}</span></article>`;
+    return `<article class="collection-tile ${count > 0 ? 'owned' : 'locked'} ${tile.theme === '프리미엄' ? 'premium' : ''} ${tile.theme === 'v2 에셋' ? 'v2-asset' : ''}" data-theme="${escapeHtml(tile.theme || '')}"><img src="${tile.asset}" alt="" draggable="false" /><strong>${escapeHtml(tile.label)}</strong><span>${count > 0 ? `${count}개 · ${escapeHtml(tile.theme)}` : '미수집'}</span></article>`;
   }).join('') || '<p class="empty-list">조건에 맞는 오브젝트가 없습니다.</p>';
 }
 
@@ -1290,6 +1308,16 @@ function showComboCutin(combo: number) {
     window.setTimeout(() => document.querySelector('#boss-core')?.classList.remove('cutin-hit'), 540);
   }
   window.setTimeout(() => el.comboCutin.classList.add('hidden'), finisher ? 980 : 760);
+}
+
+
+function showBossHitCutin(combo: number) {
+  el.bossHitCutin.textContent = combo >= 5 ? `BOSS BREAK · ${combo} COMBO` : `BOSS HIT · ${combo} COMBO`;
+  el.bossHitCutin.classList.remove('hidden', 'boss-hit-pop', 'boss-break-pop');
+  if (combo >= 5) el.bossHitCutin.classList.add('boss-break-pop');
+  void el.bossHitCutin.offsetWidth;
+  el.bossHitCutin.classList.add('boss-hit-pop');
+  window.setTimeout(() => el.bossHitCutin.classList.add('hidden'), combo >= 5 ? 920 : 720);
 }
 
 function openReward(stars: number, score: number) {
