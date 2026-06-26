@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1-0-13';
+const CACHE_NAME = 'dream-library-cache-v1-0-14';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -27,7 +27,7 @@ const CORE_ASSETS = [
   './assets/meta/browser-handoff.png',
   './assets/meta/collection-codex.png',
   './assets/meta/asset-import-v1.0.11.json',
-  './assets/meta/texture-atlas-manifest-v1.0.13.json',
+  './assets/meta/texture-atlas-manifest-v1.0.14.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',

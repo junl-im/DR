@@ -9,10 +9,8 @@ import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.j
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
-import { DreamAudio } from './audio/DreamAudio';
 import { GAME_TITLE } from './config/design';
 import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
-import { prepareSpineRuntime } from './engine/SpineBridge';
 import { detectDeviceProfile, nextQualityTier, saveQualityTier } from './systems/performance';
 import { HAPTIC } from './systems/haptics';
 
@@ -72,6 +70,8 @@ const el = {
   leaderboardList: $('#leaderboard-list'),
   refreshLeaderboardButton: $('#refresh-leaderboard-button'),
   dailyStageButton: $('#daily-stage-button'),
+  lobbyMissionDeck: $('#lobby-mission-deck'),
+  lobbyDeckRefreshButton: $('#lobby-deck-refresh-button'),
   restorationFocusButton: $('#restoration-focus-button'),
   restorationSummary: $('#restoration-summary'),
   restorationList: $('#restoration-list'),
@@ -127,7 +127,11 @@ type RestorationCompleted = Record<string, string>;
 type BrowserRecovery = ReturnType<typeof initBrowserGuard>;
 
 const renderer = new DreamPixiRenderer();
-const audio = new DreamAudio();
+type AudioRuntime = { setEnabled(enabled: boolean): void; unlock(): void; play(id: string): void };
+const silentAudio: AudioRuntime = { setEnabled: () => undefined, unlock: () => undefined, play: () => undefined };
+let audio: AudioRuntime = silentAudio;
+let audioReady: Promise<void> | null = null;
+let spineReady: Promise<void> | null = null;
 let browserRecovery: BrowserRecovery | null = null;
 
 const RESTORATION_PROJECTS = [
@@ -184,6 +188,7 @@ const state = {
   collectionFilter: readText('dream-library-collection-filter') || 'all',
   dailyRankScope: readText('dream-library-daily-rank-scope') || 'today',
   restorationFocus: readText('dream-library-restoration-focus') || 'shelf',
+  collapsedPanels: readJson<Record<string, boolean>>('dream-library-lobby-collapsed-panels', {}),
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
   activeBoss: getBossForStage(getStageById(readText('dream-library-selected-stage') || DEFAULT_STAGE_ID)) as any,
@@ -209,7 +214,7 @@ async function init() {
   }
 
   registerServiceWorker();
-  audio.setEnabled(state.soundEnabled);
+  void loadAudioRuntime();
   renderer.setQuality(state.qualityProfile);
   renderQualityButton();
   initFullscreenControls(el.fullscreenButton, setStatus);
@@ -224,7 +229,7 @@ async function init() {
   await renderer.initAmbient(el.pixiStage);
   await renderer.preloadAssets(ATLAS_ASSETS);
   renderer.preloadAssets(PRELOAD_ASSETS);
-  await prepareSpineRuntime();
+  void loadSpineRuntime();
 
   observeAuth((user: any) => {
     state.user = user;
@@ -236,6 +241,24 @@ async function init() {
   });
   loadLeaderboard();
   loadDailyLeaderboard();
+}
+
+
+async function loadAudioRuntime() {
+  if (audioReady) return audioReady;
+  audioReady = import('./audio/DreamAudio').then(({ DreamAudio }) => {
+    audio = new DreamAudio();
+    audio.setEnabled(state.soundEnabled);
+  }).catch(() => {
+    audio = silentAudio;
+  });
+  return audioReady;
+}
+
+async function loadSpineRuntime() {
+  if (spineReady) return spineReady;
+  spineReady = import('./engine/SpineBridge').then(({ prepareSpineRuntime }) => prepareSpineRuntime()).catch(() => undefined);
+  return spineReady;
 }
 
 function bindEvents() {
@@ -360,6 +383,11 @@ function bindEvents() {
   el.startSelectedButton.addEventListener('click', () => startSelectedStage());
   el.dailyStageButton.addEventListener('click', startDailyStage);
   el.dailyStartButton.addEventListener('click', startDailyStage);
+  el.lobbyDeckRefreshButton.addEventListener('click', () => {
+    renderLobbyMissionDeck(true);
+    setStatus('로비 추천 미션을 현재 진행 상황 기준으로 다시 배치했습니다.');
+  });
+  el.lobbyMissionDeck.addEventListener('click', handleLobbyMissionClick);
   el.dailyRankTabs.addEventListener('click', (event) => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-daily-rank]');
     if (!node) return;
@@ -405,6 +433,12 @@ function bindEvents() {
   });
   el.restorationDetailCloseButton.addEventListener('click', closeRestorationDetail);
   el.restorationDetailModal.addEventListener('click', (event) => { if (event.target === el.restorationDetailModal) closeRestorationDetail(); });
+  document.addEventListener('click', (event) => {
+    const node = (event.target as HTMLElement).closest<HTMLElement>('[data-collapse-target]');
+    if (!node) return;
+    toggleLobbyPanel(node.dataset.collapseTarget || '');
+  });
+
   el.restorationDetailFocusButton.addEventListener('click', () => {
     if (!state.pendingRestorationProjectId) return;
     const project = RESTORATION_PROJECTS.find((item) => item.id === state.pendingRestorationProjectId);
@@ -883,9 +917,125 @@ function renderLobby() {
     return `<button type="button" class="stage-node ${unlocked ? 'unlocked' : 'locked'} ${cleared ? 'cleared' : ''} ${selected ? 'selected' : ''}" data-stage-id="${item.id}" aria-label="${item.number} 스테이지 ${escapeHtml(item.title)}"><strong>${item.number}</strong><span>${cleared ? '★'.repeat(stars) : unlocked ? stageBoss.name.replace('의 ', ' ') : 'Lock'}</span></button>`;
   }).join('');
   renderStats();
+  renderLobbyMissionDeck();
   renderRestoration();
   renderCollection();
   renderDailyPanel();
+  renderLobbyPanelState();
+}
+
+
+function renderLobbyMissionDeck(forcePulse = false) {
+  const cards = getLobbyMissionCards();
+  el.lobbyMissionDeck.innerHTML = cards.map((card) => `
+    <button type="button" class="mission-card ${card.accent}${forcePulse ? ' deck-pulse' : ''}" data-mission-type="${card.type}" data-stage-id="${card.stageId || ''}" data-restore-id="${card.restoreId || ''}" data-filter="${card.filter || ''}">
+      <span class="mission-card-badge">${card.badge}</span>
+      <strong>${escapeHtml(card.title)}</strong>
+      <small>${escapeHtml(card.desc)}</small>
+      <em>${escapeHtml(card.cta)}</em>
+    </button>`).join('');
+}
+
+function getLobbyMissionCards() {
+  const nextStage = STAGES.find((stage: any) => isStageUnlocked(stage.id) && !state.campaignProgress.cleared[stage.id]) || getStageById(state.selectedStageId);
+  const dailyStage = getStageById(state.dailyChallenge.stageId);
+  const readyProject = RESTORATION_PROJECTS.find((project) => canCompleteRestoration(project) && !state.restorationCompleted[project.id]);
+  const focusProject = RESTORATION_PROJECTS.find((project) => project.id === state.restorationFocus) || RESTORATION_PROJECTS[0];
+  const targetProject = readyProject || focusProject;
+  const missingPremium = TILE_SET.find((tile: any) => tile.theme === '프리미엄' && Number(state.inventory[tile.type] || 0) <= 0);
+  const ownedCount = TILE_SET.filter((tile: any) => Number(state.inventory[tile.type] || 0) > 0).length;
+  const cards = [
+    {
+      type: 'campaign',
+      stageId: nextStage.id,
+      accent: 'gold',
+      badge: '추천 스테이지',
+      title: `${nextStage.number}. ${nextStage.title}`,
+      desc: `${DIFFICULTIES[nextStage.difficultyKey].label} · ${getBossForStage(nextStage).name}`,
+      cta: '선택하고 시작 준비'
+    },
+    {
+      type: 'daily',
+      stageId: dailyStage.id,
+      accent: 'emerald',
+      badge: '오늘의 복원',
+      title: dailyStage.title,
+      desc: `${state.dailyChallenge.label} · ${state.dailyChallenge.rewardLabel}`,
+      cta: '오늘 스테이지 시작'
+    },
+    {
+      type: 'restoration',
+      restoreId: targetProject.id,
+      accent: readyProject ? 'sky' : 'violet',
+      badge: readyProject ? '복원 가능' : '집중 복원',
+      title: targetProject.label,
+      desc: `${getRestorationCurrent(targetProject)}/${targetProject.need} · ${targetProject.reward}`,
+      cta: readyProject ? '복원 완료하기' : '재료 확인'
+    },
+    {
+      type: 'collection',
+      filter: missingPremium ? 'premium' : 'missing',
+      accent: 'violet',
+      badge: '컬렉션 목표',
+      title: missingPremium ? missingPremium.label : '미수집 오브젝트',
+      desc: `${ownedCount}/${TILE_SET.length} 수집 · 도감 정리`,
+      cta: '도감 열기'
+    }
+  ];
+  return cards;
+}
+
+function handleLobbyMissionClick(event: Event) {
+  const card = (event.target as HTMLElement).closest<HTMLElement>('[data-mission-type]');
+  if (!card) return;
+  const type = card.dataset.missionType || '';
+  audio.play('select');
+  HAPTIC.select();
+  if (type === 'campaign') {
+    const stageId = card.dataset.stageId || DEFAULT_STAGE_ID;
+    const stage = getStageById(stageId);
+    state.selectedStageId = stage.id;
+    state.selectedChapterId = stage.chapterId;
+    writeText('dream-library-selected-stage', stage.id);
+    writeText('dream-library-selected-chapter', stage.chapterId);
+    renderLobby();
+    document.querySelector('.selected-stage-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setStatus('추천 스테이지를 선택했습니다. 진짜 게임 시작을 누르면 전투가 시작됩니다.');
+    return;
+  }
+  if (type === 'daily') {
+    startDailyStage();
+    return;
+  }
+  if (type === 'restoration') {
+    openRestorationDetail(card.dataset.restoreId || state.restorationFocus || 'shelf');
+    return;
+  }
+  if (type === 'collection') {
+    state.collectionFilter = card.dataset.filter || 'missing';
+    writeText('dream-library-collection-filter', state.collectionFilter);
+    renderCollection();
+    document.querySelector('.collection-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setStatus('컬렉션 도감 목표를 열었습니다. 미수집/프리미엄 오브젝트를 확인하세요.');
+  }
+}
+
+function toggleLobbyPanel(panelKey: string) {
+  if (!panelKey) return;
+  state.collapsedPanels[panelKey] = !state.collapsedPanels[panelKey];
+  writeJson('dream-library-lobby-collapsed-panels', state.collapsedPanels);
+  renderLobbyPanelState();
+}
+
+function renderLobbyPanelState() {
+  document.querySelectorAll<HTMLElement>('[data-lobby-panel]').forEach((panel) => {
+    const key = panel.dataset.lobbyPanel || '';
+    const collapsed = Boolean(state.collapsedPanels[key]);
+    panel.classList.toggle('collapsed', collapsed);
+    panel.querySelectorAll<HTMLElement>('[data-collapse-target]').forEach((button) => {
+      if (button.dataset.collapseTarget === key) button.textContent = collapsed ? '펼치기' : '접기';
+    });
+  });
 }
 
 

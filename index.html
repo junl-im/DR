@@ -116,6 +116,10 @@
             </div>
             <img src="%BASE_URL%assets/characters/librarian-momo.png" alt="" aria-hidden="true" draggable="false" />
           </div>
+          <section class="mission-deck-panel luxury-panel alive-panel" aria-label="로비 추천 미션" data-lobby-panel="mission">
+            <div class="section-heading compact"><div><p class="eyebrow">Mission Deck</p><h3>오늘 먼저 할 일</h3><p class="deck-helper">진행 상황을 보고 스테이지, daily, 복원, 컬렉션 목표를 자동 배치합니다.</p></div><div class="section-actions"><button id="lobby-deck-refresh-button" type="button" class="text-button">다시 배치</button><button type="button" class="text-button" data-collapse-target="mission">접기</button></div></div>
+            <div id="lobby-mission-deck" class="mission-deck"></div>
+          </section>
           <section class="chapter-panel campaign-panel luxury-panel" aria-label="캠페인 월드맵">
             <div class="section-heading"><div><p class="eyebrow">Campaign Map</p><h3 id="selected-chapter-name">달빛 서가의 첫 기록</h3><p id="chapter-story-text" class="chapter-story">흩어진 꿈 조각을 모아 첫 기록장을 되살립니다.</p></div><span id="stage-progress-label" class="asset-progress">0/12 클리어</span></div>
             <div id="chapter-tabs" class="chapter-tabs" aria-label="챕터 선택"></div>
@@ -126,25 +130,24 @@
               <button id="start-selected-button" type="button" class="xl-button start-button primary-glow">진짜 게임 시작</button>
             </article>
           </section>
-          <section class="restoration-panel luxury-panel alive-panel" aria-label="도서관 복원 작업대">
+          <section class="restoration-panel luxury-panel alive-panel" aria-label="도서관 복원 작업대" data-lobby-panel="restoration">
             <div class="restoration-copy">
-              <p class="eyebrow">Restoration Meta</p>
-              <h3>서고 복원 작업대</h3>
+              <div class="panel-title-row"><div><p class="eyebrow">Restoration Meta</p><h3>서고 복원 작업대</h3></div><button type="button" class="text-button panel-collapse-button" data-collapse-target="restoration">접기</button></div>
               <p id="restoration-summary">스테이지 보상으로 서고를 복원하세요.</p>
             </div>
             <div class="restoration-art" aria-hidden="true"><img src="%BASE_URL%assets/meta/restoration-shelf.png" alt="" draggable="false" /></div>
             <div id="restoration-list" class="restoration-list"></div>
           </section>
 
-          <section class="daily-panel luxury-panel" aria-label="일일 콘텐츠">
+          <section class="daily-panel luxury-panel" aria-label="일일 콘텐츠" data-lobby-panel="daily">
             <img src="%BASE_URL%assets/meta/daily-badge.png" alt="" aria-hidden="true" draggable="false" />
-            <div><p class="eyebrow">Daily Content</p><h3 id="daily-title">오늘의 복원</h3><p id="daily-desc">매일 바뀌는 보상 스테이지가 준비 중입니다.</p><div id="daily-rank-tabs" class="mini-tabs" aria-label="일일 랭킹 범위"><button type="button" data-daily-rank="today" class="selected">오늘</button><button type="button" data-daily-rank="all">전체</button></div><ol id="daily-leaderboard-list" class="daily-leaderboard-list"></ol></div>
+            <div><div class="panel-title-row"><div><p class="eyebrow">Daily Content</p><h3 id="daily-title">오늘의 복원</h3></div><button type="button" class="text-button panel-collapse-button" data-collapse-target="daily">접기</button></div><p id="daily-desc">매일 바뀌는 보상 스테이지가 준비 중입니다.</p><div id="daily-rank-tabs" class="mini-tabs" aria-label="일일 랭킹 범위"><button type="button" data-daily-rank="today" class="selected">오늘</button><button type="button" data-daily-rank="all">전체</button></div><ol id="daily-leaderboard-list" class="daily-leaderboard-list"></ol></div>
             <button id="daily-start-button" type="button" class="secondary">오늘 스테이지 시작</button>
           </section>
 
-          <section class="collection-panel luxury-panel alive-panel" aria-label="컬렉션 도감">
+          <section class="collection-panel luxury-panel alive-panel" aria-label="컬렉션 도감" data-lobby-panel="collection">
             <img src="%BASE_URL%assets/meta/collection-codex.png" alt="" aria-hidden="true" draggable="false" />
-            <div class="collection-copy"><p class="eyebrow">Collection</p><h3>기억 오브젝트 도감</h3><p id="collection-summary">수집한 복원 재료를 확인하세요.</p><div id="collection-filter" class="mini-tabs" aria-label="컬렉션 필터"><button type="button" data-collection-filter="all" class="selected">전체</button><button type="button" data-collection-filter="owned">보유</button><button type="button" data-collection-filter="missing">미수집</button><button type="button" data-collection-filter="premium">프리미엄</button></div></div>
+            <div class="collection-copy"><div class="panel-title-row"><div><p class="eyebrow">Collection</p><h3>기억 오브젝트 도감</h3></div><button type="button" class="text-button panel-collapse-button" data-collapse-target="collection">접기</button></div><p id="collection-summary">수집한 복원 재료를 확인하세요.</p><div id="collection-filter" class="mini-tabs" aria-label="컬렉션 필터"><button type="button" data-collection-filter="all" class="selected">전체</button><button type="button" data-collection-filter="owned">보유</button><button type="button" data-collection-filter="missing">미수집</button><button type="button" data-collection-filter="premium">프리미엄</button></div></div>
             <div id="collection-list" class="collection-list"></div>
           </section>
 

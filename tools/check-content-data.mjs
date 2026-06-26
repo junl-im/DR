@@ -7,8 +7,8 @@ const html = readFileSync('index.html', 'utf8');
 
 const requiredStageTokens = ['getDailyChallenge', 'modifiers', 'fog', 'locked', 'timeSeal', 'bossPressure', 'bossId'];
 const requiredBossTokens = ['forgotten-spirit', 'shadow-librarian', 'sealed-page-golem', 'comboWarningEvery', 'warningSeconds', 'telegraphTitle', 'pressurePenalty'];
-const requiredMainTokens = ['renderRestoration', 'renderCollection', 'openRestorationDetail', 'loadDailyLeaderboard', 'dream-library-inventory', 'chapterTabs', 'initBackNavigation', 'handleSoftBack', 'exitToFirstScreen', 'handleSpecialTileGate', 'triggerBossTelegraph'];
-const requiredHtmlTokens = ['collection-list', 'daily-leaderboard-list', 'restoration-detail-modal', 'boss-image', 'boss-pattern', 'exit-confirm-modal', 'exit-confirm-button', 'boss-telegraph'];
+const requiredMainTokens = ['renderRestoration', 'renderCollection', 'openRestorationDetail', 'loadDailyLeaderboard', 'dream-library-inventory', 'chapterTabs', 'initBackNavigation', 'handleSoftBack', 'exitToFirstScreen', 'handleSpecialTileGate', 'triggerBossTelegraph', 'renderLobbyMissionDeck', 'loadAudioRuntime', 'loadSpineRuntime'];
+const requiredHtmlTokens = ['collection-list', 'daily-leaderboard-list', 'restoration-detail-modal', 'boss-image', 'boss-pattern', 'exit-confirm-modal', 'exit-confirm-button', 'boss-telegraph', 'lobby-mission-deck'];
 const missing = [
   ...requiredStageTokens.filter((token) => !stages.includes(token)),
   ...requiredBossTokens.filter((token) => !bosses.includes(token)),
@@ -19,4 +19,4 @@ if (missing.length) {
   console.error(`Content data check failed. Missing: ${missing.join(', ')}`);
   process.exit(1);
 }
-console.log('Content data policy passed for v1.0.13.');
+console.log('Content data policy passed for v1.0.14.');
