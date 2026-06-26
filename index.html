@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#190f2f" />
+    <meta
+      name="description"
+      content="Dream Library - vertical fantasy Shisen-Sho puzzle RPG prototype"
+    />
+    <title>Dream Library</title>
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="hero-panel">
+        <div>
+          <p class="eyebrow">Dream Library</p>
+          <h1>기억의 서고</h1>
+          <p class="subtitle">사천성 퍼즐로 조각난 기억을 복원하세요.</p>
+        </div>
+        <button id="sound-toggle" class="ghost-button" type="button" aria-label="효과음 토글">♪</button>
+      </header>
+
+      <section class="auth-card" aria-label="로그인">
+        <div class="auth-summary">
+          <strong id="auth-name">로그인 전</strong>
+          <span id="auth-provider">점수 저장은 로그인 후 가능합니다.</span>
+        </div>
+        <div class="auth-actions">
+          <button id="anonymous-button" type="button">익명 시작</button>
+          <button id="google-button" type="button">Google</button>
+          <button id="signout-button" type="button" class="secondary hidden">로그아웃</button>
+        </div>
+        <form id="email-form" class="email-form">
+          <input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" />
+          <input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" />
+          <div class="email-buttons">
+            <button id="email-login-button" type="submit">이메일 로그인</button>
+            <button id="email-signup-button" type="button" class="secondary">가입</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="control-panel" aria-label="게임 조작">
+        <div class="difficulty-row" id="difficulty-row"></div>
+        <div class="stats-grid">
+          <div><span>시간</span><strong id="time-label">00:00</strong></div>
+          <div><span>점수</span><strong id="score-label">0</strong></div>
+          <div><span>이동</span><strong id="moves-label">0</strong></div>
+          <div><span>콤보</span><strong id="combo-label">0</strong></div>
+        </div>
+        <div class="game-actions">
+          <button id="new-game-button" type="button">새 게임</button>
+          <button id="hint-button" type="button" class="secondary">힌트</button>
+          <button id="shuffle-button" type="button" class="secondary">섞기</button>
+        </div>
+        <p id="status-label" class="status-label">난이도를 고르고 새 게임을 시작하세요.</p>
+      </section>
+
+      <main>
+        <section id="board" class="board" aria-label="사천성 보드"></section>
+      </main>
+
+      <section class="leaderboard-card" aria-label="리더보드">
+        <div class="section-heading">
+          <h2>복원 기록</h2>
+          <button id="refresh-leaderboard-button" type="button" class="text-button">새로고침</button>
+        </div>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
+      </section>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
