@@ -12,7 +12,7 @@
     <meta name="description" content="꿈의 서고 - 사천성 퍼즐과 마법 전투가 결합된 프리미엄 캐주얼 모바일 웹 게임" />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
-    <link rel="preload" href="%BASE_URL%assets/backgrounds/dream-library-25d.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/storybook-login.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/librarian-momo.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/objects/magic-book.png" as="image" />
     <title>꿈의 서고</title>
@@ -35,77 +35,65 @@
       <div id="pixi-stage" class="pixi-stage" aria-hidden="true"></div>
       <div class="ambient-orbs" aria-hidden="true"><i></i><i></i><i></i></div>
 
-      <header class="topbar luxury-panel" aria-label="상단 메뉴">
+      <header class="topbar compact-topbar" aria-label="상단 메뉴">
         <button id="back-button" class="icon-button hidden" type="button" aria-label="뒤로">‹</button>
         <div class="brand-lockup">
           <span class="brand-mark" aria-hidden="true">✦</span>
           <span>꿈의 서고</span>
         </div>
         <div class="top-actions">
-          <button id="install-button" class="icon-button hidden" type="button" aria-label="앱 설치">＋</button>
-          <button id="fullscreen-button" class="icon-button" type="button" aria-label="전체화면 시작">⛶</button>
+          <button id="open-settings-button" class="icon-button gear-button" type="button" aria-label="옵션 열기">⚙</button>
         </div>
       </header>
 
       <main class="screen-stack">
         <section id="screen-login" class="screen screen-login active" aria-label="게임 시작 로그인 화면">
-          <div class="login-composition">
-            <div class="floating-book-card" aria-hidden="true">
-              <img src="%BASE_URL%assets/objects/magic-book.png" alt="" draggable="false" />
-              <span class="magic-ring"></span>
-            </div>
-            <img class="login-mascot" src="%BASE_URL%assets/characters/librarian-momo.png" alt="꿈의 서고 사서 모모" draggable="false" />
-          </div>
-
-          <div class="hero-copy">
-            <p class="eyebrow">Premium Casual Fantasy</p>
-            <h1>꿈의 서고</h1>
-            <p class="subtitle">떠 있는 마법 오브젝트를 연결해 기억의 빛을 보스에게 발사하고, 사라진 도서관을 복원하세요.</p>
-          </div>
-
-          <div class="login-card luxury-panel alive-panel">
-            <div class="auth-summary">
-              <strong id="auth-name">새로운 사서님</strong>
-              <span id="auth-provider">로그인하면 진행과 랭킹을 저장합니다.</span>
-            </div>
-
-            <div class="primary-actions">
-              <button id="anonymous-button" type="button" class="xl-button primary-glow">게스트로 시작</button>
-              <button id="google-button" type="button" class="xl-button sky-button">Google 로그인</button>
-              <button id="show-email-button" type="button" class="xl-button secondary">이메일 로그인</button>
-            </div>
-
-            <form id="email-form" class="email-form collapsed" aria-label="이메일 로그인">
-              <label><span>이메일</span><input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" /></label>
-              <label><span>비밀번호</span><input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" /></label>
-              <div class="email-buttons">
-                <button id="email-login-button" type="submit">로그인</button>
-                <button id="email-signup-button" type="button" class="secondary">새 계정 만들기</button>
+          <div class="login-stage-card">
+            <img class="login-hero-bg" src="%BASE_URL%assets/backgrounds/storybook-login.png" alt="" aria-hidden="true" draggable="false" />
+            <div class="login-composition compact-login-art">
+              <div class="floating-book-card" aria-hidden="true">
+                <img src="%BASE_URL%assets/objects/magic-book.png" alt="" draggable="false" />
+                <span class="magic-ring"></span>
               </div>
-            </form>
+              <img class="login-mascot" src="%BASE_URL%assets/characters/librarian-momo.png" alt="꿈의 서고 사서 모모" draggable="false" />
+            </div>
 
-            <div class="login-footer-actions">
-              <button id="enter-lobby-button" type="button" class="text-button strong hidden">게임 시작 화면으로</button>
-              <button id="open-settings-button" type="button" class="text-button">로그인 설정</button>
-              <button id="signout-button" type="button" class="text-button danger hidden">로그아웃</button>
+            <div class="hero-copy compact-title">
+              <p class="eyebrow">Premium Casual</p>
+              <h1>꿈의 서고</h1>
+            </div>
+
+            <div class="login-card luxury-panel alive-panel compact-login-card">
+              <div class="auth-summary compact-auth-summary">
+                <strong id="auth-name">새로운 사서님</strong>
+                <span id="auth-provider">시작을 누르면 바로 게임에 입장합니다.</span>
+              </div>
+
+              <div class="primary-actions compact-actions">
+                <button id="anonymous-button" type="button" class="xl-button primary-glow start-now-button">게임 시작</button>
+                <div class="login-provider-row" aria-label="로그인 방식">
+                  <button id="google-button" type="button" class="sky-button">Google</button>
+                  <button id="show-email-button" type="button" class="secondary">Email</button>
+                </div>
+              </div>
+
+              <form id="email-form" class="email-form collapsed" aria-label="이메일 로그인">
+                <label><span>이메일</span><input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" /></label>
+                <label><span>비밀번호</span><input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" /></label>
+                <div class="email-buttons">
+                  <button id="email-login-button" type="submit">로그인 후 시작</button>
+                  <button id="email-signup-button" type="button" class="secondary">가입 후 시작</button>
+                </div>
+              </form>
+
+              <div class="login-footer-actions compact-footer-actions">
+                <button id="enter-lobby-button" type="button" class="text-button strong hidden">로비 보기</button>
+                
+              </div>
             </div>
           </div>
 
-          <p id="login-status" class="bubble-status">시작 방식을 선택하세요.</p>
-        </section>
-
-        <section id="screen-settings" class="screen screen-settings" aria-label="로그인 설정 페이지">
-          <div class="page-title">
-            <p class="eyebrow">Login Settings</p>
-            <h2>로그인 · 실행 설정</h2>
-            <p>저장, 사운드, 전체화면, 조작 방식을 게임 시작 전에 정리합니다.</p>
-          </div>
-          <div class="settings-grid">
-            <article class="setting-card luxury-panel"><h3>계정 상태</h3><p id="settings-account-text">로그인 전입니다.</p><div class="setting-actions"><button id="settings-login-button" type="button">로그인 화면</button><button id="settings-lobby-button" type="button" class="secondary">게임 시작 화면</button></div></article>
-            <article class="setting-card luxury-panel"><h3>전체화면</h3><p>세로 9:16 전용 플레이를 기준으로 화면을 고정합니다.</p><button id="settings-fullscreen-button" type="button">전체화면 켜기</button></article>
-            <article class="setting-card luxury-panel"><h3>효과음</h3><p>연결, 폭발, 콤보 효과음을 켜고 끕니다.</p><button id="sound-toggle" type="button" aria-pressed="true">효과음 켜짐</button></article>
-            <article class="setting-card luxury-panel"><h3>진행 관리</h3><p>로컬 캠페인 진행과 해금 기록을 초기화합니다.</p><button id="reset-progress-button" type="button" class="secondary">로컬 진행 초기화</button></article>
-          </div>
+          <p id="login-status" class="bubble-status compact-status">준비되면 게임 시작을 누르세요.</p>
         </section>
 
         <section id="screen-lobby" class="screen screen-lobby" aria-label="게임 시작 화면">
@@ -142,6 +130,17 @@
           <p id="status-label" class="bubble-status">같은 마법 오브젝트를 연결하세요.</p>
         </section>
       </main>
+    </div>
+
+    <div id="options-modal" class="options-modal hidden" role="dialog" aria-modal="true" aria-label="옵션">
+      <div class="options-card luxury-panel">
+        <div class="options-head"><div><p class="eyebrow">Options</p><h2>옵션</h2></div><button id="close-options-button" type="button" class="icon-button" aria-label="옵션 닫기">×</button></div>
+        <article class="option-row"><h3>계정</h3><p id="settings-account-text">로그인 전입니다.</p><div class="option-actions"><button id="settings-login-button" type="button" class="secondary">첫 화면</button><button id="settings-lobby-button" type="button" class="secondary">로비</button><button id="signout-button" type="button" class="secondary danger hidden">로그아웃</button></div></article>
+        <article class="option-row"><h3>화면</h3><p>세로 9:16 전체화면 플레이를 사용합니다.</p><button id="settings-fullscreen-button" type="button">전체화면</button></article>
+        <article class="option-row"><h3>사운드</h3><p>터치, 연결, 폭발, 콤보 효과음을 켜고 끕니다.</p><button id="sound-toggle" type="button" aria-pressed="true">효과음 켜짐</button></article>
+        <article class="option-row"><h3>진행 관리</h3><p>로컬 캠페인 진행과 해금 기록을 초기화합니다.</p><button id="reset-progress-button" type="button" class="secondary">로컬 진행 초기화</button></article>
+        <button id="install-button" class="secondary hidden" type="button">홈 화면에 설치</button>
+      </div>
     </div>
 
     <div id="reward-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="보상 획득">

@@ -1,9 +1,10 @@
-const CACHE_NAME = 'dream-library-cache-v1-0-6';
+const CACHE_NAME = 'dream-library-cache-v1-0-7';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
   './favicon.png',
-  './assets/backgrounds/dream-library-25d.png',
+  './assets/backgrounds/storybook-login.png',
+  './assets/backgrounds/library-hall.png',
   './assets/characters/librarian-momo.png',
   './assets/objects/magic-book.png',
   './assets/effects/hit-burst.png'

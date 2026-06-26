@@ -1,5 +1,5 @@
 {
-  "version": "1.0.6",
+  "version": "1.0.7",
   "format": "png-atlas",
   "svgAllowed": false,
   "items": [
@@ -14,7 +14,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "gold-key",
@@ -27,7 +27,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "candle",
@@ -40,7 +40,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "hourglass",
@@ -53,7 +53,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "crystal-orb",
@@ -66,7 +66,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "rune",
@@ -79,7 +79,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "ink",
@@ -92,7 +92,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "scroll",
@@ -105,7 +105,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "crown",
@@ -118,7 +118,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "feather",
@@ -131,7 +131,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "potion",
@@ -144,7 +144,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "star",
@@ -157,7 +157,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "music-box",
@@ -170,7 +170,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "dragon-egg",
@@ -183,7 +183,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "relic",
@@ -196,7 +196,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "moon",
@@ -209,7 +209,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "gem",
@@ -222,7 +222,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "shield",
@@ -235,7 +235,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "flower",
@@ -248,7 +248,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "comet",
@@ -261,7 +261,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "bell",
@@ -274,7 +274,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "map",
@@ -287,7 +287,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "castle",
@@ -300,7 +300,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     },
     {
       "type": "spark",
@@ -313,7 +313,7 @@
         "w": 256,
         "h": 256
       },
-      "material": "stylized-pbr-raster"
+      "material": "premium-raster-2d3d"
     }
   ]
 }

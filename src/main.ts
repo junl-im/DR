@@ -13,7 +13,7 @@ import { GAME_TITLE } from './config/design';
 import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
 import { prepareSpineRuntime } from './engine/SpineBridge';
 
-document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/dream-library-25d.png)`);
+document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.png)`);
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector(selector) as T;
 const $$ = <T extends HTMLElement>(selector: string) => Array.from(document.querySelectorAll(selector)) as T[];
@@ -36,6 +36,8 @@ const el = {
   emailSignupButton: $('#email-signup-button'),
   enterLobbyButton: $('#enter-lobby-button'),
   openSettingsButton: $('#open-settings-button'),
+  closeOptionsButton: $('#close-options-button'),
+  optionsModal: $('#options-modal'),
   signoutButton: $('#signout-button'),
   settingsAccountText: $('#settings-account-text'),
   settingsLoginButton: $('#settings-login-button'),
@@ -43,7 +45,7 @@ const el = {
   settingsFullscreenButton: $('#settings-fullscreen-button'),
   soundToggle: $('#sound-toggle'),
   resetProgressButton: $('#reset-progress-button'),
-  fullscreenButton: $('#fullscreen-button'),
+  fullscreenButton: $('#settings-fullscreen-button'),
   installButton: $('#install-button'),
   lobbyGreeting: $('#lobby-greeting'),
   worldMap: $('#world-map'),
@@ -149,10 +151,11 @@ function bindEvents() {
     else if (state.screen === 'game') exitToLobby();
     else updateScreen('login');
   });
-  el.openSettingsButton.addEventListener('click', () => updateScreen('settings'));
-  el.settingsLoginButton.addEventListener('click', () => updateScreen('login'));
-  el.settingsLobbyButton.addEventListener('click', () => hasSession() ? updateScreen('lobby') : updateScreen('login'));
-  el.settingsFullscreenButton.addEventListener('click', () => requestGameFullscreen(setStatus));
+  el.openSettingsButton.addEventListener('click', openOptions);
+  el.closeOptionsButton.addEventListener('click', closeOptionsPanel);
+  el.optionsModal.addEventListener('click', (event) => { if (event.target === el.optionsModal) closeOptionsPanel(); });
+  el.settingsLoginButton.addEventListener('click', () => { closeOptionsPanel(); updateScreen('login'); });
+  el.settingsLobbyButton.addEventListener('click', () => { closeOptionsPanel(); hasSession() ? updateScreen('lobby') : updateScreen('login'); });
   el.soundToggle.addEventListener('click', () => {
     state.soundEnabled = !state.soundEnabled;
     writeText('dream-library-sound', state.soundEnabled ? 'on' : 'off');
@@ -181,32 +184,33 @@ function bindEvents() {
       writeJson('dream-library-local-guest', state.localGuest);
       renderAuth();
     }
-    updateScreen('settings');
-  }, '로그인 설정으로 이동합니다.'));
+    await startSelectedStage();
+  }, '게임을 시작합니다.'));
   el.googleButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     if (!firebaseReady) throw new Error('login-disabled');
     await loginWithGoogle();
-    updateScreen('settings');
-  }, 'Google 로그인이 완료되었습니다.'));
+    await startSelectedStage();
+  }, 'Google 로그인 후 게임을 시작합니다.'));
   el.emailForm.addEventListener('submit', (event) => {
     event.preventDefault();
     runAuth(async () => {
       if (!firebaseReady) throw new Error('login-disabled');
       await loginWithEmail(el.emailInput.value, el.passwordInput.value);
-      updateScreen('settings');
-    }, '이메일 로그인이 완료되었습니다.');
+      await startSelectedStage();
+    }, '이메일 로그인 후 게임을 시작합니다.');
   });
   el.emailSignupButton.addEventListener('click', () => runAuth(async () => {
     if (!firebaseReady) throw new Error('login-disabled');
     await signupWithEmail(el.emailInput.value, el.passwordInput.value);
-    updateScreen('settings');
-  }, '새 계정을 만들었습니다.'));
+    await startSelectedStage();
+  }, '새 계정을 만들고 게임을 시작합니다.'));
   el.signoutButton.addEventListener('click', () => runAuth(async () => {
     if (firebaseReady && state.user) await logout();
     state.localGuest = null;
     writeJson('dream-library-local-guest', null);
     renderAuth();
+    closeOptionsPanel();
     updateScreen('login');
   }, '로그아웃했습니다.'));
   el.enterLobbyButton.addEventListener('click', () => updateScreen('lobby'));
@@ -254,7 +258,7 @@ async function startSelectedStage() {
   const difficulty = DIFFICULTIES[stage.difficultyKey];
   audio.unlock();
   audio.play('tap');
-  requestGameFullscreen(setStatus);
+  requestGameFullscreen();
   state.board = createBoard(difficulty);
   state.selected = null;
   state.locked = false;
@@ -386,10 +390,22 @@ function updateScreen(screen: ScreenName) {
   state.screen = screen;
   el.app.dataset.screen = screen;
   document.body.dataset.screen = screen;
+  const bg = screen === 'login' ? 'storybook-login' : screen === 'lobby' ? 'world-map' : 'library-hall';
+  document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
   el.backButton.classList.toggle('hidden', screen === 'login');
   if (screen === 'lobby') renderLobby();
   if (screen === 'settings') renderAuth();
+}
+
+
+function openOptions() {
+  renderAuth();
+  el.optionsModal.classList.remove('hidden');
+}
+
+function closeOptionsPanel() {
+  el.optionsModal.classList.add('hidden');
 }
 
 function exitToLobby() {
