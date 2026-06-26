@@ -3,33 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-    <meta name="theme-color" content="#23143f" />
+    <meta name="theme-color" content="#07162d" />
     <meta name="color-scheme" content="dark" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Dream Library" />
-    <meta
-      name="description"
-      content="Dream Library - casual fantasy Shisen-Sho puzzle RPG"
-    />
+    <meta name="apple-mobile-web-app-title" content="꿈의 서고" />
+    <meta name="description" content="꿈의 서고 - 사천성 퍼즐과 마법 전투가 결합된 프리미엄 캐주얼 모바일 웹 게임" />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
-    <link rel="preload" href="%BASE_URL%assets/backgrounds/storybook-login.svg" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/backgrounds/lobby-garden.svg" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/backgrounds/world-map.svg" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/dream-library-25d.svg" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/librarian-momo.svg" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/tiles/magic-book.svg" as="image" />
-    <title>Dream Library</title>
+    <link rel="preload" href="%BASE_URL%assets/objects/magic-book.svg" as="image" />
+    <title>꿈의 서고</title>
   </head>
   <body>
     <aside id="browser-guard" class="browser-guard hidden" aria-label="브라우저 안내" role="dialog" aria-modal="true">
-      <div class="browser-guard-card">
+      <div class="browser-guard-card luxury-panel">
         <p class="eyebrow">Browser Guard</p>
         <h2>카카오톡 인앱 브라우저에서는 실행하지 않습니다</h2>
-        <p>
-          로그인, 전체화면, 사운드, 저장 기능이 불안정할 수 있어 외부 브라우저에서만 게임을 시작하도록 막았습니다.
-        </p>
+        <p>로그인, 전체화면, 사운드, 저장 기능을 안정적으로 사용하기 위해 외부 브라우저에서만 게임을 시작합니다.</p>
         <div class="guard-actions">
           <button id="copy-url-button" type="button">주소 복사</button>
           <button id="open-external-button" type="button" class="secondary">외부 브라우저 열기</button>
@@ -39,19 +32,14 @@
     </aside>
 
     <div id="app" class="app-shell" data-screen="login">
-      <div class="sky-decor" aria-hidden="true">
-        <span class="cloud cloud-a"></span>
-        <span class="cloud cloud-b"></span>
-        <span class="cloud cloud-c"></span>
-        <span class="starbits starbits-a"></span>
-        <span class="starbits starbits-b"></span>
-      </div>
+      <div id="pixi-stage" class="pixi-stage" aria-hidden="true"></div>
+      <div class="ambient-orbs" aria-hidden="true"><i></i><i></i><i></i></div>
 
-      <header class="topbar" aria-label="상단 메뉴">
+      <header class="topbar luxury-panel" aria-label="상단 메뉴">
         <button id="back-button" class="icon-button hidden" type="button" aria-label="뒤로">‹</button>
         <div class="brand-lockup">
           <span class="brand-mark" aria-hidden="true">✦</span>
-          <span>Dream Library</span>
+          <span>꿈의 서고</span>
         </div>
         <div class="top-actions">
           <button id="install-button" class="icon-button hidden" type="button" aria-label="앱 설치">＋</button>
@@ -60,38 +48,36 @@
       </header>
 
       <main class="screen-stack">
-        <section id="screen-login" class="screen screen-login active" aria-label="시작 로그인 화면">
-          <div class="login-art-wrap" aria-hidden="true">
-            <img class="login-art" src="%BASE_URL%assets/characters/librarian-momo.svg" alt="" draggable="false" />
+        <section id="screen-login" class="screen screen-login active" aria-label="게임 시작 로그인 화면">
+          <div class="login-composition">
+            <div class="floating-book-card" aria-hidden="true">
+              <img src="%BASE_URL%assets/objects/magic-book.svg" alt="" draggable="false" />
+              <span class="magic-ring"></span>
+            </div>
+            <img class="login-mascot" src="%BASE_URL%assets/characters/librarian-momo.svg" alt="꿈의 서고 사서 모모" draggable="false" />
           </div>
 
           <div class="hero-copy">
-            <p class="eyebrow">Casual Puzzle RPG</p>
-            <h1>기억의 서고</h1>
-            <p class="subtitle">작은 사서 모모와 함께 꿈의 조각을 맞춰 사라진 이야기를 복원하세요.</p>
+            <p class="eyebrow">Premium Casual Fantasy</p>
+            <h1>꿈의 서고</h1>
+            <p class="subtitle">떠 있는 마법 오브젝트를 연결해 기억의 빛을 보스에게 발사하고, 사라진 도서관을 복원하세요.</p>
           </div>
 
-          <div class="login-card glass-card">
+          <div class="login-card luxury-panel alive-panel">
             <div class="auth-summary">
-              <strong id="auth-name">로그인 전</strong>
-              <span id="auth-provider">저장과 랭킹은 로그인 후 활성화됩니다.</span>
+              <strong id="auth-name">새로운 사서님</strong>
+              <span id="auth-provider">로그인하면 진행과 랭킹을 저장합니다.</span>
             </div>
 
             <div class="primary-actions">
-              <button id="anonymous-button" type="button" class="xl-button">게스트로 바로 시작</button>
-              <button id="google-button" type="button" class="xl-button google-button">Google 로그인</button>
+              <button id="anonymous-button" type="button" class="xl-button primary-glow">게스트로 시작</button>
+              <button id="google-button" type="button" class="xl-button sky-button">Google 로그인</button>
               <button id="show-email-button" type="button" class="xl-button secondary">이메일 로그인</button>
             </div>
 
             <form id="email-form" class="email-form collapsed" aria-label="이메일 로그인">
-              <label>
-                <span>이메일</span>
-                <input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" />
-              </label>
-              <label>
-                <span>비밀번호</span>
-                <input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" />
-              </label>
+              <label><span>이메일</span><input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" /></label>
+              <label><span>비밀번호</span><input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" /></label>
               <div class="email-buttons">
                 <button id="email-login-button" type="submit">로그인</button>
                 <button id="email-signup-button" type="button" class="secondary">새 계정 만들기</button>
@@ -100,170 +86,68 @@
 
             <div class="login-footer-actions">
               <button id="enter-lobby-button" type="button" class="text-button strong hidden">게임 시작 화면으로</button>
-              <button id="open-settings-button" type="button" class="text-button">설정</button>
+              <button id="open-settings-button" type="button" class="text-button">로그인 설정</button>
               <button id="signout-button" type="button" class="text-button danger hidden">로그아웃</button>
             </div>
           </div>
 
-          <p id="login-status" class="bubble-status">로그인 방식을 선택하세요.</p>
+          <p id="login-status" class="bubble-status">시작 방식을 선택하세요.</p>
         </section>
 
         <section id="screen-settings" class="screen screen-settings" aria-label="로그인 설정 페이지">
           <div class="page-title">
-            <p class="eyebrow">Settings</p>
+            <p class="eyebrow">Login Settings</p>
             <h2>로그인 · 실행 설정</h2>
-            <p>게임 시작 전에 저장, 전체화면, 사운드, 조작 방식을 정리합니다.</p>
+            <p>저장, 사운드, 전체화면, 조작 방식을 게임 시작 전에 정리합니다.</p>
           </div>
-
           <div class="settings-grid">
-            <article class="setting-card glass-card">
-              <h3>계정 상태</h3>
-              <p id="settings-account-text">로그인 전입니다.</p>
-              <div class="setting-actions">
-                <button id="settings-login-button" type="button">로그인 화면</button>
-                <button id="settings-lobby-button" type="button" class="secondary">게임 시작 화면</button>
-              </div>
-            </article>
-
-            <article class="setting-card glass-card">
-              <h3>전체화면</h3>
-              <p>모바일은 홈 화면 추가 또는 전체화면 버튼 사용을 권장합니다.</p>
-              <button id="settings-fullscreen-button" type="button">전체화면 켜기</button>
-            </article>
-
-            <article class="setting-card glass-card">
-              <h3>효과음</h3>
-              <p>타일 매칭과 콤보 효과음을 켜고 끕니다.</p>
-              <button id="sound-toggle" type="button" aria-pressed="true">효과음 켜짐</button>
-            </article>
-
-            <article class="setting-card glass-card">
-              <h3>터치 보정</h3>
-              <p>작은 화면에서도 실수 터치를 줄이는 큼직한 버튼, safe-area, 확대 방지를 적용했습니다.</p>
-              <button id="reset-progress-button" type="button" class="secondary">로컬 진행 초기화</button>
-            </article>
+            <article class="setting-card luxury-panel"><h3>계정 상태</h3><p id="settings-account-text">로그인 전입니다.</p><div class="setting-actions"><button id="settings-login-button" type="button">로그인 화면</button><button id="settings-lobby-button" type="button" class="secondary">게임 시작 화면</button></div></article>
+            <article class="setting-card luxury-panel"><h3>전체화면</h3><p>세로 9:16 전용 플레이를 기준으로 화면을 고정합니다.</p><button id="settings-fullscreen-button" type="button">전체화면 켜기</button></article>
+            <article class="setting-card luxury-panel"><h3>효과음</h3><p>연결, 폭발, 콤보 효과음을 켜고 끕니다.</p><button id="sound-toggle" type="button" aria-pressed="true">효과음 켜짐</button></article>
+            <article class="setting-card luxury-panel"><h3>진행 관리</h3><p>로컬 캠페인 진행과 해금 기록을 초기화합니다.</p><button id="reset-progress-button" type="button" class="secondary">로컬 진행 초기화</button></article>
           </div>
         </section>
 
         <section id="screen-lobby" class="screen screen-lobby" aria-label="게임 시작 화면">
-          <div class="lobby-hero glass-card">
-            <div>
-              <p class="eyebrow">Adventure Lobby</p>
-              <h2>오늘 복원할 기억을 고르세요</h2>
-              <p id="lobby-greeting">게스트 사서님, 준비가 끝났습니다.</p>
-            </div>
+          <div class="lobby-hero luxury-panel alive-panel">
+            <div><p class="eyebrow">Adventure Lobby</p><h2>오늘 복원할 기억을 고르세요</h2><p id="lobby-greeting">사서님, 서고의 문이 열렸습니다.</p></div>
             <img src="%BASE_URL%assets/characters/librarian-momo.svg" alt="" aria-hidden="true" draggable="false" />
           </div>
-
-          <section class="chapter-panel campaign-panel glass-card" aria-label="캠페인 월드맵">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Campaign Map</p>
-                <h3 id="selected-chapter-name">달빛 서가의 첫 기록</h3>
-                <p id="chapter-story-text" class="chapter-story">흩어진 꿈 조각을 모아 첫 번째 기록장을 되살립니다.</p>
-              </div>
-              <span id="stage-progress-label" class="asset-progress">0/12 클리어</span>
-            </div>
-
+          <section class="chapter-panel campaign-panel luxury-panel" aria-label="캠페인 월드맵">
+            <div class="section-heading"><div><p class="eyebrow">Campaign Map</p><h3 id="selected-chapter-name">달빛 서가의 첫 기록</h3><p id="chapter-story-text" class="chapter-story">흩어진 꿈 조각을 모아 첫 기록장을 되살립니다.</p></div><span id="stage-progress-label" class="asset-progress">0/12 클리어</span></div>
             <div id="world-map" class="world-map" aria-label="스테이지 선택 지도"></div>
-
             <article class="selected-stage-card">
-              <div>
-                <p class="eyebrow">Selected Stage</p>
-                <h3 id="selected-stage-title">1. 잠에서 깬 책갈피</h3>
-                <p id="selected-stage-subtitle">첫 연결 규칙을 익히는 가벼운 복원</p>
-              </div>
-              <dl class="stage-meta-list">
-                <div><dt>난이도</dt><dd id="selected-stage-meta">입문 · 6×6</dd></div>
-                <div><dt>보상</dt><dd id="selected-stage-reward">마법서 표지 ×1</dd></div>
-              </dl>
-              <button id="start-selected-button" type="button" class="xl-button start-button">선택한 스테이지 시작</button>
+              <div><p class="eyebrow">Selected Stage</p><h3 id="selected-stage-title">1. 잠에서 깬 책갈피</h3><p id="selected-stage-subtitle">첫 연결 규칙을 익히는 가벼운 복원</p></div>
+              <dl class="stage-meta-list"><div><dt>난이도</dt><dd id="selected-stage-meta">입문 · 6×6</dd></div><div><dt>보상</dt><dd id="selected-stage-reward">마법서 표지 ×1</dd></div></dl>
+              <button id="start-selected-button" type="button" class="xl-button start-button primary-glow">선택한 스테이지 시작</button>
             </article>
           </section>
-
-          <section class="chapter-panel glass-card" aria-label="난이도 프리셋">
-            <div class="section-heading compact">
-              <div>
-                <p class="eyebrow">Practice Preset</p>
-                <h3>스테이지 난이도 프리셋</h3>
-              </div>
-              <span id="asset-progress" class="asset-progress">0/24 해금</span>
-            </div>
-            <p class="helper-text">스테이지를 누르면 해당 난이도가 자동 선택됩니다. 아래 버튼으로 연습 난이도도 직접 바꿀 수 있습니다.</p>
-            <div class="difficulty-row" id="difficulty-row"></div>
-          </section>
-
           <section class="lobby-grid">
-            <article class="glass-card mini-panel">
-              <h3>내 진행</h3>
-              <div class="progress-rings triple">
-                <div><strong id="best-score-label">0</strong><span>최고 점수</span></div>
-                <div><strong id="clear-count-label">0</strong><span>복원 성공</span></div>
-                <div><strong id="star-count-label">0</strong><span>별 조각</span></div>
-              </div>
-            </article>
-            <article class="glass-card mini-panel">
-              <div class="section-heading compact">
-                <h3>복원 기록</h3>
-                <button id="refresh-leaderboard-button" type="button" class="text-button">새로고침</button>
-              </div>
-              <ol id="leaderboard-list" class="leaderboard-list"></ol>
-            </article>
+            <article class="luxury-panel mini-panel"><h3>내 진행</h3><div class="progress-rings triple"><div><strong id="best-score-label">0</strong><span>최고 점수</span></div><div><strong id="clear-count-label">0</strong><span>복원 성공</span></div><div><strong id="star-count-label">0</strong><span>별 조각</span></div></div></article>
+            <article class="luxury-panel mini-panel"><div class="section-heading compact"><h3>복원 기록</h3><button id="refresh-leaderboard-button" type="button" class="text-button">새로고침</button></div><ol id="leaderboard-list" class="leaderboard-list"></ol></article>
           </section>
         </section>
 
         <section id="screen-game" class="screen screen-game" aria-label="사천성 게임 화면">
-          <section class="game-hud glass-card" aria-label="게임 정보">
-            <div class="hud-topline">
-              <div>
-                <p class="eyebrow" id="stage-label">Chapter 01</p>
-                <h2 id="difficulty-title">입문</h2>
-              </div>
-              <button id="exit-to-lobby-button" type="button" class="secondary">로비</button>
-            </div>
-            <div class="stats-grid">
-              <div><span>시간</span><strong id="time-label">00:00</strong></div>
-              <div><span>점수</span><strong id="score-label">0</strong></div>
-              <div><span>이동</span><strong id="moves-label">0</strong></div>
-              <div><span>콤보</span><strong id="combo-label">0</strong></div>
-            </div>
-            <div class="game-actions">
-              <button id="new-game-button" type="button">다시 시작</button>
-              <button id="hint-button" type="button" class="secondary">힌트</button>
-              <button id="shuffle-button" type="button" class="secondary">섞기</button>
-            </div>
-            <p id="status-label" class="status-label">난이도를 고르고 게임을 시작하세요.</p>
+          <section class="game-hud luxury-panel" aria-label="게임 정보">
+            <div class="hud-topline"><div><p class="eyebrow" id="stage-label">Chapter 01</p><h2 id="difficulty-title">입문</h2></div><button id="exit-to-lobby-button" type="button" class="secondary">로비</button></div>
+            <div class="hud-meters"><div><span>시간</span><strong id="time-label">00:00</strong></div><div><span>점수</span><strong id="score-label">0</strong></div><div><span>콤보</span><strong id="combo-label">0</strong></div><div><span>이동</span><strong id="moves-label">0</strong></div></div>
           </section>
 
-          <main>
-            <section id="board" class="board" aria-label="사천성 보드"></section>
-          </main>
-
-          <section class="asset-card glass-card" aria-label="기억 자원 도감">
-            <div class="section-heading compact">
-              <h3>기억 자원</h3>
-              <span id="asset-progress-game" class="asset-progress">0/24 해금</span>
-            </div>
-            <div id="asset-gallery" class="asset-gallery"></div>
+          <section class="battle-stage luxury-panel" aria-label="마법 전투 퍼즐판">
+            <div class="boss-lane"><div id="boss-core" class="boss-core"><span></span></div><div class="boss-info"><strong>망각의 서고령</strong><em id="boss-hp-label">HP 100%</em></div></div>
+            <div id="pixi-board-host" class="pixi-board-host" role="application" aria-label="마법진 사천성 보드"></div>
+            <div class="game-actions"><button id="hint-button" type="button" class="secondary">힌트</button><button id="shuffle-button" type="button" class="secondary">섞기</button><button id="new-game-button" type="button">다시 시작</button></div>
           </section>
+          <p id="status-label" class="bubble-status">같은 마법 오브젝트를 연결하세요.</p>
         </section>
       </main>
-
-      <aside id="reward-modal" class="reward-modal hidden" aria-label="스테이지 보상" role="dialog" aria-modal="true">
-        <div class="reward-card glass-card">
-          <img src="%BASE_URL%assets/ui/reward-badge.svg" alt="" aria-hidden="true" draggable="false" />
-          <p class="eyebrow">Stage Clear</p>
-          <h2 id="reward-title">기억 복원 성공!</h2>
-          <p id="reward-message">새로운 스테이지가 열렸습니다.</p>
-          <div id="reward-items" class="reward-items"></div>
-          <div class="reward-actions">
-            <button id="next-stage-button" type="button">다음 스테이지</button>
-            <button id="replay-stage-button" type="button" class="secondary">로비에서 확인</button>
-          </div>
-        </div>
-      </aside>
     </div>
 
-    <script type="module" src="/src/main.js"></script>
+    <div id="reward-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="보상 획득">
+      <div class="reward-card luxury-panel"><p class="eyebrow">Stage Clear</p><h2 id="reward-title">기억 복원 완료</h2><p id="reward-message">빛 조각이 서고에 돌아왔습니다.</p><div id="reward-items" class="reward-items"></div><div class="reward-actions"><button id="next-stage-button" type="button">다음 스테이지</button><button id="replay-stage-button" type="button" class="secondary">다시 플레이</button></div></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

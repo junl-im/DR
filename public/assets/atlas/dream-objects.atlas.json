@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "image": "dream-objects.generated-from-svg",
+    "style": "premium-casual-fantasy",
+    "palette": [
+      "navy",
+      "gold",
+      "emerald",
+      "violet",
+      "skyblue"
+    ]
+  },
+  "frames": {
+    "magic-book": {
+      "asset": "assets/objects/magic-book.svg",
+      "label": "떠 있는 마법서",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "gold-key": {
+      "asset": "assets/objects/gold-key.svg",
+      "label": "황금 열쇠",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "candle": {
+      "asset": "assets/objects/candle.svg",
+      "label": "기억 촛불",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "hourglass": {
+      "asset": "assets/objects/hourglass.svg",
+      "label": "시간 모래",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "crystal-orb": {
+      "asset": "assets/objects/crystal-orb.svg",
+      "label": "수정 구슬",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "rune": {
+      "asset": "assets/objects/rune.svg",
+      "label": "룬 조각",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "ink": {
+      "asset": "assets/objects/ink.svg",
+      "label": "마법 잉크",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "scroll": {
+      "asset": "assets/objects/scroll.svg",
+      "label": "고대 두루마리",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "crown": {
+      "asset": "assets/objects/crown.svg",
+      "label": "왕관",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "feather": {
+      "asset": "assets/objects/feather.svg",
+      "label": "기록의 깃털",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "potion": {
+      "asset": "assets/objects/potion.svg",
+      "label": "포션 병",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "star": {
+      "asset": "assets/objects/star.svg",
+      "label": "별자리 조각",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "music-box": {
+      "asset": "assets/objects/music-box.svg",
+      "label": "뮤직 박스",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "dragon-egg": {
+      "asset": "assets/objects/dragon-egg.svg",
+      "label": "드래곤 알",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "relic": {
+      "asset": "assets/objects/relic.svg",
+      "label": "서고 유물",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "moon": {
+      "asset": "assets/objects/moon.svg",
+      "label": "달의 기억",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "gem": {
+      "asset": "assets/objects/gem.svg",
+      "label": "결정",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "shield": {
+      "asset": "assets/objects/shield.svg",
+      "label": "수호 방패",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "flower": {
+      "asset": "assets/objects/flower.svg",
+      "label": "정원 기억",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "comet": {
+      "asset": "assets/objects/comet.svg",
+      "label": "혜성 조각",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "bell": {
+      "asset": "assets/objects/bell.svg",
+      "label": "서고 종",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "map": {
+      "asset": "assets/objects/map.svg",
+      "label": "비밀 지도",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "castle": {
+      "asset": "assets/objects/castle.svg",
+      "label": "꿈의 성",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    },
+    "spark": {
+      "asset": "assets/objects/spark.svg",
+      "label": "기억 파편",
+      "trimmed": false,
+      "sourceSize": {
+        "w": 128,
+        "h": 128
+      }
+    }
+  }
+}

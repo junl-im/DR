@@ -9,11 +9,18 @@
     "preview": "vite preview --host 0.0.0.0",
     "deploy:firebase": "npm run build:firebase && firebase deploy --only hosting,firestore",
     "deploy:hosting": "npm run build:firebase && firebase deploy --only hosting",
-    "deploy:rules": "firebase deploy --only firestore:rules"
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@esotericsoftware/spine-pixi-v8": "^4.3.7",
     "firebase": "^12.15.0",
+    "gsap": "^3.15.0",
+    "howler": "^2.2.4",
+    "pixi.js": "^8.11.0",
     "vite": "latest"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
 }

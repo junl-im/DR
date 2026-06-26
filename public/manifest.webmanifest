@@ -1,26 +1,15 @@
 {
-  "name": "Dream Library",
-  "short_name": "Dream Library",
-  "description": "Casual fantasy Shisen-Sho puzzle RPG",
-  "start_url": ".",
-  "scope": ".",
+  "name": "꿈의 서고",
+  "short_name": "꿈의 서고",
+  "description": "사천성 퍼즐과 마법 전투가 결합된 프리미엄 캐주얼 모바일 웹 게임",
+  "start_url": "/DR/",
+  "scope": "/DR/",
   "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "orientation": "portrait",
-  "theme_color": "#23143f",
-  "background_color": "#160d29",
+  "theme_color": "#06152d",
+  "background_color": "#06152d",
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }

@@ -1,0 +1,15 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128' role='img' aria-label='드래곤 알'>
+  <defs>
+    <radialGradient id='glow' cx='50%' cy='42%' r='62%'><stop offset='0' stop-color='#7ddcff' stop-opacity='.55'/><stop offset='.5' stop-color='#8f6bff' stop-opacity='.18'/><stop offset='1' stop-color='#06152d' stop-opacity='0'/></radialGradient>
+    <linearGradient id='body' x1='20%' y1='0%' x2='80%' y2='100%'><stop offset='0' stop-color='#8f6bff'/><stop offset='.55' stop-color='#102b57'/><stop offset='1' stop-color='#06152d'/></linearGradient>
+    <linearGradient id='metal' x1='18%' y1='0%' x2='82%' y2='100%'><stop offset='0' stop-color='#ffe7a4'/><stop offset='.48' stop-color='#f5c86b'/><stop offset='1' stop-color='#102b57'/></linearGradient>
+    <linearGradient id='paper' x1='10%' y1='0%' x2='90%' y2='100%'><stop offset='0' stop-color='#ffe7a4'/><stop offset='1' stop-color='#f5c86b'/></linearGradient>
+    <radialGradient id='orb' cx='34%' cy='24%' r='68%'><stop offset='0' stop-color='#7ddcff'/><stop offset='.45' stop-color='#36d6a4'/><stop offset='1' stop-color='#8f6bff'/></radialGradient>
+    <radialGradient id='flame' cx='48%' cy='28%' r='70%'><stop offset='0' stop-color='#ffe7a4'/><stop offset='.5' stop-color='#f5c86b'/><stop offset='1' stop-color='#8f6bff'/></radialGradient>
+    <filter id='softShadow' x='-40%' y='-40%' width='180%' height='180%'><feDropShadow dx='0' dy='10' stdDeviation='7' flood-color='#06152d' flood-opacity='.5'/></filter>
+  </defs>
+  <circle cx='64' cy='64' r='57' fill='url(#glow)'/>
+  <ellipse cx='64' cy='105' rx='37' ry='10' fill='#06152d' opacity='.35'/>
+  <g filter='url(#softShadow)'><g transform='translate(27 13)'><path d='M42 4 C67 33 76 88 42 100 C8 88 17 33 42 4Z' fill='url(#orb)' stroke='#f5c86b' stroke-width='4'/><path d='M25 58 L37 47 L48 60 L62 48' stroke='#ffe7a4' stroke-width='5' fill='none'/><circle cx='53' cy='33' r='6' fill='#36d6a4' opacity='.78'/></g></g>
+  <path d='M26 25 C47 8 86 16 101 40' fill='none' stroke='#7ddcff' stroke-width='3' stroke-linecap='round' opacity='.28'/>
+</svg>

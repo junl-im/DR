@@ -1,4 +1,4 @@
-const tileAsset = (name) => `${import.meta.env.BASE_URL}assets/tiles/${name}.svg`;
+const tileAsset = (name) => `${import.meta.env.BASE_URL}assets/objects/${name}.svg`;
 
 export const DIFFICULTIES = {
   easy: {

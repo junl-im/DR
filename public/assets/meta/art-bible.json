@@ -1,0 +1,30 @@
+{
+  "gameTitle": "꿈의 서고",
+  "masterStylePrompt": "2.5D premium casual fantasy object, stylized PBR look, soft rim light, high material definition, soft AO, painterly finish, luxury UI, modern Korean mobile game, fixed palette navy gold emerald violet skyblue, transparent background, no cast shadow, centered object, game asset ready",
+  "palette": {
+    "navy": "#06152d",
+    "gold": "#f5c86b",
+    "emerald": "#36d6a4",
+    "violet": "#8f6bff",
+    "skyblue": "#7ddcff"
+  },
+  "pipeline": [
+    "Art Bible",
+    "Master Style Prompt",
+    "Object Prompt",
+    "PNG generation",
+    "Background removal check",
+    "Shadow removal",
+    "Texture Atlas",
+    "Game integration"
+  ],
+  "layers": [
+    "sky/window",
+    "far background",
+    "bookshelf",
+    "pillars",
+    "puzzle board",
+    "particles",
+    "UI"
+  ]
+}
