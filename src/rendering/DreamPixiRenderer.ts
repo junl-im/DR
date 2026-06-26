@@ -243,6 +243,18 @@ export class DreamPixiRenderer {
     return { startX, startY, step: this.tileSize + this.gap, rows, cols };
   }
 
+
+  private resolveTileTexture(asset: string) {
+    const filename = asset.split('/').pop() || asset;
+    try {
+      const atlasTexture = Assets.get(filename) || Assets.get(`assets/objects/${filename}`);
+      if (atlasTexture instanceof Texture) return atlasTexture;
+    } catch {
+      // Atlas lookup is an optimization only. Individual PNG remains the safe fallback.
+    }
+    return Texture.from(asset);
+  }
+
   private addTile(tile: BoardTile, row: number, col: number, x: number, y: number) {
     const root = new Container();
     root.x = x;
@@ -256,7 +268,7 @@ export class DreamPixiRenderer {
     const specialColor = tile.special === 'locked' ? PALETTE.gold : tile.special === 'timeSeal' ? PALETTE.violet : tile.special === 'fog' ? PALETTE.sky : PALETTE.sky;
     const glow = new Graphics().circle(0, 0, this.tileSize * 0.62).fill({ color: specialColor, alpha: tile.special ? 0.28 : 0.2 });
     glow.alpha = 0.16;
-    const texture = Texture.from(tile.asset);
+    const texture = this.resolveTileTexture(tile.asset);
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
     sprite.width = this.tileSize * 0.92;
@@ -370,7 +382,8 @@ export class DreamPixiRenderer {
     this.boardLayers.particles.addChild(missile);
     gsap.to(missile, { x: targetX, y: targetY, duration: 0.22 * this.quality.motionScale, ease: 'power2.in', onComplete: () => {
       this.emitParticles(targetX, targetY + 24, 28 + Math.round(combo * 2 * this.quality.particleScale), PALETTE.gold);
-      this.spawnVfxSprite(targetX, targetY + 20, combo >= 4 ? 'import-vfx-05' : 'import-vfx-02');
+      this.spawnVfxSprite(targetX, targetY + 20, combo >= 5 ? 'import-vfx-06' : combo >= 4 ? 'import-vfx-05' : 'import-vfx-02');
+      if (combo >= 5) this.emitParticles(targetX, targetY + 24, 38 + Math.round(combo * 2 * this.quality.particleScale), PALETTE.sky);
       this.flashBossHit();
       missile.destroy();
     }});

@@ -48,6 +48,7 @@ jobs:
           npm run check:assets
           npm run check:health
           npm run check:kakao
+          npm run check:kakao-portrait
           npm run check:content
           npm run check:workflows
           npm run check:special-rules

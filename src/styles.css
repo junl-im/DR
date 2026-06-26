@@ -1085,3 +1085,159 @@ body[data-screen="lobby"] .app-shell {
   .mission-card { min-height: 84px; }
   .mission-card small { display: none; }
 }
+
+/* v1.0.15 Kakao in-app portrait fullscreen, atlas lookup and combat polish */
+:root {
+  --app-width: 100vw;
+  --app-height: 100svh;
+}
+html.portrait-runtime,
+html.kakao-runtime {
+  width: 100%;
+  height: var(--app-height);
+  overflow: hidden;
+  background: var(--navy-950);
+}
+html.portrait-runtime body,
+html.kakao-runtime body {
+  width: 100%;
+  min-height: var(--app-height);
+  height: var(--app-height);
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+html.portrait-runtime .app-shell,
+html.kakao-runtime .app-shell {
+  width: min(100vw, 560px);
+  min-height: var(--app-height);
+  height: var(--app-height);
+  max-height: var(--app-height);
+  overflow: hidden auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+html.kakao-runtime .topbar {
+  top: max(6px, env(safe-area-inset-top));
+  backdrop-filter: blur(20px);
+}
+.kakao-portrait-runtime .screen-stack {
+  min-height: calc(var(--app-height) - 74px);
+}
+.kakao-portrait-card {
+  border-color: rgba(54, 214, 164, 0.42);
+  background: linear-gradient(135deg, rgba(16, 43, 87, 0.92), rgba(6, 21, 45, 0.88));
+}
+.kakao-portrait-card .eyebrow { color: var(--emerald-500); }
+.compact-guard-actions { grid-template-columns: 1fr 0.75fr 0.56fr; }
+body[data-browser="kakao"] .start-now-button::before { content: '카카오 인앱 실행'; }
+body[data-browser="kakao"] .lobby-flow-note::after {
+  content: ' · 카카오톡에서는 외부 이동 없이 세로 전체화면으로 유지됩니다.';
+  color: var(--emerald-500);
+}
+body[data-browser="kakao"] .browser-guard-card {
+  transform: translateY(0);
+  animation: kakaoAssistIn 0.32s cubic-bezier(.2,1.24,.2,1) both;
+}
+.portrait-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 50% 18%, rgba(125, 220, 255, 0.24), transparent 34%),
+    linear-gradient(180deg, rgba(6, 21, 45, 0.98), rgba(10, 30, 61, 0.98));
+}
+.portrait-lock-card {
+  width: min(100%, 380px);
+  padding: 1.1rem;
+  text-align: center;
+  border-radius: 30px;
+  box-shadow: 0 26px 80px rgba(6, 21, 45, 0.68), 0 0 46px rgba(125, 220, 255, 0.18);
+}
+.portrait-lock-card h2 { margin: 0.12rem 0 0.44rem; }
+.portrait-lock-card p:not(.eyebrow) { color: var(--muted); line-height: 1.5; }
+.portrait-device {
+  width: 86px;
+  height: 132px;
+  margin: 0.82rem auto;
+  border-radius: 28px;
+  border: 2px solid rgba(245, 200, 107, 0.58);
+  background: linear-gradient(180deg, rgba(16, 43, 87, 0.86), rgba(6, 21, 45, 0.94));
+  box-shadow: inset 0 0 22px rgba(125, 220, 255, 0.13), 0 0 34px rgba(245, 200, 107, 0.18);
+  display: grid;
+  place-items: center;
+  animation: deviceStand 1.4s ease-in-out infinite;
+}
+.portrait-device span {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid rgba(54, 214, 164, 0.66);
+  box-shadow: 0 0 24px rgba(54, 214, 164, 0.28);
+}
+html.landscape-locked .app-shell {
+  pointer-events: none;
+  filter: blur(5px) saturate(0.8);
+}
+.mission-card em::before {
+  content: '보상 '; 
+  color: var(--gold-300);
+  opacity: 0.92;
+}
+.mission-card[data-ready="true"] {
+  border-color: rgba(54, 214, 164, 0.64);
+  box-shadow: inset 0 0 24px rgba(54, 214, 164, 0.12), 0 0 28px rgba(54, 214, 164, 0.14);
+}
+.mission-card[data-ready="true"] .mission-card-badge::after {
+  content: ' READY';
+  color: var(--emerald-500);
+}
+.combo-cutin.combo-finisher {
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--sky-500), var(--violet-500));
+  text-shadow: none;
+  box-shadow: 0 0 42px rgba(245, 200, 107, 0.42), 0 0 74px rgba(143, 107, 255, 0.24);
+}
+.boss-core.cutin-hit::after {
+  content: '';
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  border: 2px solid rgba(245, 200, 107, 0.62);
+  animation: bossCutinRing 0.52s ease-out both;
+  pointer-events: none;
+}
+body[data-quality="low"] .portrait-device,
+body[data-quality="low"] .kakao-portrait-card,
+body[data-quality="low"] .combo-cutin.combo-finisher { box-shadow: none; }
+@keyframes kakaoAssistIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes deviceStand {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  50% { transform: rotate(2deg) translateY(-3px); }
+}
+@keyframes bossCutinRing {
+  0% { opacity: 0; transform: scale(0.72); }
+  45% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.28); }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  html.portrait-runtime .portrait-lock-overlay,
+  html.kakao-runtime .portrait-lock-overlay { display: grid; }
+}
+@media (max-width: 430px) {
+  .compact-guard-actions { grid-template-columns: 1fr 0.76fr; }
+  #kakao-guard-close-button { grid-column: 1 / -1; min-height: 30px; }
+  .portrait-lock-card { border-radius: 24px; padding: 0.92rem; }
+  .portrait-device { width: 74px; height: 112px; border-radius: 24px; }
+}
+@media (max-height: 690px) {
+  body[data-browser="kakao"] .browser-guard-card { transform-origin: bottom center; }
+  .portrait-lock-card p:not(.eyebrow) { font-size: 0.78rem; }
+  .portrait-device { margin-block: 0.56rem; }
+}

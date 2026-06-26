@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#07162d" />
+    <meta name="screen-orientation" content="portrait" />
+    <meta name="x5-orientation" content="portrait" />
+    <meta name="x5-fullscreen" content="true" />
+    <meta name="full-screen" content="yes" />
+    <meta name="browsermode" content="application" />
     <meta name="color-scheme" content="dark" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -25,19 +30,32 @@
     <title>꿈의 서고</title>
   </head>
   <body>
-    <aside id="browser-guard" class="browser-guard hidden" aria-label="카카오 브라우저 보조 패널" role="status" aria-live="polite">
-      <div class="browser-guard-card luxury-panel handoff-card">
+    <aside id="browser-guard" class="browser-guard hidden" aria-label="카카오 전체화면 보조 패널" role="status" aria-live="polite">
+      <div class="browser-guard-card luxury-panel handoff-card immersive-card">
         <img class="handoff-icon" src="%BASE_URL%assets/meta/browser-handoff.png" alt="" aria-hidden="true" draggable="false" />
         <div class="handoff-copy">
-          <p class="eyebrow">Browser Handoff</p>
-          <h2>카카오톡에서도 로비로 바로 입장합니다</h2>
-          <p>계정 저장이 필요할 때만 외부 브라우저를 사용하세요. 게스트 플레이와 로비 탐색은 이 화면에서 계속됩니다.</p>
-          <p id="guard-status" class="guard-status">필요할 때 Chrome/Safari로 이어 열 수 있습니다.</p>
+          <p class="eyebrow">Kakao In-App Play</p>
+          <h2>카카오톡 안에서 바로 실행합니다</h2>
+          <p>카카오톡 안에서 그대로 플레이하며 세로 전체화면 프레임을 유지합니다. 화면이 흔들리면 고정 버튼을 눌러주세요.</p>
+          <p id="guard-status" class="guard-status">세로 전체화면 고정을 준비했습니다.</p>
         </div>
-        <div class="guard-actions">
-          <button id="open-external-button" type="button" class="primary-glow">외부 브라우저</button>
-          <button id="copy-url-button" type="button" class="secondary">주소 복사</button>
-          <button id="continue-inapp-button" type="button" class="secondary">계속하기</button>
+        <div class="guard-actions compact-guard-actions">
+          <button id="kakao-fullscreen-button" type="button" class="primary-glow">전체화면 고정</button>
+          <button id="kakao-portrait-button" type="button" class="secondary">세로 잠금</button>
+          <button id="continue-inapp-button" type="button" class="secondary">닫기</button>
+        </div>
+      </div>
+    </aside>
+
+    <aside id="portrait-lock-overlay" class="portrait-lock-overlay hidden" aria-live="polite" aria-label="세로 화면 고정 상태">
+      <div class="portrait-lock-card luxury-panel">
+        <div class="portrait-device" aria-hidden="true"><span></span></div>
+        <p class="eyebrow">Portrait Lock</p>
+        <h2>세로 전체화면 유지 중</h2>
+        <p id="portrait-lock-status">카카오톡 안에서도 게임 화면은 9:16 프레임으로 고정됩니다.</p>
+        <div class="portrait-lock-actions">
+          <button id="portrait-lock-action-button" type="button" class="primary-glow">전체화면 다시 고정</button>
+          <button id="portrait-lock-continue-button" type="button" class="secondary">세로 화면에서 계속</button>
         </div>
       </div>
     </aside>
@@ -171,6 +189,7 @@
               <div class="boss-info"><strong id="boss-name">망각의 서고령</strong><small id="boss-pattern">잔상 압박</small><em id="boss-hp-label">HP 100%</em><div class="boss-hp-meter" aria-hidden="true"><i id="boss-hp-fill"></i></div><div id="boss-telegraph" class="boss-telegraph hidden" aria-live="polite">반격 예고</div></div>
             </div>
             <div id="combo-cutin" class="combo-cutin hidden" aria-live="polite">2 COMBO</div>
+            <div id="boss-hit-cutin" class="boss-hit-cutin hidden" aria-live="polite">BOSS HIT</div>
             <div id="pixi-board-host" class="pixi-board-host" role="application" aria-label="마법진 사천성 보드"></div>
             <div class="game-actions"><button id="hint-button" type="button" class="secondary">힌트</button><button id="shuffle-button" type="button" class="secondary">섞기</button><button id="new-game-button" type="button">다시 시작</button></div>
           </section>
@@ -183,7 +202,7 @@
       <div class="options-card luxury-panel">
         <div class="options-head"><div><p class="eyebrow">Options</p><h2>옵션</h2></div><button id="close-options-button" type="button" class="icon-button" aria-label="옵션 닫기">×</button></div>
         <article class="option-row"><h3>계정</h3><p id="settings-account-text">로그인 전입니다.</p><div class="option-actions"><button id="settings-login-button" type="button" class="secondary">첫 화면</button><button id="settings-lobby-button" type="button" class="secondary">로비</button><button id="signout-button" type="button" class="secondary danger hidden">로그아웃</button></div></article>
-        <article class="option-row"><h3>화면</h3><p>세로 9:16 전체화면 플레이를 사용합니다.</p><button id="settings-fullscreen-button" type="button">전체화면</button></article>
+        <article class="option-row"><h3>화면</h3><p>카카오톡 인앱에서도 외부 이동 없이 세로 9:16 전체화면 프레임을 유지합니다.</p><button id="settings-fullscreen-button" type="button">전체화면 고정</button></article>
         <article class="option-row"><h3>사운드</h3><p>터치, 연결, 폭발, 콤보 효과음을 켜고 끕니다.</p><button id="sound-toggle" type="button" aria-pressed="true">효과음 켜짐</button></article>
         <article class="option-row"><h3>렌더링 품질</h3><p id="quality-label">고품질 · 자동 감지</p><button id="quality-toggle" type="button">렌더링 고품질</button></article>
         <article class="option-row"><h3>진행 관리</h3><p>로컬 캠페인 진행과 해금 기록을 초기화합니다.</p><button id="reset-progress-button" type="button" class="secondary">로컬 진행 초기화</button></article>

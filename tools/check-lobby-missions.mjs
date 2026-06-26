@@ -16,6 +16,7 @@ const required = [
   ['src/main.ts', main, "import('./engine/SpineBridge')"],
   ['src/styles.css', css, '.mission-deck-panel'],
   ['src/styles.css', css, '.mission-card'],
+  ['src/styles.css', css, '.mission-card[data-ready="true"]'],
   ['package.json', packageJson, 'check:lobby-missions']
 ];
 const missing = required.filter(([, text, token]) => !text.includes(token)).map(([file,,token]) => `${file}: ${token}`);

@@ -4,8 +4,7 @@ const kakaoInAppPatterns = [
   /KAKAO/i
 ];
 
-const CONTINUE_KEY = 'dream-library-kakao-continue-inapp';
-const TIP_KEY = 'dream-library-kakao-soft-tip-shown';
+const TIP_KEY = 'dream-library-kakao-portrait-tip-shown';
 
 export function initBrowserGuard() {
   const userAgent = navigator.userAgent || '';
@@ -13,11 +12,10 @@ export function initBrowserGuard() {
   const isAndroid = /Android/i.test(userAgent);
   const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
   const guard = document.querySelector('#browser-guard');
-  const copyButton = document.querySelector('#copy-url-button');
-  const openButton = document.querySelector('#open-external-button');
+  const fullscreenButton = document.querySelector('#kakao-fullscreen-button');
   const continueButton = document.querySelector('#continue-inapp-button');
+  const closeButton = document.querySelector('#kakao-guard-close-button');
   const status = document.querySelector('#guard-status');
-  const currentUrl = window.location.href;
 
   const setStatus = (message) => {
     if (status) status.textContent = message;
@@ -25,52 +23,44 @@ export function initBrowserGuard() {
 
   const hide = () => {
     guard?.classList.add('hidden');
-    document.documentElement.classList.remove('handoff-browser');
+    document.documentElement.classList.remove('kakao-assist-visible');
   };
 
   const show = (message) => {
     if (!guard || !isKakao) return;
     setStatus(message);
     guard.classList.remove('hidden');
-    guard.classList.add('soft-handoff');
-    document.documentElement.classList.remove('handoff-browser');
+    guard.classList.add('kakao-inline-assist');
+    document.documentElement.classList.add('kakao-assist-visible');
     sessionStorage.setItem(TIP_KEY, 'yes');
   };
 
-  const copyUrl = async () => {
+  const requestPortraitFullscreen = async () => {
     try {
-      await navigator.clipboard.writeText(currentUrl);
-      setStatus('주소를 복사했습니다. Chrome 또는 Safari 주소창에 붙여넣으면 같은 로비로 이어집니다.');
-      return true;
+      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      }
     } catch {
-      setStatus(currentUrl);
-      return false;
+      // Kakao/iOS can reject fullscreen. CSS viewport lock and portrait overlay remain active.
     }
-  };
-
-  const openExternal = async () => {
-    if (!isKakao) return false;
-    if (isAndroid) {
-      window.location.href = makeChromeIntentUrl(currentUrl);
-      setStatus('Chrome으로 이어서 여는 중입니다. 전환되지 않아도 카카오톡 안에서 게스트 플레이를 계속할 수 있습니다.');
-      return true;
+    try {
+      if (screen.orientation?.lock) await screen.orientation.lock('portrait');
+    } catch {
+      // Best effort only.
     }
-    if (isIOS) {
-      await copyUrl();
-      show('iPhone에서는 자동 Safari 전환이 제한될 수 있어 주소 복사를 준비했습니다. 카카오톡 안에서도 로비와 게스트 플레이는 계속됩니다.');
-      return true;
-    }
-    window.open(currentUrl, '_blank', 'noopener,noreferrer');
-    setStatus('외부 브라우저 열기를 시도했습니다. 열리지 않으면 주소 복사를 사용하세요.');
+    setStatus('카카오톡 안에서 세로 전체화면 플레이를 유지합니다.');
+    document.dispatchEvent(new CustomEvent('dream-library:portrait-lock-requested'));
     return true;
   };
 
-  copyButton?.addEventListener('click', copyUrl);
-  openButton?.addEventListener('click', openExternal);
+  fullscreenButton?.addEventListener('click', requestPortraitFullscreen);
   continueButton?.addEventListener('click', () => {
-    sessionStorage.setItem(CONTINUE_KEY, 'yes');
     hide();
-    setStatus('카카오톡 안에서 계속 진행합니다. 계정 로그인은 외부 브라우저가 더 안정적입니다.');
+    requestPortraitFullscreen();
+  });
+  closeButton?.addEventListener('click', () => {
+    hide();
+    requestPortraitFullscreen();
   });
 
   document.body.dataset.browser = isKakao ? 'kakao' : 'standard';
@@ -84,34 +74,29 @@ export function initBrowserGuard() {
       return false;
     },
     shouldAssistAuth() {
-      return isKakao && sessionStorage.getItem(CONTINUE_KEY) !== 'yes';
+      return false;
     },
     async startHandoff() {
       if (!isKakao) return false;
-      show('계정 저장과 결제형 브라우저 기능은 외부 브라우저가 더 안정적입니다. 게스트는 카카오톡 안에서도 계속할 수 있습니다.');
-      return openExternal();
+      show('카카오톡 안에서 그대로 실행합니다. 세로 전체화면을 다시 적용합니다.');
+      await requestPortraitFullscreen();
+      return false;
     },
-    showRecovery(message = '카카오톡 안에서도 로비까지 바로 입장됩니다. 필요할 때만 외부 브라우저로 이어서 열 수 있습니다.') {
+    showRecovery(message = '카카오톡 안에서 그대로 실행합니다. 화면은 세로 전체화면 기준으로 고정됩니다.') {
       show(message);
     },
     maybeShowSoftTip() {
       if (isKakao && sessionStorage.getItem(TIP_KEY) !== 'yes') {
-        show('카카오톡 안에서도 로비로 바로 들어갑니다. Google/Email 저장이 필요할 때만 외부 브라우저를 사용하세요.');
+        show('다른 앱으로 이동하지 않습니다. 카카오톡 안에서 세로 전체화면으로 플레이합니다.');
       }
     },
     continueInApp() {
-      sessionStorage.setItem(CONTINUE_KEY, 'yes');
       hide();
+      void requestPortraitFullscreen();
     },
+    requestPortraitFullscreen,
     hide
   };
-}
-
-function makeChromeIntentUrl(rawUrl) {
-  const url = new URL(rawUrl);
-  const scheme = url.protocol.replace(':', '') || 'https';
-  const path = `${url.host}${url.pathname}${url.search}${url.hash}`;
-  return `intent://${path}#Intent;scheme=${scheme};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(rawUrl)};end`;
 }
 
 export function isStandaloneDisplayMode() {

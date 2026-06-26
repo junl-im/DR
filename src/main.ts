@@ -8,6 +8,7 @@ import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, fin
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
+import { initPortraitRuntimeGuard } from './platform/portraitLock.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 import { GAME_TITLE } from './config/design';
 import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
@@ -133,6 +134,7 @@ let audio: AudioRuntime = silentAudio;
 let audioReady: Promise<void> | null = null;
 let spineReady: Promise<void> | null = null;
 let browserRecovery: BrowserRecovery | null = null;
+let portraitRuntime: ReturnType<typeof initPortraitRuntimeGuard> | null = null;
 
 const RESTORATION_PROJECTS = [
   {
@@ -208,9 +210,14 @@ init();
 async function init() {
   document.title = GAME_TITLE;
   browserRecovery = initBrowserGuard();
+  portraitRuntime = initPortraitRuntimeGuard({ onStatus: setStatus });
+  document.addEventListener('dream-library:portrait-lock-requested', () => {
+    portraitRuntime?.requestLock('kakao-panel');
+  });
   if (browserRecovery.inApp) {
     browserRecovery.maybeShowSoftTip();
-    setStatus('카카오톡에서도 먼저 로비로 입장합니다. 계정 저장만 외부 브라우저가 더 안정적입니다.');
+    requestKakaoPortraitLock('init');
+    setStatus('카카오톡 안에서 세로 전체화면으로 로비에 입장합니다.');
   }
 
   registerServiceWorker();
@@ -310,7 +317,7 @@ function bindEvents() {
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
-    suggestKakaoAssist('카카오톡 안에서도 로비까지 바로 입장합니다. Google/Email 저장이 필요하면 외부 브라우저를 사용할 수 있습니다.');
+    suggestKakaoAssist('카카오톡 안에서 그대로 로비로 입장합니다. 화면은 세로 전체화면 기준으로 고정됩니다.');
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();
@@ -323,7 +330,7 @@ function bindEvents() {
     audio.play('tap');
     HAPTIC.tap();
     if (!firebaseReady) throw new Error('login-disabled');
-    if (await handoffIfNeeded('auth')) return;
+    await handoffIfNeeded('auth');
     await loginWithGoogle();
     enterLobbyFromStart();
   }, 'Google 로그인 후 로비로 입장했습니다.'));
@@ -331,14 +338,14 @@ function bindEvents() {
     event.preventDefault();
     runAuth(async () => {
       if (!firebaseReady) throw new Error('login-disabled');
-      if (await handoffIfNeeded('auth')) return;
+      await handoffIfNeeded('auth');
       await loginWithEmail(el.emailInput.value, el.passwordInput.value);
       enterLobbyFromStart();
     }, '이메일 로그인 후 로비로 입장했습니다.');
   });
   el.emailSignupButton.addEventListener('click', () => runAuth(async () => {
     if (!firebaseReady) throw new Error('login-disabled');
-    if (await handoffIfNeeded('auth')) return;
+    await handoffIfNeeded('auth');
     await signupWithEmail(el.emailInput.value, el.passwordInput.value);
     enterLobbyFromStart();
   }, '새 계정을 만들고 로비로 입장했습니다.'));
@@ -454,6 +461,7 @@ function bindEvents() {
   });
 
   window.addEventListener('resize', () => {
+    portraitRuntime?.syncViewport();
     if (state.screen === 'game' && state.board.length) renderer.renderBoard(state.board);
   });
   window.addEventListener('keydown', (event) => {
@@ -495,18 +503,28 @@ function handleSoftBack() {
 
 function suggestKakaoAssist(message: string) {
   browserRecovery?.showRecovery?.(message);
+  requestKakaoPortraitLock('assist');
+}
+
+async function requestKakaoPortraitLock(source = 'game') {
+  if (browserRecovery?.inApp) {
+    await browserRecovery.requestPortraitFullscreen?.();
+    await portraitRuntime?.requestLock(source);
+  } else {
+    await portraitRuntime?.requestLock(source);
+  }
 }
 
 async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
   if (!browserRecovery?.inApp) return false;
-  if (mode === 'auth' && browserRecovery.shouldAssistAuth?.()) {
-    audio.play('tap');
-    HAPTIC.tap();
-    browserRecovery.showRecovery('Google/Email 저장은 외부 브라우저가 더 안정적입니다. 게스트로 로비를 둘러본 뒤 필요할 때 다시 시도하세요.');
-    setStatus('계정 저장은 외부 브라우저 권장입니다. 게스트 입장은 바로 가능합니다.');
-    return true;
+  audio.play('tap');
+  if (mode === 'auth') {
+    browserRecovery.showRecovery('카카오톡 안에서 로그인과 저장을 그대로 시도합니다. 화면은 세로 전체화면으로 유지합니다.');
+    setStatus('카카오톡 인앱에서 계정 저장을 시도합니다.');
+  } else {
+    browserRecovery.showRecovery('카카오톡 안에서 그대로 플레이합니다. 세로 전체화면을 다시 적용합니다.');
   }
-  browserRecovery.showRecovery('카카오톡 안에서도 게임 진행은 계속됩니다. 외부 브라우저는 선택 사항입니다.');
+  await requestKakaoPortraitLock(mode);
   return false;
 }
 
@@ -516,6 +534,7 @@ function enterLobbyFromStart() {
     writeJson('dream-library-local-guest', state.localGuest);
     renderAuth();
   }
+  requestKakaoPortraitLock('lobby');
   requestGameFullscreen();
   renderLobby();
   updateScreen('lobby');
@@ -550,6 +569,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   renderBossPanel();
   audio.unlock();
   audio.play('tap');
+  await requestKakaoPortraitLock('stage-start');
   requestGameFullscreen();
   state.board = createBoard(difficulty, stage.modifiers || []);
   state.selected = null;
@@ -803,6 +823,7 @@ function updateScreen(screen: ScreenName) {
   el.app.dataset.screen = screen;
   document.body.dataset.screen = screen;
   const bg = screen === 'login' ? 'storybook-login' : screen === 'lobby' ? 'world-map' : 'library-hall';
+  if (screen === 'lobby' || screen === 'game') requestKakaoPortraitLock(`screen-${screen}`);
   document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
   el.backButton.classList.toggle('hidden', screen === 'login');
@@ -928,7 +949,7 @@ function renderLobby() {
 function renderLobbyMissionDeck(forcePulse = false) {
   const cards = getLobbyMissionCards();
   el.lobbyMissionDeck.innerHTML = cards.map((card) => `
-    <button type="button" class="mission-card ${card.accent}${forcePulse ? ' deck-pulse' : ''}" data-mission-type="${card.type}" data-stage-id="${card.stageId || ''}" data-restore-id="${card.restoreId || ''}" data-filter="${card.filter || ''}">
+    <button type="button" class="mission-card ${card.accent}${forcePulse ? ' deck-pulse' : ''}" data-mission-type="${card.type}" data-stage-id="${card.stageId || ''}" data-restore-id="${card.restoreId || ''}" data-filter="${card.filter || ''}" data-ready="${card.ready ? 'true' : 'false'}">
       <span class="mission-card-badge">${card.badge}</span>
       <strong>${escapeHtml(card.title)}</strong>
       <small>${escapeHtml(card.desc)}</small>
@@ -952,7 +973,8 @@ function getLobbyMissionCards() {
       badge: '추천 스테이지',
       title: `${nextStage.number}. ${nextStage.title}`,
       desc: `${DIFFICULTIES[nextStage.difficultyKey].label} · ${getBossForStage(nextStage).name}`,
-      cta: '선택하고 시작 준비'
+      cta: `${nextStage.reward.label} ×${nextStage.reward.amount}`,
+      ready: true
     },
     {
       type: 'daily',
@@ -961,7 +983,8 @@ function getLobbyMissionCards() {
       badge: '오늘의 복원',
       title: dailyStage.title,
       desc: `${state.dailyChallenge.label} · ${state.dailyChallenge.rewardLabel}`,
-      cta: '오늘 스테이지 시작'
+      cta: state.dailyChallenge.rewardLabel,
+      ready: true
     },
     {
       type: 'restoration',
@@ -970,7 +993,8 @@ function getLobbyMissionCards() {
       badge: readyProject ? '복원 가능' : '집중 복원',
       title: targetProject.label,
       desc: `${getRestorationCurrent(targetProject)}/${targetProject.need} · ${targetProject.reward}`,
-      cta: readyProject ? '복원 완료하기' : '재료 확인'
+      cta: readyProject ? '완료 보상 수령' : `${getRestorationCurrent(targetProject)}/${targetProject.need} 필요`,
+      ready: Boolean(readyProject)
     },
     {
       type: 'collection',
@@ -979,7 +1003,8 @@ function getLobbyMissionCards() {
       badge: '컬렉션 목표',
       title: missingPremium ? missingPremium.label : '미수집 오브젝트',
       desc: `${ownedCount}/${TILE_SET.length} 수집 · 도감 정리`,
-      cta: '도감 열기'
+      cta: missingPremium ? '프리미엄 수집' : '미수집 확인',
+      ready: !missingPremium
     }
   ];
   return cards;
@@ -1216,12 +1241,17 @@ function renderDailyPanel() {
 
 function showComboCutin(combo: number) {
   if (combo < 2) return;
-  el.comboCutin.textContent = `${combo} COMBO`;
-  el.comboCutin.classList.remove('hidden');
-  el.comboCutin.classList.remove('combo-pop');
+  const finisher = combo >= 5 || combo % 4 === 0;
+  el.comboCutin.textContent = finisher ? `${combo} COMBO · 서고 공명` : `${combo} COMBO`;
+  el.comboCutin.classList.remove('hidden', 'combo-pop', 'combo-finisher');
+  if (finisher) el.comboCutin.classList.add('combo-finisher');
   void el.comboCutin.offsetWidth;
   el.comboCutin.classList.add('combo-pop');
-  window.setTimeout(() => el.comboCutin.classList.add('hidden'), 760);
+  if (finisher) {
+    document.querySelector('#boss-core')?.classList.add('cutin-hit');
+    window.setTimeout(() => document.querySelector('#boss-core')?.classList.remove('cutin-hit'), 540);
+  }
+  window.setTimeout(() => el.comboCutin.classList.add('hidden'), finisher ? 980 : 760);
 }
 
 function openReward(stars: number, score: number) {

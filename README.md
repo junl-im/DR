@@ -60,6 +60,24 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.15 - Kakao In-App Portrait Fullscreen, Atlas Lookup, Combat Cut-in Patch
+
+- 카카오톡/Kakao 계열 인앱 브라우저에서 외부 브라우저로 빼지 않고 그대로 실행하도록 정책 변경
+- 카카오 인앱 실행 시 세로 9:16 전체화면 프레임을 우선 적용하고, 회전/리사이즈/터치 이후에도 portrait lock을 재시도
+- 가로 전환 시 게임 UI가 돌아가지 않도록 `portrait-lock-overlay`와 CSS viewport lock fallback 추가
+- `src/platform/portraitLock.js` 추가: `--app-height`, `--app-width`, `html.kakao-runtime`, `html.portrait-runtime` 기반 런타임 프레임 관리
+- 카카오 보조 패널 문구를 외부 이동 안내가 아니라 `카카오톡 안에서 바로 실행` 안내로 변경
+- `open-external-button`, `copy-url-button`, `intent://` 계열 외부 handoff 토큰 제거
+- 설정 화면의 전체화면 버튼도 카카오 인앱 세로 고정 정책에 맞게 정리
+- Texture Atlas manifest v1.0.15를 실제 lookup 후보 경로에 맞춰 갱신
+- `DreamPixiRenderer`에서 Atlas lookup 준비 경로와 전투 VFX 배정 지점 정리
+- 콤보/보스 피격 컷인 타이밍과 로비 미션 카드 밀도 추가 다듬기
+- `npm run check:kakao-portrait` 추가 및 Actions 검사에 반영
+- `npm run check:kakao`는 외부 브라우저 handoff 문구/intent가 남아 있으면 실패하도록 강화
+- service worker 캐시를 v1.0.15로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.14 - Lobby Mission Deck, Foldable Lobby Panels, Dynamic Loading Patch
 
 - 로비에 `Mission Deck` 추천 카드 추가: 추천 스테이지, 오늘의 복원, 복원 가능 프로젝트, 컬렉션 목표를 자동 배치
@@ -540,7 +558,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              48 files
@@ -574,28 +592,28 @@ premium-01 ~ premium-24
 
 ## Next Version Plan
 
-### v1.0.15 예정 - Atlas Lookup, Combat Cut-in, Lobby Density Patch
+### v1.0.16 예정 - Ranking Fallback, Atlas Rendering, Lobby Polish Patch
 
-- Texture Atlas JSON 기반 lookup을 실제 타일/효과 로딩에 연결
-- 보스 피격 컷인과 콤보 컷인 타이밍 추가 다듬기
+- Texture Atlas lookup을 타일/효과 렌더링 경로에 더 깊게 연결
+- Firebase daily ranking 실패 시 로컬 랭킹 fallback 추가
 - 로비 미션 카드에 보상 예상치와 완료 가능 표시 추가
-- 소형 화면에서 월드맵/선택 카드 밀도 추가 최적화
-- 카카오 하단 보조 패널을 더 얇고 게임 친화적인 토스트형으로 재정리
+- 소형 화면 월드맵/선택 카드/복원 패널 밀도 추가 최적화
+- 카카오 인앱 세로 전체화면 보조 패널을 더 얇은 토스트형으로 재정리
+- 보스 피격 컷인과 콤보 컷인 타이밍 추가 다듬기
 - 이미지 리포트 결과를 README에 붙여넣기 쉬운 markdown 출력으로 확장
-- Firebase daily ranking 실패 시 로컬 랭킹 fallback 검토
 - 큰 JS chunk 추가 분리와 lazy loading 범위 확대
 
 ## KakaoTalk / In-App Browser Policy
 
-v1.0.9부터 카카오톡/Kakao 계열 인앱 브라우저는 차단 경고가 아니라 `Browser Handoff` 방식으로 대응합니다.
+v1.0.15부터 카카오톡/Kakao 계열 인앱 브라우저는 외부 브라우저로 빼지 않고 게임을 그대로 실행합니다.
 
 원칙:
 
 - 첫 화면 진입 즉시 경고로 막지 않습니다.
-- 사용자가 `게임 시작` 또는 로그인을 누른 실제 액션 시점에 외부 브라우저 전환을 시도합니다.
-- Android는 Chrome `intent://` URL로 외부 브라우저 이어 열기를 시도합니다.
-- iOS처럼 자동 전환이 제한될 수 있는 환경은 주소 복사와 임시 플레이를 제공합니다.
-- 임시 플레이는 가능하지만, Google 로그인/전체화면/PWA/사운드 정책은 외부 브라우저보다 제한될 수 있습니다.
+- 카카오톡 안에서도 로비, 게스트 플레이, 퍼즐 진행을 허용합니다.
+- 외부 브라우저 전환, Chrome intent, 주소 복사 handoff를 사용하지 않습니다.
+- 대신 세로 9:16 전체화면 프레임, CSS viewport lock, orientation lock best-effort, 가로 전환 차단 레이어를 적용합니다.
+- 브라우저가 `requestFullscreen()` 또는 `screen.orientation.lock()`을 거부해도 UI는 가로 레이아웃으로 무너지지 않게 유지합니다.
 
 ## PWA / Fullscreen Policy
 
@@ -638,6 +656,6 @@ Initial tile themes:
 1. Texture Atlas lookup을 실제 렌더링 경로에 연결
 2. 보스 피격/콤보 컷인 추가 다듬기
 3. 소형 화면 월드맵/선택 카드 밀도 최적화
-4. 카카오 보조 패널을 토스트형으로 더 세련되게 정리
+4. 카카오 인앱 세로 전체화면 보조 패널을 토스트형으로 더 세련되게 정리
 
 
