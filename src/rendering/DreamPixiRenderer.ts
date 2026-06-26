@@ -25,6 +25,7 @@ type TileView = {
   root: Container;
   sprite: Sprite;
   glow: Graphics;
+  selectionRing: Graphics;
   row: number;
   col: number;
   baseX: number;
@@ -150,6 +151,7 @@ export class DreamPixiRenderer {
         gsap.to(previous.root.scale, { x: 1, y: 1, duration: 0.16 * this.quality.motionScale, ease: 'power2.out' });
         this.applyTileStateTexture(previous, previous.tile.special && !previous.tile.specialRevealed ? previous.tile.special === 'locked' ? 'locked' : 'disabled' : 'normal');
         gsap.to(previous.glow, { alpha: 0.16, duration: 0.18 * this.quality.motionScale });
+        gsap.to(previous.selectionRing, { alpha: 0, duration: 0.16 * this.quality.motionScale });
       }
     }
     this.selectedKey = point ? keyOf(point) : null;
@@ -159,7 +161,10 @@ export class DreamPixiRenderer {
     this.applyTileStateTexture(view, 'selected');
     gsap.to(view.root.scale, { x: 1.1, y: 1.1, duration: 0.1 * this.quality.motionScale, ease: 'back.out(3)' });
     gsap.to(view.glow, { alpha: 0.92, duration: 0.12 * this.quality.motionScale });
+    view.selectionRing.alpha = 1;
+    gsap.fromTo(view.selectionRing.scale, { x: 0.92, y: 0.92 }, { x: 1.08, y: 1.08, duration: 0.18 * this.quality.motionScale, yoyo: true, repeat: 1, ease: 'sine.inOut' });
     this.emitSelectionWave(view.root.x, view.root.y, PALETTE.sky);
+    this.emitSelectionSpark(view.root.x, view.root.y);
   }
 
   hint(points: BoardPoint[]) {
@@ -167,7 +172,8 @@ export class DreamPixiRenderer {
       const view = this.tileViews.get(keyOf(point));
       if (!view || view.removing) return;
       this.applyTileStateTexture(view, 'hint');
-      window.setTimeout(() => this.applyTileStateTexture(view, 'normal'), 740);
+      gsap.fromTo(view.selectionRing, { alpha: 0.25 }, { alpha: 0.9, duration: 0.18 * this.quality.motionScale, yoyo: true, repeat: 3 });
+      window.setTimeout(() => { this.applyTileStateTexture(view, 'normal'); gsap.to(view.selectionRing, { alpha: 0, duration: 0.12 * this.quality.motionScale }); }, 740);
       gsap.fromTo(view.root.scale, { x: 1, y: 1 }, { x: 1.14, y: 1.14, yoyo: true, repeat: 3, delay: index * 0.05, duration: 0.16 * this.quality.motionScale, ease: 'sine.inOut' });
       this.emitSelectionWave(view.root.x, view.root.y, PALETTE.emerald);
     });
@@ -282,6 +288,12 @@ export class DreamPixiRenderer {
     const hiddenSpecial = Boolean(tile.special && !tile.specialRevealed);
     const glow = new Graphics().circle(0, 0, this.tileSize * 0.62).fill({ color: specialColor, alpha: tile.special ? 0.28 : 0.2 });
     glow.alpha = 0.16;
+    const selectionRing = new Graphics()
+      .roundRect(-this.tileSize / 2 - 5, -this.tileSize / 2 - 5, this.tileSize + 10, this.tileSize + 10, this.tileSize * 0.28)
+      .stroke({ color: PALETTE.goldLight, width: Math.max(3, this.tileSize * 0.052), alpha: 0.96 })
+      .roundRect(-this.tileSize / 2 - 1, -this.tileSize / 2 - 1, this.tileSize + 2, this.tileSize + 2, this.tileSize * 0.23)
+      .stroke({ color: PALETTE.sky, width: Math.max(2, this.tileSize * 0.036), alpha: 0.9 });
+    selectionRing.alpha = 0;
     const startState = hiddenSpecial ? tile.special === 'locked' ? 'locked' : 'disabled' : 'normal';
     const texture = this.resolveTileTexture(tile, startState);
     const sprite = new Sprite(texture);
@@ -291,15 +303,35 @@ export class DreamPixiRenderer {
     sprite.alpha = hiddenSpecial && tile.special === 'fog' ? 0.16 : hiddenSpecial ? 0.46 : 1;
     const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: specialColor, width: tile.special ? 2.2 : 1.4, alpha: tile.special ? 0.58 : 0.2 });
 
-    root.addChild(shadow, glow, frame, sprite, rim);
+    root.addChild(shadow, glow, frame, sprite, rim, selectionRing);
     if (tile.special) root.addChild(this.createSpecialBadge(tile.special, hiddenSpecial));
     root.on('pointertap', () => this.onTileTap?.({ row, col }));
     this.boardLayers.board.addChild(root);
-    const view: TileView = { root, sprite, glow, row, col, baseX: x, baseY: y, phase: Math.random() * Math.PI * 2, settling: true, removing: false, tile };
+    const view: TileView = { root, sprite, glow, selectionRing, row, col, baseX: x, baseY: y, phase: Math.random() * Math.PI * 2, settling: true, removing: false, tile };
     this.tileViews.set(keyOf({ row, col }), view);
     root.scale.set(0.76);
     gsap.fromTo(root, { y: y + 16, alpha: 0 }, { y, alpha: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'back.out(1.8)', onComplete: () => { view.settling = false; root.y = view.baseY; } });
     gsap.to(root.scale, { x: 1, y: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'back.out(1.8)' });
+  }
+
+  private emitSelectionSpark(x: number, y: number) {
+    if (!this.boardApp) return;
+    const layer = this.boardLayers.ui || this.boardLayers.particles;
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (Math.PI * 2 * i) / 8;
+      const spark = new Graphics().circle(0, 0, Math.max(1.5, this.tileSize * 0.035)).fill({ color: i % 2 ? PALETTE.goldLight : PALETTE.sky, alpha: 0.95 });
+      spark.x = x + Math.cos(angle) * this.tileSize * 0.22;
+      spark.y = y + Math.sin(angle) * this.tileSize * 0.22;
+      layer.addChild(spark);
+      gsap.to(spark, {
+        x: x + Math.cos(angle) * this.tileSize * 0.58,
+        y: y + Math.sin(angle) * this.tileSize * 0.58,
+        alpha: 0,
+        duration: 0.32 * this.quality.motionScale,
+        ease: 'power2.out',
+        onComplete: () => spark.destroy()
+      });
+    }
   }
 
   private createSpecialBadge(special: BoardTile['special'], hidden: boolean) {

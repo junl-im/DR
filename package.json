@@ -24,7 +24,9 @@
     "check:kakao-portrait": "node tools/check-kakao-portrait.mjs",
     "check:exit-scroll": "node tools/check-exit-scroll.mjs",
     "check:v2-assets": "node tools/check-v2-asset-states.mjs",
-    "check:viewport-frame": "node tools/check-viewport-frame.mjs"
+    "check:viewport-frame": "node tools/check-viewport-frame.mjs",
+    "check:transparent-assets": "node tools/check-transparent-assets.mjs",
+    "check:gameplay-mapping": "node tools/check-gameplay-mapping.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -37,5 +39,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.18"
+  "version": "1.0.19"
 }

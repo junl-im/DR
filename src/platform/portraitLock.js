@@ -47,22 +47,14 @@ export function initPortraitRuntimeGuard(options = {}) {
     syncViewport();
     requestCount += 1;
     try {
-      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-      }
-    } catch {
-      // Best effort only. The virtual portrait frame is the real layout fallback.
-    }
-
-    try {
       if (screen.orientation?.lock) await screen.orientation.lock('portrait');
     } catch {
-      // Best effort only.
+      // Best effort only. Counter-rotated portrait frame is the real layout fallback.
     }
 
     syncViewport();
     sessionStorage.setItem(LOCK_KEY, 'yes');
-    if (source === 'button') setStatus('게임 화면을 맞췄습니다.');
+    if (source === 'button') setStatus('화면을 맞췄습니다.');
     return true;
   };
 
@@ -77,7 +69,7 @@ export function initPortraitRuntimeGuard(options = {}) {
   continueButton?.addEventListener('click', () => {
     syncViewport();
     overlay?.classList.add('hidden');
-    setStatus('게임 화면을 맞췄습니다.');
+    setStatus('화면을 맞췄습니다.');
   });
 
   const onResize = () => syncViewport();
@@ -85,7 +77,7 @@ export function initPortraitRuntimeGuard(options = {}) {
   window.visualViewport?.addEventListener('resize', onResize, { passive: true });
   window.addEventListener('orientationchange', () => window.setTimeout(() => {
     syncViewport();
-    if (isKakao || isMobile) void requestLock('orientationchange');
+    if (isKakao || isMobile) syncViewport();
   }, 80), { passive: true });
 
   const gestureLock = (event) => {

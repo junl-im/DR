@@ -8,9 +8,13 @@ const required = [
   ['viewport', 'computePortraitFrame'],
   ['viewport', 'PORTRAIT_RATIO'],
   ['viewport', 'sourceLandscape'],
+  ['viewport', 'counterRotated: false'],
+  ['viewport', 'portrait-rotation'],
   ['fullscreen', 'applyPortraitFrame'],
   ['portrait', 'applyPortraitFrame'],
   ['css', 'html.source-landscape .app-shell'],
+  ['css', 'html.source-landscape .app-shell'],
+  ['css', 'transform: none !important'],
   ['css', 'pointer-events: auto'],
   ['css', 'filter: none']
 ];
@@ -18,6 +22,10 @@ const files = { viewport, fullscreen, portrait, css };
 const missing = required.filter(([name, token]) => !files[name].includes(token)).map(([name, token]) => `${name}: ${token}`);
 if (missing.length) {
   console.error(`Viewport frame check failed:\n${missing.join('\n')}`);
+  process.exit(1);
+}
+if (/rotate\(var\(--portrait-rotation\)\)/.test(css) && !/html\.counter-rotated-portrait \.app-shell \{\n\s*transform: none !important;/.test(css)) {
+  console.error('Portrait fallback must not leave the game visually rotated.');
   process.exit(1);
 }
 if (/html\.landscape-locked \.app-shell \{\n\s*pointer-events: none|html\.landscape-locked \.app-shell \{[\s\S]*?filter: blur/.test(css)) {

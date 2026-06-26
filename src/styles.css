@@ -1547,3 +1547,126 @@ body[data-browser="kakao"] .lobby-flow-note::after {
     border-radius: 24px;
   }
 }
+
+/* v1.0.19 counter-rotated portrait frame and transparent asset QA */
+html.counter-rotated-portrait,
+html.counter-rotated-portrait body {
+  width: var(--raw-width);
+  height: var(--raw-height);
+  min-height: var(--raw-height);
+  overflow: hidden;
+  display: block;
+}
+html.counter-rotated-portrait .app-shell {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: var(--app-width);
+  min-width: var(--app-width);
+  max-width: var(--app-width);
+  height: var(--app-height);
+  min-height: var(--app-height);
+  max-height: var(--app-height);
+  margin: 0;
+  transform: translate(-50%, -50%) rotate(var(--portrait-rotation));
+  transform-origin: center center;
+  border-radius: 28px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(6, 21, 45, 0.84), rgba(6, 21, 45, 0.56));
+  box-shadow: 0 0 0 1px rgba(245, 200, 107, 0.22), 0 0 70px rgba(6, 21, 45, 0.72);
+  contain: layout paint size;
+  will-change: transform;
+}
+html.counter-rotated-portrait .topbar {
+  top: max(8px, env(safe-area-inset-top));
+}
+html.counter-rotated-portrait .screen-stack {
+  min-height: calc(var(--app-height) - 76px);
+}
+html.counter-rotated-portrait .pixi-stage {
+  width: var(--raw-width);
+  height: var(--raw-height);
+}
+html.counter-rotated-portrait body::before {
+  transform: none;
+}
+html.counter-rotated-portrait .portrait-lock-overlay,
+html.counter-rotated-portrait .browser-guard {
+  display: none !important;
+}
+html.counter-rotated-portrait .pixi-board-host,
+html.counter-rotated-portrait .pixi-board-host canvas {
+  touch-action: none;
+}
+.asset-transparent-layer,
+.title-logo-v2,
+.title-mascot-v2,
+.ui-frame-v2,
+.stage-card-art,
+.boss-image {
+  background-color: transparent !important;
+}
+
+/* v1.0.19 hotfix: stable portrait-fit frame, stronger selection and smoother lobby scroll */
+html.source-landscape,
+html.source-landscape body {
+  width: var(--raw-width);
+  height: var(--raw-height);
+  min-height: var(--raw-height);
+  overflow: hidden;
+}
+html.source-landscape body {
+  display: grid;
+  place-items: center;
+  justify-items: center;
+  align-items: center;
+  background: radial-gradient(circle at 50% 50%, rgba(125, 220, 255, 0.08), rgba(6, 21, 45, 0.94) 62%);
+}
+html.source-landscape .app-shell {
+  position: relative;
+  width: var(--app-width);
+  min-width: var(--app-width);
+  max-width: var(--app-width);
+  height: var(--app-height);
+  min-height: var(--app-height);
+  max-height: var(--app-height);
+  transform: none !important;
+  margin: 0 auto;
+  border-radius: 26px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  contain: layout paint size;
+}
+html.counter-rotated-portrait .app-shell {
+  transform: none !important;
+}
+html.source-landscape .screen-stack,
+html.source-landscape .screen-lobby {
+  min-height: calc(var(--app-height) - 76px);
+}
+html.source-landscape .pixi-stage,
+html.source-landscape .pixi-board-host {
+  width: var(--app-width) !important;
+  max-width: var(--app-width) !important;
+}
+body[data-screen="lobby"] .app-shell,
+body[data-screen="lobby"] .screen-stack,
+body[data-screen="lobby"] .screen-lobby {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
+}
+body[data-screen="lobby"] .screen-lobby {
+  padding-bottom: max(28px, env(safe-area-inset-bottom));
+}
+.stage-node.selected,
+.mission-card.selected,
+.collection-tile.owned:hover,
+.restore-node.selected {
+  outline: 2px solid rgba(255, 231, 164, 0.74);
+  outline-offset: 3px;
+}

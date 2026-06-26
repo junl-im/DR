@@ -7,7 +7,7 @@ import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, g
 import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, findHint, getTileAt, isCleared, isSpecialTileBlocked, revealAllSpecial, revealPairSpecials, revealSpecialTile, removePair, shuffleRemaining } from './game/shisen.js';
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
-import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
+import { initFullscreenControls } from './platform/fullscreen.js';
 import { initPortraitRuntimeGuard } from './platform/portraitLock.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 import { GAME_TITLE } from './config/design';
@@ -342,7 +342,7 @@ function bindEvents() {
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
-    suggestKakaoAssist('게임 화면을 정리한 뒤 로비로 입장합니다.');
+    requestKakaoPortraitLock('login');
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();
@@ -528,28 +528,16 @@ function handleSoftBack() {
 }
 
 
-function suggestKakaoAssist(message: string) {
-  browserRecovery?.showRecovery?.(message);
-  requestKakaoPortraitLock('assist');
-}
-
 async function requestKakaoPortraitLock(source = 'game') {
-  if (browserRecovery?.inApp) {
-    await browserRecovery.requestPortraitFullscreen?.();
-    await portraitRuntime?.requestLock(source);
-  } else {
-    await portraitRuntime?.requestLock(source);
-  }
+  await portraitRuntime?.requestLock(source);
 }
 
 async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
   if (!browserRecovery?.inApp) return false;
   audio.play('tap');
   if (mode === 'auth') {
-    browserRecovery.showRecovery('게임 화면을 정리합니다.');
     setStatus('계정 저장을 시도합니다.');
   } else {
-    browserRecovery.showRecovery('게임 화면을 정리합니다.');
   }
   await requestKakaoPortraitLock(mode);
   return false;
@@ -562,7 +550,6 @@ function enterLobbyFromStart() {
     renderAuth();
   }
   requestKakaoPortraitLock('lobby');
-  requestGameFullscreen();
   renderLobby();
   updateScreen('lobby');
   setStatus('로비에 입장했습니다. 스테이지를 고른 뒤 진짜 게임 시작을 누르세요.');
@@ -597,7 +584,6 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   audio.unlock();
   audio.play('tap');
   await requestKakaoPortraitLock('stage-start');
-  requestGameFullscreen();
   state.board = createBoard(difficulty, stage.modifiers || []);
   state.selected = null;
   state.locked = false;

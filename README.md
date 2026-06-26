@@ -60,6 +60,25 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.19 - Gameplay Asset Mapping, Portrait Fit and Selection Clarity Patch
+
+- 실제 퍼즐판에 내가 준 v2 상태별 타일이 우선 배정되지 않던 문제 수정
+- 원인: v2 타일은 `TILE_SET` 뒤쪽에 붙어 있었고, 보드 생성은 `TILE_SET.slice(0, difficulty.iconTypes)`를 사용해 구버전 타일을 먼저 가져오고 있었음
+- `getGameplayTilePool(difficulty)` 추가: v2 상태별 타일을 우선 풀로 사용하고 부족할 때만 기존/프리미엄 타일을 fallback으로 사용
+- `createBoard()`가 새 gameplay pool을 사용하도록 수정해 입문/일반/어려움/악몽 모두 v2 타일을 먼저 표시
+- 흰 배경처럼 보이는 문제를 점검하기 위해 critical UI/캐릭터/v2 normal/selected 타일 PNG의 알파 채널과 가장자리 투명도를 검사하는 `npm run check:transparent-assets` 범위 확장
+- 확인 결과 현재 반영된 v2 gameplay 타일 PNG는 알파 채널과 투명 가장자리를 가지고 있으며, 구버전 타일 매핑이 먼저 쓰이던 것이 가장 큰 시각적 원인이었음
+- 선택한 타일이 잘 보이지 않던 문제 수정: selected PNG 교체 외에 금빛/스카이블루 이중 링, 선택 펄스, spark VFX를 추가
+- 힌트 타일도 선택 링 알파 애니메이션으로 더 잘 보이도록 개선
+- 가로 전환 시 UI를 회전시키던 counter-rotation fallback 제거
+- 모바일/인앱에서 실제 viewport가 가로값을 반환해도 앱을 돌리지 않고, 가로 화면 안에 세로 9:16 fit frame을 중앙 배치하도록 변경
+- 로비 스크롤이 뻑뻑한 문제 완화: lobby/app shell/screen stack에 `pan-y`, `-webkit-overflow-scrolling: touch`, `overscroll-behavior-y`를 재정리
+- `npm run check:gameplay-mapping` 추가 및 GitHub Actions 검사에 반영
+- Texture Atlas manifest v1.0.19 갱신
+- service worker 캐시를 v1.0.19로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.18 - Virtual Portrait Frame, Quiet In-App Copy and Layout Root Cause Fix Patch
 
 - 카카오/모바일 환경에서 보조 안내 문구가 과하게 노출되던 문제를 정리하고, 게임 화면에서는 카카오/세로모드/전체화면 고정 류의 문구가 보이지 않도록 수정
@@ -612,7 +631,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 v2 타일 우선 매핑, 선택 표시 강화, 투명 에셋 QA, 가로 viewport fit frame을 추가로 수정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              84+ files
@@ -646,7 +665,7 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 
 ## Next Version Plan
 
-### v1.0.19 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
+### v1.0.20 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
 
 - v2 상태별 타일을 실제 Texture Atlas로 패킹하고 atlas JSON lookup을 우선 적용
 - 보스 공격 시퀀스 시트를 자동 분할해 공격/피격 컷인 프레임으로 배정

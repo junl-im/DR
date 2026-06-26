@@ -144,10 +144,18 @@ export const TILE_SET = [
   { type: 'v2-tile-36', icon: '✦', asset: stateTileAsset('v2-tile-36'), stateAssets: stateTileSet('v2-tile-36'), label: '마지막 기억핵', theme: 'v2 에셋' }
 ];
 
+
+export function getGameplayTilePool(difficulty) {
+  const v2Tiles = TILE_SET.filter((tile) => tile.stateAssets);
+  const legacyTiles = TILE_SET.filter((tile) => !tile.stateAssets);
+  const poolSize = Math.max(2, Number(difficulty?.iconTypes || 16));
+  return [...v2Tiles, ...legacyTiles].slice(0, poolSize);
+}
+
 export const ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.18.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.19.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -186,7 +194,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.18.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.19.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/gothic-window-v2.png`,

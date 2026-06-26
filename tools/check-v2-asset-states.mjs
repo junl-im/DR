@@ -22,7 +22,10 @@ for (const file of [
 }
 const difficulty = readFileSync(join(root, 'src', 'game', 'difficulty.js'), 'utf8');
 if (!/stateAssets:\s*stateTileSet\('v2-tile-01'\)/.test(difficulty)) errors.push('TILE_SET does not expose v2 stateAssets.');
+if (!/export function getGameplayTilePool/.test(difficulty)) errors.push('Gameplay tile pool helper is missing.');
 if (!/flatMap\(\(tile\) => tile\.stateAssets/.test(difficulty)) errors.push('PRELOAD_ASSETS must preload tile state assets.');
+const shisen = readFileSync(join(root, 'src', 'game', 'shisen.js'), 'utf8');
+if (!/getGameplayTilePool\(difficulty\)/.test(shisen)) errors.push('Board creation must use the v2-priority gameplay tile pool.');
 const renderer = readFileSync(join(root, 'src', 'rendering', 'DreamPixiRenderer.ts'), 'utf8');
 if (!/applyTileStateTexture/.test(renderer) || !/emitTileFragments/.test(renderer)) errors.push('Renderer must apply tile state textures and fragments.');
 if (errors.length) {

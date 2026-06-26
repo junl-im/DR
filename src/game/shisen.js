@@ -1,4 +1,4 @@
-import { TILE_SET } from './difficulty.js';
+import { getGameplayTilePool } from './difficulty.js';
 
 export function createBoard(difficulty, modifiers = []) {
   return createPlayableBoard(difficulty, modifiers);
@@ -16,7 +16,7 @@ export function createPlayableBoard(difficulty, modifiers = [], attempts = 40) {
 function buildRandomBoard(difficulty) {
   const totalCells = difficulty.rows * difficulty.cols;
   const pairCount = totalCells / 2;
-  const icons = TILE_SET.slice(0, difficulty.iconTypes);
+  const icons = getGameplayTilePool(difficulty);
   const deck = [];
 
   for (let i = 0; i < pairCount; i += 1) {

@@ -26,18 +26,11 @@ export function initBrowserGuard() {
 
   const requestPortraitFullscreen = async () => {
     try {
-      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-      }
-    } catch {
-      // In-app browsers may reject fullscreen. Layout remains stable through the virtual portrait frame.
-    }
-    try {
       if (screen.orientation?.lock) await screen.orientation.lock('portrait');
     } catch {
-      // Best effort only.
+      // Best effort only. Counter-rotated portrait frame is the layout fallback.
     }
-    setStatus('게임 화면을 맞췄습니다.');
+    setStatus('화면을 맞췄습니다.');
     document.dispatchEvent(new CustomEvent('dream-library:portrait-lock-requested'));
     return true;
   };
@@ -45,11 +38,11 @@ export function initBrowserGuard() {
   fullscreenButton?.addEventListener('click', requestPortraitFullscreen);
   continueButton?.addEventListener('click', () => {
     hide();
-    requestPortraitFullscreen();
+    void requestPortraitFullscreen();
   });
   closeButton?.addEventListener('click', () => {
     hide();
-    requestPortraitFullscreen();
+    void requestPortraitFullscreen();
   });
 
   document.body.dataset.browser = isKakao ? 'kakao' : 'standard';
