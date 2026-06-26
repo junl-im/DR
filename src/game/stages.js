@@ -32,6 +32,7 @@ export const STAGES = [
   {
     id: 'c1-01',
     chapterId: 'chapter-01',
+    bossId: 'forgotten-spirit',
     number: 1,
     title: '잠에서 깬 책갈피',
     subtitle: '첫 연결 규칙을 익히는 가벼운 복원',
@@ -43,6 +44,7 @@ export const STAGES = [
   {
     id: 'c1-02',
     chapterId: 'chapter-01',
+    bossId: 'forgotten-spirit',
     number: 2,
     title: '촛불 아래 열쇠',
     subtitle: '힌트와 섞기를 아껴 쓰는 연습',
@@ -54,6 +56,7 @@ export const STAGES = [
   {
     id: 'c1-03',
     chapterId: 'chapter-01',
+    bossId: 'forgotten-spirit',
     number: 3,
     title: '모래시계의 약속',
     subtitle: '제한시간 보너스를 노리는 스테이지',
@@ -65,6 +68,7 @@ export const STAGES = [
   {
     id: 'c1-04',
     chapterId: 'chapter-01',
+    bossId: 'forgotten-spirit',
     number: 4,
     title: '달빛 문장',
     subtitle: '첫 챕터 마무리 보스 퍼즐',
@@ -76,6 +80,7 @@ export const STAGES = [
   {
     id: 'c2-01',
     chapterId: 'chapter-02',
+    bossId: 'shadow-librarian',
     number: 5,
     title: '구름꽃 산책로',
     subtitle: '더 넓은 보드와 다양한 타일이 등장합니다',
@@ -87,6 +92,7 @@ export const STAGES = [
   {
     id: 'c2-02',
     chapterId: 'chapter-02',
+    bossId: 'shadow-librarian',
     number: 6,
     title: '잉크가 번진 악보',
     subtitle: '콤보 유지가 중요한 중반 스테이지',
@@ -98,6 +104,7 @@ export const STAGES = [
   {
     id: 'c2-03',
     chapterId: 'chapter-02',
+    bossId: 'shadow-librarian',
     number: 7,
     title: '드래곤 알의 꿈',
     subtitle: '연결 가능한 외곽 경로를 적극 활용하세요',
@@ -109,6 +116,7 @@ export const STAGES = [
   {
     id: 'c2-04',
     chapterId: 'chapter-02',
+    bossId: 'shadow-librarian',
     number: 8,
     title: '구름 정원 연주회',
     subtitle: '두 번째 챕터 클리어 관문',
@@ -120,6 +128,7 @@ export const STAGES = [
   {
     id: 'c3-01',
     chapterId: 'chapter-03',
+    bossId: 'sealed-page-golem',
     number: 9,
     title: '별빛 계단',
     subtitle: '후반부의 넓은 판을 여는 도전',
@@ -131,6 +140,7 @@ export const STAGES = [
   {
     id: 'c3-02',
     chapterId: 'chapter-03',
+    bossId: 'sealed-page-golem',
     number: 10,
     title: '봉인된 룬',
     subtitle: '남은 힌트와 섞기를 계산하며 진행하세요',
@@ -142,6 +152,7 @@ export const STAGES = [
   {
     id: 'c3-03',
     chapterId: 'chapter-03',
+    bossId: 'sealed-page-golem',
     number: 11,
     title: '왕관의 그림자',
     subtitle: '최대 크기 보드에 가까운 고난도 복원',
@@ -153,6 +164,7 @@ export const STAGES = [
   {
     id: 'c3-04',
     chapterId: 'chapter-03',
+    bossId: 'sealed-page-golem',
     number: 12,
     title: '꿈의 지도 완성',
     subtitle: '현재 캠페인의 마지막 보스 스테이지',

@@ -1,16 +1,17 @@
-name: Firebase Hosting Preview
+name: Quality Check
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
 
 jobs:
-  build_and_preview:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+  verify:
     runs-on: ubuntu-latest
     env:
       VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
@@ -21,14 +22,21 @@ jobs:
       VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
       VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm ci
-      - run: npm run build:firebase
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A }}
-          projectId: dream-library-b732a
+      - name: Install dependencies
+        run: npm ci
+      - name: Run project checks
+        run: |
+          npm run typecheck
+          npm run check:assets
+          npm run check:health
+          npm run check:kakao
+          npm run check:content
+          npm run report:images
+      - name: Build GitHub Pages bundle
+        run: npm run build:github

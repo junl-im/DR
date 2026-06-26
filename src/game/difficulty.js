@@ -74,7 +74,13 @@ export const TILE_SET = [
   { type: 'spark', icon: '🌟', asset: tileAsset('spark'), label: '기억 파편', theme: '핵심' }
 ];
 
+export const ATLAS_ASSETS = [
+  `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
+  `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`
+];
+
 export const PRELOAD_ASSETS = [
+  ...ATLAS_ASSETS,
   `${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/lobby-garden.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/world-map.png`,
@@ -82,6 +88,8 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/backgrounds/memory-mist.png`,
   `${import.meta.env.BASE_URL}assets/characters/librarian-momo.png`,
   `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`,
+  `${import.meta.env.BASE_URL}assets/characters/shadow-librarian.png`,
+  `${import.meta.env.BASE_URL}assets/characters/sealed-page-golem.png`,
   `${import.meta.env.BASE_URL}assets/ui/panel-frame.png`,
   `${import.meta.env.BASE_URL}assets/ui/reward-badge.png`,
   `${import.meta.env.BASE_URL}assets/ui/hp-frame.png`,
@@ -91,5 +99,6 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/meta/restoration-shelf.png`,
   `${import.meta.env.BASE_URL}assets/meta/daily-badge.png`,
   `${import.meta.env.BASE_URL}assets/meta/browser-handoff.png`,
+  `${import.meta.env.BASE_URL}assets/meta/collection-codex.png`,
   ...TILE_SET.map((tile) => tile.asset)
 ];

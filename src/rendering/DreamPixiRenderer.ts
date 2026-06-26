@@ -200,25 +200,25 @@ export class DreamPixiRenderer {
     this.emitSelectionWave(view.baseX, view.baseY, PALETTE.violet);
   }
 
-  setBossHp(percent: number) {
+  setBossHp(percent: number, phase?: string) {
     const hp = Math.max(0, Math.round(percent));
     const core = document.querySelector<HTMLElement>('#boss-core');
     const label = document.querySelector<HTMLElement>('#boss-hp-label');
     const fill = document.querySelector<HTMLElement>('#boss-hp-fill');
     if (core) {
-      core.dataset.phase = hp <= 25 ? 'danger' : hp <= 55 ? 'wounded' : 'stable';
+      core.dataset.phase = phase || (hp <= 25 ? 'danger' : hp <= 55 ? 'wounded' : 'stable');
       core.style.setProperty('--boss-hit-scale', String(1 + (100 - hp) / 520));
     }
     if (label) label.textContent = `HP ${hp}%`;
     if (fill) fill.style.transform = `scaleX(${hp / 100})`;
   }
 
-  playBossWarning() {
+  playBossWarning(power = 7) {
     const core = document.querySelector<HTMLElement>('#boss-core');
     if (!core) return;
     core.classList.add('boss-warning');
     window.setTimeout(() => core.classList.remove('boss-warning'), 760);
-    this.cameraShake(7);
+    this.cameraShake(power);
   }
 
   private calculateLayout(rows: number, cols: number): BoardLayout {

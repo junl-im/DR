@@ -2,9 +2,10 @@ import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDo
 import './styles.css';
 import { db, firebaseReady } from './firebase.js';
 import { getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
-import { DIFFICULTIES, PRELOAD_ASSETS } from './game/difficulty.js';
-import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
+import { ATLAS_ASSETS, DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
+import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
 import { countRemaining, createBoard, findConnectionPath, findHint, isCleared, revealPairSpecials, removePair, shuffleRemaining } from './game/shisen.js';
+import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
@@ -52,6 +53,7 @@ const el = {
   fullscreenButton: $('#settings-fullscreen-button'),
   installButton: $('#install-button'),
   lobbyGreeting: $('#lobby-greeting'),
+  chapterTabs: $('#chapter-tabs'),
   worldMap: $('#world-map'),
   selectedChapterName: $('#selected-chapter-name'),
   chapterStoryText: $('#chapter-story-text'),
@@ -70,8 +72,11 @@ const el = {
   restorationFocusButton: $('#restoration-focus-button'),
   restorationSummary: $('#restoration-summary'),
   restorationList: $('#restoration-list'),
+  collectionSummary: $('#collection-summary'),
+  collectionList: $('#collection-list'),
   dailyTitle: $('#daily-title'),
   dailyDesc: $('#daily-desc'),
+  dailyLeaderboardList: $('#daily-leaderboard-list'),
   dailyStartButton: $('#daily-start-button'),
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
@@ -80,6 +85,10 @@ const el = {
   comboLabel: $('#combo-label'),
   movesLabel: $('#moves-label'),
   statusLabel: $('#status-label'),
+  bossImage: $('#boss-image') as HTMLImageElement,
+  bossName: $('#boss-name'),
+  bossPattern: $('#boss-pattern'),
+  bossCore: $('#boss-core'),
   bossHpLabel: $('#boss-hp-label'),
   missionLabel: $('#mission-label'),
   modifierStrip: $('#modifier-strip'),
@@ -93,7 +102,13 @@ const el = {
   rewardMessage: $('#reward-message'),
   rewardItems: $('#reward-items'),
   nextStageButton: $('#next-stage-button'),
-  replayStageButton: $('#replay-stage-button')
+  replayStageButton: $('#replay-stage-button'),
+  restorationDetailModal: $('#restoration-detail-modal'),
+  restorationDetailTitle: $('#restoration-detail-title'),
+  restorationDetailMessage: $('#restoration-detail-message'),
+  restorationDetailItems: $('#restoration-detail-items'),
+  restorationDetailCloseButton: $('#restoration-detail-close-button'),
+  restorationDetailFocusButton: $('#restoration-detail-focus-button')
 };
 
 type ScreenName = 'login' | 'settings' | 'lobby' | 'game';
@@ -105,12 +120,40 @@ const renderer = new DreamPixiRenderer();
 const audio = new DreamAudio();
 let browserRecovery: BrowserRecovery | null = null;
 
+const RESTORATION_PROJECTS = [
+  {
+    id: 'shelf',
+    label: '달빛 책장',
+    need: 6,
+    types: ['magic-book', 'scroll', 'ink'],
+    reward: '달빛 서가 배경 장식 강화',
+    description: '마법서와 기록 재료를 모아 첫 책장을 되살립니다.'
+  },
+  {
+    id: 'garden',
+    label: '구름 정원',
+    need: 8,
+    types: ['flower', 'music-box', 'feather'],
+    reward: '로비 정원 파티클 개방',
+    description: '구름꽃과 추억의 노래를 모아 정원 기억을 복원합니다.'
+  },
+  {
+    id: 'tower',
+    label: '별빛 탑',
+    need: 10,
+    types: ['comet', 'rune', 'crown', 'map'],
+    reward: '별빛 탑 챕터 연출 강화',
+    description: '봉인과 지도의 조각을 모아 마지막 탑의 문양을 밝힙니다.'
+  }
+];
+
 const state = {
   screen: 'login' as ScreenName,
   previousScreen: 'login' as ScreenName,
   user: null as any,
   localGuest: readJson('dream-library-local-guest', null),
   selectedStageId: readText('dream-library-selected-stage') || DEFAULT_STAGE_ID,
+  selectedChapterId: readText('dream-library-selected-chapter') || getStageById(readText('dream-library-selected-stage') || DEFAULT_STAGE_ID).chapterId,
   board: [] as any[][],
   selected: null as BoardPoint | null,
   locked: true,
@@ -130,6 +173,8 @@ const state = {
   restorationFocus: readText('dream-library-restoration-focus') || 'shelf',
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
+  activeBoss: getBossForStage(getStageById(readText('dream-library-selected-stage') || DEFAULT_STAGE_ID)) as any,
+  pendingRestorationProjectId: '',
   qualityProfile: detectDeviceProfile(),
   warnedLowTime: false,
   lastClearedStageId: ''
@@ -157,6 +202,7 @@ async function init() {
   updateScreen('login');
 
   await renderer.initAmbient(el.pixiStage);
+  await renderer.preloadAssets(ATLAS_ASSETS);
   renderer.preloadAssets(PRELOAD_ASSETS);
   await prepareSpineRuntime();
 
@@ -166,8 +212,10 @@ async function init() {
     renderAuth();
     renderLobby();
     loadLeaderboard();
+    loadDailyLeaderboard();
   });
   loadLeaderboard();
+  loadDailyLeaderboard();
 }
 
 function bindEvents() {
@@ -259,12 +307,24 @@ function bindEvents() {
   }, '로그아웃했습니다.'));
   el.enterLobbyButton.addEventListener('click', () => updateScreen('lobby'));
 
+  el.chapterTabs.addEventListener('click', (event) => {
+    const node = (event.target as HTMLElement).closest<HTMLElement>('[data-chapter-id]');
+    if (!node) return;
+    selectChapter(node.dataset.chapterId || CHAPTERS[0].id);
+  });
+
   el.worldMap.addEventListener('click', (event) => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-stage-id]');
     if (!node) return;
     const stageId = node.dataset.stageId || DEFAULT_STAGE_ID;
+    const stage = getStageById(stageId);
+    state.selectedChapterId = stage.chapterId;
+    writeText('dream-library-selected-chapter', state.selectedChapterId);
     if (!isStageUnlocked(stageId)) {
+      state.selectedStageId = stageId;
+      writeText('dream-library-selected-stage', stageId);
       setStatus('이전 기억을 먼저 복원해야 합니다.');
+      renderLobby();
       return;
     }
     state.selectedStageId = stageId;
@@ -283,19 +343,35 @@ function bindEvents() {
   el.exitToLobbyButton.addEventListener('click', exitToLobby);
   el.hintButton.addEventListener('click', showHint);
   el.shuffleButton.addEventListener('click', shuffleBoard);
-  el.refreshLeaderboardButton.addEventListener('click', loadLeaderboard);
+  el.refreshLeaderboardButton.addEventListener('click', () => { loadLeaderboard(); loadDailyLeaderboard(); });
   el.nextStageButton.addEventListener('click', () => {
     closeReward();
     const next = getNextStage(state.lastClearedStageId || state.selectedStageId);
     if (next) {
       state.selectedStageId = next.id;
+      state.selectedChapterId = next.chapterId;
       writeText('dream-library-selected-stage', next.id);
+      writeText('dream-library-selected-chapter', next.chapterId);
       startSelectedStage();
     } else updateScreen('lobby');
   });
   el.replayStageButton.addEventListener('click', () => {
     closeReward();
     startSelectedStage();
+  });
+  el.restorationList.addEventListener('click', (event) => {
+    const node = (event.target as HTMLElement).closest<HTMLElement>('[data-restore-id]');
+    if (node) openRestorationDetail(node.dataset.restoreId || 'shelf');
+  });
+  el.restorationDetailCloseButton.addEventListener('click', closeRestorationDetail);
+  el.restorationDetailModal.addEventListener('click', (event) => { if (event.target === el.restorationDetailModal) closeRestorationDetail(); });
+  el.restorationDetailFocusButton.addEventListener('click', () => {
+    if (!state.pendingRestorationProjectId) return;
+    state.restorationFocus = state.pendingRestorationProjectId;
+    writeText('dream-library-restoration-focus', state.restorationFocus);
+    closeRestorationDetail();
+    renderRestoration();
+    setStatus('집중 복원 프로젝트를 변경했습니다.');
   });
 
   window.addEventListener('resize', () => {
@@ -316,7 +392,9 @@ async function handoffIfNeeded() {
 async function startDailyStage() {
   const daily = state.dailyChallenge;
   state.selectedStageId = daily.stageId;
+  state.selectedChapterId = getStageById(daily.stageId).chapterId;
   writeText('dream-library-selected-stage', daily.stageId);
+  writeText('dream-library-selected-chapter', state.selectedChapterId);
   renderLobby();
   await startSelectedStage({ daily: true });
 }
@@ -324,8 +402,16 @@ async function startDailyStage() {
 async function startSelectedStage(options: { daily?: boolean } = {}) {
   if (await handoffIfNeeded()) return;
   state.currentBoardId = options.daily ? 'daily' : 'global';
-  const stage = options.daily ? { ...getStageById(state.selectedStageId), modifiers: state.dailyChallenge.modifiers, dailySeed: state.dailyChallenge.seed } : getStageById(state.selectedStageId);
+  const baseStage = getStageById(state.selectedStageId);
+  if (!options.daily && !isStageUnlocked(baseStage.id)) {
+    setStatus('잠긴 스테이지입니다. 이전 기억을 먼저 복원하세요.');
+    renderLobby();
+    return;
+  }
+  const stage = options.daily ? { ...baseStage, modifiers: state.dailyChallenge.modifiers, dailySeed: state.dailyChallenge.seed } : baseStage;
   const difficulty = DIFFICULTIES[stage.difficultyKey];
+  state.activeBoss = getBossForStage(stage);
+  renderBossPanel();
   audio.unlock();
   audio.play('tap');
   requestGameFullscreen();
@@ -346,7 +432,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   updateScreen('game');
   if (!renderer.boardApp) await renderer.initBoard(el.boardHost, handleTileTap);
   await renderer.renderBoard(state.board);
-  renderer.setBossHp(100);
+  renderer.setBossHp(100, getBossPhase(100));
   renderGameHud();
   setStatus('같은 마법 오브젝트를 연결하세요.');
   updateMissionLabel();
@@ -396,8 +482,9 @@ function handleTileTap(point: BoardPoint) {
       state.locked = false;
       renderGameHud();
       const hp = (countRemaining(state.board) / Math.max(1, state.board.length * state.board[0].length)) * 100;
-      renderer.setBossHp(hp);
-      if (state.combo > 0 && state.combo % 6 === 0) renderer.playBossWarning();
+      renderer.setBossHp(hp, getBossPhase(hp));
+      const warningEvery = state.activeBoss?.comboWarningEvery || 6;
+      if (state.combo > 0 && state.combo % warningEvery === 0) renderer.playBossWarning(state.activeBoss?.shakePower || 7);
       if (isCleared(state.board)) clearStage();
     }, connectionPath);
   } else {
@@ -416,10 +503,11 @@ function tickTimer() {
   if (state.screen !== 'game' || state.locked) return;
   state.remainingSeconds = Math.max(0, state.remainingSeconds - 1);
   renderGameHud();
-  if (!state.warnedLowTime && state.remainingSeconds <= 15 && state.remainingSeconds > 0) {
+  const warningSeconds = state.activeBoss?.warningSeconds || 15;
+  if (!state.warnedLowTime && state.remainingSeconds <= warningSeconds && state.remainingSeconds > 0) {
     state.warnedLowTime = true;
-    renderer.playBossWarning();
-    setStatus('망각의 서고령이 반격을 준비합니다. 빠르게 연결하세요.');
+    renderer.playBossWarning(state.activeBoss?.shakePower || 7);
+    setStatus(state.activeBoss?.attackLine || '보스가 반격을 준비합니다. 빠르게 연결하세요.');
   }
   if (state.remainingSeconds <= 0) {
     state.locked = true;
@@ -464,6 +552,7 @@ async function clearStage() {
   state.lastClearedStageId = stage.id;
   unlockStage(stage.id, stars, score);
   addReward(stage.reward.type, stage.reward.amount);
+  if (state.currentBoardId === 'daily') addReward('spark', state.dailyChallenge.rewardBoost);
   state.localStats.bestScore = Math.max(state.localStats.bestScore, score);
   state.localStats.clearCount += 1;
   writeJson('dream-library-local-stats', state.localStats);
@@ -531,29 +620,75 @@ function qualityText(tier: string) {
 }
 
 function renderLobby() {
-  const stage = getStageById(state.selectedStageId);
-  const chapter = getChapterById(stage.chapterId);
+  let stage = getStageById(state.selectedStageId);
+  if (!CHAPTERS.some((chapter: any) => chapter.id === state.selectedChapterId)) state.selectedChapterId = stage.chapterId;
+  if (stage.chapterId !== state.selectedChapterId) {
+    const fallback = getChapterStages(state.selectedChapterId).find((item: any) => isStageUnlocked(item.id)) || getChapterStages(state.selectedChapterId)[0] || getStageById(DEFAULT_STAGE_ID);
+    stage = fallback;
+    state.selectedStageId = stage.id;
+    writeText('dream-library-selected-stage', stage.id);
+  }
+  const chapter = getChapterById(state.selectedChapterId);
   const difficulty = DIFFICULTIES[stage.difficultyKey];
+  const boss = getBossForStage(stage);
   const name = state.user ? getDisplayName(state.user) : state.localGuest ? state.localGuest.name : '사서님';
   el.lobbyGreeting.textContent = `${name}, 서고의 마법진이 준비되었습니다.`;
   el.selectedChapterName.textContent = chapter.title;
   el.chapterStoryText.textContent = chapter.story;
   el.selectedStageTitle.textContent = `${stage.number}. ${stage.title}`;
   el.selectedStageSubtitle.textContent = stage.subtitle;
-  el.selectedStageMeta.textContent = `${difficulty.label} · ${difficulty.rows}×${difficulty.cols}`;
+  el.selectedStageMeta.textContent = `${difficulty.label} · ${difficulty.rows}×${difficulty.cols} · ${boss.name}`;
   el.selectedStageReward.textContent = `${stage.reward.label} ×${stage.reward.amount}`;
   const clearCount = Object.keys(state.campaignProgress.cleared).length;
   el.stageProgressLabel.textContent = `${clearCount}/${STAGES.length} 클리어`;
-  el.worldMap.innerHTML = STAGES.map((item: any) => {
+  renderChapterTabs();
+  const chapterStages = getChapterStages(state.selectedChapterId);
+  el.worldMap.innerHTML = chapterStages.map((item: any) => {
     const unlocked = isStageUnlocked(item.id);
     const cleared = Boolean(state.campaignProgress.cleared[item.id]);
     const selected = item.id === state.selectedStageId;
     const stars = state.campaignProgress.cleared[item.id]?.stars ?? 0;
-    return `<button type="button" class="stage-node ${unlocked ? 'unlocked' : 'locked'} ${cleared ? 'cleared' : ''} ${selected ? 'selected' : ''}" data-stage-id="${item.id}" aria-label="${item.number} 스테이지 ${item.title}"><strong>${item.number}</strong><span>${cleared ? '★'.repeat(stars) : unlocked ? 'Open' : 'Lock'}</span></button>`;
+    const stageBoss = getBossForStage(item);
+    return `<button type="button" class="stage-node ${unlocked ? 'unlocked' : 'locked'} ${cleared ? 'cleared' : ''} ${selected ? 'selected' : ''}" data-stage-id="${item.id}" aria-label="${item.number} 스테이지 ${escapeHtml(item.title)}"><strong>${item.number}</strong><span>${cleared ? '★'.repeat(stars) : unlocked ? stageBoss.name.replace('의 ', ' ') : 'Lock'}</span></button>`;
   }).join('');
   renderStats();
   renderRestoration();
+  renderCollection();
   renderDailyPanel();
+}
+
+
+function selectChapter(chapterId: string) {
+  const stages = getChapterStages(chapterId);
+  if (!stages.length) return;
+  state.selectedChapterId = chapterId;
+  writeText('dream-library-selected-chapter', chapterId);
+  const current = getStageById(state.selectedStageId);
+  if (current.chapterId !== chapterId) {
+    const firstUnlocked = stages.find((stage: any) => isStageUnlocked(stage.id));
+    state.selectedStageId = (firstUnlocked || stages[0]).id;
+    writeText('dream-library-selected-stage', state.selectedStageId);
+  }
+  renderLobby();
+}
+
+function renderChapterTabs() {
+  el.chapterTabs.innerHTML = CHAPTERS.map((chapter: any) => {
+    const stages = getChapterStages(chapter.id);
+    const cleared = stages.filter((stage: any) => state.campaignProgress.cleared[stage.id]).length;
+    const hasUnlocked = stages.some((stage: any) => isStageUnlocked(stage.id));
+    return `<button type="button" class="chapter-tab ${chapter.id === state.selectedChapterId ? 'selected' : ''} ${hasUnlocked ? 'unlocked' : 'locked'}" data-chapter-id="${chapter.id}"><strong>${chapter.shortTitle}</strong><span>${cleared}/${stages.length}</span></button>`;
+  }).join('');
+}
+
+function renderBossPanel() {
+  const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
+  el.bossImage.src = boss.asset;
+  el.bossImage.alt = boss.name;
+  el.bossName.textContent = boss.name;
+  el.bossPattern.textContent = boss.patternLabel;
+  el.bossCore.dataset.bossId = boss.id;
+  el.bossCore.dataset.phase = 'stable';
 }
 
 function renderStats() {
@@ -581,7 +716,8 @@ function updateMissionLabel() {
   const difficulty = DIFFICULTIES[stage.difficultyKey];
   const remaining = state.board.length ? countRemaining(state.board) : difficulty.rows * difficulty.cols;
   const targetCombo = difficulty.key === 'easy' ? 3 : difficulty.key === 'normal' ? 4 : difficulty.key === 'hard' ? 5 : 6;
-  el.missionLabel.textContent = `남은 오브젝트 ${remaining}개 · ${targetCombo}콤보 이상 노리기`;
+  const bossTags = getBossStageTags(stage);
+  el.missionLabel.textContent = `남은 오브젝트 ${remaining}개 · ${targetCombo}콤보 · ${bossTags[0] || '보스전'}`;
 }
 
 
@@ -606,17 +742,43 @@ function addReward(type: string, amount: number) {
 
 function renderRestoration() {
   const totalItems = Object.values(state.inventory).reduce((sum: number, value: any) => sum + Number(value || 0), 0);
-  const projects = [
-    { id: 'shelf', label: '달빛 책장', need: 6, types: ['magic-book', 'scroll', 'ink'] },
-    { id: 'garden', label: '구름 정원', need: 8, types: ['flower', 'music-box', 'feather'] },
-    { id: 'tower', label: '별빛 탑', need: 10, types: ['comet', 'rune', 'crown', 'map'] }
-  ];
-  el.restorationSummary.textContent = `보유 복원 재료 ${formatNumber(totalItems)}개 · 보상으로 서고가 조금씩 살아납니다.`;
-  el.restorationList.innerHTML = projects.map((project) => {
+  el.restorationSummary.textContent = `보유 복원 재료 ${formatNumber(totalItems)}개 · 집중 프로젝트를 눌러 상세 재료를 확인하세요.`;
+  el.restorationList.innerHTML = RESTORATION_PROJECTS.map((project) => {
     const current = project.types.reduce((sum, type) => sum + Number(state.inventory[type] || 0), 0);
     const ratio = Math.min(100, Math.round((current / project.need) * 100));
-    return `<button type="button" class="restore-node ${ratio >= 100 ? 'complete' : ''}" data-restore-id="${project.id}"><strong>${project.label}</strong><span>${current}/${project.need}</span><i style="--restore-progress:${ratio}%"></i></button>`;
+    const focused = project.id === state.restorationFocus;
+    return `<button type="button" class="restore-node ${ratio >= 100 ? 'complete' : ''} ${focused ? 'selected' : ''}" data-restore-id="${project.id}"><strong>${focused ? '✦ ' : ''}${project.label}</strong><span>${current}/${project.need}</span><i style="--restore-progress:${ratio}%"></i></button>`;
   }).join('');
+}
+
+
+function renderCollection() {
+  const collected = TILE_SET.filter((tile: any) => Number(state.inventory[tile.type] || 0) > 0);
+  el.collectionSummary.textContent = `${collected.length}/${TILE_SET.length} 수집 · 스테이지 보상과 오늘의 복원으로 도감을 채웁니다.`;
+  el.collectionList.innerHTML = TILE_SET.map((tile: any) => {
+    const count = Number(state.inventory[tile.type] || 0);
+    return `<article class="collection-tile ${count > 0 ? 'owned' : 'locked'}"><img src="${tile.asset}" alt="" draggable="false" /><strong>${escapeHtml(tile.label)}</strong><span>${count > 0 ? `${count}개 · ${escapeHtml(tile.theme)}` : '미수집'}</span></article>`;
+  }).join('');
+}
+
+function openRestorationDetail(projectId: string) {
+  const project = RESTORATION_PROJECTS.find((item) => item.id === projectId) || RESTORATION_PROJECTS[0];
+  state.pendingRestorationProjectId = project.id;
+  const current = project.types.reduce((sum, type) => sum + Number(state.inventory[type] || 0), 0);
+  const ratio = Math.min(100, Math.round((current / project.need) * 100));
+  el.restorationDetailTitle.textContent = project.label;
+  el.restorationDetailMessage.textContent = `${project.description} · 보상: ${project.reward} · 진행률 ${ratio}%`;
+  el.restorationDetailItems.innerHTML = project.types.map((type) => {
+    const tile = TILE_SET.find((item: any) => item.type === type);
+    const count = Number(state.inventory[type] || 0);
+    return `<span class="detail-item"><img src="${tile?.asset || ''}" alt="" draggable="false" />${escapeHtml(tile?.label || type)} ${count}개</span>`;
+  }).join('');
+  el.restorationDetailFocusButton.textContent = project.id === state.restorationFocus ? '집중 중' : '집중 프로젝트';
+  el.restorationDetailModal.classList.remove('hidden');
+}
+
+function closeRestorationDetail() {
+  el.restorationDetailModal.classList.add('hidden');
 }
 
 function renderDailyPanel() {
@@ -640,7 +802,8 @@ function openReward(stars: number, score: number) {
   const stage = getStageById(state.selectedStageId);
   el.rewardTitle.textContent = `${stage.title} 복원 완료`;
   el.rewardMessage.textContent = `별 ${stars}개와 ${formatNumber(score)}점을 획득했습니다.`;
-  el.rewardItems.innerHTML = `<span>★ ${stars}</span><span>${stage.reward.label} ×${stage.reward.amount}</span>`;
+  const dailyBonus = state.currentBoardId === 'daily' ? `<span>오늘의 별가루 ×${state.dailyChallenge.rewardBoost}</span>` : '';
+  el.rewardItems.innerHTML = `<span>★ ${stars}</span><span>${stage.reward.label} ×${stage.reward.amount}</span>${dailyBonus}`;
   const next = getNextStage(stage.id);
   el.nextStageButton.classList.toggle('hidden', !next);
   el.rewardModal.classList.remove('hidden');
@@ -667,6 +830,25 @@ async function loadLeaderboard() {
   }
 }
 
+
+async function loadDailyLeaderboard() {
+  if (!db) {
+    el.dailyLeaderboardList.innerHTML = '<li>로컬 일일 기록 준비 완료</li>';
+    return;
+  }
+  try {
+    const daily = state.dailyChallenge;
+    const snapshot = await getDocs(query(collection(db, 'leaderboards', 'daily', 'days', daily.dateKey, 'scores'), orderBy('score', 'desc'), limit(3)));
+    const rows = snapshot.docs.map((docSnap, index) => {
+      const data = docSnap.data() as any;
+      return `<li>${index + 1}. ${escapeHtml(data.displayName || '사서')} · ${formatNumber(data.score || 0)}</li>`;
+    });
+    el.dailyLeaderboardList.innerHTML = rows.length ? rows.join('') : '<li>오늘 첫 기록을 노려보세요.</li>';
+  } catch {
+    el.dailyLeaderboardList.innerHTML = '<li>오늘 랭킹을 불러오지 못했습니다.</li>';
+  }
+}
+
 async function saveScore(score: number, stars: number) {
   if (!db || !state.user) return;
   const stage = getStageById(state.selectedStageId);
@@ -686,7 +868,10 @@ async function saveScore(score: number, stars: number) {
   };
   await setDoc(doc(db, 'leaderboards/global/scores', state.user.uid), payload, { merge: true }).catch(() => null);
   if (state.currentBoardId === 'daily') {
-    await setDoc(doc(db, 'leaderboards/daily/scores', state.user.uid), { ...payload, dailyKey: state.dailyChallenge.dateKey }, { merge: true }).catch(() => null);
+    const dailyPayload = { ...payload, dailyKey: state.dailyChallenge.dateKey };
+    await setDoc(doc(db, 'leaderboards/daily/scores', state.user.uid), dailyPayload, { merge: true }).catch(() => null);
+    await setDoc(doc(db, 'leaderboards', 'daily', 'days', state.dailyChallenge.dateKey, 'scores', state.user.uid), dailyPayload, { merge: true }).catch(() => null);
+    loadDailyLeaderboard();
   }
 }
 

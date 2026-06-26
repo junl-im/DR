@@ -15,7 +15,8 @@
     "clean:legacy-assets": "node tools/clean-v1.0.6.mjs",
     "check:health": "node tools/check-project-health.mjs",
     "check:kakao": "node tools/check-kakao-handoff.mjs",
-    "check:content": "node tools/check-content-data.mjs"
+    "check:content": "node tools/check-content-data.mjs",
+    "report:images": "node tools/report-image-size.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -28,5 +29,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.9"
+  "version": "1.0.10"
 }

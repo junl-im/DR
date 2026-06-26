@@ -119,6 +119,14 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /leaderboards/daily/days/{dateKey}/scores/{userId} {
+      allow read: if true;
+      allow create, update: if isOwner(userId)
+        && validScoreDoc('daily', userId)
+        && request.resource.data.dailyKey == dateKey;
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

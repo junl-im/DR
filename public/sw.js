@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1-0-9';
+const CACHE_NAME = 'dream-library-cache-v1-0-10';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -7,6 +7,8 @@ const CORE_ASSETS = [
   './assets/backgrounds/library-hall.png',
   './assets/characters/librarian-momo.png',
   './assets/characters/forgotten-spirit.png',
+  './assets/characters/shadow-librarian.png',
+  './assets/characters/sealed-page-golem.png',
   './assets/objects/magic-book.png',
   './assets/effects/hit-burst.png',
   './assets/effects/combo-flash.png',
@@ -14,6 +16,7 @@ const CORE_ASSETS = [
   './assets/meta/restoration-shelf.png',
   './assets/meta/daily-badge.png',
   './assets/meta/browser-handoff.png',
+  './assets/meta/collection-codex.png',
   './assets/ui/hp-frame.png'
 ];
 

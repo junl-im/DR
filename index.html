@@ -16,9 +16,12 @@
     <link rel="preload" href="%BASE_URL%assets/characters/librarian-momo.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/objects/magic-book.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/forgotten-spirit.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/characters/shadow-librarian.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/characters/sealed-page-golem.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/effects/combo-flash.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/meta/restoration-shelf.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/meta/daily-badge.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/meta/collection-codex.png" as="image" />
     <title>꿈의 서고</title>
   </head>
   <body>
@@ -113,6 +116,7 @@
           </div>
           <section class="chapter-panel campaign-panel luxury-panel" aria-label="캠페인 월드맵">
             <div class="section-heading"><div><p class="eyebrow">Campaign Map</p><h3 id="selected-chapter-name">달빛 서가의 첫 기록</h3><p id="chapter-story-text" class="chapter-story">흩어진 꿈 조각을 모아 첫 기록장을 되살립니다.</p></div><span id="stage-progress-label" class="asset-progress">0/12 클리어</span></div>
+            <div id="chapter-tabs" class="chapter-tabs" aria-label="챕터 선택"></div>
             <div id="world-map" class="world-map" aria-label="스테이지 선택 지도"></div>
             <article class="selected-stage-card">
               <div><p class="eyebrow">Selected Stage</p><h3 id="selected-stage-title">1. 잠에서 깬 책갈피</h3><p id="selected-stage-subtitle">첫 연결 규칙을 익히는 가벼운 복원</p></div>
@@ -132,8 +136,14 @@
 
           <section class="daily-panel luxury-panel" aria-label="일일 콘텐츠">
             <img src="%BASE_URL%assets/meta/daily-badge.png" alt="" aria-hidden="true" draggable="false" />
-            <div><p class="eyebrow">Daily Content</p><h3 id="daily-title">오늘의 복원</h3><p id="daily-desc">매일 바뀌는 보상 스테이지가 준비 중입니다.</p></div>
+            <div><p class="eyebrow">Daily Content</p><h3 id="daily-title">오늘의 복원</h3><p id="daily-desc">매일 바뀌는 보상 스테이지가 준비 중입니다.</p><ol id="daily-leaderboard-list" class="daily-leaderboard-list"></ol></div>
             <button id="daily-start-button" type="button" class="secondary">오늘 스테이지 시작</button>
+          </section>
+
+          <section class="collection-panel luxury-panel alive-panel" aria-label="컬렉션 도감">
+            <img src="%BASE_URL%assets/meta/collection-codex.png" alt="" aria-hidden="true" draggable="false" />
+            <div class="collection-copy"><p class="eyebrow">Collection</p><h3>기억 오브젝트 도감</h3><p id="collection-summary">수집한 복원 재료를 확인하세요.</p></div>
+            <div id="collection-list" class="collection-list"></div>
           </section>
 
           <section class="lobby-grid">
@@ -152,8 +162,8 @@
 
           <section class="battle-stage luxury-panel" aria-label="마법 전투 퍼즐판">
             <div class="boss-lane">
-              <div id="boss-core" class="boss-core" data-phase="stable"><img src="%BASE_URL%assets/characters/forgotten-spirit.png" alt="망각의 서고령" draggable="false" /><span></span></div>
-              <div class="boss-info"><strong>망각의 서고령</strong><em id="boss-hp-label">HP 100%</em><div class="boss-hp-meter" aria-hidden="true"><i id="boss-hp-fill"></i></div></div>
+              <div id="boss-core" class="boss-core" data-phase="stable" data-boss-id="forgotten-spirit"><img id="boss-image" src="%BASE_URL%assets/characters/forgotten-spirit.png" alt="망각의 서고령" draggable="false" /><span></span></div>
+              <div class="boss-info"><strong id="boss-name">망각의 서고령</strong><small id="boss-pattern">잔상 압박</small><em id="boss-hp-label">HP 100%</em><div class="boss-hp-meter" aria-hidden="true"><i id="boss-hp-fill"></i></div></div>
             </div>
             <div id="combo-cutin" class="combo-cutin hidden" aria-live="polite">2 COMBO</div>
             <div id="pixi-board-host" class="pixi-board-host" role="application" aria-label="마법진 사천성 보드"></div>
@@ -178,6 +188,11 @@
 
     <div id="reward-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="보상 획득">
       <div class="reward-card luxury-panel"><p class="eyebrow">Stage Clear</p><h2 id="reward-title">기억 복원 완료</h2><p id="reward-message">빛 조각이 서고에 돌아왔습니다.</p><div id="reward-items" class="reward-items"></div><div class="reward-actions"><button id="next-stage-button" type="button">다음 스테이지</button><button id="replay-stage-button" type="button" class="secondary">다시 플레이</button></div></div>
+    </div>
+
+
+    <div id="restoration-detail-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="복원 프로젝트 상세">
+      <div class="reward-card restoration-detail-card luxury-panel"><p class="eyebrow">Restoration Detail</p><h2 id="restoration-detail-title">복원 프로젝트</h2><p id="restoration-detail-message">필요한 복원 재료를 확인하세요.</p><div id="restoration-detail-items" class="reward-items restoration-detail-items"></div><div class="reward-actions"><button id="restoration-detail-close-button" type="button">확인</button><button id="restoration-detail-focus-button" type="button" class="secondary">집중 프로젝트</button></div></div>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

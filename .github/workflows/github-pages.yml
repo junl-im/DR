@@ -34,7 +34,15 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+      - name: Verify project policy
+        run: |
+          npm run typecheck
+          npm run check:assets
+          npm run check:health
+          npm run check:kakao
+          npm run check:content
+          npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
       - name: Upload Pages artifact
