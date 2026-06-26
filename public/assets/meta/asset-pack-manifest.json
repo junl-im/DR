@@ -1,0 +1,64 @@
+{
+  "version": "1.0.11",
+  "source": "dream_library_massive_asset_pack_v1.zip",
+  "policy": "PNG only. SVG import is forbidden.",
+  "objects": [
+    "bell",
+    "candle",
+    "castle",
+    "comet",
+    "crown",
+    "crystal-orb",
+    "dragon-egg",
+    "feather",
+    "flower",
+    "gem",
+    "gold-key",
+    "hourglass",
+    "ink",
+    "magic-book",
+    "map",
+    "moon",
+    "music-box",
+    "potion",
+    "relic",
+    "rune",
+    "scroll",
+    "shield",
+    "spark",
+    "star"
+  ],
+  "characters": [
+    "azure-wisp",
+    "forgotten-spirit",
+    "librarian-cat",
+    "librarian-momo",
+    "librarian-momo-face",
+    "sealed-page-golem",
+    "shadow-cat",
+    "shadow-librarian"
+  ],
+  "ui": [
+    "email-button-art",
+    "google-button-art",
+    "logo-art",
+    "luxury-frame",
+    "start-button-art"
+  ],
+  "effects": [
+    "particle-diamond",
+    "particle-ring",
+    "particle-star",
+    "premium-combo-star",
+    "premium-hit-rune",
+    "premium-magic-veil"
+  ],
+  "meta": [
+    "asset-codex",
+    "asset-pulse-book"
+  ],
+  "notes": [
+    "Asset names are normalized to ASCII for stable imports on GitHub Pages and Firebase Hosting.",
+    "Large source sheets remain outside the runtime bundle; only trimmed runtime PNGs are copied."
+  ]
+}

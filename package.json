@@ -16,7 +16,8 @@
     "check:health": "node tools/check-project-health.mjs",
     "check:kakao": "node tools/check-kakao-handoff.mjs",
     "check:content": "node tools/check-content-data.mjs",
-    "report:images": "node tools/report-image-size.mjs"
+    "report:images": "node tools/report-image-size.mjs",
+    "check:workflows": "node tools/check-workflows.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -24,10 +25,11 @@
     "gsap": "^3.15.0",
     "howler": "^2.2.4",
     "pixi.js": "^8.11.0",
-    "vite": "latest"
+    "vite": "8.1.0"
   },
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.10"
+  "version": "1.0.11",
+  "name": "dream-library-shisen"
 }

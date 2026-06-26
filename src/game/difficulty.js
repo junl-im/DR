@@ -74,6 +74,27 @@ export const TILE_SET = [
   { type: 'spark', icon: '🌟', asset: tileAsset('spark'), label: '기억 파편', theme: '핵심' }
 ];
 
+
+export const FEATURED_ASSET_PACK = [
+  `${import.meta.env.BASE_URL}assets/ui/logo-art.png`,
+  `${import.meta.env.BASE_URL}assets/ui/start-button-art.png`,
+  `${import.meta.env.BASE_URL}assets/ui/google-button-art.png`,
+  `${import.meta.env.BASE_URL}assets/ui/email-button-art.png`,
+  `${import.meta.env.BASE_URL}assets/ui/luxury-frame.png`,
+  `${import.meta.env.BASE_URL}assets/meta/asset-codex.png`,
+  `${import.meta.env.BASE_URL}assets/meta/asset-pulse-book.png`,
+  `${import.meta.env.BASE_URL}assets/characters/librarian-momo-face.png`,
+  `${import.meta.env.BASE_URL}assets/characters/librarian-cat.png`,
+  `${import.meta.env.BASE_URL}assets/characters/shadow-cat.png`,
+  `${import.meta.env.BASE_URL}assets/characters/azure-wisp.png`,
+  `${import.meta.env.BASE_URL}assets/effects/premium-hit-rune.png`,
+  `${import.meta.env.BASE_URL}assets/effects/premium-combo-star.png`,
+  `${import.meta.env.BASE_URL}assets/effects/premium-magic-veil.png`,
+  `${import.meta.env.BASE_URL}assets/effects/particle-star.png`,
+  `${import.meta.env.BASE_URL}assets/effects/particle-ring.png`,
+  `${import.meta.env.BASE_URL}assets/effects/particle-diamond.png`
+];
+
 export const ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`
@@ -100,5 +121,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/meta/daily-badge.png`,
   `${import.meta.env.BASE_URL}assets/meta/browser-handoff.png`,
   `${import.meta.env.BASE_URL}assets/meta/collection-codex.png`,
+  `${import.meta.env.BASE_URL}assets/meta/asset-pack-manifest.json`,
+  ...FEATURED_ASSET_PACK,
   ...TILE_SET.map((tile) => tile.asset)
 ];

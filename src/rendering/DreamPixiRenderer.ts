@@ -259,8 +259,9 @@ export class DreamPixiRenderer {
     sprite.width = this.tileSize * 0.92;
     sprite.height = this.tileSize * 0.92;
     const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: PALETTE.sky, width: 1.4, alpha: 0.2 });
+    const specialOverlay = this.createSpecialOverlay(tile);
 
-    root.addChild(shadow, glow, frame, sprite, rim);
+    root.addChild(shadow, glow, frame, sprite, rim, specialOverlay);
     root.on('pointertap', () => this.onTileTap?.({ row, col }));
     this.boardLayers.board.addChild(root);
     const view: TileView = { root, sprite, glow, row, col, baseX: x, baseY: y, phase: Math.random() * Math.PI * 2, settling: true, removing: false, tile };
@@ -268,6 +269,47 @@ export class DreamPixiRenderer {
     root.scale.set(0.76);
     gsap.fromTo(root, { y: y + 16, alpha: 0 }, { y, alpha: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'back.out(1.8)', onComplete: () => { view.settling = false; root.y = view.baseY; } });
     gsap.to(root.scale, { x: 1, y: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'back.out(1.8)' });
+  }
+
+  private createSpecialOverlay(tile: BoardTile) {
+    const overlay = new Container();
+    if (!tile.special) return overlay;
+    const size = this.tileSize;
+    if (tile.special === 'fog') {
+      const veil = new Graphics()
+        .roundRect(-size / 2 + 5, -size / 2 + 5, size - 10, size - 10, size * 0.2)
+        .fill({ color: PALETTE.sky, alpha: 0.16 });
+      const mistA = new Graphics().ellipse(-size * 0.14, -size * 0.04, size * 0.34, size * 0.12).fill({ color: PALETTE.sky, alpha: 0.18 });
+      const mistB = new Graphics().ellipse(size * 0.14, size * 0.08, size * 0.3, size * 0.1).fill({ color: PALETTE.goldLight, alpha: 0.1 });
+      overlay.addChild(veil, mistA, mistB);
+      gsap.to(overlay, { alpha: 0.62, duration: 1.8 * this.quality.motionScale, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    }
+    if (tile.special === 'locked') {
+      const badge = new Graphics()
+        .roundRect(size * 0.16, -size * 0.52, size * 0.34, size * 0.34, size * 0.08)
+        .fill({ color: PALETTE.navyDeep, alpha: 0.78 })
+        .stroke({ color: PALETTE.goldLight, width: 1.4, alpha: 0.9 });
+      const gem = new Graphics().circle(size * 0.33, -size * 0.35, size * 0.07).fill({ color: PALETTE.goldLight, alpha: 0.96 });
+      overlay.addChild(badge, gem);
+    }
+    if (tile.special === 'timeSeal') {
+      const ring = new Graphics()
+        .circle(0, 0, size * 0.52)
+        .stroke({ color: PALETTE.violet, width: 2.2, alpha: 0.62 });
+      const tick = new Graphics()
+        .moveTo(0, -size * 0.5)
+        .lineTo(0, -size * 0.38)
+        .moveTo(size * 0.5, 0)
+        .lineTo(size * 0.38, 0)
+        .moveTo(0, size * 0.5)
+        .lineTo(0, size * 0.38)
+        .moveTo(-size * 0.5, 0)
+        .lineTo(-size * 0.38, 0)
+        .stroke({ color: PALETTE.goldLight, width: 1.4, alpha: 0.62 });
+      overlay.addChild(ring, tick);
+      gsap.to(ring, { rotation: Math.PI * 2, duration: 3.8 * this.quality.motionScale, repeat: -1, ease: 'none' });
+    }
+    return overlay;
   }
 
   private paintAmbient() {
@@ -339,9 +381,36 @@ export class DreamPixiRenderer {
     this.boardLayers.particles.addChild(missile);
     gsap.to(missile, { x: targetX, y: targetY, duration: 0.22 * this.quality.motionScale, ease: 'power2.in', onComplete: () => {
       this.emitParticles(targetX, targetY + 24, 28 + Math.round(combo * 2 * this.quality.particleScale), PALETTE.gold);
+      this.emitPremiumBurst(targetX, targetY + 24, combo);
       this.flashBossHit();
       missile.destroy();
     }});
+  }
+
+  private emitPremiumBurst(x: number, y: number, combo: number) {
+    if (this.quality.tier === 'low') return;
+    const count = Math.min(6, 2 + Math.floor(combo / 2));
+    for (let i = 0; i < count; i += 1) {
+      const textureName = i % 2 === 0 ? `${import.meta.env.BASE_URL}assets/effects/particle-star.png` : `${import.meta.env.BASE_URL}assets/effects/particle-diamond.png`;
+      const sprite = new Sprite(Texture.from(textureName));
+      sprite.anchor.set(0.5);
+      sprite.x = x;
+      sprite.y = y;
+      const scale = 0.08 + Math.min(0.08, combo * 0.006);
+      sprite.scale.set(scale);
+      this.boardLayers.particles.addChild(sprite);
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const distance = 42 + Math.random() * 34;
+      gsap.to(sprite, {
+        x: x + Math.cos(angle) * distance,
+        y: y + Math.sin(angle) * distance,
+        alpha: 0,
+        rotation: Math.PI * (Math.random() > 0.5 ? 1 : -1),
+        duration: 0.48 * this.quality.motionScale,
+        ease: 'power2.out',
+        onComplete: () => sprite.destroy()
+      });
+    }
   }
 
   private flashBossHit() {

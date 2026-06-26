@@ -17,6 +17,7 @@ import { detectDeviceProfile, nextQualityTier, saveQualityTier } from './systems
 import { HAPTIC } from './systems/haptics';
 
 document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.png)`);
+document.documentElement.style.setProperty('--start-button-art-url', `url(${import.meta.env.BASE_URL}assets/ui/start-button-art.png)`);
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector(selector) as T;
 const $$ = <T extends HTMLElement>(selector: string) => Array.from(document.querySelectorAll(selector)) as T[];
@@ -108,7 +109,12 @@ const el = {
   restorationDetailMessage: $('#restoration-detail-message'),
   restorationDetailItems: $('#restoration-detail-items'),
   restorationDetailCloseButton: $('#restoration-detail-close-button'),
-  restorationDetailFocusButton: $('#restoration-detail-focus-button')
+  restorationDetailFocusButton: $('#restoration-detail-focus-button'),
+  exitConfirmModal: $('#exit-confirm-modal'),
+  exitConfirmCancelButton: $('#exit-confirm-cancel-button'),
+  exitConfirmHomeButton: $('#exit-confirm-home-button'),
+  exitConfirmCloseButton: $('#exit-confirm-close-button'),
+  exitConfirmMessage: $('#exit-confirm-message')
 };
 
 type ScreenName = 'login' | 'settings' | 'lobby' | 'game';
@@ -174,10 +180,13 @@ const state = {
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
   activeBoss: getBossForStage(getStageById(readText('dream-library-selected-stage') || DEFAULT_STAGE_ID)) as any,
+  activeModifiers: [] as string[],
   pendingRestorationProjectId: '',
   qualityProfile: detectDeviceProfile(),
   warnedLowTime: false,
-  lastClearedStageId: ''
+  lastClearedStageId: '',
+  exitConfirmOpen: false,
+  lastBackIntentAt: 0
 };
 
 init();
@@ -196,6 +205,7 @@ async function init() {
   initFullscreenControls(el.fullscreenButton, setStatus);
   initInstallPrompt(el.installButton, setStatus);
   bindEvents();
+  initBackNavigation();
   renderAuth();
   renderLobby();
   renderStats();
@@ -219,11 +229,7 @@ async function init() {
 }
 
 function bindEvents() {
-  el.backButton.addEventListener('click', () => {
-    if (state.screen === 'settings') updateScreen(state.previousScreen || 'login');
-    else if (state.screen === 'game') exitToLobby();
-    else updateScreen('login');
-  });
+  el.backButton.addEventListener('click', () => handleBackIntent('button'));
   el.openSettingsButton.addEventListener('click', openOptions);
   el.closeOptionsButton.addEventListener('click', closeOptionsPanel);
   el.optionsModal.addEventListener('click', (event) => { if (event.target === el.optionsModal) closeOptionsPanel(); });
@@ -373,10 +379,107 @@ function bindEvents() {
     renderRestoration();
     setStatus('집중 복원 프로젝트를 변경했습니다.');
   });
+  el.exitConfirmCancelButton.addEventListener('click', closeExitConfirm);
+  el.exitConfirmHomeButton.addEventListener('click', () => {
+    closeExitConfirm();
+    returnToFirstScreen();
+  });
+  el.exitConfirmCloseButton.addEventListener('click', confirmExitGame);
+  el.exitConfirmModal.addEventListener('click', (event) => {
+    if (event.target === el.exitConfirmModal) closeExitConfirm();
+  });
 
   window.addEventListener('resize', () => {
     if (state.screen === 'game' && state.board.length) renderer.renderBoard(state.board);
   });
+}
+
+
+function initBackNavigation() {
+  pushAppHistoryState(true);
+  window.addEventListener('popstate', () => {
+    handleBackIntent('hardware');
+    pushAppHistoryState();
+  });
+}
+
+function pushAppHistoryState(replace = false) {
+  try {
+    const payload = { dreamLibrary: true, screen: state.screen, t: Date.now() };
+    if (replace) history.replaceState(payload, '', location.href);
+    history.pushState(payload, '', location.href);
+  } catch {
+    // History can fail in restricted in-app browsers; the visible back button still works.
+  }
+}
+
+function handleBackIntent(source: 'button' | 'hardware') {
+  const now = Date.now();
+  if (state.exitConfirmOpen) {
+    if (source === 'hardware' && now - state.lastBackIntentAt < 1800) confirmExitGame();
+    else closeExitConfirm();
+    state.lastBackIntentAt = now;
+    return;
+  }
+  state.lastBackIntentAt = now;
+  if (!el.restorationDetailModal.classList.contains('hidden')) {
+    closeRestorationDetail();
+    return;
+  }
+  if (!el.rewardModal.classList.contains('hidden')) {
+    closeReward();
+    returnToFirstScreen();
+    return;
+  }
+  if (!el.optionsModal.classList.contains('hidden')) {
+    closeOptionsPanel();
+    return;
+  }
+  if (state.screen === 'game') {
+    exitToLobby();
+    window.setTimeout(() => returnToFirstScreen(), 80);
+    setStatus('뒤로가기로 첫 화면으로 돌아왔습니다. 다시 뒤로가면 종료 확인이 열립니다.');
+    return;
+  }
+  if (state.screen === 'lobby' || state.screen === 'settings') {
+    returnToFirstScreen();
+    setStatus('첫 화면입니다. 한 번 더 뒤로가면 종료 확인이 열립니다.');
+    return;
+  }
+  openExitConfirm();
+}
+
+function returnToFirstScreen() {
+  state.locked = true;
+  clearInterval(state.timerId);
+  state.selected = null;
+  updateScreen('login');
+}
+
+function openExitConfirm() {
+  state.exitConfirmOpen = true;
+  el.exitConfirmMessage.textContent = '브라우저 정책상 탭을 강제로 닫지 못할 수 있습니다. 종료하기를 누르면 가능한 경우 창을 닫고, 막히면 첫 화면으로 정리합니다.';
+  el.exitConfirmModal.classList.remove('hidden');
+  HAPTIC.warning();
+}
+
+function closeExitConfirm() {
+  state.exitConfirmOpen = false;
+  el.exitConfirmModal.classList.add('hidden');
+}
+
+function confirmExitGame() {
+  closeExitConfirm();
+  state.locked = true;
+  clearInterval(state.timerId);
+  writeText('dream-library-last-exit', new Date().toISOString());
+  try { window.close(); } catch { /* Browser may block close. */ }
+  window.setTimeout(() => {
+    if (!document.hidden) {
+      returnToFirstScreen();
+      setStatus('브라우저에서 자동 종료가 막혔습니다. 탭을 닫거나 홈 화면으로 이동하세요.');
+    }
+  }, 160);
 }
 
 
@@ -410,6 +513,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   }
   const stage = options.daily ? { ...baseStage, modifiers: state.dailyChallenge.modifiers, dailySeed: state.dailyChallenge.seed } : baseStage;
   const difficulty = DIFFICULTIES[stage.difficultyKey];
+  state.activeModifiers = stage.modifiers || [];
   state.activeBoss = getBossForStage(stage);
   renderBossPanel();
   audio.unlock();
@@ -440,10 +544,28 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
 }
 
 
+
+function getSpecialPairEffect(firstTile: any, secondTile: any) {
+  const specials = [firstTile?.special, secondTile?.special].filter(Boolean);
+  return {
+    hasFog: specials.includes('fog'),
+    hasLocked: specials.includes('locked'),
+    hasTimeSeal: specials.includes('timeSeal'),
+    bonusScore: (specials.includes('fog') ? 70 : 0) + (specials.includes('locked') ? 120 : 0) + (specials.includes('timeSeal') ? 90 : 0)
+  };
+}
+
+function canUseLockedPair(firstTile: any, secondTile: any) {
+  const effect = getSpecialPairEffect(firstTile, secondTile);
+  return !effect.hasLocked || state.combo >= 1;
+}
+
 function handleTileTap(point: BoardPoint) {
   if (state.locked) return;
   const tile = state.board[point.row]?.[point.col];
   if (!tile) return;
+  const activeStage = getStageById(state.selectedStageId);
+  const difficulty = DIFFICULTIES[activeStage.difficultyKey];
   audio.play('tap');
   HAPTIC.tap();
   if (!state.selected) {
@@ -459,13 +581,31 @@ function handleTileTap(point: BoardPoint) {
     renderer.setSelected(null);
     return;
   }
+  const firstTile = state.board[first.row]?.[first.col];
+  const secondTile = state.board[point.row]?.[point.col];
+  if (!canUseLockedPair(firstTile, secondTile)) {
+    state.moves += 1;
+    state.combo = 0;
+    renderer.playMismatch(point);
+    HAPTIC.warning();
+    renderer.setSelected(point);
+    state.selected = point;
+    setStatus('잠긴 오브젝트는 직전 연결을 성공시킨 뒤 2연속 콤보로 해제됩니다.');
+    renderGameHud();
+    return;
+  }
   const connectionPath = findConnectionPath(state.board, first, point);
   if (connectionPath) {
     state.locked = true;
     state.moves += 1;
     state.combo += 1;
     state.comboMax = Math.max(state.comboMax, state.combo);
-    state.score += 100 * state.combo;
+    const specialEffect = getSpecialPairEffect(firstTile, secondTile);
+    state.score += 100 * state.combo + specialEffect.bonusScore;
+    if (specialEffect.hasTimeSeal) state.remainingSeconds = Math.min(difficulty.timeLimitSeconds + 30, state.remainingSeconds + 10);
+    if (specialEffect.hasFog) setStatus('안개 오브젝트 정화 보너스가 더해졌습니다.');
+    if (specialEffect.hasLocked) setStatus('잠긴 오브젝트 봉인을 해제했습니다.');
+    if (specialEffect.hasTimeSeal) setStatus('시간 봉인을 풀어 10초를 되찾았습니다.');
     renderer.setSelected(null);
     state.board = revealPairSpecials(state.board, first, point);
     audio.play('match');
@@ -504,6 +644,10 @@ function tickTimer() {
   state.remainingSeconds = Math.max(0, state.remainingSeconds - 1);
   renderGameHud();
   const warningSeconds = state.activeBoss?.warningSeconds || 15;
+  if (state.activeModifiers.includes('bossPressure') && state.remainingSeconds > warningSeconds && state.remainingSeconds % 20 === 0) {
+    renderer.playBossWarning(Math.max(4, (state.activeBoss?.shakePower || 7) - 2));
+    setStatus('보스 압박으로 마법진 가장자리가 흔들립니다. 콤보를 끊지 마세요.');
+  }
   if (!state.warnedLowTime && state.remainingSeconds <= warningSeconds && state.remainingSeconds > 0) {
     state.warnedLowTime = true;
     renderer.playBossWarning(state.activeBoss?.shakePower || 7);
@@ -717,7 +861,8 @@ function updateMissionLabel() {
   const remaining = state.board.length ? countRemaining(state.board) : difficulty.rows * difficulty.cols;
   const targetCombo = difficulty.key === 'easy' ? 3 : difficulty.key === 'normal' ? 4 : difficulty.key === 'hard' ? 5 : 6;
   const bossTags = getBossStageTags(stage);
-  el.missionLabel.textContent = `남은 오브젝트 ${remaining}개 · ${targetCombo}콤보 · ${bossTags[0] || '보스전'}`;
+  const ruleTag = state.activeModifiers.includes('bossPressure') ? '보스 압박 활성' : state.activeModifiers.length ? `${state.activeModifiers.length}개 특수 규칙` : '기본 규칙';
+  el.missionLabel.textContent = `남은 오브젝트 ${remaining}개 · ${targetCombo}콤보 · ${ruleTag} · ${bossTags[0] || '보스전'}`;
 }
 
 

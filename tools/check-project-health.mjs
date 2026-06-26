@@ -17,11 +17,17 @@ const requiredFiles = [
   'public/assets/meta/daily-badge.png',
   'public/assets/meta/browser-handoff.png',
   'public/assets/meta/collection-codex.png',
-  'tools/report-image-size.mjs'
+  'public/assets/ui/logo-art.png',
+  'public/assets/ui/start-button-art.png',
+  'public/assets/meta/asset-codex.png',
+  'public/assets/meta/asset-pack-manifest.json',
+  'public/assets/effects/particle-star.png',
+  'tools/report-image-size.mjs',
+  'tools/check-workflows.mjs'
 ];
 
 for (const file of requiredFiles) {
-  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.10 file: ${file}`); }
+  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.11 file: ${file}`); }
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');
@@ -30,7 +36,7 @@ for (const id of ['mission-label', 'modifier-strip', 'combo-cutin', 'boss-hp-fil
 }
 
 const css = readFileSync(join(root, 'src/styles.css'), 'utf8');
-for (const selector of ['.mission-strip', '.combo-cutin', '.boss-hp-meter', '.chapter-tabs', '.collection-panel', '.daily-leaderboard-list', 'body[data-quality="low"]']) {
+for (const selector of ['.mission-strip', '.combo-cutin', '.boss-hp-meter', '.chapter-tabs', '.collection-panel', '.daily-leaderboard-list', '.asset-showcase-panel', '.premium-object-strip', 'body[data-quality="low"]']) {
   if (!css.includes(selector)) errors.push(`Missing required style selector: ${selector}`);
 }
 
@@ -42,7 +48,7 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Project health check passed for v1.0.10.');
+console.log('Project health check passed for v1.0.11.');
 
 function walk(dir, visitor) {
   for (const entry of readdirSync(dir)) {
