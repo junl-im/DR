@@ -7,7 +7,8 @@ const errors = [];
 let pushMainCount = 0;
 for (const file of files) {
   const text = readFileSync(join(dir, file), 'utf8');
-  if (/npm\s+ci/.test(text)) errors.push(`${file}: npm ci is disabled for GitHub runner stability in v1.0.11.`);
+  if (/npm\s+ci/.test(text)) errors.push(`${file}: npm ci is disabled for GitHub runner stability.`);
+  if (!/npm config set registry https:\/\/registry\.npmjs\.org/.test(text)) errors.push(`${file}: expected explicit public npm registry config.`);
   if (/node-version:\s*22/.test(text)) errors.push(`${file}: use Node 20 LTS for stable Actions.`);
   if (/push:[\s\S]*branches:[\s\S]*- main/.test(text)) pushMainCount += 1;
 }
@@ -16,4 +17,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe install.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install.');

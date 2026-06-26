@@ -38,6 +38,9 @@ jobs:
           node --version
           npm --version
           rm -f package-lock.json
+          npm config set registry https://registry.npmjs.org/
+          npm config set fetch-retries 5
+          npm config set fetch-retry-maxtimeout 120000
           npm install --no-audit --no-fund --prefer-online
       - name: Verify project policy
         run: |
@@ -47,6 +50,7 @@ jobs:
           npm run check:kakao
           npm run check:content
           npm run check:workflows
+          npm run check:special-rules
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

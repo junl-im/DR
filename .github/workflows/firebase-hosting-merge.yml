@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies safely
         run: |
           rm -f package-lock.json
+          npm config set registry https://registry.npmjs.org/
+          npm config set fetch-retries 5
+          npm config set fetch-retry-maxtimeout 120000
           npm install --no-audit --no-fund --prefer-online
       - run: npm run build:firebase
       - uses: FirebaseExtended/action-hosting-deploy@v0

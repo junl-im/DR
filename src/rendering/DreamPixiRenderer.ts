@@ -3,6 +3,8 @@ import { gsap } from 'gsap';
 import { PALETTE } from '../config/design';
 import type { DeviceProfile } from '../systems/performance';
 
+const effectAsset = (name: string) => `${import.meta.env.BASE_URL}assets/effects/${name}.png`;
+
 export type BoardTile = {
   id: string;
   type: string;
@@ -219,6 +221,7 @@ export class DreamPixiRenderer {
     core.classList.add('boss-warning');
     window.setTimeout(() => core.classList.remove('boss-warning'), 760);
     this.cameraShake(power);
+    if (this.boardApp) this.spawnVfxSprite(this.boardApp.renderer.width / 2, 42, 'import-vfx-06');
   }
 
   private calculateLayout(rows: number, cols: number): BoardLayout {
@@ -258,10 +261,12 @@ export class DreamPixiRenderer {
     sprite.anchor.set(0.5);
     sprite.width = this.tileSize * 0.92;
     sprite.height = this.tileSize * 0.92;
-    const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: PALETTE.sky, width: 1.4, alpha: 0.2 });
-    const specialOverlay = this.createSpecialOverlay(tile);
+    const hiddenSpecial = Boolean(tile.special && !tile.specialRevealed);
+    sprite.alpha = hiddenSpecial && tile.special === 'fog' ? 0.16 : hiddenSpecial ? 0.46 : 1;
+    const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: specialColor, width: tile.special ? 2.2 : 1.4, alpha: tile.special ? 0.58 : 0.2 });
 
-    root.addChild(shadow, glow, frame, sprite, rim, specialOverlay);
+    root.addChild(shadow, glow, frame, sprite, rim);
+    if (tile.special) root.addChild(this.createSpecialBadge(tile.special, hiddenSpecial));
     root.on('pointertap', () => this.onTileTap?.({ row, col }));
     this.boardLayers.board.addChild(root);
     const view: TileView = { root, sprite, glow, row, col, baseX: x, baseY: y, phase: Math.random() * Math.PI * 2, settling: true, removing: false, tile };
@@ -271,45 +276,28 @@ export class DreamPixiRenderer {
     gsap.to(root.scale, { x: 1, y: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'back.out(1.8)' });
   }
 
-  private createSpecialOverlay(tile: BoardTile) {
-    const overlay = new Container();
-    if (!tile.special) return overlay;
+  private createSpecialBadge(special: BoardTile['special'], hidden: boolean) {
+    const badge = new Container();
+    const color = special === 'locked' ? PALETTE.gold : special === 'timeSeal' ? PALETTE.violet : PALETTE.sky;
     const size = this.tileSize;
-    if (tile.special === 'fog') {
-      const veil = new Graphics()
-        .roundRect(-size / 2 + 5, -size / 2 + 5, size - 10, size - 10, size * 0.2)
-        .fill({ color: PALETTE.sky, alpha: 0.16 });
-      const mistA = new Graphics().ellipse(-size * 0.14, -size * 0.04, size * 0.34, size * 0.12).fill({ color: PALETTE.sky, alpha: 0.18 });
-      const mistB = new Graphics().ellipse(size * 0.14, size * 0.08, size * 0.3, size * 0.1).fill({ color: PALETTE.goldLight, alpha: 0.1 });
-      overlay.addChild(veil, mistA, mistB);
-      gsap.to(overlay, { alpha: 0.62, duration: 1.8 * this.quality.motionScale, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    const veilAlpha = hidden ? 0.34 : 0.1;
+    const veil = new Graphics().roundRect(-size / 2 + 3, -size / 2 + 3, size - 6, size - 6, size * 0.22).fill({ color: PALETTE.navyDeep, alpha: veilAlpha });
+    const mark = new Graphics();
+    if (special === 'locked') {
+      mark.roundRect(-size * 0.16, -size * 0.02, size * 0.32, size * 0.24, size * 0.04).stroke({ color, width: 2.4, alpha: 0.86 });
+      mark.arc(0, -size * 0.02, size * 0.16, Math.PI, 0).stroke({ color, width: 2.2, alpha: 0.86 });
+    } else if (special === 'timeSeal') {
+      mark.circle(0, 0, size * 0.18).stroke({ color, width: 2.3, alpha: 0.86 });
+      mark.moveTo(0, 0).lineTo(0, -size * 0.12).stroke({ color, width: 2, alpha: 0.86 });
+      mark.moveTo(0, 0).lineTo(size * 0.1, size * 0.06).stroke({ color, width: 2, alpha: 0.86 });
+    } else {
+      mark.circle(0, 0, size * 0.17).fill({ color, alpha: 0.2 });
+      mark.circle(-size * 0.05, -size * 0.03, size * 0.07).fill({ color, alpha: 0.55 });
+      mark.circle(size * 0.07, size * 0.05, size * 0.06).fill({ color, alpha: 0.42 });
     }
-    if (tile.special === 'locked') {
-      const badge = new Graphics()
-        .roundRect(size * 0.16, -size * 0.52, size * 0.34, size * 0.34, size * 0.08)
-        .fill({ color: PALETTE.navyDeep, alpha: 0.78 })
-        .stroke({ color: PALETTE.goldLight, width: 1.4, alpha: 0.9 });
-      const gem = new Graphics().circle(size * 0.33, -size * 0.35, size * 0.07).fill({ color: PALETTE.goldLight, alpha: 0.96 });
-      overlay.addChild(badge, gem);
-    }
-    if (tile.special === 'timeSeal') {
-      const ring = new Graphics()
-        .circle(0, 0, size * 0.52)
-        .stroke({ color: PALETTE.violet, width: 2.2, alpha: 0.62 });
-      const tick = new Graphics()
-        .moveTo(0, -size * 0.5)
-        .lineTo(0, -size * 0.38)
-        .moveTo(size * 0.5, 0)
-        .lineTo(size * 0.38, 0)
-        .moveTo(0, size * 0.5)
-        .lineTo(0, size * 0.38)
-        .moveTo(-size * 0.5, 0)
-        .lineTo(-size * 0.38, 0)
-        .stroke({ color: PALETTE.goldLight, width: 1.4, alpha: 0.62 });
-      overlay.addChild(ring, tick);
-      gsap.to(ring, { rotation: Math.PI * 2, duration: 3.8 * this.quality.motionScale, repeat: -1, ease: 'none' });
-    }
-    return overlay;
+    badge.addChild(veil, mark);
+    badge.alpha = hidden ? 1 : 0.62;
+    return badge;
   }
 
   private paintAmbient() {
@@ -368,6 +356,7 @@ export class DreamPixiRenderer {
     this.boardLayers.paths.addChild(beam);
     this.emitParticles(x1, y1, 14, PALETTE.gold);
     this.emitParticles(x2, y2, 14, PALETTE.sky);
+    this.spawnVfxSprite((x1 + x2) / 2, (y1 + y2) / 2, comboVfxName(Math.abs(Math.round(x1 + y1 + x2 + y2))));
     gsap.to(beam, { alpha: 0, duration: 0.28 * this.quality.motionScale, ease: 'power2.out', onComplete: () => beam.destroy() });
   }
 
@@ -381,36 +370,10 @@ export class DreamPixiRenderer {
     this.boardLayers.particles.addChild(missile);
     gsap.to(missile, { x: targetX, y: targetY, duration: 0.22 * this.quality.motionScale, ease: 'power2.in', onComplete: () => {
       this.emitParticles(targetX, targetY + 24, 28 + Math.round(combo * 2 * this.quality.particleScale), PALETTE.gold);
-      this.emitPremiumBurst(targetX, targetY + 24, combo);
+      this.spawnVfxSprite(targetX, targetY + 20, combo >= 4 ? 'import-vfx-05' : 'import-vfx-02');
       this.flashBossHit();
       missile.destroy();
     }});
-  }
-
-  private emitPremiumBurst(x: number, y: number, combo: number) {
-    if (this.quality.tier === 'low') return;
-    const count = Math.min(6, 2 + Math.floor(combo / 2));
-    for (let i = 0; i < count; i += 1) {
-      const textureName = i % 2 === 0 ? `${import.meta.env.BASE_URL}assets/effects/particle-star.png` : `${import.meta.env.BASE_URL}assets/effects/particle-diamond.png`;
-      const sprite = new Sprite(Texture.from(textureName));
-      sprite.anchor.set(0.5);
-      sprite.x = x;
-      sprite.y = y;
-      const scale = 0.08 + Math.min(0.08, combo * 0.006);
-      sprite.scale.set(scale);
-      this.boardLayers.particles.addChild(sprite);
-      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-      const distance = 42 + Math.random() * 34;
-      gsap.to(sprite, {
-        x: x + Math.cos(angle) * distance,
-        y: y + Math.sin(angle) * distance,
-        alpha: 0,
-        rotation: Math.PI * (Math.random() > 0.5 ? 1 : -1),
-        duration: 0.48 * this.quality.motionScale,
-        ease: 'power2.out',
-        onComplete: () => sprite.destroy()
-      });
-    }
   }
 
   private flashBossHit() {
@@ -436,6 +399,19 @@ export class DreamPixiRenderer {
     this.boardLayers.particles.addChild(pulse);
     gsap.to(pulse.scale, { x: 2.5, y: 2.5, duration: 0.46 * this.quality.motionScale, ease: 'power2.out' });
     gsap.to(pulse, { alpha: 0, duration: 0.46 * this.quality.motionScale, onComplete: () => pulse.destroy() });
+  }
+
+  private spawnVfxSprite(x: number, y: number, name: string) {
+    const sprite = new Sprite(Texture.from(effectAsset(name)));
+    sprite.anchor.set(0.5);
+    sprite.x = x;
+    sprite.y = y;
+    const scale = (0.36 + Math.random() * 0.16) * this.quality.motionScale;
+    sprite.scale.set(scale);
+    sprite.alpha = 0.88;
+    this.boardLayers.particles.addChild(sprite);
+    gsap.to(sprite.scale, { x: scale * 1.8, y: scale * 1.8, duration: 0.38 * this.quality.motionScale, ease: 'power2.out' });
+    gsap.to(sprite, { alpha: 0, rotation: Math.random() * 0.5 - 0.25, duration: 0.42 * this.quality.motionScale, ease: 'power2.out', onComplete: () => sprite.destroy() });
   }
 
   private emitParticles(x: number, y: number, count: number, color: number) {
@@ -495,4 +471,8 @@ function createLayers(names: string[]) {
 
 function keyOf(point: BoardPoint) {
   return `${point.row}:${point.col}`;
+}
+
+function comboVfxName(seed: number) {
+  return `import-vfx-${String((seed % 6) + 1).padStart(2, '0')}`;
 }

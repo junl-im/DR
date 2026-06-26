@@ -749,3 +749,54 @@ body[data-screen="login"] .login-stage-card::after {
   #signout-button { background-size: 0.92rem 0.92rem; background-position: 0.5rem center; }
   .exit-card { width: min(100%, 360px); }
 }
+
+
+/* v1.0.12 special rule balance, boss telegraph, small-screen polish */
+.boss-telegraph {
+  margin-top: 0.34rem;
+  padding: 0.34rem 0.52rem;
+  border: 1px solid rgba(245, 200, 107, 0.34);
+  border-radius: 999px;
+  color: var(--gold-300);
+  background: linear-gradient(90deg, rgba(143, 107, 255, 0.24), rgba(6, 21, 45, 0.42));
+  font-size: 0.66rem;
+  font-weight: 950;
+  line-height: 1.2;
+  box-shadow: 0 0 24px rgba(245, 200, 107, 0.14);
+}
+.boss-telegraph[data-reason="mismatch"] { border-color: rgba(143, 107, 255, 0.48); color: #d9ccff; }
+.boss-telegraph[data-reason="pressure"] { border-color: rgba(125, 220, 255, 0.44); color: var(--sky-500); }
+.boss-telegraph.telegraph-pop { animation: telegraphPop 0.42s cubic-bezier(.2,1.3,.2,1) both; }
+.boss-warning .boss-telegraph { display: block; }
+.modifier-strip span[data-rule="fog"], .modifier-strip span:nth-child(1) { box-shadow: inset 0 0 14px rgba(125, 220, 255, 0.08); }
+.battle-stage::after {
+  content: '';
+  position: absolute;
+  inset: auto 9% 5.4rem;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(125, 220, 255, 0.16), transparent 72%);
+  filter: blur(4px);
+  pointer-events: none;
+}
+.collection-list,
+.world-map,
+.restoration-list { overscroll-behavior: contain; }
+body[data-quality="low"] .boss-telegraph,
+body[data-quality="low"] .battle-stage::after { box-shadow: none; filter: none; }
+@keyframes telegraphPop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+  70% { opacity: 1; transform: translateY(-1px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 430px) {
+  .boss-telegraph { white-space: normal; border-radius: 16px; }
+  .battle-stage { padding: 0.78rem; }
+  .game-actions { gap: 0.42rem; }
+  .game-actions button { min-height: 42px; padding: 0.58rem 0.66rem; }
+}
+@media (max-height: 700px) {
+  .boss-telegraph { display: none; }
+  .collection-list { max-height: 132px; }
+  .restoration-list { max-height: 132px; overflow: auto; }
+}

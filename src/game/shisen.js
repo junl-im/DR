@@ -97,8 +97,35 @@ export function revealPairSpecials(board, first, second) {
   return next;
 }
 
+export function revealSpecialTile(board, point) {
+  const next = cloneBoard(board);
+  const tile = next[point.row]?.[point.col];
+  if (tile?.special) tile.specialRevealed = true;
+  return next;
+}
+
+export function revealAllSpecial(board, special) {
+  const next = cloneBoard(board);
+  next.forEach((row) => row.forEach((tile) => {
+    if (tile?.special === special) tile.specialRevealed = true;
+  }));
+  return next;
+}
+
+export function countSpecialTiles(board, special, hiddenOnly = false) {
+  return board.flat().filter((tile) => tile?.special === special && (!hiddenOnly || !tile.specialRevealed)).length;
+}
+
+export function isSpecialTileBlocked(tile) {
+  return Boolean(tile?.special && !tile.specialRevealed);
+}
+
+export function getTileAt(board, point) {
+  return board[point.row]?.[point.col] || null;
+}
+
 export function cloneBoard(board) {
-  return board.map((row) => row.slice());
+  return board.map((row) => row.map((tile) => tile ? { ...tile } : null));
 }
 
 export function countRemaining(board) {

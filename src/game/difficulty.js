@@ -101,7 +101,8 @@ export const TILE_SET = [
 
 export const ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
-  `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`
+  `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.12.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -128,11 +129,18 @@ export const PRELOAD_ASSETS = [
 
   `${import.meta.env.BASE_URL}assets/backgrounds/imported-moon-library.png`,
   `${import.meta.env.BASE_URL}assets/characters/assistant-01.png`,
+  `${import.meta.env.BASE_URL}assets/characters/assistant-02.png`,
+  `${import.meta.env.BASE_URL}assets/characters/assistant-03.png`,
+  `${import.meta.env.BASE_URL}assets/characters/assistant-04.png`,
   `${import.meta.env.BASE_URL}assets/characters/boss-import-01.png`,
-  `${import.meta.env.BASE_URL}assets/effects/import-vfx-01.png`,
-  `${import.meta.env.BASE_URL}assets/effects/particles-01.png`,
+  `${import.meta.env.BASE_URL}assets/characters/boss-import-02.png`,
+  `${import.meta.env.BASE_URL}assets/characters/boss-import-03.png`,
+  `${import.meta.env.BASE_URL}assets/characters/boss-import-04.png`,
+  ...Array.from({ length: 6 }, (_, index) => `${import.meta.env.BASE_URL}assets/effects/import-vfx-${String(index + 1).padStart(2, '0')}.png`),
+  ...Array.from({ length: 10 }, (_, index) => `${import.meta.env.BASE_URL}assets/effects/particles-${String(index + 1).padStart(2, '0')}.png`),
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.12.json`,
   ...TILE_SET.map((tile) => tile.asset)
 ];

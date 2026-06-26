@@ -4,7 +4,7 @@ import { db, firebaseReady } from './firebase.js';
 import { getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
 import { ATLAS_ASSETS, DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
 import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
-import { countRemaining, createBoard, findConnectionPath, findHint, isCleared, revealPairSpecials, removePair, shuffleRemaining } from './game/shisen.js';
+import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, findHint, getTileAt, isCleared, isSpecialTileBlocked, revealAllSpecial, revealPairSpecials, revealSpecialTile, removePair, shuffleRemaining } from './game/shisen.js';
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
@@ -91,6 +91,7 @@ const el = {
   bossImage: $('#boss-image') as HTMLImageElement,
   bossName: $('#boss-name'),
   bossPattern: $('#boss-pattern'),
+  bossTelegraph: $('#boss-telegraph'),
   bossCore: $('#boss-core'),
   bossHpLabel: $('#boss-hp-label'),
   missionLabel: $('#mission-label'),
@@ -184,6 +185,9 @@ const state = {
   qualityProfile: detectDeviceProfile(),
   warnedLowTime: false,
   lastClearedStageId: '',
+  stageModifiers: [] as string[],
+  pressureTick: 0,
+  timeSealBonusCount: 0,
   suppressHistorySync: false,
   browserBackReady: false
 };
@@ -456,6 +460,9 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   }
   const stage = options.daily ? { ...baseStage, modifiers: state.dailyChallenge.modifiers, dailySeed: state.dailyChallenge.seed } : baseStage;
   const difficulty = DIFFICULTIES[stage.difficultyKey];
+  state.stageModifiers = [...(stage.modifiers || [])];
+  state.pressureTick = 0;
+  state.timeSealBonusCount = 0;
   state.activeBoss = getBossForStage(stage);
   renderBossPanel();
   audio.unlock();
@@ -486,12 +493,95 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
 }
 
 
+
+function handleSpecialTileGate(point: BoardPoint, tile: any) {
+  if (!isSpecialTileBlocked(tile)) return false;
+  state.selected = null;
+  renderer.setSelected(null);
+  if (tile.special === 'fog') {
+    state.board = revealSpecialTile(state.board, point);
+    renderer.renderBoard(state.board);
+    setStatus('안개 타일을 걷었습니다. 드러난 오브젝트를 다시 선택하세요.');
+    HAPTIC.select();
+    return true;
+  }
+  if (tile.special === 'locked') {
+    if (state.combo >= 1) {
+      state.board = revealAllSpecial(state.board, 'locked');
+      renderer.renderBoard(state.board);
+      setStatus('잠긴 타일의 금속 장식이 열렸습니다. 이제 연결할 수 있습니다.');
+      HAPTIC.select();
+    } else {
+      renderer.playMismatch(point);
+      setStatus('잠긴 타일은 먼저 다른 한 쌍을 연결하면 열립니다.');
+      HAPTIC.warning();
+    }
+    return true;
+  }
+  if (tile.special === 'timeSeal') {
+    state.board = revealSpecialTile(state.board, point);
+    state.remainingSeconds = Math.max(0, state.remainingSeconds - 3);
+    renderer.renderBoard(state.board);
+    renderGameHud();
+    setStatus('시간 봉인을 해제했습니다. 3초가 줄었지만 연결하면 시간을 되찾습니다.');
+    HAPTIC.warning();
+    return true;
+  }
+  return false;
+}
+
+function applySpecialMatchRewards(firstTile: any, secondTile: any) {
+  const specials = [firstTile?.special, secondTile?.special].filter(Boolean);
+  if (specials.includes('timeSeal')) {
+    const bonus = 8;
+    state.remainingSeconds += bonus;
+    state.timeSealBonusCount += 1;
+    setStatus(`시간 봉인을 복원해 ${bonus}초를 되찾았습니다.`);
+  }
+  if (specials.includes('fog')) {
+    state.score += 40;
+  }
+  if (specials.includes('locked')) {
+    state.score += 70;
+  }
+}
+
+function advanceSpecialRulesAfterMatch() {
+  if (countSpecialTiles(state.board, 'locked', true) > 0 && state.combo >= 1) {
+    state.board = revealAllSpecial(state.board, 'locked');
+    renderer.renderBoard(state.board);
+    setStatus('연결 성공으로 잠긴 타일이 열렸습니다.');
+  }
+}
+
+function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch') {
+  const boss = state.activeBoss || {};
+  const reasonText: Record<string, string> = {
+    combo: '콤보 반격',
+    time: '시간 압박',
+    pressure: '보스 압박',
+    mismatch: '실패 반격'
+  };
+  el.bossTelegraph.textContent = `${boss.telegraphTitle || reasonText[reason]} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
+  el.bossTelegraph.dataset.reason = reason;
+  el.bossTelegraph.classList.remove('hidden', 'telegraph-pop');
+  void el.bossTelegraph.offsetWidth;
+  el.bossTelegraph.classList.add('telegraph-pop');
+  renderer.playBossWarning(boss.shakePower || 7);
+  window.setTimeout(hideBossTelegraph, 1500);
+}
+
+function hideBossTelegraph() {
+  el.bossTelegraph.classList.add('hidden');
+}
+
 function handleTileTap(point: BoardPoint) {
   if (state.locked) return;
   const tile = state.board[point.row]?.[point.col];
   if (!tile) return;
   audio.play('tap');
   HAPTIC.tap();
+  if (handleSpecialTileGate(point, tile)) return;
   if (!state.selected) {
     state.selected = point;
     renderer.setSelected(point);
@@ -506,6 +596,8 @@ function handleTileTap(point: BoardPoint) {
     return;
   }
   const connectionPath = findConnectionPath(state.board, first, point);
+  const firstTile = getTileAt(state.board, first);
+  const secondTile = getTileAt(state.board, point);
   if (connectionPath) {
     state.locked = true;
     state.moves += 1;
@@ -524,13 +616,15 @@ function handleTileTap(point: BoardPoint) {
     } else HAPTIC.match();
     renderer.playMatchSequence(first, point, state.combo, () => {
       state.board = removePair(state.board, first, point);
+      applySpecialMatchRewards(firstTile, secondTile);
+      advanceSpecialRulesAfterMatch();
       state.selected = null;
       state.locked = false;
       renderGameHud();
       const hp = (countRemaining(state.board) / Math.max(1, state.board.length * state.board[0].length)) * 100;
       renderer.setBossHp(hp, getBossPhase(hp));
       const warningEvery = state.activeBoss?.comboWarningEvery || 6;
-      if (state.combo > 0 && state.combo % warningEvery === 0) renderer.playBossWarning(state.activeBoss?.shakePower || 7);
+      if (state.combo > 0 && state.combo % warningEvery === 0) triggerBossTelegraph('combo');
       if (isCleared(state.board)) clearStage();
     }, connectionPath);
   } else {
@@ -540,7 +634,11 @@ function handleTileTap(point: BoardPoint) {
     HAPTIC.warning();
     renderer.setSelected(point);
     state.selected = point;
-    setStatus('연결 경로는 최대 두 번까지만 꺾을 수 있습니다.');
+    if (state.stageModifiers.includes('bossPressure')) {
+      state.remainingSeconds = Math.max(0, state.remainingSeconds - 4);
+      triggerBossTelegraph('mismatch');
+    }
+    setStatus(state.stageModifiers.includes('bossPressure') ? '보스 압박 중 실패하여 시간이 4초 줄었습니다.' : '연결 경로는 최대 두 번까지만 꺾을 수 있습니다.');
     renderGameHud();
   }
 }
@@ -552,8 +650,14 @@ function tickTimer() {
   const warningSeconds = state.activeBoss?.warningSeconds || 15;
   if (!state.warnedLowTime && state.remainingSeconds <= warningSeconds && state.remainingSeconds > 0) {
     state.warnedLowTime = true;
-    renderer.playBossWarning(state.activeBoss?.shakePower || 7);
+    triggerBossTelegraph('time');
     setStatus(state.activeBoss?.attackLine || '보스가 반격을 준비합니다. 빠르게 연결하세요.');
+  }
+  if (state.stageModifiers.includes('bossPressure') && state.remainingSeconds > 0 && state.remainingSeconds % 30 === 0) {
+    state.pressureTick += 1;
+    state.score = Math.max(0, state.score - Number(state.activeBoss?.pressurePenalty || 25));
+    triggerBossTelegraph('pressure');
+    renderGameHud();
   }
   if (state.remainingSeconds <= 0) {
     state.locked = true;
@@ -652,6 +756,7 @@ function stopCurrentBoard() {
   clearInterval(state.timerId);
   state.selected = null;
   renderer.setSelected(null);
+  hideBossTelegraph();
 }
 
 function openExitConfirm() {
@@ -764,6 +869,8 @@ function renderBossPanel() {
   el.bossImage.alt = boss.name;
   el.bossName.textContent = boss.name;
   el.bossPattern.textContent = boss.patternLabel;
+  el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
+  el.bossTelegraph.classList.add('hidden');
   el.bossCore.dataset.bossId = boss.id;
   el.bossCore.dataset.phase = 'stable';
 }

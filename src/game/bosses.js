@@ -9,6 +9,9 @@ export const BOSSES = {
     element: 'violet',
     patternLabel: '잔상 압박 · 6콤보마다 반격 예고',
     attackLine: '망각의 서고령이 기억 잔상을 흩뿌립니다. 빠르게 연결하세요.',
+    telegraphTitle: '망각풍 예고',
+    telegraphLine: '잔상이 번지기 전에 콤보를 이어가세요.',
+    pressurePenalty: 25,
     warningSeconds: 15,
     comboWarningEvery: 6,
     shakePower: 7
@@ -21,6 +24,9 @@ export const BOSSES = {
     element: 'sky',
     patternLabel: '책갈피 봉쇄 · 5콤보마다 판 흔들림',
     attackLine: '그림자 장서관장이 책갈피를 봉쇄합니다. 콤보를 이어 반격하세요.',
+    telegraphTitle: '그림자 반격 예고',
+    telegraphLine: '실패하면 시간이 더 크게 흔들립니다.',
+    pressurePenalty: 35,
     warningSeconds: 18,
     comboWarningEvery: 5,
     shakePower: 8
@@ -33,6 +39,9 @@ export const BOSSES = {
     element: 'gold',
     patternLabel: '봉인 파동 · 4콤보마다 강한 충격',
     attackLine: '봉인된 페이지 골렘이 마법진을 내려칩니다. 남은 오브젝트를 정리하세요.',
+    telegraphTitle: '봉인 충격파 예고',
+    telegraphLine: '시간 봉인을 복원하면 압박을 늦출 수 있습니다.',
+    pressurePenalty: 45,
     warningSeconds: 20,
     comboWarningEvery: 4,
     shakePower: 10
