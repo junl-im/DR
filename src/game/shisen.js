@@ -1,6 +1,19 @@
 import { TILE_SET } from './difficulty.js';
 
 export function createBoard(difficulty) {
+  return createPlayableBoard(difficulty);
+}
+
+export function createPlayableBoard(difficulty, attempts = 40) {
+  let board = null;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    board = buildRandomBoard(difficulty);
+    if (findHint(board)) return board;
+  }
+  return board ?? buildRandomBoard(difficulty);
+}
+
+function buildRandomBoard(difficulty) {
   const totalCells = difficulty.rows * difficulty.cols;
   const pairCount = totalCells / 2;
   const icons = TILE_SET.slice(0, difficulty.iconTypes);
@@ -49,12 +62,16 @@ export function isCleared(board) {
 }
 
 export function canConnect(board, first, second) {
-  if (!first || !second) return false;
-  if (first.row === second.row && first.col === second.col) return false;
+  return Boolean(findConnectionPath(board, first, second));
+}
+
+export function findConnectionPath(board, first, second) {
+  if (!first || !second) return null;
+  if (first.row === second.row && first.col === second.col) return null;
 
   const firstTile = board[first.row]?.[first.col];
   const secondTile = board[second.row]?.[second.col];
-  if (!firstTile || !secondTile || firstTile.type !== secondTile.type) return false;
+  if (!firstTile || !secondTile || firstTile.type !== secondTile.type) return null;
 
   const rows = board.length;
   const cols = board[0].length;
@@ -70,6 +87,7 @@ export function canConnect(board, first, second) {
   const bestTurns = Array.from({ length: rows + 2 }, () =>
     Array.from({ length: cols + 2 }, () => Array(4).fill(Number.POSITIVE_INFINITY))
   );
+  const previous = new Map();
   const queue = [];
 
   directions.forEach((_, directionIndex) => {
@@ -87,23 +105,58 @@ export function canConnect(board, first, second) {
 
       const next = {
         row: current.row + direction.row,
-        col: current.col + direction.col
+        col: current.col + direction.col,
+        directionIndex: nextDirectionIndex,
+        turns: nextTurns
       };
 
       if (next.row < 0 || next.row > rows + 1 || next.col < 0 || next.col > cols + 1) continue;
       if (isBlocked(board, next, start, target)) continue;
       if (bestTurns[next.row][next.col][nextDirectionIndex] <= nextTurns) continue;
 
+      bestTurns[next.row][next.col][nextDirectionIndex] = nextTurns;
+      previous.set(stateKey(next), current);
+
       if (next.row === target.row && next.col === target.col) {
-        return true;
+        return compressPath(reconstructPath(next, previous));
       }
 
-      bestTurns[next.row][next.col][nextDirectionIndex] = nextTurns;
-      queue.push({ ...next, directionIndex: nextDirectionIndex, turns: nextTurns });
+      queue.push(next);
     }
   }
 
-  return false;
+  return null;
+}
+
+function reconstructPath(end, previous) {
+  const path = [];
+  let current = end;
+  while (current) {
+    path.push({ row: current.row, col: current.col });
+    const prev = previous.get(stateKey(current));
+    if (!prev) break;
+    current = prev;
+  }
+  return path.reverse();
+}
+
+function compressPath(path) {
+  if (path.length <= 2) return path;
+  const compressed = [path[0]];
+  for (let i = 1; i < path.length - 1; i += 1) {
+    const prev = path[i - 1];
+    const current = path[i];
+    const next = path[i + 1];
+    const sameRow = prev.row === current.row && current.row === next.row;
+    const sameCol = prev.col === current.col && current.col === next.col;
+    if (!sameRow && !sameCol) compressed.push(current);
+  }
+  compressed.push(path[path.length - 1]);
+  return compressed;
+}
+
+function stateKey(point) {
+  return `${point.row}:${point.col}:${point.directionIndex}`;
 }
 
 function isBlocked(board, point, start, target) {
@@ -146,11 +199,10 @@ export function findHint(board) {
 }
 
 export function shuffleRemaining(board) {
-  const nextBoard = cloneBoard(board);
   const positions = [];
   const tiles = [];
 
-  nextBoard.forEach((row, rowIndex) => {
+  board.forEach((row, rowIndex) => {
     row.forEach((tile, colIndex) => {
       if (tile) {
         positions.push({ row: rowIndex, col: colIndex });
@@ -159,12 +211,17 @@ export function shuffleRemaining(board) {
     });
   });
 
-  shuffle(tiles);
-  positions.forEach((position, index) => {
-    nextBoard[position.row][position.col] = tiles[index];
-  });
+  let candidate = cloneBoard(board);
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const shuffledTiles = shuffle(tiles.slice());
+    candidate = cloneBoard(board);
+    positions.forEach((position, index) => {
+      candidate[position.row][position.col] = shuffledTiles[index];
+    });
+    if (findHint(candidate)) return candidate;
+  }
 
-  return nextBoard;
+  return candidate;
 }
 
 export function shuffle(array) {

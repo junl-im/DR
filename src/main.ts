@@ -2,9 +2,9 @@ import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDo
 import './styles.css';
 import { db, firebaseReady } from './firebase.js';
 import { getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
-import { DIFFICULTIES } from './game/difficulty.js';
+import { DIFFICULTIES, PRELOAD_ASSETS } from './game/difficulty.js';
 import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getNextStage, getStageById } from './game/stages.js';
-import { canConnect, countRemaining, createBoard, findHint, isCleared, removePair, shuffleRemaining } from './game/shisen.js';
+import { countRemaining, createBoard, findConnectionPath, findHint, isCleared, removePair, shuffleRemaining } from './game/shisen.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
@@ -12,6 +12,8 @@ import { DreamAudio } from './audio/DreamAudio';
 import { GAME_TITLE } from './config/design';
 import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
 import { prepareSpineRuntime } from './engine/SpineBridge';
+import { detectDeviceProfile, nextQualityTier, saveQualityTier } from './systems/performance';
+import { HAPTIC } from './systems/haptics';
 
 document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.png)`);
 
@@ -44,6 +46,8 @@ const el = {
   settingsLobbyButton: $('#settings-lobby-button'),
   settingsFullscreenButton: $('#settings-fullscreen-button'),
   soundToggle: $('#sound-toggle'),
+  qualityToggle: $('#quality-toggle'),
+  qualityLabel: $('#quality-label'),
   resetProgressButton: $('#reset-progress-button'),
   fullscreenButton: $('#settings-fullscreen-button'),
   installButton: $('#install-button'),
@@ -70,6 +74,8 @@ const el = {
   movesLabel: $('#moves-label'),
   statusLabel: $('#status-label'),
   bossHpLabel: $('#boss-hp-label'),
+  missionLabel: $('#mission-label'),
+  comboCutin: $('#combo-cutin'),
   hintButton: $('#hint-button'),
   shuffleButton: $('#shuffle-button'),
   newGameButton: $('#new-game-button'),
@@ -109,6 +115,8 @@ const state = {
   soundEnabled: readText('dream-library-sound') !== 'off',
   localStats: readJson('dream-library-local-stats', { bestScore: 0, clearCount: 0 }),
   campaignProgress: normalizeCampaignProgress(readJson('dream-library-campaign-progress', null)),
+  qualityProfile: detectDeviceProfile(),
+  warnedLowTime: false,
   lastClearedStageId: ''
 };
 
@@ -124,6 +132,8 @@ async function init() {
 
   registerServiceWorker();
   audio.setEnabled(state.soundEnabled);
+  renderer.setQuality(state.qualityProfile);
+  renderQualityButton();
   initFullscreenControls(el.fullscreenButton, setStatus);
   initInstallPrompt(el.installButton, setStatus);
   bindEvents();
@@ -133,6 +143,7 @@ async function init() {
   updateScreen('login');
 
   await renderer.initAmbient(el.pixiStage);
+  renderer.preloadAssets(PRELOAD_ASSETS);
   await prepareSpineRuntime();
 
   observeAuth((user: any) => {
@@ -157,11 +168,22 @@ function bindEvents() {
   el.settingsLoginButton.addEventListener('click', () => { closeOptionsPanel(); updateScreen('login'); });
   el.settingsLobbyButton.addEventListener('click', () => { closeOptionsPanel(); hasSession() ? updateScreen('lobby') : updateScreen('login'); });
   el.soundToggle.addEventListener('click', () => {
+    HAPTIC.tap();
     state.soundEnabled = !state.soundEnabled;
     writeText('dream-library-sound', state.soundEnabled ? 'on' : 'off');
     audio.setEnabled(state.soundEnabled);
     renderSoundButton();
   });
+  el.qualityToggle.addEventListener('click', () => {
+    const nextTier = nextQualityTier(state.qualityProfile.tier);
+    saveQualityTier(nextTier);
+    state.qualityProfile = detectDeviceProfile();
+    renderer.setQuality(state.qualityProfile);
+    renderQualityButton();
+    if (state.screen === 'game' && state.board.length) renderer.renderBoard(state.board);
+    setStatus(`렌더링 품질을 ${qualityText(state.qualityProfile.tier)}로 변경했습니다.`);
+  });
+
   el.resetProgressButton.addEventListener('click', () => {
     state.campaignProgress = normalizeCampaignProgress(null);
     state.localStats = { bestScore: 0, clearCount: 0 };
@@ -178,6 +200,7 @@ function bindEvents() {
   });
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
+    HAPTIC.tap();
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();
@@ -188,6 +211,7 @@ function bindEvents() {
   }, '게임을 시작합니다.'));
   el.googleButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
+    HAPTIC.tap();
     if (!firebaseReady) throw new Error('login-disabled');
     await loginWithGoogle();
     await startSelectedStage();
@@ -269,6 +293,7 @@ async function startSelectedStage() {
   state.remainingSeconds = difficulty.timeLimitSeconds;
   state.hints = difficulty.hints;
   state.shuffles = difficulty.shuffles;
+  state.warnedLowTime = false;
   state.startedAt = Date.now();
   clearInterval(state.timerId);
   state.timerId = window.setInterval(tickTimer, 1000);
@@ -278,6 +303,7 @@ async function startSelectedStage() {
   renderer.setBossHp(100);
   renderGameHud();
   setStatus('같은 마법 오브젝트를 연결하세요.');
+  updateMissionLabel();
 }
 
 function handleTileTap(point: BoardPoint) {
@@ -285,10 +311,12 @@ function handleTileTap(point: BoardPoint) {
   const tile = state.board[point.row]?.[point.col];
   if (!tile) return;
   audio.play('tap');
+  HAPTIC.tap();
   if (!state.selected) {
     state.selected = point;
     renderer.setSelected(point);
     audio.play('select');
+    HAPTIC.select();
     return;
   }
   const first = state.selected;
@@ -297,7 +325,8 @@ function handleTileTap(point: BoardPoint) {
     renderer.setSelected(null);
     return;
   }
-  if (canConnect(state.board, first, point)) {
+  const connectionPath = findConnectionPath(state.board, first, point);
+  if (connectionPath) {
     state.locked = true;
     state.moves += 1;
     state.combo += 1;
@@ -307,7 +336,11 @@ function handleTileTap(point: BoardPoint) {
     audio.play('match');
     window.setTimeout(() => audio.play('beam'), 90);
     window.setTimeout(() => audio.play('burst'), 220);
-    if (state.combo > 1) audio.play('combo');
+    if (state.combo > 1) {
+      audio.play('combo');
+      HAPTIC.combo();
+      showComboCutin(state.combo);
+    } else HAPTIC.match();
     renderer.playMatchSequence(first, point, state.combo, () => {
       state.board = removePair(state.board, first, point);
       state.selected = null;
@@ -315,12 +348,14 @@ function handleTileTap(point: BoardPoint) {
       renderGameHud();
       const hp = (countRemaining(state.board) / Math.max(1, state.board.length * state.board[0].length)) * 100;
       renderer.setBossHp(hp);
+      if (state.combo > 0 && state.combo % 6 === 0) renderer.playBossWarning();
       if (isCleared(state.board)) clearStage();
-    });
+    }, connectionPath);
   } else {
     state.moves += 1;
     state.combo = 0;
     renderer.playMismatch(point);
+    HAPTIC.warning();
     renderer.setSelected(point);
     state.selected = point;
     setStatus('연결 경로는 최대 두 번까지만 꺾을 수 있습니다.');
@@ -332,6 +367,11 @@ function tickTimer() {
   if (state.screen !== 'game' || state.locked) return;
   state.remainingSeconds = Math.max(0, state.remainingSeconds - 1);
   renderGameHud();
+  if (!state.warnedLowTime && state.remainingSeconds <= 15 && state.remainingSeconds > 0) {
+    state.warnedLowTime = true;
+    renderer.playBossWarning();
+    setStatus('망각의 서고령이 반격을 준비합니다. 빠르게 연결하세요.');
+  }
   if (state.remainingSeconds <= 0) {
     state.locked = true;
     clearInterval(state.timerId);
@@ -430,6 +470,16 @@ function renderSoundButton() {
   el.soundToggle.setAttribute('aria-pressed', String(state.soundEnabled));
 }
 
+function renderQualityButton() {
+  const text = qualityText(state.qualityProfile.tier);
+  el.qualityToggle.textContent = `렌더링 ${text}`;
+  el.qualityLabel.textContent = `${text} · ${state.qualityProfile.reason}`;
+}
+
+function qualityText(tier: string) {
+  return tier === 'high' ? '고품질' : tier === 'medium' ? '균형' : '절전';
+}
+
 function renderLobby() {
   const stage = getStageById(state.selectedStageId);
   const chapter = getChapterById(stage.chapterId);
@@ -471,6 +521,25 @@ function renderGameHud() {
   el.scoreLabel.textContent = formatNumber(state.score);
   el.comboLabel.textContent = `${state.combo}`;
   el.movesLabel.textContent = `${state.moves}`;
+  updateMissionLabel();
+}
+
+function updateMissionLabel() {
+  const stage = getStageById(state.selectedStageId);
+  const difficulty = DIFFICULTIES[stage.difficultyKey];
+  const remaining = state.board.length ? countRemaining(state.board) : difficulty.rows * difficulty.cols;
+  const targetCombo = difficulty.key === 'easy' ? 3 : difficulty.key === 'normal' ? 4 : difficulty.key === 'hard' ? 5 : 6;
+  el.missionLabel.textContent = `남은 오브젝트 ${remaining}개 · ${targetCombo}콤보 이상 노리기`;
+}
+
+function showComboCutin(combo: number) {
+  if (combo < 2) return;
+  el.comboCutin.textContent = `${combo} COMBO`;
+  el.comboCutin.classList.remove('hidden');
+  el.comboCutin.classList.remove('combo-pop');
+  void el.comboCutin.offsetWidth;
+  el.comboCutin.classList.add('combo-pop');
+  window.setTimeout(() => el.comboCutin.classList.add('hidden'), 760);
 }
 
 function openReward(stars: number, score: number) {

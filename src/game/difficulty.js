@@ -81,7 +81,12 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/backgrounds/library-hall.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/memory-mist.png`,
   `${import.meta.env.BASE_URL}assets/characters/librarian-momo.png`,
+  `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`,
   `${import.meta.env.BASE_URL}assets/ui/panel-frame.png`,
   `${import.meta.env.BASE_URL}assets/ui/reward-badge.png`,
+  `${import.meta.env.BASE_URL}assets/ui/hp-frame.png`,
+  `${import.meta.env.BASE_URL}assets/effects/hit-burst.png`,
+  `${import.meta.env.BASE_URL}assets/effects/combo-flash.png`,
+  `${import.meta.env.BASE_URL}assets/effects/magic-wave.png`,
   ...TILE_SET.map((tile) => tile.asset)
 ];

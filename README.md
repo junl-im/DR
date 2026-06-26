@@ -60,6 +60,32 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.8 - Full Polish, Combat Feedback, Engine Quality Patch
+
+- 작은 모바일 화면에서 로그인/게임 UI가 겹치지 않도록 `screen-game`, HUD, 보스 영역, 퍼즐판, 하단 버튼 레이아웃을 재조정
+- `app-shell` overflow 문제를 정리해 로비는 자연스럽게 스크롤되고 게임 화면은 세로 9:16 안에서 고정되도록 수정
+- 게임 HUD에 미션 스트립 추가: 남은 오브젝트 수와 목표 콤보 표시
+- 보스 영역을 PNG 렌더링 캐릭터 `forgotten-spirit.png` 기반으로 교체
+- 보스 HP 바 추가: HP 수치와 실제 게이지가 함께 감소
+- 보스 상태 단계 추가: stable / wounded / danger
+- 콤보 컷인 UI 추가: 2콤보 이상부터 전투 피드백 강화
+- 15초 이하 저시간 구간에서 보스 반격 예고 연출 추가
+- 6콤보 단위로 퍼즐판 흔들림과 보스 압박 연출 추가
+- 사천성 연결 경로 계산을 Boolean 판정에서 실제 경로 반환 방식으로 확장
+- 연결 성공 시 실제 꺾임 경로를 따라 빛줄기를 그리도록 개선
+- 보드 생성과 섞기 후 최소 1개 이상의 연결 가능한 쌍이 나오도록 보정
+- PixiJS 렌더러에 디바이스 품질 프로필 추가: 고품질 / 균형 / 절전
+- 품질 설정을 옵션 모달에 추가하고 localStorage에 저장
+- 저사양 모드에서 파티클 수, 모션, blur/shadow 부담 감소
+- 타일 idle floating 누적 오차 문제 수정: 매 프레임 y값이 계속 밀리던 문제를 base position 방식으로 보정
+- PixiJS asset preload 캐시 추가
+- pointermove parallax 입력을 throttle 처리해 불필요한 프레임 비용 감소
+- 모바일 haptic feedback 시스템 추가: 터치/선택/매칭/콤보/경고 진동 분리
+- 신규 PNG 자산 추가: `forgotten-spirit.png`, `combo-flash.png`, `magic-wave.png`, `boss-warning.png`, `hp-frame.png`
+- service worker 캐시를 v1.0.8로 갱신
+- `npm run check:health` 추가: v1.0.8 필수 UI hook, 스타일, PNG 자산, SVG 금지 정책 검사
+- SVG 금지 정책 유지: full ZIP과 patch ZIP 내부에 SVG 파일 없음
+
 ### v1.0.7 - Compact Start Screen + Raster Asset Refresh Patch
 
 - 첫 로그인 화면을 한 화면 안에 들어오도록 재구성
@@ -385,14 +411,14 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              24 files
 public/assets/backgrounds/*.png           6 files
-public/assets/characters/*.png            1 file
-public/assets/ui/*.png                    2 files
-public/assets/effects/*.png               1 file
+public/assets/characters/*.png            2 files
+public/assets/ui/*.png                    3 files
+public/assets/effects/*.png               4 files
 public/assets/atlas/dream-objects.png     1 file
 public/assets/atlas/*.json                1 file
 public/assets/meta/tile-manifest.json     1 file
@@ -417,15 +443,17 @@ gem, shield, flower, comet, bell, map, castle, spark
 
 ## Next Version Plan
 
-### v1.0.8 예정 - Boss Battle Feedback Patch
+### v1.0.9 예정 - Restoration Meta + Daily Content Patch
 
-- 보스 HP 바를 실제 전투 UI처럼 재구성
-- 콤보 단계별 컷인, 화면 플래시, 보스 피격 반응 추가
-- 연결 성공 시 빛줄기 경로를 더 굵고 선명한 전투 연출로 강화
-- 퍼즐판 가장자리 마법진 흔들림과 보스 반격 예고 추가
-- 보스 피격/반격 타이밍에 카메라 흔들림, 히트스톱, 파티클을 더 세분화
-- 효과음 재생 타이밍을 타격감 시퀀스에 맞게 세분화
-- 모바일 터치 입력 후 0.1초 이내 반응감을 더 명확하게 조정
+- 도서관 복원 메타 시스템 추가
+- 스테이지 클리어 보상을 실제 복원 재화/오브젝트로 누적
+- 일일 스테이지와 daily 리더보드 구조 추가
+- 보스 타입 3종 분리: 망각 / 그림자 / 봉인
+- 스테이지별 특수 규칙 추가: 안개 타일, 잠긴 타일, 시간 봉인
+- 보상 인벤토리와 컬렉션 화면 추가
+- 로비 월드맵을 챕터 단위 탭 구조로 정리
+- Texture Atlas 로딩 경로를 개별 PNG에서 atlas 우선 구조로 전환 준비
+- 빌드 결과물 크기 점검과 이미지 용량 최적화 스크립트 추가
 
 ## KakaoTalk / In-App Browser Policy
 

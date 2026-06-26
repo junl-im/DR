@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1-0-7';
+const CACHE_NAME = 'dream-library-cache-v1-0-8';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -6,8 +6,12 @@ const CORE_ASSETS = [
   './assets/backgrounds/storybook-login.png',
   './assets/backgrounds/library-hall.png',
   './assets/characters/librarian-momo.png',
+  './assets/characters/forgotten-spirit.png',
   './assets/objects/magic-book.png',
-  './assets/effects/hit-burst.png'
+  './assets/effects/hit-burst.png',
+  './assets/effects/combo-flash.png',
+  './assets/effects/magic-wave.png',
+  './assets/ui/hp-frame.png'
 ];
 
 self.addEventListener('install', (event) => {
