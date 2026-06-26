@@ -800,3 +800,125 @@ body[data-quality="low"] .battle-stage::after { box-shadow: none; filter: none; 
   .collection-list { max-height: 132px; }
   .restoration-list { max-height: 132px; overflow: auto; }
 }
+
+
+/* v1.0.13 lobby-first flow, soft Kakao assist, collection and daily polish */
+.browser-guard {
+  position: fixed;
+  inset: auto 12px max(12px, env(safe-area-inset-bottom)) 12px;
+  z-index: 1000;
+  display: block;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+}
+.browser-guard-card {
+  pointer-events: auto;
+  width: min(100%, 520px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 0.66rem;
+  align-items: center;
+  padding: 0.72rem;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(16, 43, 87, 0.9), rgba(6, 21, 45, 0.82));
+  box-shadow: 0 18px 50px rgba(6, 21, 45, 0.5), 0 0 28px rgba(54, 214, 164, 0.16);
+}
+.handoff-card h2 { margin: 0.06rem 0 0.16rem; font-size: 0.94rem; }
+.handoff-card p { margin: 0; font-size: 0.72rem; line-height: 1.38; }
+.handoff-icon { width: 48px; height: 48px; margin: 0; }
+.handoff-copy { min-width: 0; }
+.guard-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.42rem;
+  margin-top: 0.14rem;
+}
+.guard-actions button { min-height: 34px; padding: 0.42rem 0.46rem; font-size: 0.72rem; }
+.guard-status { margin-top: 0.18rem !important; color: var(--gold-300) !important; }
+html.handoff-browser body { overflow: auto; }
+body[data-browser="kakao"] .start-now-button::before { content: '로비 먼저 입장'; }
+.lobby-flow-note {
+  display: block;
+  margin-top: 0.34rem;
+  color: var(--gold-300);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.start-button::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  border: 1px solid rgba(245, 200, 107, 0.26);
+  opacity: 0.8;
+  animation: magicPulse 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.selected-stage-card {
+  position: relative;
+  overflow: hidden;
+}
+.selected-stage-card::before {
+  content: '';
+  position: absolute;
+  right: -44px;
+  top: -44px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 200, 107, 0.16), transparent 66%);
+  pointer-events: none;
+}
+.mini-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.34rem;
+  margin-top: 0.48rem;
+}
+.mini-tabs button {
+  min-height: 30px;
+  padding: 0.32rem 0.5rem;
+  border-radius: 999px;
+  color: var(--muted);
+  background: rgba(6, 21, 45, 0.42);
+  border-color: rgba(125, 220, 255, 0.18);
+  font-size: 0.66rem;
+  box-shadow: none;
+}
+.mini-tabs button.selected {
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--sky-500));
+  box-shadow: 0 0 18px rgba(245, 200, 107, 0.24);
+}
+.restore-node.restored {
+  border-color: rgba(54, 214, 164, 0.66);
+  background: linear-gradient(135deg, rgba(54, 214, 164, 0.22), rgba(16, 43, 87, 0.72));
+}
+.restore-node.restored span { color: var(--emerald-500); }
+.collection-tile.premium.owned { box-shadow: inset 0 0 22px rgba(245, 200, 107, 0.12), 0 0 18px rgba(143, 107, 255, 0.1); }
+.empty-list {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0.9rem;
+  border-radius: 18px;
+  color: var(--muted);
+  text-align: center;
+  background: rgba(6, 21, 45, 0.36);
+}
+.daily-panel .mini-tabs { margin-top: 0.36rem; }
+.daily-panel .mini-tabs button { min-height: 26px; padding: 0.22rem 0.44rem; font-size: 0.62rem; }
+@media (max-width: 430px) {
+  .browser-guard { inset-inline: 8px; }
+  .browser-guard-card { grid-template-columns: 40px minmax(0, 1fr); border-radius: 20px; padding: 0.62rem; }
+  .handoff-icon { width: 40px; height: 40px; }
+  .guard-actions { gap: 0.32rem; }
+  .guard-actions button { min-height: 32px; padding: 0.34rem 0.28rem; font-size: 0.64rem; }
+  .lobby-flow-note { font-size: 0.66rem; }
+}
+@media (max-height: 690px) {
+  .browser-guard-card { transform: scale(0.94); transform-origin: bottom center; }
+  .handoff-card p:not(.eyebrow):not(.guard-status) { display: none; }
+}

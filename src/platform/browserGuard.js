@@ -5,6 +5,7 @@ const kakaoInAppPatterns = [
 ];
 
 const CONTINUE_KEY = 'dream-library-kakao-continue-inapp';
+const TIP_KEY = 'dream-library-kakao-soft-tip-shown';
 
 export function initBrowserGuard() {
   const userAgent = navigator.userAgent || '';
@@ -28,16 +29,18 @@ export function initBrowserGuard() {
   };
 
   const show = (message) => {
-    if (!guard) return;
+    if (!guard || !isKakao) return;
     setStatus(message);
     guard.classList.remove('hidden');
-    document.documentElement.classList.add('handoff-browser');
+    guard.classList.add('soft-handoff');
+    document.documentElement.classList.remove('handoff-browser');
+    sessionStorage.setItem(TIP_KEY, 'yes');
   };
 
   const copyUrl = async () => {
     try {
       await navigator.clipboard.writeText(currentUrl);
-      setStatus('주소를 복사했습니다. 외부 브라우저 주소창에 붙여넣으면 이어서 시작됩니다.');
+      setStatus('주소를 복사했습니다. Chrome 또는 Safari 주소창에 붙여넣으면 같은 로비로 이어집니다.');
       return true;
     } catch {
       setStatus(currentUrl);
@@ -49,16 +52,16 @@ export function initBrowserGuard() {
     if (!isKakao) return false;
     if (isAndroid) {
       window.location.href = makeChromeIntentUrl(currentUrl);
-      setStatus('Chrome으로 이어서 여는 중입니다. 돌아오면 아래 임시 플레이를 사용할 수 있습니다.');
+      setStatus('Chrome으로 이어서 여는 중입니다. 전환되지 않아도 카카오톡 안에서 게스트 플레이를 계속할 수 있습니다.');
       return true;
     }
     if (isIOS) {
       await copyUrl();
-      show('iPhone 카카오 브라우저는 Safari 자동 전환이 제한될 수 있어 주소를 복사했습니다. Safari에서 붙여넣거나 임시 플레이로 계속하세요.');
+      show('iPhone에서는 자동 Safari 전환이 제한될 수 있어 주소 복사를 준비했습니다. 카카오톡 안에서도 로비와 게스트 플레이는 계속됩니다.');
       return true;
     }
     window.open(currentUrl, '_blank', 'noopener,noreferrer');
-    setStatus('외부 브라우저 창을 여는 중입니다. 열리지 않으면 주소 복사를 사용하세요.');
+    setStatus('외부 브라우저 열기를 시도했습니다. 열리지 않으면 주소 복사를 사용하세요.');
     return true;
   };
 
@@ -67,29 +70,39 @@ export function initBrowserGuard() {
   continueButton?.addEventListener('click', () => {
     sessionStorage.setItem(CONTINUE_KEY, 'yes');
     hide();
-    setStatus('카카오 브라우저 임시 플레이를 허용했습니다. 일부 기능은 외부 브라우저보다 제한될 수 있습니다.');
+    setStatus('카카오톡 안에서 계속 진행합니다. 계정 로그인은 외부 브라우저가 더 안정적입니다.');
   });
 
-  if (!isKakao) hide();
   document.body.dataset.browser = isKakao ? 'kakao' : 'standard';
+  if (!isKakao) hide();
 
   return {
     blocked: false,
     inApp: isKakao,
     platform: isAndroid ? 'android' : isIOS ? 'ios' : 'other',
     shouldUseHandoff() {
+      return false;
+    },
+    shouldAssistAuth() {
       return isKakao && sessionStorage.getItem(CONTINUE_KEY) !== 'yes';
     },
     async startHandoff() {
       if (!isKakao) return false;
-      show(isAndroid ? '외부 브라우저로 이어서 여는 중입니다.' : '외부 브라우저로 이어서 시작할 수 있도록 준비했습니다.');
+      show('계정 저장과 결제형 브라우저 기능은 외부 브라우저가 더 안정적입니다. 게스트는 카카오톡 안에서도 계속할 수 있습니다.');
       return openExternal();
+    },
+    showRecovery(message = '카카오톡 안에서도 로비까지 바로 입장됩니다. 필요할 때만 외부 브라우저로 이어서 열 수 있습니다.') {
+      show(message);
+    },
+    maybeShowSoftTip() {
+      if (isKakao && sessionStorage.getItem(TIP_KEY) !== 'yes') {
+        show('카카오톡 안에서도 로비로 바로 들어갑니다. Google/Email 저장이 필요할 때만 외부 브라우저를 사용하세요.');
+      }
     },
     continueInApp() {
       sessionStorage.setItem(CONTINUE_KEY, 'yes');
       hide();
     },
-    showRecovery: show,
     hide
   };
 }

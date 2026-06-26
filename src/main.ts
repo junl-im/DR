@@ -77,9 +77,11 @@ const el = {
   restorationList: $('#restoration-list'),
   collectionSummary: $('#collection-summary'),
   collectionList: $('#collection-list'),
+  collectionFilter: $('#collection-filter'),
   dailyTitle: $('#daily-title'),
   dailyDesc: $('#daily-desc'),
   dailyLeaderboardList: $('#daily-leaderboard-list'),
+  dailyRankTabs: $('#daily-rank-tabs'),
   dailyStartButton: $('#daily-start-button'),
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
@@ -121,6 +123,7 @@ const el = {
 type ScreenName = 'login' | 'settings' | 'lobby' | 'game';
 type CampaignProgress = { unlocked: string[]; cleared: Record<string, { stars: number; bestScore: number }> };
 type RestorationInventory = Record<string, number>;
+type RestorationCompleted = Record<string, string>;
 type BrowserRecovery = ReturnType<typeof initBrowserGuard>;
 
 const renderer = new DreamPixiRenderer();
@@ -177,6 +180,9 @@ const state = {
   localStats: readJson('dream-library-local-stats', { bestScore: 0, clearCount: 0 }),
   campaignProgress: normalizeCampaignProgress(readJson('dream-library-campaign-progress', null)),
   inventory: readJson<RestorationInventory>('dream-library-inventory', {}),
+  restorationCompleted: readJson<RestorationCompleted>('dream-library-restoration-completed', {}),
+  collectionFilter: readText('dream-library-collection-filter') || 'all',
+  dailyRankScope: readText('dream-library-daily-rank-scope') || 'today',
   restorationFocus: readText('dream-library-restoration-focus') || 'shelf',
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
@@ -198,7 +204,8 @@ async function init() {
   document.title = GAME_TITLE;
   browserRecovery = initBrowserGuard();
   if (browserRecovery.inApp) {
-    setStatus('카카오톡에서는 시작 버튼을 누르면 외부 브라우저로 이어서 여는 대책을 사용합니다.');
+    browserRecovery.maybeShowSoftTip();
+    setStatus('카카오톡에서도 먼저 로비로 입장합니다. 계정 저장만 외부 브라우저가 더 안정적입니다.');
   }
 
   registerServiceWorker();
@@ -263,9 +270,11 @@ function bindEvents() {
     state.campaignProgress = normalizeCampaignProgress(null);
     state.localStats = { bestScore: 0, clearCount: 0 };
     state.inventory = {};
+    state.restorationCompleted = {};
     writeJson('dream-library-campaign-progress', state.campaignProgress);
     writeJson('dream-library-local-stats', state.localStats);
     writeJson('dream-library-inventory', state.inventory);
+    writeJson('dream-library-restoration-completed', state.restorationCompleted);
     renderLobby();
     renderStats();
     setStatus('로컬 진행을 초기화했습니다.');
@@ -278,38 +287,38 @@ function bindEvents() {
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
-    if (await handoffIfNeeded()) return;
+    suggestKakaoAssist('카카오톡 안에서도 로비까지 바로 입장합니다. Google/Email 저장이 필요하면 외부 브라우저를 사용할 수 있습니다.');
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();
       writeJson('dream-library-local-guest', state.localGuest);
       renderAuth();
     }
-    await startSelectedStage();
-  }, '게임을 시작합니다.'));
+    enterLobbyFromStart();
+  }, '로비로 입장했습니다.'));
   el.googleButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
     if (!firebaseReady) throw new Error('login-disabled');
-    if (await handoffIfNeeded()) return;
+    if (await handoffIfNeeded('auth')) return;
     await loginWithGoogle();
-    await startSelectedStage();
-  }, 'Google 로그인 후 게임을 시작합니다.'));
+    enterLobbyFromStart();
+  }, 'Google 로그인 후 로비로 입장했습니다.'));
   el.emailForm.addEventListener('submit', (event) => {
     event.preventDefault();
     runAuth(async () => {
       if (!firebaseReady) throw new Error('login-disabled');
-      if (await handoffIfNeeded()) return;
+      if (await handoffIfNeeded('auth')) return;
       await loginWithEmail(el.emailInput.value, el.passwordInput.value);
-      await startSelectedStage();
-    }, '이메일 로그인 후 게임을 시작합니다.');
+      enterLobbyFromStart();
+    }, '이메일 로그인 후 로비로 입장했습니다.');
   });
   el.emailSignupButton.addEventListener('click', () => runAuth(async () => {
     if (!firebaseReady) throw new Error('login-disabled');
-    if (await handoffIfNeeded()) return;
+    if (await handoffIfNeeded('auth')) return;
     await signupWithEmail(el.emailInput.value, el.passwordInput.value);
-    await startSelectedStage();
-  }, '새 계정을 만들고 게임을 시작합니다.'));
+    enterLobbyFromStart();
+  }, '새 계정을 만들고 로비로 입장했습니다.'));
   el.signoutButton.addEventListener('click', () => runAuth(async () => {
     if (firebaseReady && state.user) await logout();
     state.localGuest = null;
@@ -318,7 +327,7 @@ function bindEvents() {
     closeOptionsPanel();
     updateScreen('login');
   }, '로그아웃했습니다.'));
-  el.enterLobbyButton.addEventListener('click', () => updateScreen('lobby'));
+  el.enterLobbyButton.addEventListener('click', enterLobbyFromStart);
   el.exitCancelButton.addEventListener('click', closeExitConfirm);
   el.exitConfirmButton.addEventListener('click', confirmExitApp);
   el.exitConfirmModal.addEventListener('click', (event) => { if (event.target === el.exitConfirmModal) closeExitConfirm(); });
@@ -351,6 +360,21 @@ function bindEvents() {
   el.startSelectedButton.addEventListener('click', () => startSelectedStage());
   el.dailyStageButton.addEventListener('click', startDailyStage);
   el.dailyStartButton.addEventListener('click', startDailyStage);
+  el.dailyRankTabs.addEventListener('click', (event) => {
+    const node = (event.target as HTMLElement).closest<HTMLElement>('[data-daily-rank]');
+    if (!node) return;
+    state.dailyRankScope = node.dataset.dailyRank || 'today';
+    writeText('dream-library-daily-rank-scope', state.dailyRankScope);
+    renderDailyPanel();
+    loadDailyLeaderboard();
+  });
+  el.collectionFilter.addEventListener('click', (event) => {
+    const node = (event.target as HTMLElement).closest<HTMLElement>('[data-collection-filter]');
+    if (!node) return;
+    state.collectionFilter = node.dataset.collectionFilter || 'all';
+    writeText('dream-library-collection-filter', state.collectionFilter);
+    renderCollection();
+  });
   el.restorationFocusButton.addEventListener('click', () => {
     document.querySelector('.restoration-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setStatus('복원 작업대를 확인하세요.');
@@ -383,6 +407,11 @@ function bindEvents() {
   el.restorationDetailModal.addEventListener('click', (event) => { if (event.target === el.restorationDetailModal) closeRestorationDetail(); });
   el.restorationDetailFocusButton.addEventListener('click', () => {
     if (!state.pendingRestorationProjectId) return;
+    const project = RESTORATION_PROJECTS.find((item) => item.id === state.pendingRestorationProjectId);
+    if (project && canCompleteRestoration(project) && !state.restorationCompleted[project.id]) {
+      completeRestorationProject(project.id);
+      return;
+    }
     state.restorationFocus = state.pendingRestorationProjectId;
     writeText('dream-library-restoration-focus', state.restorationFocus);
     closeRestorationDetail();
@@ -430,13 +459,33 @@ function handleSoftBack() {
 }
 
 
-async function handoffIfNeeded() {
-  if (!browserRecovery?.shouldUseHandoff()) return false;
-  audio.play('tap');
-  HAPTIC.tap();
-  await browserRecovery.startHandoff();
-  setStatus('외부 브라우저 전환을 시도했습니다. 전환이 막히면 임시 플레이를 선택하세요.');
-  return true;
+function suggestKakaoAssist(message: string) {
+  browserRecovery?.showRecovery?.(message);
+}
+
+async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
+  if (!browserRecovery?.inApp) return false;
+  if (mode === 'auth' && browserRecovery.shouldAssistAuth?.()) {
+    audio.play('tap');
+    HAPTIC.tap();
+    browserRecovery.showRecovery('Google/Email 저장은 외부 브라우저가 더 안정적입니다. 게스트로 로비를 둘러본 뒤 필요할 때 다시 시도하세요.');
+    setStatus('계정 저장은 외부 브라우저 권장입니다. 게스트 입장은 바로 가능합니다.');
+    return true;
+  }
+  browserRecovery.showRecovery('카카오톡 안에서도 게임 진행은 계속됩니다. 외부 브라우저는 선택 사항입니다.');
+  return false;
+}
+
+function enterLobbyFromStart() {
+  if (!hasSession()) {
+    state.localGuest = makeLocalGuest();
+    writeJson('dream-library-local-guest', state.localGuest);
+    renderAuth();
+  }
+  requestGameFullscreen();
+  renderLobby();
+  updateScreen('lobby');
+  setStatus('로비에 입장했습니다. 스테이지를 고른 뒤 진짜 게임 시작을 누르세요.');
 }
 
 async function startDailyStage() {
@@ -450,7 +499,7 @@ async function startDailyStage() {
 }
 
 async function startSelectedStage(options: { daily?: boolean } = {}) {
-  if (await handoffIfNeeded()) return;
+  await handoffIfNeeded('assist');
   state.currentBoardId = options.daily ? 'daily' : 'global';
   const baseStage = getStageById(state.selectedStageId);
   if (!options.daily && !isStageUnlocked(baseStage.id)) {
@@ -777,7 +826,7 @@ function confirmExitApp() {
 
 function renderAuth() {
   const name = state.user ? getDisplayName(state.user) : state.localGuest ? state.localGuest.name : '새로운 사서님';
-  const provider = state.user ? (state.user.email ? '이메일/Google 계정으로 저장 중' : '익명 계정으로 저장 중') : state.localGuest ? '게스트 플레이 중' : '로그인하면 진행과 랭킹을 저장합니다.';
+  const provider = state.user ? (state.user.email ? '이메일/Google 계정으로 저장 중' : '익명 계정으로 저장 중') : state.localGuest ? '게스트 플레이 중 · 로비 입장 가능' : '시작하면 로비로 입장합니다. 로그인하면 진행과 랭킹을 저장합니다.';
   el.authName.textContent = name;
   el.authProvider.textContent = provider;
   el.settingsAccountText.textContent = `${name} · ${provider}`;
@@ -926,38 +975,77 @@ function addReward(type: string, amount: number) {
 
 function renderRestoration() {
   const totalItems = Object.values(state.inventory).reduce((sum: number, value: any) => sum + Number(value || 0), 0);
-  el.restorationSummary.textContent = `보유 복원 재료 ${formatNumber(totalItems)}개 · 집중 프로젝트를 눌러 상세 재료를 확인하세요.`;
+  const completedCount = Object.keys(state.restorationCompleted).length;
+  el.restorationSummary.textContent = `보유 복원 재료 ${formatNumber(totalItems)}개 · 완료 ${completedCount}/${RESTORATION_PROJECTS.length} · 프로젝트를 눌러 보상 상태를 확인하세요.`;
   el.restorationList.innerHTML = RESTORATION_PROJECTS.map((project) => {
-    const current = project.types.reduce((sum, type) => sum + Number(state.inventory[type] || 0), 0);
+    const current = getRestorationCurrent(project);
     const ratio = Math.min(100, Math.round((current / project.need) * 100));
     const focused = project.id === state.restorationFocus;
-    return `<button type="button" class="restore-node ${ratio >= 100 ? 'complete' : ''} ${focused ? 'selected' : ''}" data-restore-id="${project.id}"><strong>${focused ? '✦ ' : ''}${project.label}</strong><span>${current}/${project.need}</span><i style="--restore-progress:${ratio}%"></i></button>`;
+    const completed = Boolean(state.restorationCompleted[project.id]);
+    const label = completed ? '완료' : ratio >= 100 ? '복원 가능' : `${current}/${project.need}`;
+    return `<button type="button" class="restore-node ${ratio >= 100 ? 'complete' : ''} ${completed ? 'restored' : ''} ${focused ? 'selected' : ''}" data-restore-id="${project.id}"><strong>${focused ? '✦ ' : ''}${project.label}</strong><span>${label}</span><i style="--restore-progress:${ratio}%"></i></button>`;
   }).join('');
+}
+
+function getRestorationCurrent(project: any) {
+  return project.types.reduce((sum: number, type: string) => sum + Number(state.inventory[type] || 0), 0);
+}
+
+function canCompleteRestoration(project: any) {
+  return getRestorationCurrent(project) >= project.need;
+}
+
+function completeRestorationProject(projectId: string) {
+  const project = RESTORATION_PROJECTS.find((item) => item.id === projectId);
+  if (!project || state.restorationCompleted[project.id] || !canCompleteRestoration(project)) return;
+  state.restorationCompleted[project.id] = new Date().toISOString();
+  addReward('spark', 2);
+  addReward('star', 1);
+  writeJson('dream-library-restoration-completed', state.restorationCompleted);
+  closeRestorationDetail();
+  renderLobby();
+  setStatus(`${project.label} 복원이 완료되어 별가루와 기억 파편을 획득했습니다.`);
+  HAPTIC.combo();
 }
 
 
 function renderCollection() {
   const collected = TILE_SET.filter((tile: any) => Number(state.inventory[tile.type] || 0) > 0);
-  el.collectionSummary.textContent = `${collected.length}/${TILE_SET.length} 수집 · 스테이지 보상과 오늘의 복원으로 도감을 채웁니다.`;
-  el.collectionList.innerHTML = TILE_SET.map((tile: any) => {
+  const premiumOwned = collected.filter((tile: any) => tile.theme === '프리미엄').length;
+  el.collectionSummary.textContent = `${collected.length}/${TILE_SET.length} 수집 · 프리미엄 ${premiumOwned}/24 · 필터로 미수집 재료를 빠르게 확인하세요.`;
+  el.collectionFilter.querySelectorAll('[data-collection-filter]').forEach((button: Element) => {
+    button.classList.toggle('selected', (button as HTMLElement).dataset.collectionFilter === state.collectionFilter);
+  });
+  const filtered = TILE_SET
+    .filter((tile: any) => {
+      const count = Number(state.inventory[tile.type] || 0);
+      if (state.collectionFilter === 'owned') return count > 0;
+      if (state.collectionFilter === 'missing') return count <= 0;
+      if (state.collectionFilter === 'premium') return tile.theme === '프리미엄';
+      return true;
+    })
+    .sort((a: any, b: any) => Number(state.inventory[b.type] || 0) - Number(state.inventory[a.type] || 0));
+  el.collectionList.innerHTML = filtered.map((tile: any) => {
     const count = Number(state.inventory[tile.type] || 0);
-    return `<article class="collection-tile ${count > 0 ? 'owned' : 'locked'}"><img src="${tile.asset}" alt="" draggable="false" /><strong>${escapeHtml(tile.label)}</strong><span>${count > 0 ? `${count}개 · ${escapeHtml(tile.theme)}` : '미수집'}</span></article>`;
-  }).join('');
+    return `<article class="collection-tile ${count > 0 ? 'owned' : 'locked'} ${tile.theme === '프리미엄' ? 'premium' : ''}"><img src="${tile.asset}" alt="" draggable="false" /><strong>${escapeHtml(tile.label)}</strong><span>${count > 0 ? `${count}개 · ${escapeHtml(tile.theme)}` : '미수집'}</span></article>`;
+  }).join('') || '<p class="empty-list">조건에 맞는 오브젝트가 없습니다.</p>';
 }
 
 function openRestorationDetail(projectId: string) {
   const project = RESTORATION_PROJECTS.find((item) => item.id === projectId) || RESTORATION_PROJECTS[0];
   state.pendingRestorationProjectId = project.id;
-  const current = project.types.reduce((sum, type) => sum + Number(state.inventory[type] || 0), 0);
+  const current = getRestorationCurrent(project);
   const ratio = Math.min(100, Math.round((current / project.need) * 100));
-  el.restorationDetailTitle.textContent = project.label;
-  el.restorationDetailMessage.textContent = `${project.description} · 보상: ${project.reward} · 진행률 ${ratio}%`;
+  const completed = Boolean(state.restorationCompleted[project.id]);
+  el.restorationDetailTitle.textContent = completed ? `${project.label} 완료` : project.label;
+  el.restorationDetailMessage.textContent = `${project.description} · 보상: ${project.reward} · 진행률 ${ratio}%${completed ? ' · 복원 완료' : ''}`;
   el.restorationDetailItems.innerHTML = project.types.map((type) => {
     const tile = TILE_SET.find((item: any) => item.type === type);
     const count = Number(state.inventory[type] || 0);
     return `<span class="detail-item"><img src="${tile?.asset || ''}" alt="" draggable="false" />${escapeHtml(tile?.label || type)} ${count}개</span>`;
   }).join('');
-  el.restorationDetailFocusButton.textContent = project.id === state.restorationFocus ? '집중 중' : '집중 프로젝트';
+  (el.restorationDetailFocusButton as HTMLButtonElement).disabled = completed;
+  el.restorationDetailFocusButton.textContent = completed ? '완료됨' : canCompleteRestoration(project) ? '복원 완료' : project.id === state.restorationFocus ? '집중 중' : '집중 프로젝트';
   el.restorationDetailModal.classList.remove('hidden');
 }
 
@@ -968,8 +1056,12 @@ function closeRestorationDetail() {
 function renderDailyPanel() {
   const daily = state.dailyChallenge;
   const stage = getStageById(daily.stageId);
+  const modifierText = daily.modifiers.length ? daily.modifiers.map((item: string) => ({ fog: '안개', locked: '잠금', timeSeal: '시간 봉인', bossPressure: '보스 압박' } as Record<string, string>)[item] || item).join(' · ') : '기본 규칙';
   el.dailyTitle.textContent = `오늘의 복원 · ${stage.title}`;
-  el.dailyDesc.textContent = `${daily.label} · ${daily.rewardLabel}`;
+  el.dailyDesc.textContent = `${daily.label} · ${modifierText} · ${daily.rewardLabel}`;
+  el.dailyRankTabs.querySelectorAll('[data-daily-rank]').forEach((button: Element) => {
+    button.classList.toggle('selected', (button as HTMLElement).dataset.dailyRank === state.dailyRankScope);
+  });
 }
 
 function showComboCutin(combo: number) {
@@ -1016,20 +1108,25 @@ async function loadLeaderboard() {
 
 
 async function loadDailyLeaderboard() {
+  const scopeLabel = state.dailyRankScope === 'all' ? '전체 일일' : '오늘';
   if (!db) {
-    el.dailyLeaderboardList.innerHTML = '<li>로컬 일일 기록 준비 완료</li>';
+    el.dailyLeaderboardList.innerHTML = `<li>로컬 ${scopeLabel} 기록 준비 완료</li>`;
     return;
   }
   try {
     const daily = state.dailyChallenge;
-    const snapshot = await getDocs(query(collection(db, 'leaderboards', 'daily', 'days', daily.dateKey, 'scores'), orderBy('score', 'desc'), limit(3)));
+    const ref = state.dailyRankScope === 'all'
+      ? collection(db, 'leaderboards/daily/scores')
+      : collection(db, 'leaderboards', 'daily', 'days', daily.dateKey, 'scores');
+    const snapshot = await getDocs(query(ref, orderBy('score', 'desc'), limit(5)));
     const rows = snapshot.docs.map((docSnap, index) => {
       const data = docSnap.data() as any;
-      return `<li>${index + 1}. ${escapeHtml(data.displayName || '사서')} · ${formatNumber(data.score || 0)}</li>`;
+      const dailyTag = state.dailyRankScope === 'all' && data.dailyKey ? ` · ${escapeHtml(String(data.dailyKey).slice(5))}` : '';
+      return `<li>${index + 1}. ${escapeHtml(data.displayName || '사서')} · ${formatNumber(data.score || 0)}${dailyTag}</li>`;
     });
-    el.dailyLeaderboardList.innerHTML = rows.length ? rows.join('') : '<li>오늘 첫 기록을 노려보세요.</li>';
+    el.dailyLeaderboardList.innerHTML = rows.length ? rows.join('') : `<li>${scopeLabel} 첫 기록을 노려보세요.</li>`;
   } catch {
-    el.dailyLeaderboardList.innerHTML = '<li>오늘 랭킹을 불러오지 못했습니다.</li>';
+    el.dailyLeaderboardList.innerHTML = `<li>${scopeLabel} 랭킹을 불러오지 못했습니다.</li>`;
   }
 }
 

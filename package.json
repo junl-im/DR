@@ -18,7 +18,8 @@
     "report:images": "node tools/report-image-size.mjs",
     "check:workflows": "node tools/check-workflows.mjs",
     "atlas:manifest": "node tools/build-texture-atlas-manifest.mjs",
-    "check:special-rules": "node tools/check-special-rules.mjs"
+    "check:special-rules": "node tools/check-special-rules.mjs",
+    "check:lobby-flow": "node tools/check-lobby-flow.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -31,5 +32,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.12"
+  "version": "1.0.13"
 }

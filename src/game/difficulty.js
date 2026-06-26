@@ -102,7 +102,7 @@ export const TILE_SET = [
 export const ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.12.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.13.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -141,6 +141,6 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.12.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.13.json`,
   ...TILE_SET.map((tile) => tile.asset)
 ];
