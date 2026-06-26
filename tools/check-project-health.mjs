@@ -17,13 +17,14 @@ const requiredFiles = [
   'public/assets/meta/daily-badge.png',
   'public/assets/meta/browser-handoff.png',
   'public/assets/meta/collection-codex.png',
-  'public/assets/ui/logo-art.png',
-  'public/assets/ui/start-button-art.png',
-  'public/assets/meta/asset-codex.png',
-  'public/assets/meta/asset-pack-manifest.json',
-  'public/assets/effects/particle-star.png',
   'tools/report-image-size.mjs',
-  'tools/check-workflows.mjs'
+  'tools/check-workflows.mjs',
+  'public/assets/meta/asset-import-v1.0.11.json',
+  'public/assets/backgrounds/imported-moon-library.png',
+  'public/assets/objects/premium-01.png',
+  'public/assets/objects/premium-24.png',
+  'public/assets/ui/icon-back.png',
+  'public/assets/effects/particles-01.png'
 ];
 
 for (const file of requiredFiles) {
@@ -31,12 +32,12 @@ for (const file of requiredFiles) {
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');
-for (const id of ['mission-label', 'modifier-strip', 'combo-cutin', 'boss-hp-fill', 'boss-image', 'boss-pattern', 'chapter-tabs', 'collection-list', 'daily-leaderboard-list', 'restoration-detail-modal', 'continue-inapp-button']) {
+for (const id of ['mission-label', 'modifier-strip', 'combo-cutin', 'boss-hp-fill', 'boss-image', 'boss-pattern', 'chapter-tabs', 'collection-list', 'daily-leaderboard-list', 'restoration-detail-modal', 'continue-inapp-button', 'exit-confirm-modal', 'exit-confirm-button', 'exit-cancel-button']) {
   if (!html.includes(`id="${id}"`)) errors.push(`Missing required UI hook: ${id}`);
 }
 
 const css = readFileSync(join(root, 'src/styles.css'), 'utf8');
-for (const selector of ['.mission-strip', '.combo-cutin', '.boss-hp-meter', '.chapter-tabs', '.collection-panel', '.daily-leaderboard-list', '.asset-showcase-panel', '.premium-object-strip', 'body[data-quality="low"]']) {
+for (const selector of ['.mission-strip', '.combo-cutin', '.boss-hp-meter', '.chapter-tabs', '.collection-panel', '.daily-leaderboard-list', 'body[data-quality="low"]', '.exit-card', '.premium-asset-ribbon']) {
   if (!css.includes(selector)) errors.push(`Missing required style selector: ${selector}`);
 }
 

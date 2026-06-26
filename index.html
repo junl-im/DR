@@ -22,10 +22,6 @@
     <link rel="preload" href="%BASE_URL%assets/meta/restoration-shelf.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/meta/daily-badge.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/meta/collection-codex.png" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/ui/logo-art.png" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/ui/start-button-art.png" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/characters/librarian-cat.png" as="image" />
-    <link rel="preload" href="%BASE_URL%assets/effects/particle-star.png" as="image" />
     <title>꿈의 서고</title>
   </head>
   <body>
@@ -51,7 +47,7 @@
       <header class="topbar compact-topbar" aria-label="상단 메뉴">
         <button id="back-button" class="icon-button hidden" type="button" aria-label="뒤로">‹</button>
         <div class="brand-lockup">
-          <img class="brand-logo-mini" src="%BASE_URL%assets/ui/logo-art.png" alt="" aria-hidden="true" draggable="false" />
+          <span class="brand-mark" aria-hidden="true">✦</span>
           <span>꿈의 서고</span>
         </div>
         <div class="top-actions">
@@ -69,13 +65,11 @@
                 <span class="magic-ring"></span>
               </div>
               <img class="login-mascot" src="%BASE_URL%assets/characters/librarian-momo.png" alt="꿈의 서고 사서 모모" draggable="false" />
-              <img class="login-cat" src="%BASE_URL%assets/characters/librarian-cat.png" alt="" aria-hidden="true" draggable="false" />
             </div>
 
             <div class="hero-copy compact-title">
               <p class="eyebrow">Premium Casual</p>
-              <img class="title-logo-art" src="%BASE_URL%assets/ui/logo-art.png" alt="꿈의 서고" draggable="false" />
-              <h1 class="visually-hidden">꿈의 서고</h1>
+              <h1>꿈의 서고</h1>
             </div>
 
             <div class="login-card luxury-panel alive-panel compact-login-card">
@@ -85,7 +79,7 @@
               </div>
 
               <div class="primary-actions compact-actions">
-                <button id="anonymous-button" type="button" class="xl-button primary-glow start-now-button"><span>게임 시작</span></button>
+                <button id="anonymous-button" type="button" class="xl-button primary-glow start-now-button">게임 시작</button>
                 <div class="login-provider-row" aria-label="로그인 방식">
                   <button id="google-button" type="button" class="sky-button">Google</button>
                   <button id="show-email-button" type="button" class="secondary">Email</button>
@@ -118,10 +112,7 @@
               <button id="daily-stage-button" type="button" class="daily-stage-button">오늘의 복원</button>
               <button id="restoration-focus-button" type="button" class="secondary">복원 작업대</button>
             </div>
-            <div class="lobby-hero-art" aria-hidden="true">
-              <img src="%BASE_URL%assets/characters/librarian-momo.png" alt="" draggable="false" />
-              <img class="hero-cat" src="%BASE_URL%assets/characters/librarian-cat.png" alt="" draggable="false" />
-            </div>
+            <img src="%BASE_URL%assets/characters/librarian-momo.png" alt="" aria-hidden="true" draggable="false" />
           </div>
           <section class="chapter-panel campaign-panel luxury-panel" aria-label="캠페인 월드맵">
             <div class="section-heading"><div><p class="eyebrow">Campaign Map</p><h3 id="selected-chapter-name">달빛 서가의 첫 기록</h3><p id="chapter-story-text" class="chapter-story">흩어진 꿈 조각을 모아 첫 기록장을 되살립니다.</p></div><span id="stage-progress-label" class="asset-progress">0/12 클리어</span></div>
@@ -153,22 +144,6 @@
             <img src="%BASE_URL%assets/meta/collection-codex.png" alt="" aria-hidden="true" draggable="false" />
             <div class="collection-copy"><p class="eyebrow">Collection</p><h3>기억 오브젝트 도감</h3><p id="collection-summary">수집한 복원 재료를 확인하세요.</p></div>
             <div id="collection-list" class="collection-list"></div>
-          </section>
-
-          <section class="asset-showcase-panel luxury-panel alive-panel" aria-label="v1.0.11 에셋 쇼케이스">
-            <img class="asset-codex-art" src="%BASE_URL%assets/meta/asset-codex.png" alt="" aria-hidden="true" draggable="false" />
-            <div class="asset-showcase-copy">
-              <p class="eyebrow">Asset Pack v1</p>
-              <h3>프리미엄 오브젝트 반영</h3>
-              <p>업로드한 PNG 에셋팩에서 런타임용 오브젝트, 보스, 사서, 파티클을 선별 적용했습니다.</p>
-            </div>
-            <div class="premium-object-strip" aria-hidden="true">
-              <img src="%BASE_URL%assets/objects/magic-book.png" alt="" draggable="false" />
-              <img src="%BASE_URL%assets/objects/gold-key.png" alt="" draggable="false" />
-              <img src="%BASE_URL%assets/objects/crystal-orb.png" alt="" draggable="false" />
-              <img src="%BASE_URL%assets/objects/crown.png" alt="" draggable="false" />
-              <img src="%BASE_URL%assets/effects/particle-star.png" alt="" draggable="false" />
-            </div>
           </section>
 
           <section class="lobby-grid">
@@ -216,22 +191,12 @@
     </div>
 
 
-    <div id="restoration-detail-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="복원 프로젝트 상세">
-      <div class="reward-card restoration-detail-card luxury-panel"><p class="eyebrow">Restoration Detail</p><h2 id="restoration-detail-title">복원 프로젝트</h2><p id="restoration-detail-message">필요한 복원 재료를 확인하세요.</p><div id="restoration-detail-items" class="reward-items restoration-detail-items"></div><div class="reward-actions"><button id="restoration-detail-close-button" type="button">확인</button><button id="restoration-detail-focus-button" type="button" class="secondary">집중 프로젝트</button></div></div>
+    <div id="exit-confirm-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="게임 종료 확인">
+      <div class="reward-card exit-card luxury-panel"><p class="eyebrow">Exit</p><h2>꿈의 서고를 닫을까요?</h2><p id="exit-confirm-message">첫 화면입니다. 한 번 더 뒤로가기 대신 여기서 종료를 선택할 수 있습니다.</p><div class="reward-actions"><button id="exit-cancel-button" type="button">계속하기</button><button id="exit-confirm-button" type="button" class="secondary danger">종료 하기</button></div></div>
     </div>
 
-
-    <div id="exit-confirm-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="게임 종료 확인">
-      <div class="reward-card exit-confirm-card luxury-panel">
-        <p class="eyebrow">Back Navigation</p>
-        <h2>꿈의 서고를 종료할까요?</h2>
-        <p id="exit-confirm-message">한 번 더 뒤로가기를 누르거나 종료하기를 선택하면 게임을 종료합니다. 진행 중인 판은 로비로 돌아가면 안전하게 멈춥니다.</p>
-        <div class="reward-actions">
-          <button id="exit-confirm-cancel-button" type="button">계속하기</button>
-          <button id="exit-confirm-home-button" type="button" class="secondary">첫 화면</button>
-          <button id="exit-confirm-close-button" type="button" class="secondary danger">종료하기</button>
-        </div>
-      </div>
+    <div id="restoration-detail-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="복원 프로젝트 상세">
+      <div class="reward-card restoration-detail-card luxury-panel"><p class="eyebrow">Restoration Detail</p><h2 id="restoration-detail-title">복원 프로젝트</h2><p id="restoration-detail-message">필요한 복원 재료를 확인하세요.</p><div id="restoration-detail-items" class="reward-items restoration-detail-items"></div><div class="reward-actions"><button id="restoration-detail-close-button" type="button">확인</button><button id="restoration-detail-focus-button" type="button" class="secondary">집중 프로젝트</button></div></div>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

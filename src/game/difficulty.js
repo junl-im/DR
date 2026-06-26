@@ -71,28 +71,32 @@ export const TILE_SET = [
   { type: 'bell', icon: '🔔', asset: tileAsset('bell'), label: '서고 종', theme: '알림' },
   { type: 'map', icon: '🗺️', asset: tileAsset('map'), label: '비밀 지도', theme: '탐험' },
   { type: 'castle', icon: '🏰', asset: tileAsset('castle'), label: '꿈의 성', theme: '왕국' },
-  { type: 'spark', icon: '🌟', asset: tileAsset('spark'), label: '기억 파편', theme: '핵심' }
-];
+  { type: 'spark', icon: '🌟', asset: tileAsset('spark'), label: '기억 파편', theme: '핵심' },
 
-
-export const FEATURED_ASSET_PACK = [
-  `${import.meta.env.BASE_URL}assets/ui/logo-art.png`,
-  `${import.meta.env.BASE_URL}assets/ui/start-button-art.png`,
-  `${import.meta.env.BASE_URL}assets/ui/google-button-art.png`,
-  `${import.meta.env.BASE_URL}assets/ui/email-button-art.png`,
-  `${import.meta.env.BASE_URL}assets/ui/luxury-frame.png`,
-  `${import.meta.env.BASE_URL}assets/meta/asset-codex.png`,
-  `${import.meta.env.BASE_URL}assets/meta/asset-pulse-book.png`,
-  `${import.meta.env.BASE_URL}assets/characters/librarian-momo-face.png`,
-  `${import.meta.env.BASE_URL}assets/characters/librarian-cat.png`,
-  `${import.meta.env.BASE_URL}assets/characters/shadow-cat.png`,
-  `${import.meta.env.BASE_URL}assets/characters/azure-wisp.png`,
-  `${import.meta.env.BASE_URL}assets/effects/premium-hit-rune.png`,
-  `${import.meta.env.BASE_URL}assets/effects/premium-combo-star.png`,
-  `${import.meta.env.BASE_URL}assets/effects/premium-magic-veil.png`,
-  `${import.meta.env.BASE_URL}assets/effects/particle-star.png`,
-  `${import.meta.env.BASE_URL}assets/effects/particle-ring.png`,
-  `${import.meta.env.BASE_URL}assets/effects/particle-diamond.png`
+  { type: 'premium-01', icon: '✦', asset: tileAsset('premium-01'), label: '별빛 사본', theme: '프리미엄' },
+  { type: 'premium-02', icon: '✦', asset: tileAsset('premium-02'), label: '황금 문장', theme: '프리미엄' },
+  { type: 'premium-03', icon: '✦', asset: tileAsset('premium-03'), label: '에메랄드 장식', theme: '프리미엄' },
+  { type: 'premium-04', icon: '✦', asset: tileAsset('premium-04'), label: '비밀 표식', theme: '프리미엄' },
+  { type: 'premium-05', icon: '✦', asset: tileAsset('premium-05'), label: '바이올렛 봉인', theme: '프리미엄' },
+  { type: 'premium-06', icon: '✦', asset: tileAsset('premium-06'), label: '푸른 유리병', theme: '프리미엄' },
+  { type: 'premium-07', icon: '✦', asset: tileAsset('premium-07'), label: '달빛 장신구', theme: '프리미엄' },
+  { type: 'premium-08', icon: '✦', asset: tileAsset('premium-08'), label: '서고 별장식', theme: '프리미엄' },
+  { type: 'premium-09', icon: '✦', asset: tileAsset('premium-09'), label: '마력 룬석', theme: '프리미엄' },
+  { type: 'premium-10', icon: '✦', asset: tileAsset('premium-10'), label: '청금석 오브', theme: '프리미엄' },
+  { type: 'premium-11', icon: '✦', asset: tileAsset('premium-11'), label: '금속 책갈피', theme: '프리미엄' },
+  { type: 'premium-12', icon: '✦', asset: tileAsset('premium-12'), label: '빛의 종장', theme: '프리미엄' },
+  { type: 'premium-13', icon: '✦', asset: tileAsset('premium-13'), label: '꿈결 오브젝트', theme: '프리미엄' },
+  { type: 'premium-14', icon: '✦', asset: tileAsset('premium-14'), label: '구름 문양', theme: '프리미엄' },
+  { type: 'premium-15', icon: '✦', asset: tileAsset('premium-15'), label: '황혼 조각', theme: '프리미엄' },
+  { type: 'premium-16', icon: '✦', asset: tileAsset('premium-16'), label: '천공 장식', theme: '프리미엄' },
+  { type: 'premium-17', icon: '✦', asset: tileAsset('premium-17'), label: '별무리 보석', theme: '프리미엄' },
+  { type: 'premium-18', icon: '✦', asset: tileAsset('premium-18'), label: '금빛 봉인구', theme: '프리미엄' },
+  { type: 'premium-19', icon: '✦', asset: tileAsset('premium-19'), label: '심연 등불', theme: '프리미엄' },
+  { type: 'premium-20', icon: '✦', asset: tileAsset('premium-20'), label: '꿈의 조율기', theme: '프리미엄' },
+  { type: 'premium-21', icon: '✦', asset: tileAsset('premium-21'), label: '마법 원반', theme: '프리미엄' },
+  { type: 'premium-22', icon: '✦', asset: tileAsset('premium-22'), label: '푸른 결정핵', theme: '프리미엄' },
+  { type: 'premium-23', icon: '✦', asset: tileAsset('premium-23'), label: '고대 장서핀', theme: '프리미엄' },
+  { type: 'premium-24', icon: '✦', asset: tileAsset('premium-24'), label: '서고 심장', theme: '프리미엄' },
 ];
 
 export const ATLAS_ASSETS = [
@@ -121,7 +125,14 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/meta/daily-badge.png`,
   `${import.meta.env.BASE_URL}assets/meta/browser-handoff.png`,
   `${import.meta.env.BASE_URL}assets/meta/collection-codex.png`,
-  `${import.meta.env.BASE_URL}assets/meta/asset-pack-manifest.json`,
-  ...FEATURED_ASSET_PACK,
+
+  `${import.meta.env.BASE_URL}assets/backgrounds/imported-moon-library.png`,
+  `${import.meta.env.BASE_URL}assets/characters/assistant-01.png`,
+  `${import.meta.env.BASE_URL}assets/characters/boss-import-01.png`,
+  `${import.meta.env.BASE_URL}assets/effects/import-vfx-01.png`,
+  `${import.meta.env.BASE_URL}assets/effects/particles-01.png`,
+  `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
+  `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
+  `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
   ...TILE_SET.map((tile) => tile.asset)
 ];

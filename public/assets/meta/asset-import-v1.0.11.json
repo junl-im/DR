@@ -1,0 +1,13 @@
+{
+  "version": "1.0.11",
+  "policy": "SVG forbidden. Raster PNG assets only.",
+  "imported": {
+    "premiumTiles": 24,
+    "assistants": 4,
+    "bosses": 4,
+    "vfx": 6,
+    "particles": 10,
+    "uiIcons": 12,
+    "backgrounds": 1
+  }
+}
