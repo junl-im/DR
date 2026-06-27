@@ -3033,3 +3033,154 @@ body.is-lobby-dragging .restore-node {
   .boss-role-help { display: none; }
   .chapter-tabs { grid-auto-flow: column; grid-auto-columns: minmax(82px, 1fr); grid-template-columns: none; }
 }
+
+/* v1.0.45 stage progress UX, boss chip-right polish and lobby deep drag rescue */
+.stage-ladder-summary {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.44rem 0 0.68rem;
+  padding: 0.62rem;
+  border: 1px solid rgba(125, 220, 255, 0.14);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(6, 21, 45, 0.48), rgba(16, 43, 87, 0.32));
+  box-shadow: inset 0 0 22px rgba(125, 220, 255, 0.05);
+  touch-action: pan-y;
+}
+.stage-ladder-summary[data-stage-ladder="v1045-stage-ladder-42"] .ladder-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.stage-ladder-summary .ladder-progress strong {
+  color: var(--gold-300);
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+.stage-ladder-summary .ladder-progress span,
+.stage-ladder-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.3;
+}
+.ladder-chips {
+  display: flex;
+  gap: 0.34rem;
+  overflow-x: auto;
+  padding-bottom: 0.06rem;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+.ladder-chip {
+  flex: 0 0 auto;
+  min-width: 62px;
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.34rem 0.46rem;
+  border: 1px solid rgba(125, 220, 255, 0.15);
+  border-radius: 999px;
+  background: rgba(6, 21, 45, 0.48);
+  text-align: center;
+}
+.ladder-chip b { color: var(--text); font-size: 0.66rem; line-height: 1; }
+.ladder-chip em { color: var(--muted); font-size: 0.58rem; font-style: normal; }
+.ladder-chip.active {
+  border-color: rgba(245, 200, 107, 0.55);
+  background: linear-gradient(135deg, rgba(245, 200, 107, 0.28), rgba(54, 214, 164, 0.16));
+  box-shadow: 0 0 18px rgba(245, 200, 107, 0.16);
+}
+.stage-node small {
+  display: block;
+  margin-top: 0.08rem;
+  color: var(--gold-300);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.stage-node[data-difficulty="beginner"],
+.stage-node[data-difficulty="easy"] { border-color: rgba(54, 214, 164, 0.24); }
+.stage-node[data-difficulty="growth"],
+.stage-node[data-difficulty="skilled"] { border-color: rgba(125, 220, 255, 0.24); }
+.stage-node[data-difficulty="expert"],
+.stage-node[data-difficulty="hard"] { border-color: rgba(245, 200, 107, 0.24); }
+.stage-node[data-difficulty="nightmare"] { border-color: rgba(194, 155, 255, 0.34); }
+.boss-lane[data-boss-layout="statusbar-chip-right-v1045"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(44px, 10vw, 58px);
+  align-items: center;
+  gap: 0.34rem;
+  min-height: 52px;
+  padding: 0.3rem 0.38rem 0.3rem 0.54rem;
+  overflow: hidden;
+}
+.boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-info { min-width: 0; order: 1; }
+.boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-info strong { font-size: 0.84rem; }
+.boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-info small { font-size: 0.64rem; }
+.boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-core {
+  order: 2;
+  justify-self: end;
+  width: clamp(42px, 10vw, 56px);
+  height: clamp(42px, 10vw, 56px);
+  margin-inline-start: auto;
+  box-shadow: 0 0 18px rgba(143, 107, 255, 0.32);
+  z-index: 1;
+}
+.boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-core img {
+  width: clamp(54px, 12vw, 70px);
+  height: clamp(54px, 12vw, 70px);
+  left: 50%;
+  top: 50%;
+}
+.boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-atlas-sprite {
+  opacity: 0.32;
+  transform: translate(-50%, -50%) scale(calc(var(--boss-frame-scale, 0.28) * 0.68));
+}
+.boss-info[data-boss-role="statusbar-chip-v1045"] .boss-role-stack[data-boss-role-panel="v1045-readable-chip"] {
+  display: flex;
+  max-width: min(100%, 320px);
+  gap: 0.24rem;
+}
+.boss-info[data-boss-role="statusbar-chip-v1045"] .boss-role-stack span,
+.boss-info[data-boss-role="statusbar-chip-v1045"] .boss-role-stack b {
+  padding-inline: 0.32rem;
+  font-size: 0.58rem;
+}
+.battle-stage[data-boss-role-tutorial="v1045-statusbar-chip-right"] .boss-lane[data-boss-layout="statusbar-chip-right-v1045"] {
+  animation: bossRoleReadablePulse 0.95s ease-in-out 2;
+}
+body[data-screen="lobby"] .stage-ladder-summary,
+body[data-screen="lobby"] .world-map,
+body[data-screen="lobby"] .selected-stage-card,
+body[data-screen="lobby"] .lobby-grid,
+body[data-screen="lobby"] .mission-deck,
+body[data-screen="lobby"] .mission-card,
+body[data-screen="lobby"] .chapter-tab,
+body[data-screen="lobby"] .stage-node,
+body[data-screen="lobby"] .restore-node,
+body[data-screen="lobby"] .collection-tile,
+body[data-screen="lobby"] .option-actions,
+body[data-screen="lobby"] .daily-panel,
+body[data-screen="lobby"] .restoration-panel,
+body[data-screen="lobby"] .collection-panel {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+body[data-lobby-drag-rescue="v1045-deep-drag-rescue"] .screen-lobby {
+  overscroll-behavior-y: contain;
+}
+@media (max-width: 430px) {
+  .stage-ladder-summary { padding: 0.52rem; gap: 0.42rem; }
+  .ladder-chip { min-width: 54px; padding: 0.3rem 0.38rem; }
+  .boss-lane[data-boss-layout="statusbar-chip-right-v1045"] {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 0.24rem;
+    min-height: 48px;
+    padding: 0.26rem 0.32rem 0.26rem 0.42rem;
+  }
+  .boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-core { width: 42px; height: 42px; }
+  .boss-lane[data-boss-layout="statusbar-chip-right-v1045"] .boss-core img { width: 58px; height: 58px; }
+  .world-map { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.46rem; padding: 0.66rem; }
+  .stage-node { min-height: 54px; padding: 0.38rem 0.3rem; }
+}

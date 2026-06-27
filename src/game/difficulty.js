@@ -45,6 +45,19 @@ export const DIFFICULTIES = {
     cameraMode: 'panZoom',
     boardProfile: 'wide'
   },
+  growth: {
+    key: 'growth',
+    label: '성장',
+    rows: 8,
+    cols: 9,
+    iconTypes: 19,
+    timeLimitSeconds: 370,
+    hints: 5,
+    shuffles: 4,
+    scoreMultiplier: 1.26,
+    cameraMode: 'panZoom',
+    boardProfile: 'wide-soft'
+  },
   skilled: {
     key: 'skilled',
     label: '숙련',
@@ -226,7 +239,7 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.44.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.45.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -269,7 +282,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.44.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.45.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.webp`,

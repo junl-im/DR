@@ -47,4 +47,4 @@ if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.44 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.45 QA checks.');

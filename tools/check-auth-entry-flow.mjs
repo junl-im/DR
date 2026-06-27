@@ -38,9 +38,9 @@ if (/startSelectedStage\s*\(/.test(authBlock)) errors.push('Auth buttons must no
 if (!/enterLobbyFromAuth\('guest'\)/.test(authBlock)) errors.push('Guest login must route through enterLobbyFromAuth(guest).');
 if (!(/enterLobbyFromAuth\('google'\)/.test(authBlock) || /runGoogleLogin\('start'\)/.test(authBlock))) errors.push('Google login must route through runGoogleLogin(start) or enterLobbyFromAuth(google).');
 if (!(/enterLobbyFromAuth\('email'\)/.test(authBlock) || /runEmailLoginFromModal\(\)/.test(authBlock))) errors.push('Email login must route through the centered modal or enterLobbyFromAuth(email).');
-if (!pkg.includes('"version": "1.0.44"')) errors.push('package.json version must be 1.0.43.');
+if (!pkg.includes('"version": "1.0.45"')) errors.push('package.json version must be 1.0.45.');
 if (!pkg.includes('check:auth-entry-flow')) errors.push('package.json must expose check:auth-entry-flow.');
-if (!sw.includes('dream-library-cache-v1.0.44') || !sw.includes('texture-atlas-manifest-v1.0.44.json')) errors.push('service worker cache/manifest must be v1.0.44.');
+if (!sw.includes('dream-library-cache-v1.0.45') || !sw.includes('texture-atlas-manifest-v1.0.45.json')) errors.push('service worker cache/manifest must be v1.0.45.');
 if (!pages.includes('npm run check:auth-entry-flow')) errors.push('github-pages workflow must run auth entry flow check.');
 if (!quality.includes('npm run check:auth-entry-flow')) errors.push('quality workflow must run auth entry flow check.');
 

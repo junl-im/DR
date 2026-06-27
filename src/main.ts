@@ -30,6 +30,8 @@ document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
 const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1040';
+const STAGE_LADDER_EXPANSION_PATCH = 'v1045-stage-ladder-42';
+const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1045-deep-drag-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
 const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
@@ -101,6 +103,7 @@ const el = {
   installButton: $('#install-button'),
   lobbyGreeting: $('#lobby-greeting'),
   lobbyHeroImage: document.querySelector('.lobby-hero img') as HTMLImageElement | null,
+  stageLadderSummary: $('#stage-ladder-summary'),
   chapterTabs: $('#chapter-tabs'),
   worldMap: $('#world-map'),
   selectedChapterName: $('#selected-chapter-name'),
@@ -671,7 +674,7 @@ function initButtonStateFeedback() {
   }, { passive: true });
 }
 
-const LEGACY_LOBBY_DRAG_THRESHOLD_NOTE = 'dy > 5'; // retained for scroll-polish policy while v1.0.44 uses dy > 3 rescue
+const LEGACY_LOBBY_DRAG_THRESHOLD_NOTE = 'dy > 5'; // retained for scroll-polish policy while v1.0.45 uses dy > 2 deep rescue
 
 function initLobbyScrollGuard() {
   const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
@@ -698,16 +701,22 @@ function initLobbyScrollGuard() {
     if (state.screen !== 'lobby') return;
     const dx = Math.abs(event.clientX - startX);
     const dy = Math.abs(event.clientY - startY);
-    if (dy > 3 && dy > dx * 0.55) {
+    if (dy > 2 && dy > dx * 0.42) {
       dragging = true;
-      dragLocked = dy > 7;
+      dragLocked = dy > 5;
       document.body.classList.add('is-lobby-dragging');
       const deltaY = event.clientY - lastY;
-      if (Math.abs(deltaY) > 1 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile')) {
-        shell.scrollTop -= deltaY;
+      if (Math.abs(deltaY) > 0.8 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel')) {
+        shell.scrollTop -= deltaY * 1.08;
+        document.body.dataset.lobbyDragRescue = LOBBY_DRAG_DEEP_RESCUE_PATCH;
       }
       lastY = event.clientY;
     }
+  }, { passive: true });
+
+  shell.addEventListener('pointerup', () => {
+    if (state.screen !== 'lobby') return;
+    window.setTimeout(() => { if (!dragging) document.body.classList.remove('is-lobby-dragging'); }, 80);
   }, { passive: true });
 
   shell.addEventListener('click', (event) => {
@@ -1350,6 +1359,7 @@ function renderLobby() {
   el.selectedStageMeta.textContent = `${difficulty.label} · ${difficulty.rows}×${difficulty.cols} · ${boss.name}`;
   el.selectedStageReward.textContent = `${stage.reward.label} ×${stage.reward.amount}`;
   el.stageProgressLabel.textContent = `${clearCount}/${STAGES.length} 클리어`;
+  renderStageLadderSummary(clearCount, stage);
   renderChapterTabs();
   const chapterStages = getChapterStages(state.selectedChapterId);
   el.worldMap.innerHTML = chapterStages.map((item: any) => {
@@ -1357,8 +1367,10 @@ function renderLobby() {
     const cleared = Boolean(state.campaignProgress.cleared[item.id]);
     const selected = item.id === state.selectedStageId;
     const stars = state.campaignProgress.cleared[item.id]?.stars ?? 0;
+    const difficultyMeta = DIFFICULTIES[item.difficultyKey] || DIFFICULTIES.normal;
     const stageBoss = getBossForStage(item);
-    return `<button type="button" class="stage-node ${unlocked ? 'unlocked' : 'locked'} ${cleared ? 'cleared' : ''} ${selected ? 'selected' : ''}" data-stage-id="${item.id}" aria-label="${item.number} 스테이지 ${escapeHtml(item.title)}"><strong>${item.number}</strong><span>${cleared ? '★'.repeat(stars) : unlocked ? stageBoss.name.replace('의 ', ' ') : 'Lock'}</span></button>`;
+    const stageText = cleared ? '★'.repeat(stars) : unlocked ? stageBoss.name.replace('의 ', ' ') : '잠김';
+    return `<button type="button" class="stage-node ${unlocked ? 'unlocked' : 'locked'} ${cleared ? 'cleared' : ''} ${selected ? 'selected' : ''}" data-stage-id="${item.id}" data-difficulty="${item.difficultyKey}" aria-label="${item.number} 스테이지 ${escapeHtml(item.title)}"><strong>${item.number}</strong><span>${stageText}</span><small>${difficultyMeta.label}</small></button>`;
   }).join('');
   renderStats();
   renderLobbyMissionDeck();
@@ -1368,6 +1380,24 @@ function renderLobby() {
   renderLobbyPanelState();
 }
 
+function renderStageLadderSummary(clearCount: number, selectedStage: any) {
+  const order = ['beginner', 'easy', 'normal', 'growth', 'skilled', 'expert', 'hard', 'nightmare'];
+  const grouped = order
+    .map((key) => {
+      const total = STAGES.filter((stage: any) => stage.difficultyKey === key).length;
+      if (!total) return null;
+      const cleared = STAGES.filter((stage: any) => stage.difficultyKey === key && state.campaignProgress.cleared[stage.id]).length;
+      const meta = DIFFICULTIES[key] || { label: key };
+      const active = selectedStage?.difficultyKey === key;
+      return `<span class="ladder-chip ${active ? 'active' : ''}" data-difficulty="${key}"><b>${escapeHtml(meta.label)}</b><em>${cleared}/${total}</em></span>`;
+    })
+    .filter(Boolean)
+    .join('');
+  const nextLocked = STAGES.find((stage: any) => !isStageUnlocked(stage.id));
+  const nextOpen = STAGES.find((stage: any) => isStageUnlocked(stage.id) && !state.campaignProgress.cleared[stage.id]) || selectedStage;
+  el.stageLadderSummary.dataset.stageLadder = STAGE_LADDER_EXPANSION_PATCH;
+  el.stageLadderSummary.innerHTML = `<div class="ladder-progress"><strong>${clearCount}/${STAGES.length}</strong><span>스테이지 진행 · ${escapeHtml(DIFFICULTIES[nextOpen.difficultyKey]?.label || '진행')}</span></div><div class="ladder-chips">${grouped}</div><p>${nextLocked ? `${nextLocked.number}번은 이전 스테이지 클리어 후 열립니다.` : '모든 스테이지가 열렸습니다.'}</p>`;
+}
 
 function syncLobbyMotion(clearCount: number, stageId: string) {
   const mood = clearCount >= 8 ? 'radiant' : clearCount >= 3 ? 'active' : 'welcome';
@@ -1537,7 +1567,8 @@ function renderBossPanel() {
   setBossStableImage(boss.asset, boss.name);
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
-  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-layout', 'statusbar-right-portrait-v1044');
+  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-layout', 'statusbar-chip-right-v1045');
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
   el.bossName.textContent = boss.name;
   const role = getBossReadableRole(boss);
   el.bossPattern.textContent = role.pattern;
@@ -1573,10 +1604,10 @@ function showBossRolePulseOnce() {
   const seen = readText('dream-library-boss-role-help-seen') === '1';
   const stage = document.querySelector<HTMLElement>('.battle-stage');
   if (!stage || seen) return;
-  stage.dataset.bossRoleTutorial = 'v1044-statusbar-right';
+  stage.dataset.bossRoleTutorial = 'v1045-statusbar-chip-right';
   writeText('dream-library-boss-role-help-seen', '1');
   window.setTimeout(() => {
-    if (stage.dataset.bossRoleTutorial === 'v1044-statusbar-right') delete stage.dataset.bossRoleTutorial;
+    if (stage.dataset.bossRoleTutorial === 'v1045-statusbar-chip-right') delete stage.dataset.bossRoleTutorial;
   }, 4200);
 }
 
