@@ -30,13 +30,13 @@ for (const token of ['touch-action: pan-y', 'grid-auto-flow: column', 'statusbar
 for (const banned of ['보기 맞춤', '중앙으로', 'board-radar', 'minimap']) {
   if (html.includes(banned) || main.includes(banned)) errors.push(`Removed UI token reintroduced: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.46"')) errors.push('package.json version must be 1.0.46.');
-if (!sw.includes('dream-library-cache-v1.0.46') || !sw.includes('texture-atlas-manifest-v1.0.46.json')) errors.push('service worker cache/manifest must be v1.0.46.');
-if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.46.json')) errors.push('v1.0.46 texture atlas manifest missing.');
-if (!pages.includes('npm run check:boss-stage-lobby-scroll') || !quality.includes('npm run check:boss-stage-lobby-scroll')) errors.push('workflows must run v1.0.46 boss/stage/lobby scroll check.');
+if (!pkg.includes('"version": "1.0.47"')) errors.push('package.json version must be 1.0.47.');
+if (!sw.includes('dream-library-cache-v1.0.47') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must be v1.0.47.');
+if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.47.json')) errors.push('v1.0.47 texture atlas manifest missing.');
+if (!pages.includes('npm run check:boss-stage-lobby-scroll') || !quality.includes('npm run check:boss-stage-lobby-scroll')) errors.push('workflows must run v1.0.47 boss/stage/lobby scroll check.');
 
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Boss statusbar icon-right, stage map comfort and lobby gesture final rescue check passed for v1.0.46.');
+console.log('Boss statusbar icon-right, stage map comfort and lobby gesture final rescue check passed for v1.0.47.');

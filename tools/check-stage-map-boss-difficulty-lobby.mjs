@@ -13,10 +13,10 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const requireText = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (pkg.version !== '1.0.46') errors.push(`package version must be 1.0.46, got ${pkg.version}`);
+if (pkg.version !== '1.0.47') errors.push(`package version must be 1.0.47, got ${pkg.version}`);
 if (!pkg.scripts['check:stage-map-boss-difficulty-lobby']) errors.push('missing package script check:stage-map-boss-difficulty-lobby');
-requireText(index, 'statusbar-icon-right-v1046', 'v1.0.46 boss icon-right layout in index');
-requireText(index, 'v1046-icon-readability', 'v1.0.46 boss readable chip panel');
+requireText(index, 'statusbar-icon-right-v1046', 'v1.0.47 boss icon-right layout in index');
+requireText(index, 'v1046-icon-readability', 'v1.0.47 boss readable chip panel');
 requireText(main, 'v1046-stage-map-comfort-42', 'stage map comfort token');
 requireText(main, 'v1046-gesture-final-rescue', 'lobby final gesture token');
 requireText(main, 'v1046-difficulty-tempo-wide-ladder', 'difficulty tempo token');
@@ -28,10 +28,10 @@ requireText(css, 'statusbar-icon-right-v1046', 'boss icon CSS');
 requireText(css, 'next-goal-v1046', 'next goal stage map CSS');
 requireText(css, 'data-lobby-drag-rescue="v1046-gesture-final-rescue"', 'lobby gesture final CSS hook');
 requireText(difficulty, "label: '도전'", 'expert difficulty label as 도전');
-requireText(sw, 'dream-library-cache-v1.0.46', 'service worker v1.0.46 cache');
-requireText(sw, 'texture-atlas-manifest-v1.0.46.json', 'v1.0.46 texture atlas manifest');
-if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.46.json')) errors.push('missing v1.0.46 texture atlas manifest file');
-if (!pages.includes('npm run check:stage-map-boss-difficulty-lobby') || !quality.includes('npm run check:stage-map-boss-difficulty-lobby')) errors.push('workflows must run v1.0.46 stage map/boss/difficulty/lobby check');
+requireText(sw, 'dream-library-cache-v1.0.47', 'service worker v1.0.47 cache');
+requireText(sw, 'texture-atlas-manifest-v1.0.47.json', 'v1.0.47 texture atlas manifest');
+if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.47.json')) errors.push('missing v1.0.47 texture atlas manifest file');
+if (!pages.includes('npm run check:stage-map-boss-difficulty-lobby') || !quality.includes('npm run check:stage-map-boss-difficulty-lobby')) errors.push('workflows must run v1.0.47 stage map/boss/difficulty/lobby check');
 for (const forbidden of ['보기 맞춤', '중앙으로', '드래그 이동']) {
   if (index.includes(forbidden)) errors.push(`forbidden removed UI copy remains: ${forbidden}`);
 }
@@ -39,4 +39,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Stage map comfort, boss icon-right statusbar, difficulty tempo and lobby gesture final QA passed for v1.0.46.');
+console.log('Stage map comfort, boss icon-right statusbar, difficulty tempo and lobby gesture final QA passed for v1.0.47.');

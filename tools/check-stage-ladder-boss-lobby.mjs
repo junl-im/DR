@@ -10,7 +10,7 @@ const pkg = JSON.parse(read('package.json'));
 const sw = read('public/sw.js');
 
 const requireText = (haystack, needle, label) => {
-  if (!haystack.includes(needle)) throw new Error(`[v1.0.46] missing ${label}: ${needle}`);
+  if (!haystack.includes(needle)) throw new Error(`[v1.0.47] missing ${label}: ${needle}`);
 };
 
 requireText(index, 'stage-ladder-summary', 'stage ladder summary mount');
@@ -26,17 +26,17 @@ requireText(stages, "stage('c7-06'", '42nd stage');
 requireText(css, '.stage-ladder-summary', 'stage ladder CSS');
 requireText(css, 'statusbar-icon-right-v1046', 'boss icon CSS');
 requireText(css, 'data-lobby-drag-rescue="v1046-gesture-final-rescue"', 'lobby drag CSS hook');
-requireText(sw, 'dream-library-cache-v1.0.46', 'service worker v1.0.46 cache');
-requireText(sw, 'texture-atlas-manifest-v1.0.46.json', 'v1.0.46 manifest cache');
-if (pkg.version !== '1.0.46') throw new Error(`[v1.0.46] package version mismatch: ${pkg.version}`);
-if (!pkg.scripts['check:stage-ladder-boss-lobby']) throw new Error('[v1.0.46] missing package script check:stage-ladder-boss-lobby');
+requireText(sw, 'dream-library-cache-v1.0.47', 'service worker v1.0.47 cache');
+requireText(sw, 'texture-atlas-manifest-v1.0.47.json', 'v1.0.47 manifest cache');
+if (pkg.version !== '1.0.47') throw new Error(`[v1.0.47] package version mismatch: ${pkg.version}`);
+if (!pkg.scripts['check:stage-ladder-boss-lobby']) throw new Error('[v1.0.47] missing package script check:stage-ladder-boss-lobby');
 
 const stageMatches = [...stages.matchAll(/stage\('/g)].length;
-if (stageMatches < 42) throw new Error(`[v1.0.46] expected at least 42 stage definitions, got ${stageMatches}`);
+if (stageMatches < 42) throw new Error(`[v1.0.47] expected at least 42 stage definitions, got ${stageMatches}`);
 
 const forbidden = ['보기 맞춤', '중앙으로', '드래그 이동 도움말', 'board radar', 'minimap'];
 for (const word of forbidden) {
-  if (index.includes(word)) throw new Error(`[v1.0.46] forbidden UI copy remains: ${word}`);
+  if (index.includes(word)) throw new Error(`[v1.0.47] forbidden UI copy remains: ${word}`);
 }
 
-console.log('[v1.0.46] stage ladder, boss icon-right layout and lobby gesture rescue checks passed');
+console.log('[v1.0.47] stage ladder, boss icon-right layout and lobby gesture rescue checks passed');

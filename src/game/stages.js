@@ -61,10 +61,84 @@ export const CHAPTERS = [
     theme: '악몽 · 최종권',
     story: '현재 캠페인의 최종 난이도입니다. 악몽은 마지막 장에서만 천천히 열립니다.',
     accent: '#c29bff'
+  },
+  {
+    id: 'chapter-08',
+    number: 8,
+    title: '썸머 서가의 햇살 항구',
+    shortTitle: '햇살 항구',
+    theme: '시즌 · 여름 항구',
+    story: '여름 시즌 첫 장입니다. 넓은 보드를 유지하되 보너스 시간과 보스 압박을 부드럽게 조절해 시원하게 이어갑니다.',
+    accent: '#7ddcff',
+    season: 'summer-2026'
+  },
+  {
+    id: 'chapter-09',
+    number: 9,
+    title: '산호 책장의 파도 축제',
+    shortTitle: '산호 축제',
+    theme: '시즌 · 산호 축제',
+    story: '산호빛 복원 재료와 축제 보너스를 모으는 중반 시즌 챕터입니다. 특수 타일을 더 다양하게 연습합니다.',
+    accent: '#36d6a4',
+    season: 'summer-2026'
+  },
+  {
+    id: 'chapter-10',
+    number: 10,
+    title: '진주 등대의 밤바다',
+    shortTitle: '진주 등대',
+    theme: '시즌 · 밤바다',
+    story: '진주빛 등대 아래에서 보스 압박과 힌트 빛길의 우선순위를 익히는 시즌 후반입니다.',
+    accent: '#99e4ff',
+    season: 'summer-2026'
+  },
+  {
+    id: 'chapter-11',
+    number: 11,
+    title: '별모래 기록 해변',
+    shortTitle: '별모래 해변',
+    theme: '시즌 · 별모래',
+    story: '보드가 커지고 목표가 많아지지만 시즌 보너스 콤보가 플레이를 받쳐주는 고급 완충 챕터입니다.',
+    accent: '#ffe28e',
+    season: 'summer-2026'
+  },
+  {
+    id: 'chapter-12',
+    number: 12,
+    title: '태양 왕관의 피서 서고',
+    shortTitle: '태양 왕관',
+    theme: '시즌 · 태양 왕관',
+    story: '도전과 어려움 사이에서 긴장감을 유지하되 바로 악몽으로 튀지 않도록 설계한 시즌 상위 챕터입니다.',
+    accent: '#f5c86b',
+    season: 'summer-2026'
+  },
+  {
+    id: 'chapter-13',
+    number: 13,
+    title: '한여름 꿈의 대서고',
+    shortTitle: '한여름 대서고',
+    theme: '시즌 · 피날레',
+    story: '썸머 시즌의 대형 피날레입니다. 악몽 난이도는 마지막 구간에서만 등장하고 보상은 가장 풍성합니다.',
+    accent: '#c29bff',
+    season: 'summer-2026'
   }
 ];
 
-const stage = (id, chapterId, bossId, number, title, subtitle, difficultyKey, reward, unlockAfter, modifiers = []) => ({
+export const SUMMER_SEASON_EVENT = {
+  id: 'summer-2026',
+  title: '한여름 꿈결 축제',
+  subtitle: '썸머 시즌 대규모 업데이트',
+  totalStages: 36,
+  startStageNumber: 43,
+  endStageNumber: 78,
+  currencyLabel: '햇살 조개',
+  currencyType: 'premium-07',
+  clearReward: 1,
+  comboEvery: 5,
+  comboBonusSeconds: 5
+};
+
+const stage = (id, chapterId, bossId, number, title, subtitle, difficultyKey, reward, unlockAfter, modifiers = [], extra = {}) => ({
   id,
   chapterId,
   bossId,
@@ -74,7 +148,8 @@ const stage = (id, chapterId, bossId, number, title, subtitle, difficultyKey, re
   difficultyKey,
   reward,
   ...(unlockAfter ? { unlockAfter } : { unlockText: '기본 해금' }),
-  modifiers
+  modifiers,
+  ...extra
 });
 
 export const STAGES = [
@@ -125,7 +200,43 @@ export const STAGES = [
   stage('c7-03', 'chapter-07', 'sealed-page-golem', 39, '봉인된 꿈의 왕좌', '시간 봉인과 잠금이 함께 들어간 악몽 후반', 'nightmare', { label: '왕좌 파편', type: 'v2-tile-31', amount: 9 }, 'c7-02', ['locked', 'timeSeal', 'bossPressure']),
   stage('c7-04', 'chapter-07', 'forgotten-spirit', 40, '무너지는 기억의 홀', '큰 보드에서 보너스 시간 유지가 중요합니다', 'nightmare', { label: '기억의 핵', type: 'v2-tile-36', amount: 9 }, 'c7-03', ['fog', 'timeSeal', 'bossPressure']),
   stage('c7-05', 'chapter-07', 'shadow-librarian', 41, '검은 왕관의 마지막 장', '빠른 반격과 큰 보드가 결합된 최종 전초전', 'nightmare', { label: '검은 왕관', type: 'v2-tile-29', amount: 10 }, 'c7-04', ['locked', 'fog', 'bossPressure']),
-  stage('c7-06', 'chapter-07', 'sealed-page-golem', 42, '꿈의 지도 완성', '현재 캠페인의 마지막 악몽 보스 스테이지', 'nightmare', { label: '빛의 스크롤', type: 'v2-tile-30', amount: 10 }, 'c7-05', ['locked', 'fog', 'timeSeal', 'bossPressure'])
+  stage('c7-06', 'chapter-07', 'sealed-page-golem', 42, '꿈의 지도 완성', '현재 캠페인의 마지막 악몽 보스 스테이지', 'nightmare', { label: '빛의 스크롤', type: 'v2-tile-30', amount: 10 }, 'c7-05', ['locked', 'fog', 'timeSeal', 'bossPressure']),
+  stage('c8-01', 'chapter-08', 'forgotten-spirit', 43, '햇살 항구 입구', '여름 시즌 규칙을 가볍게 시작하는 완충 스테이지', 'easy', { label: '햇살 조개', type: 'premium-07', amount: 7 }, 'c7-06', [], { season: 'summer-2026' }),
+  stage('c8-02', 'chapter-08', 'forgotten-spirit', 44, '파도 책갈피', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'normal', { label: '산호 책갈피', type: 'premium-08', amount: 7 }, 'c8-01', ['sunTide'], { season: 'summer-2026' }),
+  stage('c8-03', 'chapter-08', 'forgotten-spirit', 45, '수박빛 마법진', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'normal', { label: '파도 잉크', type: 'premium-09', amount: 7 }, 'c8-02', ['fog', 'sunTide'], { season: 'summer-2026' }),
+  stage('c8-04', 'chapter-08', 'sealed-page-golem', 46, '갈매기 서가길', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'growth', { label: '진주 장식', type: 'premium-10', amount: 7 }, 'c8-03', ['locked', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c8-05', 'chapter-08', 'shadow-librarian', 47, '조개 모래시계', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'growth', { label: '별모래 조각', type: 'premium-11', amount: 7 }, 'c8-04', ['timeSeal', 'sunTide'], { season: 'summer-2026' }),
+  stage('c8-06', 'chapter-08', 'forgotten-spirit', 48, '항구의 첫 축제', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'skilled', { label: '태양 왕관', type: 'premium-12', amount: 7 }, 'c8-05', ['bossPressure', 'festivalBoss'], { season: 'summer-2026' }),
+  stage('c9-01', 'chapter-09', 'shadow-librarian', 49, '산호책 첫 장', '여름 시즌 규칙을 가볍게 시작하는 완충 스테이지', 'normal', { label: '햇살 조개', type: 'premium-13', amount: 8 }, 'c8-06', ['fog', 'locked', 'sunTide'], { season: 'summer-2026' }),
+  stage('c9-02', 'chapter-09', 'shadow-librarian', 50, '분홍 파도 악보', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'growth', { label: '산호 책갈피', type: 'premium-14', amount: 8 }, 'c9-01', ['timeSeal', 'bossPressure', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c9-03', 'chapter-09', 'forgotten-spirit', 51, '축제 잉크 시장', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'growth', { label: '파도 잉크', type: 'premium-15', amount: 8 }, 'c9-02', [], { season: 'summer-2026' }),
+  stage('c9-04', 'chapter-09', 'sealed-page-golem', 52, '반짝이는 진주길', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'skilled', { label: '진주 장식', type: 'premium-16', amount: 8 }, 'c9-03', ['sunTide'], { season: 'summer-2026' }),
+  stage('c9-05', 'chapter-09', 'shadow-librarian', 53, '해변 장서관 무대', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'skilled', { label: '별모래 조각', type: 'premium-17', amount: 8 }, 'c9-04', ['fog', 'sunTide'], { season: 'summer-2026' }),
+  stage('c9-06', 'chapter-09', 'shadow-librarian', 54, '산호 장서관장', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'expert', { label: '태양 왕관', type: 'premium-18', amount: 8 }, 'c9-05', ['locked', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c10-01', 'chapter-10', 'sealed-page-golem', 55, '등대 아래 첫 봉인', '여름 시즌 규칙을 가볍게 시작하는 완충 스테이지', 'growth', { label: '햇살 조개', type: 'premium-19', amount: 9 }, 'c9-06', ['timeSeal', 'sunTide'], { season: 'summer-2026' }),
+  stage('c10-02', 'chapter-10', 'sealed-page-golem', 56, '밤바다 별지도', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'skilled', { label: '산호 책갈피', type: 'premium-20', amount: 9 }, 'c10-01', ['bossPressure', 'festivalBoss'], { season: 'summer-2026' }),
+  stage('c10-03', 'chapter-10', 'forgotten-spirit', 57, '진주빛 잠금문', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'skilled', { label: '파도 잉크', type: 'premium-21', amount: 9 }, 'c10-02', ['fog', 'locked', 'sunTide'], { season: 'summer-2026' }),
+  stage('c10-04', 'chapter-10', 'sealed-page-golem', 58, '물결 룬 회랑', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'expert', { label: '진주 장식', type: 'premium-22', amount: 9 }, 'c10-03', ['timeSeal', 'bossPressure', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c10-05', 'chapter-10', 'shadow-librarian', 59, '등대의 느린 압박', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'expert', { label: '별모래 조각', type: 'premium-23', amount: 9 }, 'c10-04', [], { season: 'summer-2026' }),
+  stage('c10-06', 'chapter-10', 'sealed-page-golem', 60, '밤바다 수호자', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'hard', { label: '태양 왕관', type: 'premium-24', amount: 9 }, 'c10-05', ['sunTide'], { season: 'summer-2026' }),
+  stage('c11-01', 'chapter-11', 'forgotten-spirit', 61, '별모래 첫 산책', '여름 시즌 규칙을 가볍게 시작하는 완충 스테이지', 'skilled', { label: '햇살 조개', type: 'v2-tile-28', amount: 10 }, 'c10-06', ['fog', 'sunTide'], { season: 'summer-2026' }),
+  stage('c11-02', 'chapter-11', 'forgotten-spirit', 62, '야자수 책갈피', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'expert', { label: '산호 책갈피', type: 'v2-tile-30', amount: 10 }, 'c11-01', ['locked', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c11-03', 'chapter-11', 'forgotten-spirit', 63, '모래성 복원식', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'expert', { label: '파도 잉크', type: 'v2-tile-32', amount: 10 }, 'c11-02', ['timeSeal', 'sunTide'], { season: 'summer-2026' }),
+  stage('c11-04', 'chapter-11', 'sealed-page-golem', 64, '여름 유성 관측', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'hard', { label: '진주 장식', type: 'v2-tile-35', amount: 10 }, 'c11-03', ['bossPressure', 'festivalBoss'], { season: 'summer-2026' }),
+  stage('c11-05', 'chapter-11', 'shadow-librarian', 65, '해변의 빠른 연결', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'hard', { label: '별모래 조각', type: 'v2-tile-36', amount: 10 }, 'c11-04', ['fog', 'locked', 'sunTide'], { season: 'summer-2026' }),
+  stage('c11-06', 'chapter-11', 'forgotten-spirit', 66, '별모래 축제 보스', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'hard', { label: '태양 왕관', type: 'premium-07', amount: 10 }, 'c11-05', ['timeSeal', 'bossPressure', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c12-01', 'chapter-12', 'shadow-librarian', 67, '태양 왕관 예열', '여름 시즌 규칙을 가볍게 시작하는 완충 스테이지', 'expert', { label: '햇살 조개', type: 'premium-08', amount: 11 }, 'c11-06', [], { season: 'summer-2026' }),
+  stage('c12-02', 'chapter-12', 'shadow-librarian', 68, '황금 파도 서가', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'hard', { label: '산호 책갈피', type: 'premium-09', amount: 11 }, 'c12-01', ['sunTide'], { season: 'summer-2026' }),
+  stage('c12-03', 'chapter-12', 'forgotten-spirit', 69, '바람개비 장서표', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'hard', { label: '파도 잉크', type: 'premium-10', amount: 11 }, 'c12-02', ['fog', 'sunTide'], { season: 'summer-2026' }),
+  stage('c12-04', 'chapter-12', 'sealed-page-golem', 70, '태양빛 잠금 연습', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'hard', { label: '진주 장식', type: 'premium-11', amount: 11 }, 'c12-03', ['locked', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c12-05', 'chapter-12', 'shadow-librarian', 71, '왕관 해변 연전', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '별모래 조각', type: 'premium-12', amount: 11 }, 'c12-04', ['timeSeal', 'sunTide'], { season: 'summer-2026' }),
+  stage('c12-06', 'chapter-12', 'shadow-librarian', 72, '피서 서고의 문', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'nightmare', { label: '태양 왕관', type: 'premium-13', amount: 11 }, 'c12-05', ['bossPressure', 'festivalBoss'], { season: 'summer-2026' }),
+  stage('c13-01', 'chapter-13', 'sealed-page-golem', 73, '한여름 대서고 입장', '여름 시즌 규칙을 가볍게 시작하는 완충 스테이지', 'hard', { label: '햇살 조개', type: 'premium-14', amount: 12 }, 'c12-06', ['fog', 'locked', 'sunTide'], { season: 'summer-2026' }),
+  stage('c13-02', 'chapter-13', 'sealed-page-golem', 74, '푸른 불꽃 기록장', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '산호 책갈피', type: 'premium-15', amount: 12 }, 'c13-01', ['timeSeal', 'bossPressure', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c13-03', 'chapter-13', 'forgotten-spirit', 75, '진주 왕좌의 균열', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '파도 잉크', type: 'premium-16', amount: 12 }, 'c13-02', [], { season: 'summer-2026' }),
+  stage('c13-04', 'chapter-13', 'sealed-page-golem', 76, '태양과 달의 해변', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '진주 장식', type: 'premium-17', amount: 12 }, 'c13-03', ['sunTide'], { season: 'summer-2026' }),
+  stage('c13-05', 'chapter-13', 'shadow-librarian', 77, '검은 파도 피날레', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '별모래 조각', type: 'premium-18', amount: 12 }, 'c13-04', ['fog', 'sunTide'], { season: 'summer-2026' }),
+  stage('c13-06', 'chapter-13', 'sealed-page-golem', 78, '한여름 꿈의 대복원', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'nightmare', { label: '태양 왕관', type: 'premium-19', amount: 12 }, 'c13-05', ['locked', 'pearlChain'], { season: 'summer-2026' })
 ];
 
 export const DEFAULT_STAGE_ID = STAGES[0].id;
@@ -156,7 +267,7 @@ export function getDailyChallenge(date = new Date()) {
   const dateKey = date.toISOString().slice(0, 10);
   const seed = Number(dateKey.replaceAll('-', '')) || 1;
   const stageIndex = seed % STAGES.length;
-  const modifierPool = ['fog', 'locked', 'timeSeal', 'bossPressure'];
+  const modifierPool = ['fog', 'locked', 'timeSeal', 'bossPressure', 'sunTide', 'pearlChain', 'festivalBoss'];
   const first = modifierPool[seed % modifierPool.length];
   const second = modifierPool[Math.floor(seed / 7) % modifierPool.length];
   const modifiers = [...new Set([first, second])];
@@ -177,6 +288,9 @@ export function formatModifier(modifier) {
     fog: '안개 타일',
     locked: '잠긴 타일',
     timeSeal: '시간 봉인',
-    bossPressure: '보스 압박'
+    bossPressure: '보스 압박',
+    sunTide: '햇살 파도',
+    pearlChain: '진주 연쇄',
+    festivalBoss: '축제 보스'
   })[modifier] || modifier;
 }

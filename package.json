@@ -66,7 +66,8 @@
     "check:auth-modal-boss-role": "node tools/check-auth-modal-boss-role.mjs",
     "check:boss-stage-lobby-scroll": "node tools/check-boss-stage-lobby-scroll.mjs",
     "check:stage-ladder-boss-lobby": "node tools/check-stage-ladder-boss-lobby.mjs",
-    "check:stage-map-boss-difficulty-lobby": "node tools/check-stage-map-boss-difficulty-lobby.mjs"
+    "check:stage-map-boss-difficulty-lobby": "node tools/check-stage-map-boss-difficulty-lobby.mjs",
+    "check:summer-season-mega": "node tools/check-summer-season-mega.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -79,5 +80,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.46"
+  "version": "1.0.47"
 }

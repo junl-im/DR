@@ -94,6 +94,7 @@ jobs:
           npm run check:boss-stage-lobby-scroll
           npm run check:stage-ladder-boss-lobby
           npm run check:stage-map-boss-difficulty-lobby
+          npm run check:summer-season-mega
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

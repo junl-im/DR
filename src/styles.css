@@ -3308,3 +3308,108 @@ body[data-screen="lobby"] .campaign-panel {
   .boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-core img { width: 52px; height: 52px; }
   .boss-info[data-boss-role="statusbar-icon-v1046"] .boss-role-stack[data-boss-role-panel="v1046-icon-readability"] span:nth-last-child(-n+2) { display: none; }
 }
+
+
+/* v1.0.47 mega summer season update, 78-stage campaign and season gesture polish */
+.summer-season-panel[data-summer-season="v1047-mega-season"] {
+  position: relative;
+  display: grid;
+  gap: 0.72rem;
+  border-color: rgba(125, 220, 255, 0.26);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(125, 220, 255, 0.22), transparent 34%),
+    radial-gradient(circle at 86% 16%, rgba(245, 200, 107, 0.18), transparent 32%),
+    linear-gradient(135deg, rgba(6, 21, 45, 0.72), rgba(18, 63, 102, 0.38));
+  touch-action: pan-y;
+}
+.summer-season-panel[data-summer-season="v1047-mega-season"]::after {
+  content: '';
+  position: absolute;
+  right: 1rem;
+  bottom: 0.72rem;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 226, 142, 0.2), transparent 64%);
+  pointer-events: none;
+}
+.season-badge {
+  justify-self: end;
+  padding: 0.32rem 0.58rem;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 200, 107, 0.42);
+  color: var(--gold-300);
+  background: rgba(245, 200, 107, 0.12);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+.summer-season-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+}
+.summer-season-progress div {
+  display: grid;
+  gap: 0.18rem;
+}
+.summer-season-progress strong {
+  color: var(--sky-200);
+  font-size: 1.18rem;
+}
+.summer-season-progress span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.season-jump-button {
+  min-height: 38px;
+  padding-inline: 0.74rem;
+  border-radius: 999px;
+  border: 1px solid rgba(54, 214, 164, 0.42);
+  background: linear-gradient(135deg, rgba(54, 214, 164, 0.26), rgba(125, 220, 255, 0.16));
+  color: var(--text);
+  font-weight: 900;
+  touch-action: pan-y;
+}
+.summer-season-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+.summer-season-rewards span,
+.reward-chip-season {
+  padding: 0.32rem 0.52rem;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 220, 255, 0.2);
+  background: rgba(3, 14, 30, 0.38);
+  color: var(--sky-200);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1047-summer"] {
+  border-color: rgba(125, 220, 255, 0.3);
+  background: linear-gradient(135deg, rgba(6, 21, 45, 0.62), rgba(17, 74, 108, 0.28), rgba(245, 200, 107, 0.08));
+}
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1047-summer"] .ladder-path em {
+  color: var(--gold-300);
+  font-style: normal;
+  white-space: nowrap;
+  font-size: 0.58rem;
+}
+.battle-stage[data-summer-combo-bonus="v1047-summer-mega-season"] .time-meter {
+  box-shadow: 0 0 22px rgba(125, 220, 255, 0.18), inset 0 0 18px rgba(245, 200, 107, 0.08);
+}
+body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .summer-season-panel,
+body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .stage-ladder-summary,
+body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .chapter-tab,
+body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .stage-node,
+body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .mission-card {
+  touch-action: pan-y;
+}
+@media (max-width: 430px) {
+  .summer-season-progress { grid-template-columns: 1fr; gap: 0.48rem; }
+  .season-jump-button { width: 100%; }
+  .summer-season-panel[data-summer-season="v1047-mega-season"] { padding: 0.72rem; }
+  .summer-season-rewards span { font-size: 0.58rem; }
+}
