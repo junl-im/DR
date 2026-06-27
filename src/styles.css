@@ -2255,3 +2255,89 @@ body[data-screen="game"] .pixi-board-host {
   .board-camera-controls { top: 0.42rem; }
   .board-camera-controls button { min-height: 29px; }
 }
+
+/* v1.0.30 Minimap, route assist and boss camera impact polish */
+.board-minimap {
+  position: absolute;
+  left: 0.64rem;
+  top: 0.64rem;
+  z-index: 4;
+  width: clamp(84px, 24vw, 118px);
+  padding: 0.34rem;
+  border-radius: 18px;
+  border: 1px solid rgba(125, 220, 255, 0.22);
+  background: linear-gradient(145deg, rgba(6, 21, 45, 0.72), rgba(21, 56, 104, 0.46));
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22), inset 0 0 18px rgba(125, 220, 255, 0.08);
+  backdrop-filter: blur(10px);
+  touch-action: manipulation;
+}
+.board-minimap-head {
+  margin-bottom: 0.22rem;
+  color: rgba(245, 200, 107, 0.94);
+  font-size: 0.56rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(245, 200, 107, 0.24);
+  pointer-events: none;
+}
+.board-minimap-map {
+  position: relative;
+  aspect-ratio: var(--board-ratio, 1 / 1.18);
+  min-height: 72px;
+  overflow: hidden;
+  border-radius: 13px;
+  border: 1px solid rgba(245, 200, 107, 0.18);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(125, 220, 255, 0.16), transparent 58%),
+    linear-gradient(135deg, rgba(5, 14, 32, 0.86), rgba(12, 40, 82, 0.62));
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.28), inset 0 0 18px rgba(125, 220, 255, 0.05);
+  cursor: crosshair;
+}
+.board-minimap-dot {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: rgba(232, 244, 255, 0.76);
+  box-shadow: 0 0 5px rgba(125, 220, 255, 0.5);
+  pointer-events: none;
+}
+.board-minimap-dot[data-theme="special"] {
+  width: 4px;
+  height: 4px;
+  background: rgba(245, 200, 107, 0.9);
+  box-shadow: 0 0 7px rgba(245, 200, 107, 0.64);
+}
+.board-minimap-viewport {
+  position: absolute;
+  display: block;
+  border-radius: 6px;
+  border: 1.5px solid rgba(245, 200, 107, 0.96);
+  background: rgba(125, 220, 255, 0.08);
+  box-shadow: 0 0 10px rgba(245, 200, 107, 0.28), inset 0 0 10px rgba(125, 220, 255, 0.12);
+  pointer-events: none;
+}
+.pixi-board-host[data-camera-mode="fit"] ~ .board-minimap {
+  display: none !important;
+}
+.battle-stage[data-board-camera="pan-zoom"] .boss-warning::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 1px solid rgba(245, 200, 107, 0.34);
+  box-shadow: 0 0 22px rgba(245, 200, 107, 0.18);
+  pointer-events: none;
+}
+@media (max-width: 390px) {
+  .board-minimap { left: 0.42rem; top: 0.42rem; width: 82px; padding: 0.28rem; border-radius: 15px; }
+  .board-minimap-map { min-height: 62px; }
+  .board-minimap-head { font-size: 0.5rem; margin-bottom: 0.16rem; }
+}
+@media (max-height: 700px) {
+  .board-minimap { top: 0.42rem; width: 82px; }
+  .board-minimap-map { min-height: 58px; }
+}

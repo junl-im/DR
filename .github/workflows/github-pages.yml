@@ -82,6 +82,7 @@ jobs:
           npm run check:board-camera
           npm run check:selection-stability
           npm run check:mobile-playability
+          npm run check:minimap-route-impact
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

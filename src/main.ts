@@ -45,6 +45,7 @@ const el = {
   boardHost: $('#pixi-board-host'),
   boardCameraGuide: $('#board-camera-guide'),
   boardCameraControls: $('#board-camera-controls'),
+  boardMinimap: $('#board-minimap'),
   screens: $$('.screen'),
   backButton: $('#back-button'),
   loginStatus: $('#login-status'),
@@ -919,9 +920,11 @@ function showHint() {
     return;
   }
   state.hints -= 1;
-  renderer.hint(hint.map((item: any) => ({ row: item.row, col: item.col })));
+  const points = hint.map((item: any) => ({ row: item.row, col: item.col }));
+  const routePath = points.length >= 2 ? findConnectionPath(state.board, points[0], points[1]) : null;
+  renderer.hint(points, routePath);
   audio.play('select');
-  setStatus('빛이 약하게 숨쉬는 오브젝트를 보세요.');
+  setStatus('빛길이 이어지는 오브젝트를 보세요.');
 }
 
 async function shuffleBoard() {
@@ -1367,10 +1370,13 @@ function renderBoardCameraGuide(difficultyOverride?: any) {
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-camera', panZoom ? 'pan-zoom' : 'fit');
   if (el.boardCameraGuide) {
     el.boardCameraGuide.classList.toggle('hidden', !panZoom || state.screen !== 'game');
-    if (panZoom) el.boardCameraGuide.textContent = '드래그로 보드 이동 · 두 손가락으로 확대/축소';
+    if (panZoom) el.boardCameraGuide.textContent = '드래그 이동 · 두 손가락 확대/축소 · 레이더 탭';
   }
   if (el.boardCameraControls) {
     el.boardCameraControls.classList.toggle('hidden', !panZoom || state.screen !== 'game');
+  }
+  if (el.boardMinimap) {
+    el.boardMinimap.classList.toggle('hidden', !panZoom || state.screen !== 'game');
   }
 }
 

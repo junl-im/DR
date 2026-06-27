@@ -121,6 +121,8 @@ export class DreamPixiRenderer {
   bossLayerSprite: Sprite | null = null;
   bossLayerAura: Graphics | null = null;
   pendingBossFrame: { frameKey: string; mood: string } | null = null;
+  routeAssistPreview: Graphics | null = null;
+  minimapViewport: HTMLElement | null = null;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
@@ -262,6 +264,7 @@ export class DreamPixiRenderer {
     ['runes', 'board', 'paths', 'particles'].forEach((name) => this.boardViewport!.addChild(this.boardLayers[name]));
     this.boardApp.stage.addChild(this.boardLayers.ui);
     this.installCameraControls();
+    this.installMinimapControls();
     this.boardApp.ticker.add((ticker: any) => this.tickBoard(ticker.deltaTime || 1));
     if (this.pendingBossFrame) this.syncPixiBossLayer(this.pendingBossFrame.frameKey, this.pendingBossFrame.mood);
   }
@@ -291,6 +294,7 @@ export class DreamPixiRenderer {
       }
     }
     this.configureBoardCamera(true);
+    this.refreshBoardMinimap();
   }
 
   setSelected(point: BoardPoint | null) {
@@ -315,15 +319,20 @@ export class DreamPixiRenderer {
     this.emitSelectionWave(view.root.x, view.root.y, PALETTE.sky);
   }
 
-  hint(points: BoardPoint[]) {
+  hint(points: BoardPoint[], path?: PaddedPathPoint[] | null) {
     points.forEach((point, index) => {
       const view = this.tileViews.get(keyOf(point));
       if (!view || view.removing) return;
+      this.lockTileViewScale(view);
       this.applyTileStateTexture(view, 'hint');
-      window.setTimeout(() => this.applyTileStateTexture(view, 'normal'), 740);
-      gsap.fromTo(view.selectionRing.scale, { x: 0.98, y: 0.98 }, { x: 1.05, y: 1.05, yoyo: true, repeat: 3, delay: index * 0.05, duration: 0.16 * this.quality.motionScale, ease: 'sine.inOut' });
+      window.setTimeout(() => {
+        if (!view.removing && this.selectedKey !== keyOf(point)) this.applyTileStateTexture(view, 'normal');
+      }, 820);
+      gsap.fromTo(view.selectionRing, { alpha: 0.4, rotation: view.selectionRing.rotation }, { alpha: 0.9, rotation: view.selectionRing.rotation + Math.PI * 0.16, yoyo: true, repeat: 3, delay: index * 0.05, duration: 0.16 * this.quality.motionScale, ease: 'sine.inOut' });
       this.emitSelectionWave(view.root.x, view.root.y, PALETTE.emerald);
     });
+    this.drawRouteAssist(path, points);
+    this.focusBoardPoints(points);
   }
 
   async playMatchSequence(first: BoardPoint, second: BoardPoint, combo: number, onRemove: () => void, path?: PaddedPathPoint[] | null) {
@@ -351,6 +360,7 @@ export class DreamPixiRenderer {
     });
     this.tileViews.delete(keyOf(first));
     this.tileViews.delete(keyOf(second));
+    this.refreshBoardMinimap();
     onRemove();
   }
 
@@ -381,7 +391,11 @@ export class DreamPixiRenderer {
     core.classList.add('boss-warning');
     window.setTimeout(() => core.classList.remove('boss-warning'), 760);
     this.cameraShake(power);
-    if (this.boardApp) this.spawnVfxSprite(this.boardApp.renderer.width / 2, 42, 'import-vfx-06');
+    this.drawBossWarningLane(power);
+    if (this.boardApp) {
+      const impact = this.screenToWorld(this.boardApp.renderer.width / 2, 42);
+      this.spawnVfxSprite(impact.x, impact.y, 'import-vfx-06');
+    }
   }
 
   private calculateLayout(rows: number, cols: number): BoardLayout {
@@ -481,6 +495,30 @@ export class DreamPixiRenderer {
     this.zoomAt(centerX, centerY, this.camera.scale * factor, animated);
   }
 
+  focusBoardPoints(points: BoardPoint[], animated = true) {
+    const views = points.map((point) => this.tileViews.get(keyOf(point))).filter(Boolean) as TileView[];
+    if (!views.length || !this.boardApp) return;
+    const centerX = views.reduce((sum, view) => sum + view.baseX, 0) / views.length;
+    const centerY = views.reduce((sum, view) => sum + view.baseY, 0) / views.length;
+    const targetScale = this.layout.cameraMode === 'panZoom' ? Math.min(this.camera.maxScale, Math.max(this.camera.scale, 0.96)) : this.camera.scale;
+    this.centerCameraOnWorld(centerX, centerY, targetScale, animated);
+  }
+
+  private centerCameraOnWorld(worldX: number, worldY: number, scale = this.camera.scale, animated = true) {
+    const targetScale = Math.max(this.camera.minScale, Math.min(this.camera.maxScale, scale));
+    const targetX = this.camera.viewportWidth / 2 - worldX * targetScale;
+    const targetY = this.camera.viewportHeight / 2 - worldY * targetScale;
+    this.animateCameraTo(targetX, targetY, targetScale, animated);
+  }
+
+  private screenToWorld(x: number, y: number) {
+    const scale = Math.max(0.001, this.camera.scale);
+    return {
+      x: (x - this.camera.x) / scale,
+      y: (y - this.camera.y) / scale
+    };
+  }
+
   private animateCameraTo(x: number, y: number, scale: number, animated = true) {
     gsap.killTweensOf(this.camera);
     const fromX = this.camera.x;
@@ -514,6 +552,7 @@ export class DreamPixiRenderer {
     this.boardViewport.scale.set(this.camera.scale);
     this.boardViewport.x = this.camera.x;
     this.boardViewport.y = this.camera.y;
+    this.updateBoardMinimapViewport();
   }
 
   private clampCamera() {
@@ -615,6 +654,94 @@ export class DreamPixiRenderer {
       const factor = event.deltaY < 0 ? 1.08 : 0.92;
       this.zoomAt(event.clientX, event.clientY, this.camera.scale * factor);
     }, { passive: false });
+  }
+
+  private installMinimapControls() {
+    const minimap = document.querySelector<HTMLElement>('#board-minimap');
+    const map = document.querySelector<HTMLElement>('#board-minimap .board-minimap-map');
+    if (!minimap || !map || minimap.dataset.bound === 'true') return;
+    minimap.dataset.bound = 'true';
+    map.addEventListener('pointerdown', (event) => {
+      if (this.layout.cameraMode !== 'panZoom') return;
+      event.preventDefault();
+      const rect = map.getBoundingClientRect();
+      const ratioX = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width)));
+      const ratioY = Math.max(0, Math.min(1, (event.clientY - rect.top) / Math.max(1, rect.height)));
+      this.camera.tapSuppressedUntil = performance.now() + 180;
+      this.centerCameraOnWorld(this.camera.worldWidth * ratioX, this.camera.worldHeight * ratioY, this.camera.scale, true);
+    }, { passive: false });
+  }
+
+  private refreshBoardMinimap() {
+    const minimap = document.querySelector<HTMLElement>('#board-minimap');
+    const map = document.querySelector<HTMLElement>('#board-minimap .board-minimap-map');
+    if (!minimap || !map) return;
+    const visible = this.layout.cameraMode === 'panZoom' && this.tileViews.size > 0;
+    minimap.dataset.ready = visible ? 'true' : 'false';
+    minimap.dataset.rows = String(this.layout.rows);
+    minimap.dataset.cols = String(this.layout.cols);
+    map.replaceChildren();
+    if (!visible) return;
+    for (const view of this.tileViews.values()) {
+      if (view.removing) continue;
+      const dot = document.createElement('i');
+      dot.className = 'board-minimap-dot';
+      dot.dataset.key = keyOf({ row: view.row, col: view.col });
+      dot.dataset.theme = view.tile.special && !view.tile.specialRevealed ? 'special' : view.tile.theme || 'normal';
+      dot.style.left = `${Math.max(0, Math.min(100, (view.baseX / Math.max(1, this.camera.worldWidth)) * 100))}%`;
+      dot.style.top = `${Math.max(0, Math.min(100, (view.baseY / Math.max(1, this.camera.worldHeight)) * 100))}%`;
+      map.appendChild(dot);
+    }
+    const viewport = document.createElement('b');
+    viewport.className = 'board-minimap-viewport';
+    map.appendChild(viewport);
+    this.minimapViewport = viewport;
+    this.updateBoardMinimapViewport();
+  }
+
+  private updateBoardMinimapViewport() {
+    const viewport = this.minimapViewport || document.querySelector<HTMLElement>('#board-minimap .board-minimap-viewport');
+    if (!viewport || this.layout.cameraMode !== 'panZoom') return;
+    const worldW = Math.max(1, this.camera.worldWidth);
+    const worldH = Math.max(1, this.camera.worldHeight);
+    let viewW = Math.max(0.04, Math.min(1, this.camera.viewportWidth / Math.max(1, worldW * this.camera.scale)));
+    let viewH = Math.max(0.04, Math.min(1, this.camera.viewportHeight / Math.max(1, worldH * this.camera.scale)));
+    let left = Math.max(0, Math.min(1 - viewW, -this.camera.x / Math.max(1, worldW * this.camera.scale)));
+    let top = Math.max(0, Math.min(1 - viewH, -this.camera.y / Math.max(1, worldH * this.camera.scale)));
+    if (!Number.isFinite(left)) left = 0;
+    if (!Number.isFinite(top)) top = 0;
+    if (!Number.isFinite(viewW)) viewW = 1;
+    if (!Number.isFinite(viewH)) viewH = 1;
+    viewport.style.left = `${left * 100}%`;
+    viewport.style.top = `${top * 100}%`;
+    viewport.style.width = `${viewW * 100}%`;
+    viewport.style.height = `${viewH * 100}%`;
+  }
+
+  private drawRouteAssist(path?: PaddedPathPoint[] | null, points: BoardPoint[] = []) {
+    if (!this.boardLayers.paths) return;
+    this.routeAssistPreview?.destroy();
+    this.routeAssistPreview = null;
+    const route = path?.length ? path.map((point) => this.paddedToCanvas(point)) : points.map((point) => {
+      const view = this.tileViews.get(keyOf(point));
+      return view ? { x: view.baseX, y: view.baseY } : null;
+    }).filter(Boolean) as { x: number; y: number }[];
+    if (route.length < 2) return;
+    const preview = new Graphics();
+    preview.blendMode = 'add';
+    preview.moveTo(route[0].x, route[0].y);
+    route.slice(1).forEach((point) => preview.lineTo(point.x, point.y));
+    preview.stroke({ color: PALETTE.sky, width: Math.max(5, this.tileSize * 0.1), alpha: 0.46 });
+    preview.moveTo(route[0].x, route[0].y);
+    route.slice(1).forEach((point) => preview.lineTo(point.x, point.y));
+    preview.stroke({ color: PALETTE.goldLight, width: Math.max(2, this.tileSize * 0.045), alpha: 0.88 });
+    this.boardLayers.paths.addChild(preview);
+    this.routeAssistPreview = preview;
+    gsap.fromTo(preview, { alpha: 0.15 }, { alpha: 1, duration: 0.14 * this.quality.motionScale, ease: 'sine.out' });
+    gsap.to(preview, { alpha: 0, delay: 0.78 * this.quality.motionScale, duration: 0.26 * this.quality.motionScale, ease: 'power2.out', onComplete: () => {
+      if (this.routeAssistPreview === preview) this.routeAssistPreview = null;
+      preview.destroy();
+    } });
   }
 
   private isTapSuppressed() {
@@ -824,10 +951,35 @@ export class DreamPixiRenderer {
     gsap.to(beam, { alpha: 0, duration: 0.28 * this.quality.motionScale, ease: 'power2.out', onComplete: () => beam.destroy() });
   }
 
+  private drawBossWarningLane(power: number) {
+    if (!this.boardApp || !this.boardLayers.paths || !this.boardLayers.ui) return;
+    const app = this.boardApp;
+    const centerWorld = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2);
+    const laneX = Math.max(0, Math.min(this.camera.worldWidth, centerWorld.x));
+    const lane = new Graphics();
+    lane.blendMode = 'add';
+    lane.moveTo(laneX, 0).lineTo(laneX, this.camera.worldHeight);
+    lane.stroke({ color: PALETTE.violet, width: Math.max(14, power * 2.1), alpha: 0.16 });
+    lane.moveTo(laneX, 0).lineTo(laneX, this.camera.worldHeight);
+    lane.stroke({ color: PALETTE.goldLight, width: Math.max(3, power * 0.42), alpha: 0.58 });
+    this.boardLayers.paths.addChild(lane);
+
+    const flare = new Graphics()
+      .rect(0, 0, app.renderer.width, Math.max(8, power * 1.8))
+      .fill({ color: PALETTE.violet, alpha: 0.18 })
+      .rect(0, app.renderer.height - Math.max(8, power * 1.8), app.renderer.width, Math.max(8, power * 1.8))
+      .fill({ color: PALETTE.gold, alpha: 0.12 });
+    flare.blendMode = 'add';
+    this.boardLayers.ui.addChild(flare);
+    gsap.to(lane, { alpha: 0, duration: 0.62 * this.quality.motionScale, ease: 'power2.out', onComplete: () => lane.destroy() });
+    gsap.to(flare, { alpha: 0, duration: 0.5 * this.quality.motionScale, ease: 'power2.out', onComplete: () => flare.destroy() });
+  }
+
   private fireAtBoss(x: number, y: number, combo: number) {
     const app = this.boardApp!;
-    const targetX = app.renderer.width / 2;
-    const targetY = 18;
+    const target = this.screenToWorld(app.renderer.width / 2, 18);
+    const targetX = target.x;
+    const targetY = target.y;
     const missile = new Graphics().circle(0, 0, 8 + Math.min(combo, 8)).fill({ color: PALETTE.goldLight, alpha: 1 });
     missile.x = x;
     missile.y = y;
@@ -860,7 +1012,8 @@ export class DreamPixiRenderer {
 
   private emitBoardPulse(combo: number) {
     const app = this.boardApp!;
-    const pulse = new Graphics().circle(app.renderer.width / 2, app.renderer.height / 2 + 18, Math.min(app.renderer.width, app.renderer.height) * 0.2).stroke({ color: combo >= 4 ? PALETTE.gold : PALETTE.sky, width: 4, alpha: 0.52 });
+    const center = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2 + 18);
+    const pulse = new Graphics().circle(center.x, center.y, Math.min(app.renderer.width, app.renderer.height) * 0.2 / Math.max(0.6, this.camera.scale)).stroke({ color: combo >= 4 ? PALETTE.gold : PALETTE.sky, width: 4, alpha: 0.52 });
     this.boardLayers.particles.addChild(pulse);
     gsap.to(pulse.scale, { x: 2.5, y: 2.5, duration: 0.46 * this.quality.motionScale, ease: 'power2.out' });
     gsap.to(pulse, { alpha: 0, duration: 0.46 * this.quality.motionScale, onComplete: () => pulse.destroy() });

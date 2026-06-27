@@ -14,6 +14,7 @@ for (const file of files) {
 }
 if (pushMainCount !== 1) errors.push(`Expected exactly one push main workflow, found ${pushMainCount}.`);
 const pagesWorkflow = readFileSync(join(dir, 'github-pages.yml'), 'utf8');
+const qualityWorkflow = readFileSync(join(dir, 'quality-check.yml'), 'utf8');
 if (!pagesWorkflow.includes('npm run check:background-optimization')) errors.push('github-pages.yml: expected background optimization check.');
 if (!pagesWorkflow.includes('npm run check:boss-atlas')) errors.push('github-pages.yml: expected boss atlas check.');
 if (!pagesWorkflow.includes('npm run check:mobile-layout')) errors.push('github-pages.yml: expected mobile layout QA check.');
@@ -25,6 +26,8 @@ if (!pagesWorkflow.includes('npm run check:kakao-lobby-rotation')) errors.push('
 if (!pagesWorkflow.includes('npm run check:display-copy')) errors.push('github-pages.yml: expected silent display copy check.');
 if (!pagesWorkflow.includes('npm run check:tile-readability')) errors.push('github-pages.yml: expected tile readability check.');
 if (!pagesWorkflow.includes('npm run check:board-camera')) errors.push('github-pages.yml: expected board camera check.');
+if (!pagesWorkflow.includes('npm run check:minimap-route-impact')) errors.push('github-pages.yml: expected minimap route impact check.');
+if (!qualityWorkflow.includes('npm run check:minimap-route-impact')) errors.push('quality-check.yml: expected minimap route impact check.');
 if (!pagesWorkflow.includes('npm run check:mobile-playability')) errors.push('github-pages.yml: expected mobile playability check.');
 if (!pagesWorkflow.includes('npm run check:selection-stability')) errors.push('github-pages.yml: expected selection stability check.');
 
@@ -32,4 +35,4 @@ if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.29 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.30 QA checks.');
