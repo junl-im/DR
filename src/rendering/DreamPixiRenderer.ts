@@ -29,6 +29,8 @@ const BOARD_FOCUS_BALANCE_PATCH = 'v1040-board-focus-balance';
 const MOBILE_BOARD_FEEL_PATCH = 'v1040-mobile-board-feel';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-board-to-reward-flow';
 const BOSS_FLOW_TEMPO_PATCH = 'v1040-boss-flow-tempo';
+const SUMMER_EVENT_VFX_PATCH = 'v1049-summer-event-vfx';
+const SUMMER_PASS_MISSIONS_PATCH = 'v1049-summer-pass-missions';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -450,6 +452,51 @@ export class DreamPixiRenderer {
     }
     if (label) label.textContent = `HP ${hp}%`;
     if (fill) fill.style.transform = `scaleX(${hp / 100})`;
+  }
+
+
+  playSummerModifierVfx(modifiers: string[] = [], combo = 1, path?: PaddedPathPoint[] | null) {
+    if (!this.boardApp || !this.boardLayers.particles) return;
+    const seasonModifiers = modifiers.filter((modifier) => ['sunTide', 'pearlChain', 'festivalBoss'].includes(modifier));
+    if (!seasonModifiers.length) return;
+    const app = this.boardApp;
+    const center = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2 + 10);
+    const scaledTile = Math.max(24, this.tileSize * Math.max(0.64, this.camera.scale));
+    const colors: Record<string, number> = { sunTide: PALETTE.goldLight, pearlChain: PALETTE.sky, festivalBoss: PALETTE.violet };
+    seasonModifiers.forEach((modifier, index) => {
+      const color = colors[modifier] || PALETTE.emerald;
+      const ring = new Graphics()
+        .circle(center.x, center.y, scaledTile * (0.88 + index * 0.22))
+        .stroke({ color, width: Math.max(2, scaledTile * 0.048), alpha: modifier === 'festivalBoss' ? 0.52 : 0.42 });
+      ring.label = `summer-event-vfx-${modifier}-${combo}`;
+      ring.blendMode = 'add';
+      this.boardLayers.particles.addChild(ring);
+      gsap.to(ring.scale, { x: 1.8 + combo * 0.035, y: 1.8 + combo * 0.035, duration: 0.48 * this.quality.motionScale, ease: 'power2.out' });
+      gsap.to(ring, { alpha: 0, duration: 0.52 * this.quality.motionScale, ease: 'power2.out', onComplete: () => ring.destroy() });
+      if (modifier === 'sunTide') this.spawnVfxSprite(center.x - scaledTile * 0.52, center.y, 'import-vfx-02');
+      if (modifier === 'pearlChain') this.spawnVfxSprite(center.x + scaledTile * 0.52, center.y, 'import-vfx-04');
+      if (modifier === 'festivalBoss') this.spawnVfxSprite(center.x, center.y - scaledTile * 0.48, 'import-vfx-06');
+    });
+    if (path?.length && seasonModifiers.includes('pearlChain')) {
+      this.drawRouteAssist(path);
+    }
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-summer-event-vfx', SUMMER_EVENT_VFX_PATCH);
+  }
+
+  playSeasonPassRewardBurst(label = '태양 왕관') {
+    if (!this.boardApp || !this.boardLayers.ui) return;
+    const centerX = this.boardApp.renderer.width / 2;
+    const y = Math.max(44, this.boardApp.renderer.height * 0.18);
+    const badge = new Graphics()
+      .roundRect(centerX - 92, y - 20, 184, 40, 20)
+      .fill({ color: PALETTE.navy, alpha: 0.84 })
+      .stroke({ color: PALETTE.goldLight, width: 2, alpha: 0.78 });
+    badge.label = `season-pass-reward-${label}`;
+    this.boardLayers.ui.addChild(badge);
+    this.emitParticles(this.screenToWorld(centerX, y).x, this.screenToWorld(centerX, y).y, 22, PALETTE.goldLight);
+    gsap.fromTo(badge, { alpha: 0, y: y + 12 }, { alpha: 1, y, duration: 0.18 * this.quality.motionScale, ease: 'power2.out' });
+    gsap.to(badge, { alpha: 0, delay: 0.72 * this.quality.motionScale, duration: 0.28 * this.quality.motionScale, ease: 'sine.out', onComplete: () => badge.destroy() });
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-season-pass-reward', SUMMER_PASS_MISSIONS_PATCH);
   }
 
   playBossWarning(power = 7, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column', bossId = 'forgotten-spirit') {

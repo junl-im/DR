@@ -30,7 +30,7 @@ for (const token of ['touch-action: pan-y', 'grid-auto-flow: column', 'statusbar
 for (const banned of ['보기 맞춤', '중앙으로', 'board-radar', 'minimap']) {
   if (html.includes(banned) || main.includes(banned)) errors.push(`Removed UI token reintroduced: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"')) errors.push('package.json version must be 1.0.47 or 1.0.48.');
+if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && !pkg.includes('"version": "1.0.49"')) errors.push('package.json version must be 1.0.47, 1.0.48 or 1.0.49.');
 if (!sw.includes('dream-library-cache-v1.0.47') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must be v1.0.47.');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.47.json')) errors.push('v1.0.47 texture atlas manifest missing.');
 if (!pages.includes('npm run check:boss-stage-lobby-scroll') || !quality.includes('npm run check:boss-stage-lobby-scroll')) errors.push('workflows must run v1.0.47 boss/stage/lobby scroll check.');

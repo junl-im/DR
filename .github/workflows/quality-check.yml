@@ -96,6 +96,7 @@ jobs:
           npm run check:stage-map-boss-difficulty-lobby
           npm run check:summer-season-mega
           npm run check:summer-live-balance
+          npm run check:summer-event-vfx-pass
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

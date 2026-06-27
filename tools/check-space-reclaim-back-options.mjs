@@ -34,7 +34,7 @@ for (const token of [
 ]) {
   if (!runtime.includes(token)) errors.push(`Missing v1.0.47 space reclaim/back options token: ${token}`);
 }
-if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"')) errors.push('package.json version must be 1.0.47 or 1.0.48.');
+if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && !pkg.includes('"version": "1.0.49"')) errors.push('package.json version must be 1.0.47, 1.0.48 or 1.0.49.');
 if (!pkg.includes('check:space-reclaim-back-options')) errors.push('package.json must expose check:space-reclaim-back-options.');
 if (!pages.includes('npm run check:space-reclaim-back-options')) errors.push('github-pages workflow must run space reclaim/back options check.');
 if (!quality.includes('npm run check:space-reclaim-back-options')) errors.push('quality workflow must run space reclaim/back options check.');

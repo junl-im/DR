@@ -68,7 +68,8 @@
     "check:stage-ladder-boss-lobby": "node tools/check-stage-ladder-boss-lobby.mjs",
     "check:stage-map-boss-difficulty-lobby": "node tools/check-stage-map-boss-difficulty-lobby.mjs",
     "check:summer-season-mega": "node tools/check-summer-season-mega.mjs",
-    "check:summer-live-balance": "node tools/check-summer-live-balance.mjs"
+    "check:summer-live-balance": "node tools/check-summer-live-balance.mjs",
+    "check:summer-event-vfx-pass": "node tools/check-summer-event-vfx-pass.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -81,5 +82,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.48"
+  "version": "1.0.49"
 }

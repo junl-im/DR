@@ -29,11 +29,11 @@ document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
-const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1048-summer-pass';
+const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1049-season-boss-polish';
 const LEGACY_BOSS_VISUAL_STACK_TOKEN = 'stable-atlas-v1040';
 const STAGE_LADDER_EXPANSION_PATCH = 'v1048-summer-live-balance-78';
 const LEGACY_STAGE_MAP_COMFORT_TOKEN = 'v1046-stage-map-comfort-42';
-const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1048-campaign-gesture-fluid';
+const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1049-season-vfx-gesture-qa';
 const LEGACY_LOBBY_DRAG_RESCUE_TOKEN = 'v1046-gesture-final-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
@@ -43,9 +43,13 @@ const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
 const DIFFICULTY_TEMPO_PATCH = 'v1048-summer-live-difficulty-tempo';
 const LEGACY_DIFFICULTY_TEMPO_TOKEN = 'v1046-difficulty-tempo-wide-ladder';
-const SUMMER_SEASON_PATCH = 'v1048-summer-live-balance-pass';
-const SUMMER_REWARD_PASS_PATCH = 'v1048-summer-reward-pass-track';
-const SUMMER_LIVE_BALANCE_PATCH = 'v1048-summer-live-balance';
+const SUMMER_SEASON_PATCH = 'v1049-summer-event-vfx';
+const SUMMER_REWARD_PASS_PATCH = 'v1049-summer-pass-missions';
+const SUMMER_LIVE_BALANCE_PATCH = 'v1049-summer-live-balance';
+const SUMMER_EVENT_VFX_PATCH = 'v1049-summer-event-vfx';
+const SUMMER_PASS_MISSIONS_PATCH = 'v1049-summer-pass-missions';
+const SUMMER_COMPACT_CAROUSEL_PATCH = 'v1049-compact-chapter-carousel';
+const BOSS_SEASON_POLISH_PATCH = 'v1049-boss-season-polish';
 const SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY: Record<string, number> = {
   beginner: 6,
   easy: 6,
@@ -1014,6 +1018,10 @@ function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch'
   void el.bossTelegraph.offsetWidth;
   el.bossTelegraph.classList.add('telegraph-pop');
   renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason), boss.id || 'forgotten-spirit');
+  if (state.stageModifiers.includes('festivalBoss') || isSummerSeasonStage(getStageById(state.selectedStageId))) {
+    renderer.playSummerModifierVfx(['festivalBoss'], Math.max(1, state.combo), null);
+    document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-season-polish', BOSS_SEASON_POLISH_PATCH);
+  }
   window.setTimeout(hideBossTelegraph, 1500);
 }
 
@@ -1072,6 +1080,7 @@ function handleTileTap(point: BoardPoint) {
       state.board = removePair(state.board, first, point);
       grantPairMatchTimeBonus(firstTile, secondTile);
       grantSummerSeasonComboBonus();
+      renderer.playSummerModifierVfx(state.stageModifiers, state.combo, connectionPath);
       applySpecialMatchRewards(firstTile, secondTile);
       advanceSpecialRulesAfterMatch();
       state.selected = null;
@@ -1171,6 +1180,7 @@ async function clearStage() {
       if (passReward) {
         addReward(passReward.type, passReward.amount);
         state.lastSeasonPassReward = passReward;
+        renderer.playSeasonPassRewardBurst(passReward.label);
       }
     }
   }
@@ -1520,12 +1530,16 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
   const percent = Math.round((cleared / Math.max(1, seasonStages.length)) * 100);
   const nextMilestone = SUMMER_SEASON_EVENT.passMilestones.find((milestone: number) => milestone > cleared) || SUMMER_SEASON_EVENT.totalStages;
   const passLevel = SUMMER_SEASON_EVENT.passMilestones.filter((milestone: number) => cleared >= milestone).length;
+  const missionCards = getSummerPassMissionCards(cleared, passLevel, nextMilestone);
   const currentStage = getStageById(state.selectedStageId);
   const currentBonus = getSummerSeasonLiveComboBonus(currentStage);
   panel.dataset.summerSeason = SUMMER_SEASON_PATCH;
   panel.dataset.seasonPass = SUMMER_REWARD_PASS_PATCH;
   panel.dataset.liveBalance = SUMMER_LIVE_BALANCE_PATCH;
+  panel.dataset.seasonVfx = SUMMER_EVENT_VFX_PATCH;
+  panel.dataset.passMissions = SUMMER_PASS_MISSIONS_PATCH;
   panel.dataset.seasonStageCount = String(seasonStages.length);
+  panel.querySelector<HTMLElement>('#summer-season-desc')?.replaceChildren(document.createTextNode('시즌 VFX, 패스 미션, 보스 장식을 강화했습니다.'));
   progress.innerHTML = `<div><strong>${cleared}/${seasonStages.length}</strong><span>${SUMMER_SEASON_EVENT.title} · 전체 ${clearCount}/${STAGES.length} 클리어 · ${percent}% · 패스 ${passLevel}/${SUMMER_SEASON_EVENT.passMilestones.length}단계</span></div><button type="button" class="season-jump-button" data-stage-id="${next?.id || DEFAULT_STAGE_ID}">다음 시즌 스테이지</button>`;
   const passTrack = SUMMER_SEASON_EVENT.passMilestones.map((milestone: number, index: number) => {
     const reached = cleared >= milestone;
@@ -1536,13 +1550,31 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
     `<span>난이도별 시즌 콤보 +${currentBonus}초</span>`,
     `<span>시즌 클리어 보상 ${SUMMER_SEASON_EVENT.currencyLabel} +${SUMMER_SEASON_EVENT.clearReward}</span>`,
     `<span>패스 마일스톤마다 ${SUMMER_SEASON_EVENT.passRewardLabel} +1</span>`,
-    `<div class="season-pass-track" data-season-pass="${SUMMER_REWARD_PASS_PATCH}" aria-label="썸머 시즌 보상 패스">${passTrack}</div>`
+    `<div class="season-pass-track" data-season-pass="${SUMMER_REWARD_PASS_PATCH}" aria-label="썸머 시즌 보상 패스">${passTrack}</div>`,
+    `<div class="season-pass-missions" data-pass-missions="${SUMMER_PASS_MISSIONS_PATCH}" aria-label="시즌 패스 미션">${missionCards}</div>`
   ].join('');
 }
 
 function getSummerSeasonLiveComboBonus(stage = getStageById(state.selectedStageId)) {
   const key = stage?.difficultyKey || 'normal';
   return SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY[key] || SUMMER_SEASON_EVENT.comboBonusSeconds;
+}
+
+function getSummerPassMissionCards(cleared: number, passLevel: number, nextMilestone: number) {
+  const remaining = Math.max(0, nextMilestone - cleared);
+  const next = getSummerSeasonNextStage();
+  const bossStagesLeft = getSummerSeasonStages().filter((stage: any) => stage.modifiers?.includes('festivalBoss') && isStageUnlocked(stage.id) && !state.campaignProgress.cleared[stage.id]).length;
+  const cards = [
+    { title: '패스 목표', desc: remaining > 0 ? `${remaining}개 더 클리어하면 ${SUMMER_SEASON_EVENT.passRewardLabel}` : '모든 패스 보상 달성', tag: `패스 ${passLevel}/${SUMMER_SEASON_EVENT.passMilestones.length}` },
+    { title: '콤보 미션', desc: `${SUMMER_SEASON_EVENT.comboEvery}콤보마다 난이도별 추가 시간`, tag: '보너스 시간' },
+    { title: '축제 보스', desc: bossStagesLeft > 0 ? `${bossStagesLeft}개 보스 관문 남음` : '시즌 보스 관문 정복', tag: next?.title || '시즌' }
+  ];
+  return cards.map((card) => `<span class="season-pass-mission"><b>${escapeHtml(card.title)}</b><em>${escapeHtml(card.desc)}</em><i>${escapeHtml(card.tag)}</i></span>`).join('');
+}
+
+function getSummerModifierVfxLabels(modifiers: string[] = []) {
+  const labels: Record<string, string> = { sunTide: '햇살 파도 VFX', pearlChain: '진주 연쇄 VFX', festivalBoss: '축제 보스 장식' };
+  return modifiers.filter((modifier) => labels[modifier]).map((modifier) => labels[modifier]);
 }
 
 function getSummerSeasonPassRewardForClears(clears: number) {
@@ -1724,11 +1756,14 @@ function selectChapter(chapterId: string) {
 }
 
 function renderChapterTabs() {
+  el.chapterTabs.dataset.compactCarousel = SUMMER_COMPACT_CAROUSEL_PATCH;
+  el.chapterTabs.setAttribute('aria-label', '챕터 선택 · compact carousel');
   el.chapterTabs.innerHTML = CHAPTERS.map((chapter: any) => {
     const stages = getChapterStages(chapter.id);
     const cleared = stages.filter((stage: any) => state.campaignProgress.cleared[stage.id]).length;
     const hasUnlocked = stages.some((stage: any) => isStageUnlocked(stage.id));
-    return `<button type="button" class="chapter-tab ${chapter.id === state.selectedChapterId ? 'selected' : ''} ${hasUnlocked ? 'unlocked' : 'locked'}" data-chapter-id="${chapter.id}"><strong>${chapter.shortTitle}</strong><span>${cleared}/${stages.length}</span></button>`;
+    const isSeason = chapter.season === SUMMER_SEASON_EVENT.id || stages.some((stage: any) => isSummerSeasonStage(stage));
+    return `<button type="button" class="chapter-tab ${chapter.id === state.selectedChapterId ? 'selected' : ''} ${hasUnlocked ? 'unlocked' : 'locked'} ${isSeason ? 'season-tab' : ''}" data-chapter-id="${chapter.id}" data-season-tab="${isSeason ? 'summer' : 'base'}"><strong>${chapter.shortTitle}</strong><span>${cleared}/${stages.length}</span></button>`;
   }).join('');
 }
 
@@ -1737,7 +1772,9 @@ function renderBossPanel() {
   setBossStableImage(boss.asset, boss.name);
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
-  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-layout', 'statusbar-icon-right-v1046');
+  const bossLane = document.querySelector<HTMLElement>('.boss-lane');
+  bossLane?.setAttribute('data-boss-layout', 'statusbar-icon-right-v1046');
+  bossLane?.setAttribute('data-boss-season-polish', BOSS_SEASON_POLISH_PATCH);
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
   el.bossName.textContent = boss.name;
   const role = getBossReadableRole(boss);
@@ -1927,7 +1964,9 @@ function renderModifierStrip(modifiers: string[]) {
     el.modifierStrip.innerHTML = '<span>기본 규칙</span>';
     return;
   }
-  el.modifierStrip.innerHTML = modifiers.map((modifier) => `<span>${labels[modifier] || modifier}</span>`).join('');
+  const vfxLabels = getSummerModifierVfxLabels(modifiers);
+  el.modifierStrip.dataset.summerEventVfx = vfxLabels.length ? SUMMER_EVENT_VFX_PATCH : 'base';
+  el.modifierStrip.innerHTML = modifiers.map((modifier) => `<span data-modifier="${modifier}" data-season-vfx="${['sunTide', 'pearlChain', 'festivalBoss'].includes(modifier) ? SUMMER_EVENT_VFX_PATCH : 'base'}" title="${labels[modifier] || modifier}">${labels[modifier] || modifier}</span>`).join('') + (vfxLabels.length ? `<span class="modifier-vfx-note">${vfxLabels.join(' · ')}</span>` : '');
 }
 
 function addReward(type: string, amount: number) {

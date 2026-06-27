@@ -1284,17 +1284,56 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 - 최종 게임 적용 자원은 PNG/WebP 개별 파일 또는 Texture Atlas만 사용합니다.
 - 새 에셋을 추가한 뒤에는 `npm run check:assets`로 SVG 잔존 여부를 검사합니다.
 
+
+## v1.0.49 Patch Notes - Summer Event VFX, Reward Pass Missions and Boss Season Polish
+
+- v1.0.47~v1.0.48의 한여름 꿈결 축제 시즌을 이어 받아, 이번 버전은 시즌 이벤트가 실제 보드 연출과 보상 흐름에 더 강하게 보이도록 다듬었습니다.
+- `v1049-summer-event-vfx`를 추가해 `햇살 파도`, `진주 연쇄`, `축제 보스` modifier가 매칭/보스 경고 순간에 보드 VFX로 직접 반응합니다.
+- Pixi renderer에 `playSummerModifierVfx()`를 추가해 시즌 modifier별 ring/VFX sprite/route assist를 보드 world layer에 표시합니다.
+- 시즌 패스 패널에 `패스 목표`, `콤보 미션`, `축제 보스` 미션 카드를 추가했습니다.
+- 시즌 패스 마일스톤 보상 수령 시 `playSeasonPassRewardBurst()`로 보드 상단에 짧은 보상 수령 연출이 발생합니다.
+- 13챕터/78스테이지 상태에서 챕터 탭이 길어지는 문제를 줄이기 위해 `v1049-compact-chapter-carousel` 구조를 추가했습니다.
+- 챕터 탭에는 시즌 챕터를 구분하는 `data-season-tab="summer"` hook을 추가했습니다.
+- 보스 상태바 우측 아이콘에 `v1049-boss-season-polish` 장식을 추가해 시즌 보스/일반 보스 상태를 더 명확하게 보이도록 다듬었습니다.
+- 로비 드래그 보조를 `v1049-season-vfx-gesture-qa`로 갱신해 시즌 패널, 시즌 패스 미션, 챕터 carousel, 스테이지 노드 위에서도 세로 스크롤이 끊기지 않도록 보강했습니다.
+- service worker cache를 `dream-library-cache-v1.0.49`로 갱신하고 `texture-atlas-manifest-v1.0.49.json`을 생성했습니다.
+- 신규 검사 `check:summer-event-vfx-pass`를 추가하고 GitHub Pages/Quality workflow에 연결했습니다.
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않았습니다.
+- 선택 패 크기 고정 구조, 중앙 이메일 로그인 팝업, 구글 로그인 popup/redirect fallback, 보스 상태바 우측 아이콘 구조를 유지했습니다.
+
+검사 요약:
+
+```bash
+npm run typecheck
+npm run build:github
+전체 check:* QA suite 통과
+npm run check:summer-event-vfx-pass
+```
+
+빌드 결과:
+
+- Vite production build 성공
+- 큰 chunk 경고는 존재하지만 빌드 실패는 아닙니다.
+
+GitHub Desktop 커밋 메시지:
+
+```text
+Apply 꿈의 서고 v1.0.49 summer event VFX reward pass missions and boss season polish patch
+```
+
+다음 업데이트 예정: v1.0.50 - Summer Finale Expansion, Season Shop and Boss Pattern Event Patch
+
 ## Next Version Plan
 
-### v1.0.49 예정 - Summer Event VFX, Reward Pass Missions and Boss Season Polish Patch
+### v1.0.50 예정 - Summer Finale Expansion, Season Shop and Boss Pattern Event Patch
 
-- 햇살 파도/진주 연쇄/축제 보스 modifier를 보드 VFX, warning lane, 보스 cut-in에 더 직접적으로 연결
-- 시즌 패스 마일스톤마다 작은 미션 카드와 수령 연출을 추가해 보상 패스 느낌 강화
-- 78개 스테이지에서 챕터 탭이 너무 길어지지 않도록 compact carousel/현재 시즌 focus polish
-- 난이도별 시즌 보너스가 너무 쉽거나 빡세지 않은지 실제 플레이 기준 추가 조정
-- 보스 상태바 우측 아이콘에 시즌 보스 장식/테두리를 추가해 여름 이벤트 분위기 강화
-- 로비 드래그가 시즌 패널, 패스 트랙, 챕터 탭, 스테이지 노드 위에서도 끊기지 않는지 추가 QA
-- service worker cache slim 정책과 atlas preload 목록을 시즌 VFX 기준으로 재점검
+- 시즌 후반부를 위한 피날레 미션과 시즌 상점형 보상 교환 UI 추가 검토
+- 햇살 조개/태양 왕관을 썸머 전용 교환 보상으로 쓰는 흐름 polish
+- 축제 보스 modifier가 있는 스테이지에 전용 보스 warning/cut-in 패턴 추가
+- 시즌 패스 미션 카드에 일일/주간 느낌의 반복 목표를 추가할지 검토
+- 78개 스테이지 compact carousel에서 현재 챕터 자동 focus와 스냅 위치 polish
+- 시즌 VFX가 작은 화면에서 타일과 보스 상태바를 가리지 않도록 alpha/z-order 추가 QA
+- 로비 드래그가 시즌 패널/패스 미션/챕터 carousel 위에서도 자연스럽게 먹는지 실제 모바일 QA 강화
 - 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
 
 ## KakaoTalk / In-App Browser Policy
