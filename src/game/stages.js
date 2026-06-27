@@ -122,24 +122,52 @@ export const CHAPTERS = [
     accent: '#c29bff',
     season: 'summer-2026'
   }
+  ,
+  {
+    id: 'chapter-14',
+    number: 14,
+    title: '태양 조개 상점가',
+    shortTitle: '조개 상점가',
+    theme: '시즌 · 상점가',
+    story: '햇살 조개와 태양 왕관을 모아 시즌 상점 보상으로 이어지는 피날레 전야 챕터입니다.',
+    accent: '#ffdf7a',
+    season: 'summer-2026'
+  },
+  {
+    id: 'chapter-15',
+    number: 15,
+    title: '축제 보스의 여름 피날레',
+    shortTitle: '여름 피날레',
+    theme: '시즌 · 최종 축제',
+    story: '축제 보스 패턴, 시즌 패스, 상점 보상을 모두 연결하는 대규모 썸머 피날레 챕터입니다.',
+    accent: '#ff9fc8',
+    season: 'summer-2026'
+  }
 ];
 
 export const SUMMER_SEASON_EVENT = {
   id: 'summer-2026',
   title: '한여름 꿈결 축제',
-  subtitle: '썸머 이벤트 VFX와 패스 미션 업데이트',
-  totalStages: 36,
+  subtitle: '썸머 피날레, 시즌 상점, 보스 이벤트 패턴 업데이트',
+  totalStages: 48,
   startStageNumber: 43,
-  endStageNumber: 78,
+  endStageNumber: 90,
   currencyLabel: '햇살 조개',
   currencyType: 'premium-07',
   clearReward: 1,
   comboEvery: 5,
   comboBonusSeconds: 5,
-  passMilestones: [6, 12, 18, 24, 30, 36],
+  finaleStartStageNumber: 79,
+  passMilestones: [6, 12, 18, 24, 30, 36, 42, 48],
   passRewardType: 'premium-12',
   passRewardLabel: '태양 왕관',
-  passMissionLabels: ['패스 목표', '콤보 미션', '축제 보스'],
+  passMissionLabels: ['패스 목표', '콤보 미션', '축제 보스', '상점 교환'],
+  finaleMissionLabels: ['피날레 입장', '축제 보스 격파', '상점 보상'],
+  shopItems: [
+    { id: 'sun-shell-shelf', title: '햇살 조개 서가', costLabel: '햇살 조개 18', rewardLabel: '한여름 축제 서가 장식' },
+    { id: 'pearl-lamp', title: '진주 등불', costLabel: '햇살 조개 30', rewardLabel: '복원 광채 강화' },
+    { id: 'crown-finale-frame', title: '태양 왕관 프레임', costLabel: '태양 왕관 3', rewardLabel: '보스 상태바 시즌 테두리' }
+  ],
   vfxModifiers: ['sunTide', 'pearlChain', 'festivalBoss']
 };
 
@@ -241,7 +269,20 @@ export const STAGES = [
   stage('c13-03', 'chapter-13', 'forgotten-spirit', 75, '진주 왕좌의 균열', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '파도 잉크', type: 'premium-16', amount: 12 }, 'c13-02', [], { season: 'summer-2026' }),
   stage('c13-04', 'chapter-13', 'sealed-page-golem', 76, '태양과 달의 해변', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '진주 장식', type: 'premium-17', amount: 12 }, 'c13-03', ['sunTide'], { season: 'summer-2026' }),
   stage('c13-05', 'chapter-13', 'shadow-librarian', 77, '검은 파도 피날레', '썸머 시즌 보너스와 큰 보드 플레이를 함께 즐기는 대규모 시즌 스테이지', 'nightmare', { label: '별모래 조각', type: 'premium-18', amount: 12 }, 'c13-04', ['fog', 'sunTide'], { season: 'summer-2026' }),
-  stage('c13-06', 'chapter-13', 'sealed-page-golem', 78, '한여름 꿈의 대복원', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'nightmare', { label: '태양 왕관', type: 'premium-19', amount: 12 }, 'c13-05', ['locked', 'pearlChain'], { season: 'summer-2026' })
+  stage('c13-06', 'chapter-13', 'sealed-page-golem', 78, '한여름 꿈의 대복원', '챕터 마지막 보스전과 시즌 보상을 함께 노리는 관문', 'nightmare', { label: '태양 왕관', type: 'premium-19', amount: 12 }, 'c13-05', ['locked', 'pearlChain'], { season: 'summer-2026' }),
+  stage('c14-01', 'chapter-14', 'forgotten-spirit', 79, '조개 상점 첫 방문', '시즌 상점 재화를 모으는 피날레 예열 스테이지', 'expert', { label: '햇살 조개', type: 'premium-20', amount: 13 }, 'c13-06', ['sunTide', 'pearlChain'], { season: 'summer-2026', finale: true }),
+  stage('c14-02', 'chapter-14', 'shadow-librarian', 80, '상점가의 진주 등불', '진주 연쇄와 시즌 상점 보상을 함께 노립니다', 'hard', { label: '진주 등불', type: 'premium-21', amount: 13 }, 'c14-01', ['pearlChain', 'timeSeal'], { season: 'summer-2026', finale: true }),
+  stage('c14-03', 'chapter-14', 'sealed-page-golem', 81, '태양 왕관 교환소', '보스 상태바 이벤트 패턴이 조금 더 자주 등장합니다', 'hard', { label: '태양 왕관', type: 'premium-22', amount: 13 }, 'c14-02', ['festivalBoss', 'bossPressure'], { season: 'summer-2026', finale: true }),
+  stage('c14-04', 'chapter-14', 'forgotten-spirit', 82, '조개빛 보상 행렬', '시즌 보너스와 피날레 미션을 동시에 진행합니다', 'hard', { label: '축제 문장', type: 'premium-23', amount: 13 }, 'c14-03', ['sunTide', 'locked'], { season: 'summer-2026', finale: true }),
+  stage('c14-05', 'chapter-14', 'shadow-librarian', 83, '여름 상점의 그림자', '빠른 반격 보스와 상점 미션이 결합됩니다', 'nightmare', { label: '그림자 조개', type: 'premium-24', amount: 14 }, 'c14-04', ['festivalBoss', 'fog', 'bossPressure'], { season: 'summer-2026', finale: true }),
+  stage('c14-06', 'chapter-14', 'sealed-page-golem', 84, '상점가 대정산', '피날레 챕터로 가기 전 마지막 상점 보스 관문', 'nightmare', { label: '태양 왕관', type: 'v2-tile-28', amount: 14 }, 'c14-05', ['pearlChain', 'festivalBoss', 'timeSeal'], { season: 'summer-2026', finale: true }),
+  stage('c15-01', 'chapter-15', 'forgotten-spirit', 85, '피날레 무대 개막', '축제 보스 이벤트 패턴을 최종적으로 익힙니다', 'hard', { label: '피날레 티켓', type: 'v2-tile-29', amount: 14 }, 'c14-06', ['sunTide', 'festivalBoss'], { season: 'summer-2026', finale: true }),
+  stage('c15-02', 'chapter-15', 'shadow-librarian', 86, '검은 파도 앙코르', '빠른 warning과 콤보 보너스를 함께 관리합니다', 'nightmare', { label: '앙코르 리본', type: 'v2-tile-30', amount: 14 }, 'c15-01', ['fog', 'festivalBoss', 'bossPressure'], { season: 'summer-2026', finale: true }),
+  stage('c15-03', 'chapter-15', 'sealed-page-golem', 87, '태양 골렘 퍼레이드', '묵직한 시간 압박과 피날레 미션이 겹칩니다', 'nightmare', { label: '태양 골렘핵', type: 'v2-tile-31', amount: 15 }, 'c15-02', ['locked', 'timeSeal', 'festivalBoss'], { season: 'summer-2026', finale: true }),
+  stage('c15-04', 'chapter-15', 'forgotten-spirit', 88, '꿈결 불꽃놀이', '햇살 파도와 진주 연쇄가 번갈아 폭발하는 축제 스테이지', 'nightmare', { label: '불꽃 조각', type: 'v2-tile-32', amount: 15 }, 'c15-03', ['sunTide', 'pearlChain'], { season: 'summer-2026', finale: true }),
+  stage('c15-05', 'chapter-15', 'shadow-librarian', 89, '축제 보스 전야제', '최종 보스 전 빠른 반격과 시즌 상점 보상을 마무리합니다', 'nightmare', { label: '전야제 왕관', type: 'v2-tile-33', amount: 15 }, 'c15-04', ['fog', 'locked', 'festivalBoss', 'bossPressure'], { season: 'summer-2026', finale: true }),
+  stage('c15-06', 'chapter-15', 'sealed-page-golem', 90, '한여름 축제의 마지막 장', '썸머 시즌 피날레 대형 보스 관문', 'nightmare', { label: '태양의 대관식', type: 'v2-tile-34', amount: 16 }, 'c15-05', ['sunTide', 'pearlChain', 'festivalBoss', 'timeSeal'], { season: 'summer-2026', finale: true })
+
 ];
 
 export const DEFAULT_STAGE_ID = STAGES[0].id;

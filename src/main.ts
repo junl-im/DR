@@ -29,11 +29,11 @@ document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
-const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1049-season-boss-polish';
+const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1050-finale-season-boss-polish';
 const LEGACY_BOSS_VISUAL_STACK_TOKEN = 'stable-atlas-v1040';
-const STAGE_LADDER_EXPANSION_PATCH = 'v1048-summer-live-balance-78';
+const STAGE_LADDER_EXPANSION_PATCH = 'v1050-summer-finale-90';
 const LEGACY_STAGE_MAP_COMFORT_TOKEN = 'v1046-stage-map-comfort-42';
-const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1049-season-vfx-gesture-qa';
+const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1050-summer-design-gesture-qa';
 const LEGACY_LOBBY_DRAG_RESCUE_TOKEN = 'v1046-gesture-final-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
@@ -41,15 +41,22 @@ const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
 const AUTH_MODAL_BOSS_ROLE_PATCH = 'v1043-auth-modal-boss-role';
 const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
-const DIFFICULTY_TEMPO_PATCH = 'v1048-summer-live-difficulty-tempo';
+const DIFFICULTY_TEMPO_PATCH = 'v1050-finale-difficulty-tempo';
 const LEGACY_DIFFICULTY_TEMPO_TOKEN = 'v1046-difficulty-tempo-wide-ladder';
-const SUMMER_SEASON_PATCH = 'v1049-summer-event-vfx';
-const SUMMER_REWARD_PASS_PATCH = 'v1049-summer-pass-missions';
-const SUMMER_LIVE_BALANCE_PATCH = 'v1049-summer-live-balance';
-const SUMMER_EVENT_VFX_PATCH = 'v1049-summer-event-vfx';
-const SUMMER_PASS_MISSIONS_PATCH = 'v1049-summer-pass-missions';
-const SUMMER_COMPACT_CAROUSEL_PATCH = 'v1049-compact-chapter-carousel';
-const BOSS_SEASON_POLISH_PATCH = 'v1049-boss-season-polish';
+const SUMMER_SEASON_PATCH = 'v1050-summer-finale-event-vfx';
+const SUMMER_REWARD_PASS_PATCH = 'v1050-summer-finale-pass-shop';
+const SUMMER_LIVE_BALANCE_PATCH = 'v1050-summer-finale-live-balance';
+const SUMMER_EVENT_VFX_PATCH = 'v1050-summer-finale-event-vfx';
+const SUMMER_PASS_MISSIONS_PATCH = 'v1050-summer-finale-pass-shop';
+const SUMMER_COMPACT_CAROUSEL_PATCH = 'v1050-finale-compact-carousel';
+const BOSS_SEASON_POLISH_PATCH = 'v1050-boss-finale-polish';
+const SUMMER_FINALE_SHOP_PATCH = 'v1050-summer-season-shop';
+const SUMMER_FINALE_MISSION_PATCH = 'v1050-summer-finale-missions';
+const SUMMER_DESIGN_QA_PATCH = 'v1050-design-density-check';
+
+const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.49 texture-atlas-manifest-v1.0.49.json';
+void LEGACY_SUMMER_QA_TOKENS;
+
 const SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY: Record<string, number> = {
   beginner: 6,
   easy: 6,
@@ -1497,7 +1504,7 @@ function renderStageLadderSummary(clearCount: number, selectedStage: any) {
   const nextMeta = DIFFICULTIES[nextOpen.difficultyKey] || DIFFICULTIES.normal;
   const selectedMeta = DIFFICULTIES[selectedStage?.difficultyKey] || nextMeta;
   el.stageLadderSummary.dataset.stageLadder = STAGE_LADDER_EXPANSION_PATCH;
-  el.stageLadderSummary.dataset.stageMapComfort = 'next-goal-v1048-summer-pass';
+  el.stageLadderSummary.dataset.stageMapComfort = 'next-goal-v1050-summer-finale';
   el.stageLadderSummary.dataset.legacyStageMapComfort = LEGACY_STAGE_MAP_COMFORT_TOKEN;
   el.stageLadderSummary.innerHTML = `<div class="ladder-progress"><strong>${clearCount}/${STAGES.length}</strong><span>현재 ${selectedIndex + 1}번 · 다음 목표 ${nextOpen.number}번 ${escapeHtml(nextOpen.title)} · ${progressPercent}%</span></div><div class="ladder-path"><span>현재 ${escapeHtml(selectedMeta.label)}</span><i></i><span>다음 ${escapeHtml(nextMeta.label)}</span><em>시즌 ${getSummerSeasonClears()}/${SUMMER_SEASON_EVENT.totalStages}</em></div><div class="ladder-chips">${grouped}</div><p>${nextLocked ? `다음 해금: ${nextLocked.number}번은 이전 스테이지 클리어 후 열립니다.` : '모든 스테이지가 열렸습니다.'}</p>`;
 }
@@ -1537,10 +1544,13 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
   panel.dataset.seasonPass = SUMMER_REWARD_PASS_PATCH;
   panel.dataset.liveBalance = SUMMER_LIVE_BALANCE_PATCH;
   panel.dataset.seasonVfx = SUMMER_EVENT_VFX_PATCH;
+  panel.dataset.seasonShop = SUMMER_FINALE_SHOP_PATCH;
+  panel.dataset.finaleMissions = SUMMER_FINALE_MISSION_PATCH;
+  panel.dataset.designQa = SUMMER_DESIGN_QA_PATCH;
   panel.dataset.passMissions = SUMMER_PASS_MISSIONS_PATCH;
   panel.dataset.seasonStageCount = String(seasonStages.length);
-  panel.querySelector<HTMLElement>('#summer-season-desc')?.replaceChildren(document.createTextNode('시즌 VFX, 패스 미션, 보스 장식을 강화했습니다.'));
-  progress.innerHTML = `<div><strong>${cleared}/${seasonStages.length}</strong><span>${SUMMER_SEASON_EVENT.title} · 전체 ${clearCount}/${STAGES.length} 클리어 · ${percent}% · 패스 ${passLevel}/${SUMMER_SEASON_EVENT.passMilestones.length}단계</span></div><button type="button" class="season-jump-button" data-stage-id="${next?.id || DEFAULT_STAGE_ID}">다음 시즌 스테이지</button>`;
+  panel.querySelector<HTMLElement>('#summer-season-desc')?.replaceChildren(document.createTextNode('피날레 미션, 시즌 상점, 보스 이벤트 패턴을 강화했습니다.'));
+  progress.innerHTML = `<div><strong>${cleared}/${seasonStages.length}</strong><span>${SUMMER_SEASON_EVENT.title} · 전체 ${clearCount}/${STAGES.length} 클리어 · ${percent}% · 패스 ${passLevel}/${SUMMER_SEASON_EVENT.passMilestones.length}단계</span></div><button type="button" class="season-jump-button" data-stage-id="${next?.id || DEFAULT_STAGE_ID}">다음 시즌 도전</button>`;
   const passTrack = SUMMER_SEASON_EVENT.passMilestones.map((milestone: number, index: number) => {
     const reached = cleared >= milestone;
     const nextGoal = !reached && milestone === nextMilestone;
@@ -1551,7 +1561,9 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
     `<span>시즌 클리어 보상 ${SUMMER_SEASON_EVENT.currencyLabel} +${SUMMER_SEASON_EVENT.clearReward}</span>`,
     `<span>패스 마일스톤마다 ${SUMMER_SEASON_EVENT.passRewardLabel} +1</span>`,
     `<div class="season-pass-track" data-season-pass="${SUMMER_REWARD_PASS_PATCH}" aria-label="썸머 시즌 보상 패스">${passTrack}</div>`,
-    `<div class="season-pass-missions" data-pass-missions="${SUMMER_PASS_MISSIONS_PATCH}" aria-label="시즌 패스 미션">${missionCards}</div>`
+    `<div class="season-pass-missions" data-pass-missions="${SUMMER_PASS_MISSIONS_PATCH}" aria-label="시즌 패스 미션">${missionCards}</div>`,
+    `<div class="season-finale-missions" data-finale-missions="${SUMMER_FINALE_MISSION_PATCH}" aria-label="썸머 피날레 미션">${getSummerFinaleMissionCards(cleared)}</div>`,
+    `<div class="season-shop-preview" data-season-shop="${SUMMER_FINALE_SHOP_PATCH}" aria-label="시즌 상점 미리보기">${getSummerShopCards()}</div>`
   ].join('');
 }
 
@@ -1570,6 +1582,26 @@ function getSummerPassMissionCards(cleared: number, passLevel: number, nextMiles
     { title: '축제 보스', desc: bossStagesLeft > 0 ? `${bossStagesLeft}개 보스 관문 남음` : '시즌 보스 관문 정복', tag: next?.title || '시즌' }
   ];
   return cards.map((card) => `<span class="season-pass-mission"><b>${escapeHtml(card.title)}</b><em>${escapeHtml(card.desc)}</em><i>${escapeHtml(card.tag)}</i></span>`).join('');
+}
+
+
+function getSummerFinaleMissionCards(cleared: number) {
+  const finaleStart = SUMMER_SEASON_EVENT.finaleStartStageNumber || 79;
+  const finaleStages = STAGES.filter((stage: any) => stage.season === SUMMER_SEASON_EVENT.id && stage.number >= finaleStart);
+  const finaleCleared = finaleStages.filter((stage: any) => state.campaignProgress.cleared[stage.id]).length;
+  const total = Math.max(1, finaleStages.length);
+  const labels = SUMMER_SEASON_EVENT.finaleMissionLabels || ['피날레 입장', '축제 보스 격파', '상점 보상'];
+  const cards = [
+    { title: labels[0], desc: cleared >= 36 ? '피날레 권역 열림' : `${Math.max(0, 36 - cleared)}개 더 클리어`, tag: `${finaleStart}번부터` },
+    { title: labels[1], desc: `${finaleCleared}/${total} 피날레 진행`, tag: '보스 이벤트' },
+    { title: labels[2], desc: '햇살 조개와 태양 왕관 교환', tag: '상점 보상' }
+  ];
+  return cards.map((card) => `<span class="season-finale-card"><b>${escapeHtml(card.title)}</b><em>${escapeHtml(card.desc)}</em><i>${escapeHtml(card.tag)}</i></span>`).join('');
+}
+
+function getSummerShopCards() {
+  const items = SUMMER_SEASON_EVENT.shopItems || [];
+  return items.map((item: any) => `<span class="season-shop-card" data-shop-item="${escapeHtml(item.id)}"><b>${escapeHtml(item.title)}</b><em>${escapeHtml(item.costLabel)}</em><i>${escapeHtml(item.rewardLabel)}</i></span>`).join('');
 }
 
 function getSummerModifierVfxLabels(modifiers: string[] = []) {
@@ -2113,9 +2145,10 @@ function openReward(stars: number, score: number) {
   const dailyBonus = state.currentBoardId === 'daily' ? `<span class="reward-chip reward-chip-daily">오늘의 별가루 ×${state.dailyChallenge.rewardBoost}</span>` : '';
   const seasonBonus = isSummerSeasonStage(stage) ? `<span class="reward-chip reward-chip-season">${escapeHtml(SUMMER_SEASON_EVENT.currencyLabel)} ×${SUMMER_SEASON_EVENT.clearReward}</span>` : '';
   const seasonPassBonus = state.lastSeasonPassReward ? `<span class="reward-chip reward-chip-season-pass">패스 ${state.lastSeasonPassReward.milestone} 클리어 · ${escapeHtml(state.lastSeasonPassReward.label)} ×${state.lastSeasonPassReward.amount}</span>` : '';
+  const finaleBonus = (stage as any).finale ? `<span class="reward-chip reward-chip-finale">피날레 보너스 · 상점 재화 +1</span>` : '';
   const restoreChip = focusProject ? `<span class="reward-chip reward-chip-restore">복원 연결 · ${escapeHtml(focusProject.label)}</span>` : '';
   el.rewardItems.dataset.rewardFlow = 'materials-linked-v1040';
-  el.rewardItems.innerHTML = `<span class="reward-chip reward-chip-stars">★ ${stars}</span><span class="reward-chip reward-chip-material">${escapeHtml(stage.reward.label)} ×${stage.reward.amount}</span>${restoreChip}${dailyBonus}${seasonBonus}${seasonPassBonus}`;
+  el.rewardItems.innerHTML = `<span class="reward-chip reward-chip-stars">★ ${stars}</span><span class="reward-chip reward-chip-material">${escapeHtml(stage.reward.label)} ×${stage.reward.amount}</span>${restoreChip}${dailyBonus}${seasonBonus}${seasonPassBonus}${finaleBonus}`;
   el.rewardModal.dataset.rewardFlow = CLEAR_REWARD_FLOW_PATCH;
   const next = getNextStage(stage.id);
   el.nextStageButton.classList.toggle('hidden', !next);

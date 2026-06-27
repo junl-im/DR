@@ -3589,3 +3589,92 @@ body[data-lobby-drag-rescue="v1049-season-vfx-gesture-qa"] .mission-card {
   .season-pass-mission { padding: 0.34rem 0.4rem; }
   .chapter-tabs[data-compact-carousel="v1049-compact-chapter-carousel"] { grid-auto-columns: minmax(72px, 0.72fr); }
 }
+
+
+/* v1.0.50 summer finale shop, event boss patterns and design density QA */
+.summer-season-panel[data-summer-season="v1050-summer-finale-event-vfx"] {
+  gap: 0.5rem;
+  border-color: rgba(255, 222, 122, 0.46);
+  background:
+    radial-gradient(circle at 16% 10%, rgba(255, 222, 122, 0.24), transparent 30%),
+    radial-gradient(circle at 90% 8%, rgba(255, 159, 200, 0.18), transparent 30%),
+    radial-gradient(circle at 45% 105%, rgba(54, 214, 164, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(4, 18, 42, 0.84), rgba(37, 78, 115, 0.32));
+}
+.summer-season-panel[data-season-shop="v1050-summer-season-shop"] .season-badge {
+  background: linear-gradient(135deg, rgba(255, 222, 122, 0.22), rgba(255, 159, 200, 0.14));
+  color: var(--gold-300);
+  box-shadow: 0 0 20px rgba(255, 222, 122, 0.14);
+}
+.season-finale-missions,
+.season-shop-preview {
+  flex: 1 0 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.32rem;
+  touch-action: pan-y;
+}
+.season-finale-card,
+.season-shop-card {
+  display: grid;
+  gap: 0.08rem;
+  min-width: 0;
+  padding: 0.4rem 0.44rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 222, 122, 0.22);
+  background: rgba(3, 14, 30, 0.36);
+  box-shadow: inset 0 0 18px rgba(125, 220, 255, 0.035);
+}
+.season-finale-card b,
+.season-shop-card b { color: var(--gold-300); font-size: 0.64rem; }
+.season-finale-card em,
+.season-shop-card em { color: var(--muted); font-size: 0.55rem; font-style: normal; line-height: 1.24; }
+.season-finale-card i,
+.season-shop-card i { color: var(--sky-200); font-size: 0.53rem; font-style: normal; font-weight: 900; }
+.reward-chip-finale {
+  border-color: rgba(255, 159, 200, 0.34) !important;
+  background: rgba(255, 159, 200, 0.1) !important;
+  color: #ffd5e6 !important;
+}
+.battle-stage[data-summer-event-vfx="v1050-summer-finale-event-vfx"] .time-meter,
+.battle-stage[data-season-pass-reward="v1050-summer-finale-pass-shop"] .time-meter {
+  box-shadow: 0 0 22px rgba(255, 222, 122, 0.16), inset 0 0 18px rgba(255, 159, 200, 0.08);
+}
+.chapter-tabs[data-compact-carousel="v1050-finale-compact-carousel"] {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(70px, 0.64fr);
+  grid-template-columns: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+}
+.chapter-tabs[data-compact-carousel="v1050-finale-compact-carousel"]::-webkit-scrollbar { display: none; }
+.chapter-tabs[data-compact-carousel="v1050-finale-compact-carousel"] .chapter-tab { min-width: 70px; scroll-snap-align: start; }
+.boss-lane[data-boss-season-polish="v1050-boss-finale-polish"] .boss-core {
+  box-shadow: 0 0 0 1px rgba(255, 222, 122, 0.24), 0 0 16px rgba(255, 159, 200, 0.12);
+}
+.boss-lane[data-boss-season-polish="v1050-boss-finale-polish"] .boss-portrait,
+.boss-lane[data-boss-season-polish="v1050-boss-finale-polish"] .boss-atlas-overlay {
+  max-width: 42px;
+  max-height: 42px;
+}
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .summer-season-panel,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .season-pass-track,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .season-pass-missions,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .season-finale-missions,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .season-shop-preview,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .chapter-tabs,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .chapter-tab,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .stage-node,
+body[data-lobby-drag-rescue="v1050-summer-design-gesture-qa"] .mission-card {
+  touch-action: pan-y;
+}
+@media (max-width: 430px) {
+  .season-finale-missions,
+  .season-shop-preview { grid-template-columns: 1fr; gap: 0.25rem; }
+  .season-finale-card,
+  .season-shop-card { padding: 0.32rem 0.38rem; }
+  .chapter-tabs[data-compact-carousel="v1050-finale-compact-carousel"] { grid-auto-columns: minmax(66px, 0.66fr); }
+}

@@ -1392,3 +1392,70 @@ Initial tile themes:
 4. 모바일/인앱 화면 보정 QA와 실제 기기별 viewport 기록 정리
 
 
+
+## v1.0.50 Patch Notes - Summer Finale Expansion, Season Shop and Design QA Polish
+
+v1.0.50은 v1.0.47~v1.0.49에서 확장한 한여름 꿈결 축제를 피날레형 시즌 업데이트로 확장한 대형 패치입니다.
+
+핵심 변경:
+
+- 썸머 시즌을 13챕터/78스테이지에서 15챕터/90스테이지로 확장했습니다.
+- 신규 챕터 `태양 조개 상점가`, `축제 보스의 여름 피날레`를 추가했습니다.
+- 썸머 시즌 총량을 48개 시즌 스테이지로 확장했습니다.
+- 시즌 패스 마일스톤을 8단계로 확장했습니다.
+- 시즌 상점 미리보기 UI를 추가했습니다.
+- 햇살 조개/태양 왕관을 시즌 교환 보상으로 연결하는 구조를 추가했습니다.
+- 피날레 미션 카드 3종을 추가했습니다.
+- 피날레 스테이지 클리어 시 보상 모달에 피날레 보너스 chip을 표시합니다.
+- 축제 보스, 햇살 파도, 진주 연쇄가 피날레 권역에서 더 자주 결합되도록 스테이지 modifier를 확장했습니다.
+- 시즌 패널의 작은 화면 밀도, 카드 간격, carousel 폭을 재조정했습니다.
+- 보스 상태바 우측 아이콘은 유지하되 피날레 장식이 보드를 가리지 않도록 더 작고 은은하게 조정했습니다.
+- 로비 드래그 보정 범위에 피날레 미션 카드와 시즌 상점 카드 영역을 추가했습니다.
+- service worker cache를 `dream-library-cache-v1.0.50`으로 갱신했습니다.
+- `texture-atlas-manifest-v1.0.50.json`을 생성했습니다.
+- 신규 검사 `check:summer-finale-shop-design`을 추가하고 GitHub Pages/Quality Check workflow에 연결했습니다.
+
+유지 정책:
+
+- 미니맵은 재도입하지 않습니다.
+- 게임 내 `보기 / 중앙 / + / -` 라인은 재도입하지 않습니다.
+- 카메라 도움말은 재도입하지 않습니다.
+- 선택 패 크기 고정 구조는 유지합니다.
+- 보스 상태바 우측 아이콘 구조는 유지합니다.
+- SVG는 사용하지 않습니다.
+- ZIP에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않습니다.
+
+검사 결과:
+
+```text
+npm run typecheck
+npm run build:github
+전체 check:* QA suite 통과
+npm run check:summer-season-mega
+npm run check:summer-live-balance
+npm run check:summer-event-vfx-pass
+npm run check:summer-finale-shop-design
+```
+
+Vite production build 성공. 큰 chunk 경고는 존재하지만 빌드 실패는 아닙니다.
+
+GitHub Desktop 커밋 메시지:
+
+```text
+Apply 꿈의 서고 v1.0.50 summer finale expansion season shop and design QA polish patch
+```
+
+다음 업데이트 예정: v1.0.51 - Finale Balance, Season Shop Claim Flow and Mobile Design QA Patch
+
+## Next Version Plan
+
+### v1.0.51 예정 - Finale Balance, Season Shop Claim Flow and Mobile Design QA Patch
+
+- 시즌 상점 보상 교환을 실제 수령/잠금/완료 상태로 더 명확하게 polish
+- 90개 스테이지 확장 후 챕터 carousel 현재 위치 자동 focus 개선
+- 피날레 스테이지 난이도별 시간 보너스와 지체 압박 템포 재점검
+- 축제 보스 전용 warning/cut-in 패턴을 더 직관적으로 강화
+- 시즌 VFX가 타일 선택 overlay와 겹칠 때 alpha/z-order 추가 정리
+- 작은 화면에서 시즌 패널, 보스 상태바, 이메일 팝업, 옵션 계정 전환이 겹치지 않도록 디자인 QA 강화
+- 로비 드래그가 시즌 상점/피날레 미션/챕터 carousel 위에서도 안정적인지 추가 QA
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
