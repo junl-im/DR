@@ -1,16 +1,30 @@
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  getRedirectResult,
   onAuthStateChanged,
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut
 } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, firebaseReady } from './firebase.js';
 
 const googleProvider = firebaseReady ? new GoogleAuthProvider() : null;
+if (googleProvider) {
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
+}
+
+function shouldUseGoogleRedirect(error) {
+  const code = error?.code || '';
+  return code === 'auth/popup-blocked'
+    || code === 'auth/popup-closed-by-user'
+    || code === 'auth/cancelled-popup-request'
+    || code === 'auth/operation-not-supported-in-this-environment'
+    || code === 'auth/unauthorized-domain';
+}
 
 function assertFirebaseReady() {
   if (!firebaseReady || !auth) {
@@ -37,9 +51,23 @@ export function loginAnonymously() {
   return signInAnonymously(auth);
 }
 
-export function loginWithGoogle() {
+export async function loginWithGoogle() {
   assertFirebaseReady();
-  return signInWithPopup(auth, googleProvider);
+  try {
+    return await signInWithPopup(auth, googleProvider);
+  } catch (error) {
+    if (shouldUseGoogleRedirect(error)) {
+      try { sessionStorage.setItem('dream-library-google-redirect-pending', '1'); } catch {}
+      await signInWithRedirect(auth, googleProvider);
+      throw Object.assign(new Error('Google redirect started.'), { code: 'auth/redirect-started' });
+    }
+    throw error;
+  }
+}
+
+export async function completeGoogleRedirect() {
+  if (!firebaseReady || !auth) return null;
+  return getRedirectResult(auth);
 }
 
 export function loginWithEmail(email, password) {

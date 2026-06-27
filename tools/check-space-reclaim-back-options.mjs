@@ -32,9 +32,9 @@ for (const token of [
   '.exit-card-toolbar',
   '.exit-options-button'
 ]) {
-  if (!runtime.includes(token)) errors.push(`Missing v1.0.42 space reclaim/back options token: ${token}`);
+  if (!runtime.includes(token)) errors.push(`Missing v1.0.43 space reclaim/back options token: ${token}`);
 }
-if (!pkg.includes('"version": "1.0.42"')) errors.push('package.json version must be 1.0.42.');
+if (!pkg.includes('"version": "1.0.43"')) errors.push('package.json version must be 1.0.43.');
 if (!pkg.includes('check:space-reclaim-back-options')) errors.push('package.json must expose check:space-reclaim-back-options.');
 if (!pages.includes('npm run check:space-reclaim-back-options')) errors.push('github-pages workflow must run space reclaim/back options check.');
 if (!quality.includes('npm run check:space-reclaim-back-options')) errors.push('quality workflow must run space reclaim/back options check.');

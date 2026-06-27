@@ -8,7 +8,7 @@ const lockBlock = renderer.match(/private lockTileViewScale\([\s\S]*?\n  \}\n\n 
 const errors = [];
 
 if (!renderer.includes('private fitTileSprite(view: TileView)')) errors.push('Missing fitTileSprite helper for texture swap size normalization.');
-if (!renderer.includes('TILE_GEOMETRY_GUARD_LABEL') || !renderer.includes('enforceTileBodyGeometry') || !renderer.includes('assertTileBodyGeometry')) errors.push('Missing v1.0.42 hard tile geometry guard helpers.');
+if (!renderer.includes('TILE_GEOMETRY_GUARD_LABEL') || !renderer.includes('enforceTileBodyGeometry') || !renderer.includes('assertTileBodyGeometry')) errors.push('Missing v1.0.43 hard tile geometry guard helpers.');
 if (!renderer.includes('const TILE_SPRITE_RATIO = 0.92')) errors.push('Tile sprite must use a fixed cell-bounded ratio.');
 if (!renderer.includes('selectionFocusOverlay') || !renderer.includes('drawSelectionFocusOverlay')) errors.push('Active selection must use a separate fixed-size overlay instead of scaling the tile body.');
 if (!selectionBlock.includes('this.lockTileViewScale(view)')) errors.push('Selected tile path must lock tile view size.');

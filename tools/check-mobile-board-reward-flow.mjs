@@ -40,15 +40,15 @@ for (const token of [
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭', '보기 맞춤', '드래그 이동']) {
   if (runtime.includes(banned)) errors.push(`Removed UI/minimap token came back: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.42"')) errors.push('package.json version must be 1.0.42.');
+if (!pkg.includes('"version": "1.0.43"')) errors.push('package.json version must be 1.0.43.');
 if (!pkg.includes('check:mobile-board-reward-flow')) errors.push('package.json must expose check:mobile-board-reward-flow.');
-if (!sw.includes('dream-library-cache-v1.0.42') || !sw.includes('texture-atlas-manifest-v1.0.42.json')) errors.push('service worker cache/manifest must be v1.0.42.');
+if (!sw.includes('dream-library-cache-v1.0.43') || !sw.includes('texture-atlas-manifest-v1.0.43.json')) errors.push('service worker cache/manifest must be v1.0.43.');
 if (!sw.includes('v1042-cache-slim-account-time-pressure')) errors.push('service worker cache slim policy must be v1042.');
-if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.42.json')) errors.push('v1.0.42 texture atlas manifest file missing.');
-if (!workflows.includes('npm run check:mobile-board-reward-flow')) errors.push('workflows must run v1.0.42 mobile board reward flow check.');
+if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.43.json')) errors.push('v1.0.43 texture atlas manifest file missing.');
+if (!workflows.includes('npm run check:mobile-board-reward-flow')) errors.push('workflows must run v1.0.43 mobile board reward flow check.');
 
 if (errors.length) {
   console.error(`Mobile board reward flow check failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Mobile board reward flow check passed: v1.0.42 mobile board feel, boss polish and reward bridge are active without removed UI.');
+console.log('Mobile board reward flow check passed: v1.0.43 mobile board feel, boss polish and reward bridge are active without removed UI.');

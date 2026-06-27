@@ -1,7 +1,7 @@
 import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore';
 import './styles.css';
 import { db, firebaseReady } from './firebase.js';
-import { getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
+import { completeGoogleRedirect, getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
 import { ATLAS_ASSETS, BOSS_FRAME_ATLAS_ASSETS, DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
 import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
 import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, findHint, getTileAt, isCleared, isSpecialTileBlocked, revealAllSpecial, revealPairSpecials, revealSpecialTile, removePair, shuffleRemaining } from './game/shisen.js';
@@ -33,6 +33,8 @@ const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1040';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
 const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
+const AUTH_MODAL_BOSS_ROLE_PATCH = 'v1043-auth-modal-boss-role';
+const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
 const STALL_PRESSURE_FIRST_SECONDS = 14;
 const STALL_PRESSURE_REPEAT_SECONDS = 9;
@@ -73,6 +75,12 @@ const el = {
   emailInput: $('#email-input') as HTMLInputElement,
   passwordInput: $('#password-input') as HTMLInputElement,
   emailSignupButton: $('#email-signup-button'),
+  emailAuthModal: $('#email-auth-modal'),
+  emailAuthForm: $('#email-auth-form') as HTMLFormElement,
+  emailModalInput: $('#email-modal-input') as HTMLInputElement,
+  passwordModalInput: $('#password-modal-input') as HTMLInputElement,
+  emailModalSignupButton: $('#email-modal-signup-button'),
+  closeEmailAuthButton: $('#close-email-auth-button'),
   enterLobbyButton: $('#enter-lobby-button'),
   openSettingsButton: $('#open-settings-button'),
   closeOptionsButton: $('#close-options-button'),
@@ -136,6 +144,7 @@ const el = {
   bossCore: $('#boss-core'),
   bossAtlasSprite: $('#boss-atlas-sprite'),
   bossHpLabel: $('#boss-hp-label'),
+  bossRoleHelp: $('#boss-role-help'),
   missionLabel: $('#mission-label'),
   modifierStrip: $('#modifier-strip'),
   comboCutin: $('#combo-cutin'),
@@ -174,7 +183,7 @@ function forceLoginBootScreen() {
   document.body.dataset.authEntry = AUTH_ENTRY_SIMPLIFICATION_PATCH;
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === 'screen-login'));
   el.backButton.classList.add('hidden');
-  [el.optionsModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal].forEach((modal) => modal.classList.add('hidden'));
+  [el.optionsModal, el.emailAuthModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal].forEach((modal) => modal.classList.add('hidden'));
   el.boardCameraGuide?.classList.add('hidden');
   el.boardCameraGuide?.setAttribute('aria-hidden', 'true');
   el.boardCameraControls?.classList.add('hidden');
@@ -328,11 +337,36 @@ async function init() {
   renderer.preloadAssets(PRELOAD_ASSETS);
   void loadSpineRuntime();
 
+  if (firebaseReady) {
+    try {
+      const redirectResult = await completeGoogleRedirect();
+      if (redirectResult?.user) {
+        state.user = redirectResult.user;
+        state.localGuest = null;
+        sessionStorage.removeItem(GOOGLE_REDIRECT_PENDING_KEY);
+        renderAuth();
+        renderLobby();
+        enterLobbyFromAuth('google');
+      }
+    } catch {
+      sessionStorage.removeItem(GOOGLE_REDIRECT_PENDING_KEY);
+      setStatus('구글 로그인 결과를 확인하지 못했습니다. 다시 시도해 주세요.');
+    }
+  }
+
   observeAuth((user: any) => {
     state.user = user;
     if (user) state.localGuest = null;
-    renderAuth();
-    renderLobby();
+    const googleRedirectPending = sessionStorage.getItem(GOOGLE_REDIRECT_PENDING_KEY) === '1';
+    if (user && googleRedirectPending) {
+      sessionStorage.removeItem(GOOGLE_REDIRECT_PENDING_KEY);
+      renderAuth();
+      renderLobby();
+      enterLobbyFromAuth('google');
+    } else {
+      renderAuth();
+      renderLobby();
+    }
     loadLeaderboard();
     loadDailyLeaderboard();
   });
@@ -411,10 +445,7 @@ function bindEvents() {
     setStatus('로컬 진행을 초기화했습니다.');
   });
 
-  el.showEmailButton.addEventListener('click', () => {
-    el.emailForm.classList.toggle('collapsed');
-    if (!el.emailForm.classList.contains('collapsed')) el.emailInput.focus({ preventScroll: true });
-  });
+  el.showEmailButton.addEventListener('click', () => openEmailAuthModal('login'));
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
@@ -427,29 +458,19 @@ function bindEvents() {
     }
     enterLobbyFromAuth('guest');
   }, '게스트 로그인으로 로비를 열었습니다.'));
-  el.googleButton.addEventListener('click', () => runAuth(async () => {
-    audio.play('tap');
-    HAPTIC.tap();
-    if (!firebaseReady) throw new Error('login-disabled');
-    await handoffIfNeeded('auth');
-    await loginWithGoogle();
-    enterLobbyFromAuth('google');
-  }, '구글 로그인으로 저장 플레이를 시작했습니다.'));
+  el.googleButton.addEventListener('click', () => runGoogleLogin('start'));
   el.emailForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    runAuth(async () => {
-      if (!firebaseReady) throw new Error('login-disabled');
-      await handoffIfNeeded('auth');
-      await loginWithEmail(el.emailInput.value, el.passwordInput.value);
-      enterLobbyFromAuth('email');
-    }, '이메일 로그인으로 저장 플레이를 시작했습니다.');
+    runEmailLoginFromInlineFallback();
   });
-  el.emailSignupButton.addEventListener('click', () => runAuth(async () => {
-    if (!firebaseReady) throw new Error('login-disabled');
-    await handoffIfNeeded('auth');
-    await signupWithEmail(el.emailInput.value, el.passwordInput.value);
-    enterLobbyFromAuth('email-signup');
-  }, '이메일 계정을 만들고 저장 플레이를 시작했습니다.'));
+  el.emailSignupButton.addEventListener('click', runEmailSignupFromInlineFallback);
+  el.emailAuthForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    runEmailLoginFromModal();
+  });
+  el.emailModalSignupButton.addEventListener('click', runEmailSignupFromModal);
+  el.closeEmailAuthButton.addEventListener('click', closeEmailAuthModal);
+  el.emailAuthModal.addEventListener('click', (event) => { if (event.target === el.emailAuthModal) closeEmailAuthModal(); });
   el.signoutButton.addEventListener('click', () => runAuth(async () => {
     if (firebaseReady && state.user) await logout();
     state.localGuest = null;
@@ -1104,29 +1125,92 @@ async function switchToGuestAccountFromOptions() {
 }
 
 async function switchToGoogleAccountFromOptions() {
-  await runAuth(async () => {
-    if (!firebaseReady) throw new Error('login-disabled');
-    await handoffIfNeeded('auth');
-    await loginWithGoogle();
-    state.localGuest = null;
-    writeJson('dream-library-local-guest', null);
-    renderAuth();
-    closeOptionsPanel();
-    enterLobbyFromAuth('google');
-  }, '구글 저장 계정으로 전환했습니다.');
+  closeOptionsPanel();
+  await runGoogleLogin('options');
 }
 
 function openEmailAccountSwitchFromOptions() {
   closeOptionsPanel();
-  updateScreen('login');
-  el.emailForm.classList.remove('collapsed');
-  el.emailInput.focus({ preventScroll: true });
-  setStatus('이메일을 입력해 저장 계정으로 전환하세요.');
+  openEmailAuthModal('options');
+}
+
+function openEmailAuthModal(source: 'login' | 'options' = 'login') {
+  el.emailAuthModal.classList.remove('hidden');
+  el.emailAuthModal.dataset.emailAuth = 'center-popup-v1043';
+  el.emailAuthModal.dataset.source = source;
+  el.emailForm.classList.add('collapsed');
+  el.emailForm.setAttribute('aria-hidden', 'true');
+  el.emailModalInput.focus({ preventScroll: true });
+  setStatus(source === 'options' ? '중앙 팝업에서 이메일 저장 계정으로 전환하세요.' : '이메일 저장 계정 정보를 입력하세요.');
+}
+
+function closeEmailAuthModal() {
+  el.emailAuthModal.classList.add('hidden');
+}
+
+function getModalEmailCredentials() {
+  const email = el.emailModalInput.value.trim();
+  const password = el.passwordModalInput.value;
+  if (!email || !password) throw Object.assign(new Error('Email and password required.'), { code: 'auth/missing-email-password' });
+  return { email, password };
+}
+
+async function runGoogleLogin(source: 'start' | 'options') {
+  await runAuth(async () => {
+    audio.play('tap');
+    HAPTIC.tap();
+    if (!firebaseReady) throw new Error('login-disabled');
+    setStatus('구글 로그인 창을 여는 중입니다. 반응이 없으면 잠시 뒤 로그인 화면으로 이동합니다.');
+    sessionStorage.setItem(GOOGLE_REDIRECT_PENDING_KEY, '1');
+    await handoffIfNeeded('auth');
+    await loginWithGoogle();
+    sessionStorage.removeItem(GOOGLE_REDIRECT_PENDING_KEY);
+    state.localGuest = null;
+    writeJson('dream-library-local-guest', null);
+    renderAuth();
+    if (source === 'options') closeOptionsPanel();
+    enterLobbyFromAuth('google');
+  }, '구글 로그인으로 저장 플레이를 시작했습니다.');
+}
+
+function runEmailLoginFromModal() {
+  runAuth(async () => {
+    if (!firebaseReady) throw new Error('login-disabled');
+    const { email, password } = getModalEmailCredentials();
+    await handoffIfNeeded('auth');
+    await loginWithEmail(email, password);
+    closeEmailAuthModal();
+    enterLobbyFromAuth('email');
+  }, '이메일 로그인으로 저장 플레이를 시작했습니다.');
+}
+
+function runEmailSignupFromModal() {
+  runAuth(async () => {
+    if (!firebaseReady) throw new Error('login-disabled');
+    const { email, password } = getModalEmailCredentials();
+    await handoffIfNeeded('auth');
+    await signupWithEmail(email, password);
+    closeEmailAuthModal();
+    enterLobbyFromAuth('email-signup');
+  }, '이메일 계정을 만들고 저장 플레이를 시작했습니다.');
+}
+
+function runEmailLoginFromInlineFallback() {
+  el.emailModalInput.value = el.emailInput.value;
+  el.passwordModalInput.value = el.passwordInput.value;
+  runEmailLoginFromModal();
+}
+
+function runEmailSignupFromInlineFallback() {
+  el.emailModalInput.value = el.emailInput.value;
+  el.passwordModalInput.value = el.passwordInput.value;
+  runEmailSignupFromModal();
 }
 
 function openOptions() {
   renderAuth();
   el.optionsModal.classList.remove('hidden');
+  el.optionsModal.dataset.accountSwitch = 'v1043-account-switch-modal';
 }
 
 function openOptionsFromExitSheet() {
@@ -1212,7 +1296,7 @@ function renderAuth() {
   el.authName.textContent = name;
   el.authProvider.textContent = provider;
   el.settingsAccountText.textContent = `${name} · ${provider}`;
-  el.optionsModal.dataset.accountSwitch = ACCOUNT_TIME_PRESSURE_PATCH;
+  el.optionsModal.dataset.accountSwitch = 'v1043-account-switch-modal';
   el.enterLobbyButton.classList.add('hidden');
   el.enterLobbyButton.setAttribute('aria-hidden', 'true');
   el.signoutButton.classList.toggle('hidden', !hasSession());
@@ -1445,8 +1529,10 @@ function renderBossPanel() {
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
   el.bossName.textContent = boss.name;
-  el.bossPattern.textContent = `${boss.patternLabel} · 시간/실수 압박`;
-  el.bossPattern.title = '우측 위 보스는 HP와 반격 예고를 보여주고, 시간 압박·실패 반격·콤보 반격을 알립니다.';
+  const role = getBossReadableRole(boss);
+  el.bossPattern.textContent = role.pattern;
+  el.bossPattern.title = role.title;
+  el.bossRoleHelp.textContent = role.help;
   el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
   el.bossTelegraph.classList.add('hidden');
   el.bossCore.dataset.bossId = boss.id;
@@ -1455,8 +1541,34 @@ function renderBossPanel() {
   el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.idle || '';
   applyBossAtlasFrame(boss.atlasFrames?.idle || '');
   renderer.syncPixiBossLayer(boss.atlasFrames?.idle || '', 'idle');
+  showBossRolePulseOnce();
 }
 
+function getBossReadableRole(boss: any) {
+  const base = {
+    pattern: '보스 상태 · HP와 반격 예고',
+    title: '우측 위 보스 상태판은 HP, 시간 압박, 실수 반격, 콤보 반격 예고를 보여줍니다.',
+    help: '오래 멈추거나 실수하면 반격합니다. 짝을 맞추면 보스 HP가 줄고 시간이 늘어납니다.'
+  };
+  if (boss?.id === 'shadow-librarian') {
+    return { ...base, pattern: '보스 상태 · 빠른 실수 반격', help: '그림자 장서관장은 실수에 빠르게 반응합니다. 연속 매칭으로 반격 예고를 끊으세요.' };
+  }
+  if (boss?.id === 'sealed-page-golem') {
+    return { ...base, pattern: '보스 상태 · 묵직한 시간 압박', help: '페이지 골렘은 느리지만 강하게 압박합니다. 멈추지 말고 한 쌍씩 시간을 회복하세요.' };
+  }
+  return base;
+}
+
+function showBossRolePulseOnce() {
+  const seen = readText('dream-library-boss-role-help-seen') === '1';
+  const stage = document.querySelector<HTMLElement>('.battle-stage');
+  if (!stage || seen) return;
+  stage.dataset.bossRoleTutorial = 'v1043-readable';
+  writeText('dream-library-boss-role-help-seen', '1');
+  window.setTimeout(() => {
+    if (stage.dataset.bossRoleTutorial === 'v1043-readable') delete stage.dataset.bossRoleTutorial;
+  }, 4200);
+}
 
 function setBossStableImage(src = BOSS_IMAGE_FALLBACK_SRC, alt = '망각의 서고령') {
   el.bossImage.alt = alt;
@@ -1957,7 +2069,10 @@ async function runAuth(action: () => Promise<void>, successMessage: string) {
     await action();
     setStatus(successMessage);
   } catch (error: any) {
-    if (error?.message === 'login-disabled' || error?.code === 'firebase/missing-config') setStatus('현재는 게스트 로그인을 사용할 수 있습니다.');
+    if (error?.code === 'auth/redirect-started') setStatus('구글 로그인 화면으로 이동합니다. 돌아오면 자동으로 로비를 엽니다.');
+    else if (error?.code === 'auth/missing-email-password') setStatus('이메일과 비밀번호를 입력하세요.');
+    else if (error?.message === 'login-disabled' || error?.code === 'firebase/missing-config') setStatus('현재는 게스트 로그인을 사용할 수 있습니다.');
+    else if (error?.code === 'auth/unauthorized-domain') setStatus('구글 로그인 도메인 설정을 확인해야 합니다. Firebase Authorized Domain에 현재 도메인을 추가하세요.');
     else setStatus('로그인을 완료하지 못했습니다. 잠시 후 다시 시도하세요.');
   }
 }
