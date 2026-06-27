@@ -71,7 +71,8 @@
     "check:summer-live-balance": "node tools/check-summer-live-balance.mjs",
     "check:summer-event-vfx-pass": "node tools/check-summer-event-vfx-pass.mjs",
     "check:summer-finale-shop-design": "node tools/check-summer-finale-shop-design.mjs",
-    "check:summer-shop-claim-design": "node tools/check-summer-shop-claim-design.mjs"
+    "check:summer-shop-claim-design": "node tools/check-summer-shop-claim-design.mjs",
+    "check:summer-shop-reward-polish": "node tools/check-summer-shop-reward-polish.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -84,5 +85,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.51"
+  "version": "1.0.52"
 }

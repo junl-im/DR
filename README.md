@@ -1514,3 +1514,75 @@ Apply 꿈의 서고 v1.0.51 finale balance season shop claim flow and mobile des
 - 로비 드래그가 상점 수령 버튼 위에서도 클릭/스크롤 충돌 없이 동작하는지 추가 QA
 - 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
 
+
+## v1.0.52 Patch Notes - Season Shop Reward Polish, Finale Boss Cut-in and Mobile Store UX Patch
+
+v1.0.52는 v1.0.51의 시즌 상점 수령 흐름을 더 게임답게 만들고, 부족 재화 안내와 축제 보스 피날레 컷인을 추가한 디자인/문제점 다듬기 패치입니다.
+
+핵심 변경:
+
+- 시즌 상점 보상 수령 시 `playSeasonShopClaimBurst()` 전용 burst/cut-in 연출을 추가했습니다.
+- 시즌 상점 패널에 `v1052-season-shop-claim-burst` 상태를 추가해 수령 순간 패널이 은은하게 빛나도록 했습니다.
+- 비용이 부족한 상점 보상에는 `모으러 가기` 버튼을 추가했습니다.
+- `focusSummerShopMaterial()`을 추가해 부족 재화를 모을 수 있는 시즌 스테이지로 바로 이동하도록 했습니다.
+- 시즌 상점 보상 카드에 `sourceHint`, 부족 수량, 보관함 활성 상태를 더 명확히 표시했습니다.
+- 신규 상점 보상 `피날레 컷인 악보`를 추가했습니다.
+- 축제 보스/피날레 스테이지 경고 시 `playFinaleBossEventCutin()`을 호출해 시간 압박/실수 반격/피날레 경고를 더 읽기 쉽게 보여줍니다.
+- 시즌 VFX와 보스 warning lane이 타일 선택 overlay를 덜 가리도록 alpha와 blend 우선순위를 조정했습니다.
+- 작은 화면에서 시즌 상점 카드가 1열로 정리되고, 설명 문구는 압축되도록 mobile store UX CSS를 추가했습니다.
+- 로비 드래그 보정 범위를 시즌 상점 수령 버튼, 모으러 가기 버튼, 피날레 카드, 시즌 미션 카드까지 확장했습니다.
+- service worker cache를 `dream-library-cache-v1.0.52`로 갱신했습니다.
+- `texture-atlas-manifest-v1.0.52.json`을 생성했습니다.
+- 신규 검사 `check:summer-shop-reward-polish`를 추가하고 GitHub Pages/Quality Check workflow에 연결했습니다.
+
+유지 정책:
+
+- 미니맵은 재도입하지 않습니다.
+- 게임 내 `보기 / 중앙 / + / -` 라인은 재도입하지 않습니다.
+- 카메라 도움말은 재도입하지 않습니다.
+- 선택 패 크기 고정 구조는 유지합니다.
+- 보스 상태바 우측 아이콘 구조는 유지합니다.
+- SVG는 사용하지 않습니다.
+- ZIP에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않습니다.
+
+검사 결과:
+
+```text
+npm run typecheck
+npm run check:summer-shop-reward-polish
+npm run check:summer-shop-claim-design
+npm run check:summer-finale-shop-design
+npm run check:summer-event-vfx-pass
+npm run check:no-minimap-topbar
+npm run check:selection-stability
+npm run check:assets
+npm run check:health
+npm run check:content
+npm run check:workflows
+npm run check:mobile-playability
+npm run check:boss-asset-visibility
+npm run check:account-time-pressure
+npm run check:auth-modal-boss-role
+```
+
+`npm run build:github`는 현재 작업 환경에 `vite` 실행 파일이 없어 실행하지 못했습니다. `node_modules`, `dist`, `package-lock.json`은 ZIP에 포함하지 않았습니다.
+
+GitHub Desktop 커밋 메시지:
+
+```text
+Apply 꿈의 서고 v1.0.52 season shop reward polish finale boss cut-in and mobile store UX patch
+```
+
+다음 업데이트 예정: v1.0.53 - Season Store Claim History, Finale Boss Balance and UI Density QA Patch
+
+## Next Version Plan
+
+### v1.0.53 예정 - Season Store Claim History, Finale Boss Balance and UI Density QA Patch
+
+- 시즌 상점 수령 내역/최근 보상 기록 UI 추가
+- 부족 재화 바로가기 후 자동으로 해당 챕터 carousel focus가 더 자연스럽게 이동하도록 개선
+- 피날레 보스 cut-in 반복 시 피로하지 않도록 cooldown/priority 조정
+- 시즌 상점 보상 아이템이 복원/컬렉션/보스 상태바에 반영되는 표시 강화
+- 작은 화면에서 시즌 상점, 이메일 팝업, 옵션 계정 전환, 보스 상태바 겹침 추가 QA
+- 로비 드래그가 시즌 상점 버튼 위에서도 클릭/스크롤 충돌 없이 더 안정적인지 추가 점검
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음

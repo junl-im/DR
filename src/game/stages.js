@@ -148,7 +148,7 @@ export const CHAPTERS = [
 export const SUMMER_SEASON_EVENT = {
   id: 'summer-2026',
   title: '한여름 꿈결 축제',
-  subtitle: '시즌 상점 수령, 피날레 밸런스, 모바일 디자인 QA 업데이트',
+  subtitle: '시즌 상점 보상 연출, 피날레 보스 컷인, 모바일 상점 UX 업데이트',
   totalStages: 48,
   startStageNumber: 43,
   endStageNumber: 90,
@@ -164,9 +164,10 @@ export const SUMMER_SEASON_EVENT = {
   passMissionLabels: ['패스 목표', '콤보 미션', '축제 보스', '상점 교환'],
   finaleMissionLabels: ['피날레 입장', '축제 보스 격파', '상점 보상'],
   shopItems: [
-    { id: 'sun-shell-shelf', title: '햇살 조개 서가', costLabel: '햇살 조개 18', costType: 'premium-07', cost: 18, rewardType: 'summer-shelf-decoration', rewardAmount: 1, rewardLabel: '한여름 축제 서가 장식' },
-    { id: 'pearl-lamp', title: '진주 등불', costLabel: '햇살 조개 30', costType: 'premium-07', cost: 30, rewardType: 'summer-pearl-lamp', rewardAmount: 1, rewardLabel: '복원 광채 강화' },
-    { id: 'crown-finale-frame', title: '태양 왕관 프레임', costLabel: '태양 왕관 3', costType: 'premium-12', cost: 3, rewardType: 'summer-crown-frame', rewardAmount: 1, rewardLabel: '보스 상태바 시즌 테두리' }
+    { id: 'sun-shell-shelf', title: '햇살 조개 서가', costLabel: '햇살 조개 18', costType: 'premium-07', cost: 18, rewardType: 'summer-shelf-decoration', rewardAmount: 1, rewardLabel: '한여름 축제 서가 장식', sourceHint: '햇살 조개는 시즌 스테이지 클리어와 패스 보상에서 모읍니다.' },
+    { id: 'pearl-lamp', title: '진주 등불', costLabel: '햇살 조개 30', costType: 'premium-07', cost: 30, rewardType: 'summer-pearl-lamp', rewardAmount: 1, rewardLabel: '복원 광채 강화', sourceHint: '조개가 부족하면 다음 시즌 도전으로 이동하세요.' },
+    { id: 'crown-finale-frame', title: '태양 왕관 프레임', costLabel: '태양 왕관 3', costType: 'premium-12', cost: 3, rewardType: 'summer-crown-frame', rewardAmount: 1, rewardLabel: '보스 상태바 시즌 테두리', sourceHint: '태양 왕관은 시즌 패스 마일스톤에서 얻습니다.' },
+    { id: 'finale-cutin-script', title: '피날레 컷인 악보', costLabel: '태양 왕관 5', costType: 'premium-12', cost: 5, rewardType: 'summer-finale-cutin', rewardAmount: 1, rewardLabel: '축제 보스 컷인 강화', sourceHint: '피날레 보스 관문과 패스 목표를 진행하세요.' }
   ],
   vfxModifiers: ['sunTide', 'pearlChain', 'festivalBoss']
 };

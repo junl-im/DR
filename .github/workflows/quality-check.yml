@@ -99,6 +99,7 @@ jobs:
           npm run check:summer-event-vfx-pass
           npm run check:summer-finale-shop-design
           npm run check:summer-shop-claim-design
+          npm run check:summer-shop-reward-polish
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
