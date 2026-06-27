@@ -79,6 +79,7 @@ jobs:
           npm run check:ranking-flow
           npm run check:display-copy
           npm run check:tile-readability
+          npm run check:board-camera
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

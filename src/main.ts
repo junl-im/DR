@@ -43,6 +43,7 @@ const el = {
   app: $('#app'),
   pixiStage: $('#pixi-stage'),
   boardHost: $('#pixi-board-host'),
+  boardCameraGuide: $('#board-camera-guide'),
   screens: $$('.screen'),
   backButton: $('#back-button'),
   loginStatus: $('#login-status'),
@@ -335,7 +336,10 @@ function bindEvents() {
     state.qualityProfile = detectDeviceProfile();
     renderer.setQuality(state.qualityProfile);
     renderQualityButton();
-    if (state.screen === 'game' && state.board.length) renderer.renderBoard(state.board);
+    if (state.screen === 'game' && state.board.length) {
+      renderer.renderBoard(state.board);
+      renderBoardCameraGuide();
+    }
     setStatus(`렌더링 품질을 ${qualityText(state.qualityProfile.tier)}로 변경했습니다.`);
   });
 
@@ -510,7 +514,10 @@ function bindEvents() {
 
   window.addEventListener('resize', () => {
     portraitRuntime?.syncViewport();
-    if (state.screen === 'game' && state.board.length) renderer.renderBoard(state.board);
+    if (state.screen === 'game' && state.board.length) {
+      renderer.renderBoard(state.board);
+      renderBoardCameraGuide();
+    }
   });
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') handleSoftBack();
@@ -678,6 +685,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   syncGameViewport({ reason: 'stage-start' });
   portraitRuntime?.syncViewport();
   state.board = createBoard(difficulty, stage.modifiers || []);
+  renderBoardCameraGuide(difficulty);
   state.selected = null;
   state.locked = false;
   state.moves = 0;
@@ -694,6 +702,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   updateScreen('game');
   if (!renderer.boardApp) await renderer.initBoard(el.boardHost, handleTileTap);
   await renderer.renderBoard(state.board);
+  renderBoardCameraGuide(difficulty);
   setBossFrame('idle');
   renderer.setBossHp(100, getBossPhase(100));
   renderGameHud();
@@ -1325,7 +1334,20 @@ function renderGameHud() {
   updateMissionLabel();
   el.app.dataset.hudDensity = window.innerHeight <= 740 ? 'compact' : 'normal';
   document.querySelector<HTMLElement>('.game-hud')?.setAttribute('data-hud-density', window.innerHeight <= 740 ? 'compact' : 'normal');
+  renderBoardCameraGuide(difficulty);
 }
+
+function renderBoardCameraGuide(difficultyOverride?: any) {
+  const difficulty = difficultyOverride || DIFFICULTIES[getStageById(state.selectedStageId).difficultyKey];
+  const panZoom = difficulty?.cameraMode === 'panZoom' || Number(difficulty?.rows || 0) * Number(difficulty?.cols || 0) > 72;
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-camera', panZoom ? 'pan-zoom' : 'fit');
+  if (!el.boardCameraGuide) return;
+  el.boardCameraGuide.classList.toggle('hidden', !panZoom || state.screen !== 'game');
+  if (panZoom) {
+    el.boardCameraGuide.textContent = '드래그로 보드 이동 · 두 손가락으로 확대/축소';
+  }
+}
+
 
 function updateMissionLabel() {
   const stage = getStageById(state.selectedStageId);

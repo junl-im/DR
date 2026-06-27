@@ -24,9 +24,10 @@ if (!pagesWorkflow.includes('npm run check:interaction-polish')) errors.push('gi
 if (!pagesWorkflow.includes('npm run check:kakao-lobby-rotation')) errors.push('github-pages.yml: expected Kakao lobby rotation check.');
 if (!pagesWorkflow.includes('npm run check:display-copy')) errors.push('github-pages.yml: expected silent display copy check.');
 if (!pagesWorkflow.includes('npm run check:tile-readability')) errors.push('github-pages.yml: expected tile readability check.');
+if (!pagesWorkflow.includes('npm run check:board-camera')) errors.push('github-pages.yml: expected board camera check.');
 
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.27 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.28 QA checks.');

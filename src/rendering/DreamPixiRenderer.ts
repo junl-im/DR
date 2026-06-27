@@ -54,6 +54,29 @@ type BoardLayout = {
   step: number;
   rows: number;
   cols: number;
+  worldWidth: number;
+  worldHeight: number;
+  cameraMode: 'fit' | 'panZoom';
+};
+
+type BoardCamera = {
+  x: number;
+  y: number;
+  scale: number;
+  minScale: number;
+  maxScale: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  worldWidth: number;
+  worldHeight: number;
+  pointers: Map<number, { x: number; y: number }>;
+  dragging: boolean;
+  moved: boolean;
+  lastX: number;
+  lastY: number;
+  pinchDistance: number;
+  pinchScale: number;
+  tapSuppressedUntil: number;
 };
 
 export class DreamPixiRenderer {
@@ -61,6 +84,7 @@ export class DreamPixiRenderer {
   boardApp?: Application;
   ambientLayers: Record<string, Container> = {};
   boardLayers: Record<string, Container> = {};
+  boardViewport?: Container;
   tileViews = new Map<string, TileView>();
   board: BoardCell[][] = [];
   host?: HTMLElement;
@@ -71,7 +95,26 @@ export class DreamPixiRenderer {
   onTileTap?: TileTapHandler;
   assetCache = new Set<string>();
   quality: DeviceProfile = { tier: 'high', pixelRatio: 1.5, particleScale: 1, motionScale: 1, maxBoardTile: 72, reason: '기본값' };
-  layout: BoardLayout = { startX: 0, startY: 0, step: 72, rows: 0, cols: 0 };
+  layout: BoardLayout = { startX: 0, startY: 0, step: 72, rows: 0, cols: 0, worldWidth: 0, worldHeight: 0, cameraMode: 'fit' };
+  camera: BoardCamera = {
+    x: 0,
+    y: 0,
+    scale: 1,
+    minScale: 0.6,
+    maxScale: 1.5,
+    viewportWidth: 0,
+    viewportHeight: 0,
+    worldWidth: 0,
+    worldHeight: 0,
+    pointers: new Map(),
+    dragging: false,
+    moved: false,
+    lastX: 0,
+    lastY: 0,
+    pinchDistance: 0,
+    pinchScale: 1,
+    tapSuppressedUntil: 0
+  };
   lastPointerMove = 0;
   tileAtlasReady: Promise<void> | null = null;
   bossAtlasReady: Promise<void> | null = null;
@@ -213,8 +256,12 @@ export class DreamPixiRenderer {
     } as any);
     host.innerHTML = '';
     host.appendChild(this.boardApp.canvas);
+    this.boardViewport = new Container();
+    this.boardApp.stage.addChild(this.boardViewport);
     this.boardLayers = createLayers(['runes', 'board', 'paths', 'particles', 'ui']);
-    Object.values(this.boardLayers).forEach((layer) => this.boardApp!.stage.addChild(layer));
+    ['runes', 'board', 'paths', 'particles'].forEach((name) => this.boardViewport!.addChild(this.boardLayers[name]));
+    this.boardApp.stage.addChild(this.boardLayers.ui);
+    this.installCameraControls();
     this.boardApp.ticker.add((ticker: any) => this.tickBoard(ticker.deltaTime || 1));
     if (this.pendingBossFrame) this.syncPixiBossLayer(this.pendingBossFrame.frameKey, this.pendingBossFrame.mood);
   }
@@ -225,10 +272,10 @@ export class DreamPixiRenderer {
     this.selectedKey = null;
     this.tileViews.clear();
     Object.values(this.boardLayers).forEach((layer) => layer.removeChildren());
-    this.paintMagicCircle();
     const rows = board.length;
     const cols = board[0]?.length ?? 0;
     this.layout = this.calculateLayout(rows, cols);
+    this.paintMagicCircle();
     const uniqueAssets = [...new Set(board.flat().filter(Boolean).flatMap((tile: any) => tile.stateAssets ? Object.values(tile.stateAssets) : [tile.asset]))];
     await this.preloadAssets(uniqueAssets);
     if (this.pendingBossFrame) this.syncPixiBossLayer(this.pendingBossFrame.frameKey, this.pendingBossFrame.mood);
@@ -243,6 +290,7 @@ export class DreamPixiRenderer {
         this.addTile(tile, row, col, x, y);
       }
     }
+    this.configureBoardCamera(true);
   }
 
   setSelected(point: BoardPoint | null) {
@@ -342,10 +390,31 @@ export class DreamPixiRenderer {
     const width = app.renderer.width;
     const height = app.renderer.height;
     const minSide = Math.min(width, height);
-    this.gap = Math.max(3, Math.min(6, Math.round(minSide / 126)));
-    const sidePadding = width <= 380 ? 8 : 14;
-    const topReserve = height <= 420 ? 26 : 38;
-    const bottomReserve = height <= 420 ? 10 : 16;
+    const panZoom = rows * cols > 72 || rows > 8 || cols > 9;
+    this.gap = panZoom ? Math.max(4, Math.min(7, Math.round(minSide / 112))) : Math.max(3, Math.min(6, Math.round(minSide / 126)));
+    const sidePadding = panZoom ? 28 : width <= 380 ? 8 : 14;
+    const topReserve = panZoom ? 34 : height <= 420 ? 26 : 38;
+    const bottomReserve = panZoom ? 26 : height <= 420 ? 10 : 16;
+
+    if (panZoom) {
+      const cameraTile = Math.max(46, Math.min(this.quality.maxBoardTile, Math.round(minSide / 6.1)));
+      this.tileSize = Math.round(cameraTile);
+      const boardW = cols * this.tileSize + (cols - 1) * this.gap;
+      const boardH = rows * this.tileSize + (rows - 1) * this.gap;
+      const worldWidth = boardW + sidePadding * 2;
+      const worldHeight = boardH + topReserve + bottomReserve;
+      return {
+        startX: sidePadding + this.tileSize / 2,
+        startY: topReserve + this.tileSize / 2,
+        step: this.tileSize + this.gap,
+        rows,
+        cols,
+        worldWidth,
+        worldHeight,
+        cameraMode: 'panZoom'
+      };
+    }
+
     const maxTileW = (width - sidePadding - (cols - 1) * this.gap) / Math.max(cols, 1);
     const maxTileH = (height - topReserve - bottomReserve - (rows - 1) * this.gap) / Math.max(rows, 1);
     const rawTileSize = Math.min(this.quality.maxBoardTile, maxTileW, maxTileH);
@@ -355,9 +424,153 @@ export class DreamPixiRenderer {
     const boardH = rows * this.tileSize + (rows - 1) * this.gap;
     const startX = (width - boardW) / 2 + this.tileSize / 2;
     const startY = Math.max(topReserve / 2 + this.tileSize / 2, (height - boardH) / 2 + this.tileSize / 2 + 10);
-    return { startX, startY, step: this.tileSize + this.gap, rows, cols };
+    return { startX, startY, step: this.tileSize + this.gap, rows, cols, worldWidth: width, worldHeight: height, cameraMode: 'fit' };
   }
 
+  private configureBoardCamera(reset = false) {
+    if (!this.boardApp || !this.boardViewport) return;
+    const app = this.boardApp;
+    const worldWidth = Math.max(this.layout.worldWidth, app.renderer.width);
+    const worldHeight = Math.max(this.layout.worldHeight, app.renderer.height);
+    const viewportWidth = app.renderer.width;
+    const viewportHeight = app.renderer.height;
+    const fitScale = Math.min(viewportWidth / worldWidth, viewportHeight / worldHeight);
+    const panZoom = this.layout.cameraMode === 'panZoom';
+    this.camera.viewportWidth = viewportWidth;
+    this.camera.viewportHeight = viewportHeight;
+    this.camera.worldWidth = worldWidth;
+    this.camera.worldHeight = worldHeight;
+    this.camera.minScale = panZoom ? Math.max(0.46, Math.min(0.86, fitScale * 1.08)) : Math.min(1, fitScale);
+    this.camera.maxScale = panZoom ? 1.65 : 1.08;
+    const nextScale = panZoom ? Math.max(this.camera.minScale, Math.min(0.92, this.camera.maxScale)) : Math.min(1, this.camera.maxScale);
+    if (reset || !Number.isFinite(this.camera.scale)) this.camera.scale = nextScale;
+    this.camera.scale = Math.max(this.camera.minScale, Math.min(this.camera.maxScale, this.camera.scale));
+    if (reset) {
+      this.camera.x = (viewportWidth - worldWidth * this.camera.scale) / 2;
+      this.camera.y = (viewportHeight - worldHeight * this.camera.scale) / 2;
+    }
+    this.applyCameraTransform();
+    const host = this.host || document.querySelector<HTMLElement>('#pixi-board-host');
+    if (host) {
+      host.dataset.cameraMode = panZoom ? 'pan-zoom' : 'fit';
+      host.dataset.boardRows = String(this.layout.rows);
+      host.dataset.boardCols = String(this.layout.cols);
+    }
+  }
+
+  private applyCameraTransform() {
+    if (!this.boardViewport) return;
+    this.clampCamera();
+    this.boardViewport.scale.set(this.camera.scale);
+    this.boardViewport.x = this.camera.x;
+    this.boardViewport.y = this.camera.y;
+  }
+
+  private clampCamera() {
+    const scaledW = this.camera.worldWidth * this.camera.scale;
+    const scaledH = this.camera.worldHeight * this.camera.scale;
+    const pad = 12;
+    if (scaledW <= this.camera.viewportWidth) {
+      this.camera.x = (this.camera.viewportWidth - scaledW) / 2;
+    } else {
+      const minX = this.camera.viewportWidth - scaledW - pad;
+      const maxX = pad;
+      this.camera.x = Math.min(maxX, Math.max(minX, this.camera.x));
+    }
+    if (scaledH <= this.camera.viewportHeight) {
+      this.camera.y = (this.camera.viewportHeight - scaledH) / 2;
+    } else {
+      const minY = this.camera.viewportHeight - scaledH - pad;
+      const maxY = pad;
+      this.camera.y = Math.min(maxY, Math.max(minY, this.camera.y));
+    }
+  }
+
+  private zoomAt(clientX: number, clientY: number, nextScale: number) {
+    if (!this.boardApp) return;
+    const canvas = this.boardApp.canvas as HTMLCanvasElement;
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    const scale = Math.max(this.camera.minScale, Math.min(this.camera.maxScale, nextScale));
+    const localX = (x - this.camera.x) / this.camera.scale;
+    const localY = (y - this.camera.y) / this.camera.scale;
+    this.camera.scale = scale;
+    this.camera.x = x - localX * scale;
+    this.camera.y = y - localY * scale;
+    this.applyCameraTransform();
+  }
+
+  private installCameraControls() {
+    if (!this.boardApp) return;
+    const canvas = this.boardApp.canvas as HTMLCanvasElement;
+    canvas.style.touchAction = 'none';
+    const distance = () => {
+      const points = [...this.camera.pointers.values()];
+      if (points.length < 2) return 0;
+      return Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+    };
+    const midpoint = () => {
+      const points = [...this.camera.pointers.values()];
+      if (points.length < 2) return points[0] || { x: this.camera.viewportWidth / 2, y: this.camera.viewportHeight / 2 };
+      return { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 };
+    };
+    canvas.addEventListener('pointerdown', (event) => {
+      canvas.setPointerCapture?.(event.pointerId);
+      this.camera.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      this.camera.dragging = this.camera.pointers.size === 1;
+      this.camera.moved = false;
+      this.camera.lastX = event.clientX;
+      this.camera.lastY = event.clientY;
+      if (this.camera.pointers.size >= 2) {
+        this.camera.pinchDistance = distance();
+        this.camera.pinchScale = this.camera.scale;
+      }
+    });
+    canvas.addEventListener('pointermove', (event) => {
+      if (!this.camera.pointers.has(event.pointerId)) return;
+      event.preventDefault();
+      const previous = this.camera.pointers.get(event.pointerId)!;
+      this.camera.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (this.camera.pointers.size >= 2) {
+        const currentDistance = distance();
+        if (this.camera.pinchDistance > 0 && currentDistance > 0) {
+          const center = midpoint();
+          this.zoomAt(center.x, center.y, this.camera.pinchScale * (currentDistance / this.camera.pinchDistance));
+          this.camera.moved = true;
+          this.camera.tapSuppressedUntil = performance.now() + 180;
+        }
+        return;
+      }
+      if (this.layout.cameraMode !== 'panZoom') return;
+      const dx = event.clientX - previous.x;
+      const dy = event.clientY - previous.y;
+      if (Math.abs(event.clientX - this.camera.lastX) + Math.abs(event.clientY - this.camera.lastY) > 6) this.camera.moved = true;
+      if (this.camera.moved) {
+        this.camera.x += dx;
+        this.camera.y += dy;
+        this.applyCameraTransform();
+        this.camera.tapSuppressedUntil = performance.now() + 160;
+      }
+    }, { passive: false });
+    const release = (event: PointerEvent) => {
+      if (this.camera.moved) this.camera.tapSuppressedUntil = performance.now() + 180;
+      this.camera.pointers.delete(event.pointerId);
+      if (this.camera.pointers.size < 2) this.camera.pinchDistance = 0;
+      if (this.camera.pointers.size === 0) this.camera.dragging = false;
+    };
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+    canvas.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const factor = event.deltaY < 0 ? 1.08 : 0.92;
+      this.zoomAt(event.clientX, event.clientY, this.camera.scale * factor);
+    }, { passive: false });
+  }
+
+  private isTapSuppressed() {
+    return performance.now() < this.camera.tapSuppressedUntil;
+  }
 
   private resolveTileAtlasTexture(tile: BoardTile, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled' = 'normal') {
     if (!tile.type.startsWith('v2-tile-')) return null;
@@ -455,7 +668,10 @@ export class DreamPixiRenderer {
 
     root.addChild(shadow, glow, frame, selectionCore, sprite, rim, selectionRing);
     if (tile.special) root.addChild(this.createSpecialBadge(tile.special, hiddenSpecial));
-    root.on('pointertap', () => this.onTileTap?.({ row, col }));
+    root.on('pointertap', () => {
+      if (this.isTapSuppressed()) return;
+      this.onTileTap?.({ row, col });
+    });
     this.boardLayers.board.addChild(root);
     const view: TileView = { root, sprite, glow, selectionRing, selectionCore, row, col, baseX: x, baseY: y, phase: Math.random() * Math.PI * 2, settling: true, removing: false, tile };
     this.tileViews.set(keyOf({ row, col }), view);
@@ -512,10 +728,11 @@ export class DreamPixiRenderer {
 
   private paintMagicCircle() {
     const app = this.boardApp!;
-    const { width, height } = app.renderer;
-    const centerX = width / 2;
-    const centerY = height / 2 + 18;
-    const radius = Math.min(width, height) * 0.42;
+    const width = Math.max(app.renderer.width, this.layout.worldWidth || app.renderer.width);
+    const height = Math.max(app.renderer.height, this.layout.worldHeight || app.renderer.height);
+    const centerX = (this.layout.worldWidth || width) / 2;
+    const centerY = (this.layout.worldHeight || height) / 2;
+    const radius = Math.min(this.layout.worldWidth || width, this.layout.worldHeight || height) * 0.44;
     const base = new Graphics();
     base.circle(centerX, centerY, radius).stroke({ color: PALETTE.sky, width: 2, alpha: 0.2 });
     base.circle(centerX, centerY, radius * 0.74).stroke({ color: PALETTE.gold, width: 1.2, alpha: 0.22 });
@@ -640,11 +857,13 @@ export class DreamPixiRenderer {
   }
 
   private cameraShake(power: number) {
-    if (!this.boardApp) return;
-    const stage = this.boardApp.stage;
-    gsap.killTweensOf(stage);
+    if (!this.boardViewport) return;
+    const viewport = this.boardViewport;
     const amount = power * this.quality.motionScale;
-    gsap.fromTo(stage, { x: -amount / 2, y: amount / 3 }, { x: 0, y: 0, duration: 0.28 * this.quality.motionScale, ease: 'elastic.out(1,0.35)' });
+    const baseX = this.camera.x;
+    const baseY = this.camera.y;
+    gsap.killTweensOf(viewport);
+    gsap.fromTo(viewport, { x: baseX - amount / 2, y: baseY + amount / 3 }, { x: baseX, y: baseY, duration: 0.28 * this.quality.motionScale, ease: 'elastic.out(1,0.35)', onComplete: () => this.applyCameraTransform() });
   }
 
   private paddedToCanvas(point: PaddedPathPoint) {

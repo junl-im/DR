@@ -23,35 +23,41 @@ export const DIFFICULTIES = {
   normal: {
     key: 'normal',
     label: '일반',
-    rows: 7,
-    cols: 8,
-    iconTypes: 16,
-    timeLimitSeconds: 300,
+    rows: 8,
+    cols: 10,
+    iconTypes: 20,
+    timeLimitSeconds: 330,
     hints: 4,
     shuffles: 4,
-    scoreMultiplier: 1.25
+    scoreMultiplier: 1.25,
+    cameraMode: 'panZoom',
+    boardProfile: 'wide'
   },
   hard: {
     key: 'hard',
     label: '어려움',
-    rows: 8,
-    cols: 8,
-    iconTypes: 24,
-    timeLimitSeconds: 360,
+    rows: 10,
+    cols: 12,
+    iconTypes: 30,
+    timeLimitSeconds: 430,
     hints: 3,
     shuffles: 3,
-    scoreMultiplier: 1.55
+    scoreMultiplier: 1.55,
+    cameraMode: 'panZoom',
+    boardProfile: 'large'
   },
   expert: {
     key: 'expert',
     label: '악몽',
-    rows: 8,
-    cols: 10,
-    iconTypes: 32,
-    timeLimitSeconds: 480,
+    rows: 12,
+    cols: 14,
+    iconTypes: 36,
+    timeLimitSeconds: 560,
     hints: 2,
     shuffles: 2,
-    scoreMultiplier: 2
+    scoreMultiplier: 2,
+    cameraMode: 'panZoom',
+    boardProfile: 'huge'
   }
 };
 
@@ -182,11 +188,11 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.27.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.28.json`
 ];
 
 export const PRELOAD_ASSETS = [
-  // v1.0.27: keep packed tile, boss atlas and compressed candidates explicit so Actions policy checks never miss them.
+  // v1.0.28: keep packed tile, boss atlas and compressed candidates explicit so Actions policy checks never miss them.
   ...TILE_ATLAS_ASSETS,
   ...BOSS_FRAME_ATLAS_ASSETS,
   ...ATLAS_WEBP_ASSETS,
@@ -225,7 +231,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.27.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.28.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.webp`,
