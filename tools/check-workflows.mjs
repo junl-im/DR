@@ -18,8 +18,11 @@ if (!pagesWorkflow.includes('npm run check:background-optimization')) errors.pus
 if (!pagesWorkflow.includes('npm run check:boss-atlas')) errors.push('github-pages.yml: expected boss atlas check.');
 if (!pagesWorkflow.includes('npm run check:mobile-layout')) errors.push('github-pages.yml: expected mobile layout QA check.');
 if (!pagesWorkflow.includes('npm run check:scroll-polish')) errors.push('github-pages.yml: expected scroll polish check.');
+if (!pagesWorkflow.includes('npm run check:boss-atlas-rendering')) errors.push('github-pages.yml: expected boss atlas rendering check.');
+if (!pagesWorkflow.includes('npm run check:asset-compression')) errors.push('github-pages.yml: expected asset compression check.');
+if (!pagesWorkflow.includes('npm run check:interaction-polish')) errors.push('github-pages.yml: expected interaction polish check.');
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.23 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.24 QA checks.');

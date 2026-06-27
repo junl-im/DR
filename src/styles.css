@@ -1942,3 +1942,75 @@ body.is-lobby-dragging .collection-tile * { pointer-events: none; }
   38% { opacity: 1; transform: scale(1.02); }
   100% { opacity: 0; transform: scale(1.22); }
 }
+
+
+/* v1.0.24 real boss atlas rendering, interaction polish and compression candidates */
+:root {
+  --boss-frame-w: 300px;
+  --boss-frame-h: 220px;
+  --boss-frame-x: 0px;
+  --boss-frame-y: 0px;
+  --boss-frame-scale: 0.32;
+}
+.boss-atlas-sprite {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--boss-frame-w);
+  height: var(--boss-frame-h);
+  background-image: var(--boss-atlas-image-url);
+  background-size: var(--boss-atlas-sheet-w) var(--boss-atlas-sheet-h);
+  background-position: var(--boss-frame-x) var(--boss-frame-y);
+  background-repeat: no-repeat;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -52%) scale(var(--boss-frame-scale));
+  transform-origin: center;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.34)) drop-shadow(0 0 18px rgba(125, 220, 255, 0.2));
+  z-index: 2;
+  transition: opacity 0.16s ease, transform 0.18s ease, filter 0.18s ease;
+}
+.boss-core.boss-atlas-ready .boss-atlas-sprite { opacity: 1; }
+.boss-core.boss-atlas-ready img { opacity: 0; }
+.boss-core[data-boss-frame="warn"] .boss-atlas-sprite { transform: translate(-50%, -54%) scale(calc(var(--boss-frame-scale) * 1.08)) rotate(1deg); filter: drop-shadow(0 0 24px rgba(125, 220, 255, 0.48)) brightness(1.08); }
+.boss-core[data-boss-frame="hit"] .boss-atlas-sprite { transform: translate(-50%, -56%) scale(calc(var(--boss-frame-scale) * 1.16)) rotate(-1.2deg); filter: drop-shadow(0 0 26px rgba(245, 200, 107, 0.62)) brightness(1.2); }
+.boss-core[data-boss-frame="break"] .boss-atlas-sprite { transform: translate(-50%, -58%) scale(calc(var(--boss-frame-scale) * 1.22)) rotate(-2deg); filter: drop-shadow(0 0 32px rgba(143, 107, 255, 0.74)) brightness(1.28); }
+@supports (background-image: url('/DR/assets/atlas/boss-frames-v2.webp')) {
+  .boss-atlas-sprite { background-image: var(--boss-atlas-webp-url); }
+}
+button[data-pointer-state="pressed"],
+.mission-card[data-pointer-state="pressed"],
+.stage-node[data-pointer-state="pressed"],
+.collection-tile[data-pointer-state="pressed"],
+.restore-node[data-pointer-state="pressed"] {
+  transform: translateY(1px) scale(0.985);
+  filter: brightness(0.96) saturate(1.04);
+}
+button[data-pointer-state="released"],
+.mission-card[data-pointer-state="released"],
+.stage-node[data-pointer-state="released"],
+.collection-tile[data-pointer-state="released"],
+.restore-node[data-pointer-state="released"] {
+  animation: buttonReleaseGlow 0.24s ease-out both;
+}
+.selected-stage-card { grid-template-columns: minmax(0, 1fr); }
+.selected-stage-card .stage-meta-list { margin-top: 0.15rem; }
+body[data-screen="lobby"] .lobby-grid,
+body[data-screen="lobby"] .collection-list,
+body[data-screen="lobby"] .restoration-list,
+body[data-screen="lobby"] .mission-deck {
+  overscroll-behavior: contain;
+  touch-action: pan-y pinch-zoom;
+}
+.rank-row em { min-width: 3.2rem; text-align: center; }
+@media (max-width: 390px) {
+  .selected-stage-card { gap: 0.48rem; padding: 0.72rem; }
+  .selected-stage-card .stage-meta-list { grid-template-columns: 1fr; gap: 0.38rem; }
+  .rank-row { grid-template-columns: 1.32rem minmax(0, 1fr) auto; padding: 0.34rem 0.42rem; }
+  .boss-atlas-sprite { transform: translate(-50%, -52%) scale(calc(var(--boss-frame-scale) * 0.92)); }
+}
+@keyframes buttonReleaseGlow {
+  0% { box-shadow: 0 0 0 rgba(125, 220, 255, 0); }
+  42% { box-shadow: 0 0 18px rgba(125, 220, 255, 0.2); }
+  100% { box-shadow: inherit; }
+}

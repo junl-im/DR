@@ -70,6 +70,9 @@ jobs:
           npm run check:boss-atlas
           npm run check:mobile-layout
           npm run check:scroll-polish
+          npm run check:boss-atlas-rendering
+          npm run check:asset-compression
+          npm run check:interaction-polish
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

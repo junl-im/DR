@@ -6,6 +6,7 @@ import { ATLAS_ASSETS, BOSS_FRAME_ATLAS_ASSETS, DIFFICULTIES, PRELOAD_ASSETS, TI
 import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
 import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, findHint, getTileAt, isCleared, isSpecialTileBlocked, revealAllSpecial, revealPairSpecials, revealSpecialTile, removePair, shuffleRemaining } from './game/shisen.js';
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
+import { BOSS_ATLAS_SHEET, getBossAtlasFrame } from './game/bossAtlas.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
 import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
 import { initPortraitRuntimeGuard } from './platform/portraitLock.js';
@@ -23,6 +24,10 @@ document.documentElement.style.setProperty('--start-button-v2-url', `url(${impor
 document.documentElement.style.setProperty('--google-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-google-v2.png)`);
 document.documentElement.style.setProperty('--email-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-email-v2.png)`);
 document.documentElement.style.setProperty('--frame-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/frames-v2/frame-04.png)`);
+document.documentElement.style.setProperty('--boss-atlas-image-url', `url(${BOSS_ATLAS_SHEET.image})`);
+document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_ATLAS_SHEET.webp})`);
+document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
+document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const UI_STATE_ICONS = ['back', 'settings', 'hint', 'refresh', 'fullscreen', 'logout', 'home', 'play', 'collection', 'restore', 'ranking', 'close', 'confirm', 'gift', 'book', 'map', 'warning'] as const;
 for (const iconName of UI_STATE_ICONS) {
   for (const stateName of ['normal', 'hover', 'pressed', 'disabled'] as const) {
@@ -108,6 +113,7 @@ const el = {
   bossPattern: $('#boss-pattern'),
   bossTelegraph: $('#boss-telegraph'),
   bossCore: $('#boss-core'),
+  bossAtlasSprite: $('#boss-atlas-sprite'),
   bossHpLabel: $('#boss-hp-label'),
   missionLabel: $('#mission-label'),
   modifierStrip: $('#modifier-strip'),
@@ -255,6 +261,7 @@ async function init() {
   initFullscreenControls(el.fullscreenButton, setStatus);
   initInstallPrompt(el.installButton, setStatus);
   bindEvents();
+  initButtonStateFeedback();
   initLobbyScrollGuard();
   initBackNavigation();
   renderAuth();
@@ -565,6 +572,24 @@ async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
 }
 
 
+
+function initButtonStateFeedback() {
+  const selector = 'button, .mission-card, .stage-node, .collection-tile, .restore-node';
+  document.addEventListener('pointerdown', (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>(selector);
+    if (!target || target.hasAttribute('disabled')) return;
+    target.dataset.pointerState = 'pressed';
+  }, { passive: true });
+  document.addEventListener('pointerup', (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>(selector);
+    if (target) target.dataset.pointerState = 'released';
+    window.setTimeout(() => target?.removeAttribute('data-pointer-state'), 90);
+  }, { passive: true });
+  document.addEventListener('pointercancel', () => {
+    document.querySelectorAll<HTMLElement>('[data-pointer-state]').forEach((item) => item.removeAttribute('data-pointer-state'));
+  }, { passive: true });
+}
+
 function initLobbyScrollGuard() {
   const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
   if (!shell) return;
@@ -588,9 +613,9 @@ function initLobbyScrollGuard() {
     if (state.screen !== 'lobby') return;
     const dx = Math.abs(event.clientX - startX);
     const dy = Math.abs(event.clientY - startY);
-    if (dy > 7 && dy > dx * 0.85) {
+    if (dy > 5 && dy > dx * 0.72) {
       dragging = true;
-      dragLocked = dy > 14;
+      dragLocked = dy > 10;
       document.body.classList.add('is-lobby-dragging');
     }
   }, { passive: true });
@@ -598,7 +623,7 @@ function initLobbyScrollGuard() {
   shell.addEventListener('click', (event) => {
     if (state.screen !== 'lobby') return;
     const elapsed = performance.now() - startTime;
-    if ((dragging || dragLocked) && elapsed < 1100) {
+    if ((dragging || dragLocked) && elapsed < 900) {
       event.preventDefault();
       event.stopPropagation();
     }
@@ -1228,20 +1253,43 @@ function renderBossPanel() {
   el.bossCore.dataset.phase = 'stable';
   el.bossCore.dataset.bossFrame = 'idle';
   el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.idle || '';
+  applyBossAtlasFrame(boss.atlasFrames?.idle || '');
 }
 
+
+function applyBossAtlasFrame(frameKey = '') {
+  const frame = getBossAtlasFrame(frameKey);
+  if (!frame) {
+    el.bossCore.classList.remove('boss-atlas-ready');
+    el.bossAtlasSprite?.removeAttribute('style');
+    return;
+  }
+  const coreSize = Math.max(44, el.bossCore.clientWidth || 64);
+  const scale = Math.min(0.42, Math.max(0.23, (coreSize * 1.62) / Math.max(frame.w, frame.h)));
+  el.bossCore.classList.add('boss-atlas-ready');
+  el.bossCore.style.setProperty('--boss-frame-w', `${frame.w}px`);
+  el.bossCore.style.setProperty('--boss-frame-h', `${frame.h}px`);
+  el.bossCore.style.setProperty('--boss-frame-x', `-${frame.x}px`);
+  el.bossCore.style.setProperty('--boss-frame-y', `-${frame.y}px`);
+  el.bossCore.style.setProperty('--boss-frame-scale', `${scale}`);
+  el.bossCore.dataset.bossAtlasReady = 'true';
+}
 
 function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
   const src = boss.frames?.[stateName] || boss.frames?.idle || boss.asset;
+  const atlasFrame = boss.atlasFrames?.[stateName] || boss.atlasFrames?.idle || '';
   el.bossCore.dataset.bossFrame = stateName;
-  el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.[stateName] || boss.atlasFrames?.idle || '';
+  el.bossCore.dataset.bossAtlasFrame = atlasFrame;
+  applyBossAtlasFrame(atlasFrame);
   if (el.bossImage.src !== src) el.bossImage.src = src;
   if (stateName !== 'idle') {
     window.setTimeout(() => {
       const idle = boss.frames?.idle || boss.asset;
+      const idleAtlasFrame = boss.atlasFrames?.idle || '';
       el.bossCore.dataset.bossFrame = 'idle';
-      el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.idle || '';
+      el.bossCore.dataset.bossAtlasFrame = idleAtlasFrame;
+      applyBossAtlasFrame(idleAtlasFrame);
       if (el.bossImage.src !== idle) el.bossImage.src = idle;
     }, stateName === 'break' ? 680 : 420);
   }
