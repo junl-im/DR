@@ -20,8 +20,8 @@ const requiredFiles = [
   'tools/report-image-size.mjs',
   'tools/check-workflows.mjs',
   'public/assets/meta/asset-import-v1.0.11.json',
-  'public/assets/meta/texture-atlas-manifest-v1.0.24.json',
-  'public/assets/meta/texture-atlas-manifest-v1.0.25.json',
+  'public/assets/meta/texture-atlas-manifest-v1.0.26.json',
+  'public/assets/meta/texture-atlas-manifest-v1.0.26.json',
   'tools/build-texture-atlas-manifest.mjs',
   'public/assets/atlas/v2-tiles.png',
   'public/assets/atlas/v2-tiles.atlas.json',
@@ -53,7 +53,7 @@ const requiredFiles = [
 ];
 
 for (const file of requiredFiles) {
-  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.25 file: ${file}`); }
+  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.26 file: ${file}`); }
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');
@@ -74,7 +74,7 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Project health check passed for v1.0.25.');
+console.log('Project health check passed for v1.0.26.');
 
 function walk(dir, visitor) {
   for (const entry of readdirSync(dir)) {

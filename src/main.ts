@@ -236,7 +236,8 @@ const state = {
   pressureTick: 0,
   timeSealBonusCount: 0,
   suppressHistorySync: false,
-  browserBackReady: false
+  browserBackReady: false,
+  recentScoreKey: ''
 };
 
 init();
@@ -276,6 +277,7 @@ async function init() {
   await renderer.initAmbient(el.pixiStage);
   await renderer.preloadAssets(ATLAS_ASSETS);
   void renderer.preloadAssets(BOSS_FRAME_ATLAS_ASSETS);
+  void renderer.preloadBossFrameAtlas();
   renderer.preloadAssets(PRELOAD_ASSETS);
   void loadSpineRuntime();
 
@@ -692,6 +694,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   updateScreen('game');
   if (!renderer.boardApp) await renderer.initBoard(el.boardHost, handleTileTap);
   await renderer.renderBoard(state.board);
+  setBossFrame('idle');
   renderer.setBossHp(100, getBossPhase(100));
   renderGameHud();
   setStatus('같은 마법 오브젝트를 연결하세요.');
@@ -921,6 +924,7 @@ async function clearStage() {
   renderGameHud();
   audio.play('clear');
   await saveScore(score, stars);
+  await refreshRankingPanelsAfterScore();
   openReward(stars, score);
 }
 
@@ -1257,6 +1261,7 @@ function renderBossPanel() {
   el.bossCore.dataset.bossFrame = 'idle';
   el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.idle || '';
   applyBossAtlasFrame(boss.atlasFrames?.idle || '');
+  renderer.syncPixiBossLayer(boss.atlasFrames?.idle || '', 'idle');
 }
 
 
@@ -1285,6 +1290,7 @@ function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
   el.bossCore.dataset.bossFrame = stateName;
   el.bossCore.dataset.bossAtlasFrame = atlasFrame;
   applyBossAtlasFrame(atlasFrame);
+  renderer.syncPixiBossLayer(atlasFrame, stateName);
   if (el.bossImage.src !== src) el.bossImage.src = src;
   if (stateName !== 'idle') {
     window.setTimeout(() => {
@@ -1293,6 +1299,7 @@ function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
       el.bossCore.dataset.bossFrame = 'idle';
       el.bossCore.dataset.bossAtlasFrame = idleAtlasFrame;
       applyBossAtlasFrame(idleAtlasFrame);
+      renderer.syncPixiBossLayer(idleAtlasFrame, 'idle');
       if (el.bossImage.src !== idle) el.bossImage.src = idle;
     }, stateName === 'break' ? 680 : 420);
   }
@@ -1316,6 +1323,8 @@ function renderGameHud() {
   el.comboLabel.textContent = `${state.combo}`;
   el.movesLabel.textContent = `${state.moves}`;
   updateMissionLabel();
+  el.app.dataset.hudDensity = window.innerHeight <= 740 ? 'compact' : 'normal';
+  document.querySelector<HTMLElement>('.game-hud')?.setAttribute('data-hud-density', window.innerHeight <= 740 ? 'compact' : 'normal');
 }
 
 function updateMissionLabel() {
@@ -1511,14 +1520,19 @@ function getLocalRankRows(list: LocalRankEntry[], scope: 'global' | 'daily') {
   return [...list]
     .sort((a, b) => b.score - a.score)
     .slice(0, 8)
-    .map((entry) => ({
-      displayName: entry.displayName,
-      score: entry.score,
-      stageId: entry.stageId,
-      dailyKey: entry.dailyKey,
-      source: 'local' as const,
-      tag: scope === 'daily' ? '로컬 daily' : '로컬'
-    }));
+    .map((entry) => {
+      const rankKey = makeRankIdentity(entry);
+      return {
+        displayName: entry.displayName,
+        score: entry.score,
+        stageId: entry.stageId,
+        dailyKey: entry.dailyKey,
+        source: 'local' as const,
+        tag: scope === 'daily' ? '로컬 daily' : '로컬',
+        rankKey,
+        fresh: rankKey === state.recentScoreKey
+      };
+    });
 }
 
 function mergeRankRows(cloudRows: any[], localRows: any[]) {
@@ -1537,13 +1551,13 @@ function mergeRankRows(cloudRows: any[], localRows: any[]) {
 
 function renderRankRows(rows: any[], emptyLabel = '로컬 플레이 준비 완료', mode: 'cloud' | 'local' | 'mixed' = 'mixed') {
   if (!rows.length) return `<li class="rank-empty">${escapeHtml(emptyLabel)}</li>`;
-  const sourceSummary = mode === 'mixed' ? '<li class="rank-source-note">Cloud 기록과 기기 기록을 함께 표시합니다.</li>' : mode === 'local' ? '<li class="rank-source-note">기기 기록 기준으로 표시합니다.</li>' : '';
+  const sourceSummary = mode === 'mixed' ? '<li class="rank-source-note"><strong>Cloud</strong>와 <strong>Local</strong> 기록을 점수순으로 함께 표시합니다.</li>' : mode === 'local' ? '<li class="rank-source-note"><strong>Local</strong> 기기 기록 기준으로 표시합니다.</li>' : '';
   return sourceSummary + rows.map((entry, index) => {
     const rankClass = index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '';
     const sourceClass = entry.source === 'cloud' ? 'rank-cloud' : 'rank-local';
     const sourceLabel = entry.source === 'cloud' ? 'Cloud' : 'Local';
     const dailyTag = entry.dailyKey ? `<small>${escapeHtml(String(entry.dailyKey).slice(5))}</small>` : '';
-    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}<em>${sourceLabel}</em></li>`;
+    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}" data-rank-fresh="${entry.fresh ? 'true' : 'false'}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}<em>${sourceLabel}</em></li>`;
   }).join('');
 }
 
@@ -1606,19 +1620,30 @@ function saveLocalScore(score: number, stars: number) {
     stars,
     updatedAt: new Date().toISOString()
   };
+  state.recentScoreKey = makeRankIdentity(baseEntry);
   state.localRanking = upsertLocalRank(state.localRanking, baseEntry);
   writeJson('dream-library-local-ranking-global', state.localRanking);
   if (state.currentBoardId === 'daily') {
-    state.localDailyRanking = upsertLocalRank(state.localDailyRanking, { ...baseEntry, dailyKey: state.dailyChallenge.dateKey });
+    const dailyEntry = { ...baseEntry, dailyKey: state.dailyChallenge.dateKey };
+    state.recentScoreKey = makeRankIdentity(dailyEntry);
+    state.localDailyRanking = upsertLocalRank(state.localDailyRanking, dailyEntry);
     writeJson('dream-library-local-ranking-daily', state.localDailyRanking);
   }
 }
 
+function makeRankIdentity(entry: Pick<LocalRankEntry, 'displayName' | 'stageId' | 'dailyKey'>) {
+  return `${entry.displayName}:${entry.stageId}:${entry.dailyKey || 'global'}`;
+}
+
 function upsertLocalRank(list: LocalRankEntry[], entry: LocalRankEntry) {
-  const identity = `${entry.displayName}:${entry.stageId}:${entry.dailyKey || 'global'}`;
-  const merged = list.filter((item) => `${item.displayName}:${item.stageId}:${item.dailyKey || 'global'}` !== identity);
+  const identity = makeRankIdentity(entry);
+  const merged = list.filter((item) => makeRankIdentity(item) !== identity);
   merged.push(entry);
   return merged.sort((a, b) => b.score - a.score).slice(0, 20);
+}
+
+async function refreshRankingPanelsAfterScore() {
+  await Promise.allSettled([loadLeaderboard(), loadDailyLeaderboard()]);
 }
 
 async function saveScore(score: number, stars: number) {

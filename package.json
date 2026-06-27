@@ -42,7 +42,10 @@
     "check:boss-atlas-rendering": "node tools/check-boss-atlas-rendering.mjs",
     "check:asset-compression": "node tools/check-asset-compression.mjs",
     "check:interaction-polish": "node tools/check-interaction-polish.mjs",
-    "check:kakao-lobby-rotation": "node tools/check-kakao-lobby-rotation.mjs"
+    "check:kakao-lobby-rotation": "node tools/check-kakao-lobby-rotation.mjs",
+    "check:pixi-boss-layer": "node tools/check-pixi-boss-layer.mjs",
+    "check:inapp-device-qa": "node tools/check-inapp-device-qa.mjs",
+    "check:ranking-flow": "node tools/check-ranking-flow.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -55,5 +58,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.25"
+  "version": "1.0.26"
 }

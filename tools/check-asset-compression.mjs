@@ -23,4 +23,4 @@ if (errors.length) {
   console.error(`Asset compression policy failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Asset compression policy passed for v1.0.24.');
+console.log('Asset compression policy passed for v1.0.26.');

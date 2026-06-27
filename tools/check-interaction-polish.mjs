@@ -15,4 +15,4 @@ if (errors.length) {
   console.error(`Interaction polish policy failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Interaction polish policy passed for v1.0.24.');
+console.log('Interaction polish policy passed for v1.0.26.');

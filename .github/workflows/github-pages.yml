@@ -74,6 +74,9 @@ jobs:
           npm run check:boss-atlas-rendering
           npm run check:asset-compression
           npm run check:interaction-polish
+          npm run check:pixi-boss-layer
+          npm run check:inapp-device-qa
+          npm run check:ranking-flow
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

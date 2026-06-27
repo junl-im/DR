@@ -2057,3 +2057,76 @@ body[data-browser="kakao"] .stage-node,
 body[data-browser="kakao"] .mission-card {
   touch-action: manipulation;
 }
+
+/* v1.0.26 Pixi boss layer, in-app device QA, ranking flow and HUD polish */
+html.portrait-fit-landscape .app-shell {
+  outline: 1px solid rgba(125, 220, 255, 0.12);
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+body[data-inapp-device-qa="fit-landscape"] .app-shell {
+  scroll-snap-type: none;
+  overscroll-behavior: contain;
+}
+.battle-stage[data-boss-layer="pixi"] .boss-core {
+  box-shadow: 0 0 28px rgba(125, 220, 255, 0.18), inset 0 0 24px rgba(245, 200, 107, 0.1);
+}
+.battle-stage[data-boss-layer="pixi"] .boss-info::after {
+  content: '전투 레이어 동기화';
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0.22rem;
+  padding: 0.12rem 0.38rem;
+  border-radius: 999px;
+  color: rgba(125, 220, 255, 0.92);
+  background: rgba(6, 21, 45, 0.36);
+  border: 1px solid rgba(125, 220, 255, 0.14);
+  font-size: 0.52rem;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+.battle-stage[data-boss-layer-mood="warn"] .boss-info::after { color: var(--gold-300); border-color: rgba(245, 200, 107, 0.2); }
+.battle-stage[data-boss-layer-mood="hit"] .boss-info::after,
+.battle-stage[data-boss-layer-mood="break"] .boss-info::after { color: var(--violet-500); border-color: rgba(143, 107, 255, 0.24); }
+.rank-row[data-rank-fresh="true"] {
+  position: relative;
+  isolation: isolate;
+  box-shadow: inset 0 0 0 1px rgba(54, 214, 164, 0.24), 0 0 20px rgba(54, 214, 164, 0.08);
+}
+.rank-row[data-rank-fresh="true"]::after {
+  content: 'NEW';
+  margin-left: auto;
+  padding: 0.08rem 0.32rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--emerald-500), var(--sky-500));
+  font-size: 0.5rem;
+  font-weight: 950;
+}
+.rank-source-note strong { color: var(--emerald-500); }
+.game-hud[data-hud-density="compact"] {
+  padding-block: 0.62rem;
+}
+.game-hud[data-hud-density="compact"] .hud-meters {
+  gap: 0.38rem;
+}
+.game-hud[data-hud-density="compact"] .mission-strip {
+  margin-top: 0.42rem;
+}
+body.is-lobby-dragging .mission-card,
+body.is-lobby-dragging .stage-node,
+body.is-lobby-dragging .collection-tile,
+body.is-lobby-dragging .restore-node {
+  pointer-events: none;
+}
+@media (max-height: 700px) {
+  .battle-stage[data-boss-layer="pixi"] .boss-info::after { display: none; }
+  .game-hud[data-hud-density="compact"] .mission-strip strong { font-size: 0.68rem; }
+  .game-hud[data-hud-density="compact"] .modifier-strip span { padding: 0.14rem 0.34rem; font-size: 0.58rem; }
+}
+body.is-lobby-dragging .mission-card *,
+body.is-lobby-dragging .stage-node *,
+body.is-lobby-dragging .collection-tile *,
+body.is-lobby-dragging .restore-node * {
+  pointer-events: none;
+}

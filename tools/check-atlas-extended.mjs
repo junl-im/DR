@@ -8,10 +8,10 @@ const checks = [
   [renderer.includes("setAttribute('data-atlas'") || renderer.includes('setAttribute("data-atlas"'), 'battle-stage atlas state hook missing'],
   [renderer.includes('this.resolveAssetTexture(effectAsset(name))'), 'VFX texture resolver not used'],
   [renderer.includes('v2-fragments/v2-fragment') && renderer.includes('resolveAssetTexture'), 'fragment texture resolver not used'],
-  [difficulty.includes('texture-atlas-manifest-v1.0.25.json'), 'v1.0.25 manifest not referenced'],
-  [sw.includes('texture-atlas-manifest-v1.0.25.json') && sw.includes('dream-library-cache-v1.0.25'), 'service worker v1.0.25 cache/manifest missing']
+  [difficulty.includes('texture-atlas-manifest-v1.0.26.json'), 'v1.0.26 manifest not referenced'],
+  [sw.includes('texture-atlas-manifest-v1.0.26.json') && sw.includes('dream-library-cache-v1.0.26'), 'service worker v1.0.26 cache/manifest missing']
 ];
-for (const file of ['public/assets/atlas/v2-tiles.png', 'public/assets/atlas/v2-tiles.atlas.json', 'public/assets/atlas/boss-frames-v2.png', 'public/assets/atlas/boss-frames-v2.atlas.json', 'public/assets/meta/texture-atlas-manifest-v1.0.25.json']) {
+for (const file of ['public/assets/atlas/v2-tiles.png', 'public/assets/atlas/v2-tiles.atlas.json', 'public/assets/atlas/boss-frames-v2.png', 'public/assets/atlas/boss-frames-v2.atlas.json', 'public/assets/meta/texture-atlas-manifest-v1.0.26.json']) {
   try { statSync(file); } catch { checks.push([false, `missing ${file}`]); }
 }
 const failed = checks.filter(([ok]) => !ok).map(([, msg]) => msg);
@@ -19,4 +19,4 @@ if (failed.length) {
   console.error(failed.join('\n'));
   process.exit(1);
 }
-console.log('Extended atlas lookup policy passed for v1.0.25.');
+console.log('Extended atlas lookup policy passed for v1.0.26.');

@@ -22,4 +22,4 @@ if (errors.length) {
   console.error(`Boss atlas rendering policy failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Boss atlas rendering policy passed for v1.0.24.');
+console.log('Boss atlas rendering policy passed for v1.0.26.');

@@ -6,7 +6,13 @@ import type { DeviceProfile } from '../systems/performance';
 const effectAsset = (name: string) => `${import.meta.env.BASE_URL}assets/effects/${name}.png`;
 const tileAtlasAssets = [
   `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.png`
+  `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.png`,
+  `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.webp`
+];
+const bossFrameAtlasAssets = [
+  `${import.meta.env.BASE_URL}assets/atlas/boss-frames-v2.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/atlas/boss-frames-v2.png`,
+  `${import.meta.env.BASE_URL}assets/atlas/boss-frames-v2.webp`
 ];
 const isV2StateAsset = (asset = '') => asset.includes('/assets/objects/v2-state/') || asset.includes('assets/objects/v2-state/');
 
@@ -67,6 +73,10 @@ export class DreamPixiRenderer {
   layout: BoardLayout = { startX: 0, startY: 0, step: 72, rows: 0, cols: 0 };
   lastPointerMove = 0;
   tileAtlasReady: Promise<void> | null = null;
+  bossAtlasReady: Promise<void> | null = null;
+  bossLayerSprite: Sprite | null = null;
+  bossLayerAura: Graphics | null = null;
+  pendingBossFrame: { frameKey: string; mood: string } | null = null;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
@@ -81,6 +91,75 @@ export class DreamPixiRenderer {
       })).then(() => undefined);
     }
     await this.tileAtlasReady;
+  }
+
+  async preloadBossFrameAtlas() {
+    if (!this.bossAtlasReady) {
+      this.bossAtlasReady = Promise.all(bossFrameAtlasAssets.map(async (asset) => {
+        await Assets.load(asset).catch(() => null);
+        this.assetCache.add(asset);
+      })).then(() => undefined);
+    }
+    await this.bossAtlasReady;
+  }
+
+  syncPixiBossLayer(frameKey = '', mood = 'idle') {
+    this.pendingBossFrame = { frameKey, mood };
+    if (!this.boardApp || !frameKey) return;
+    void this.preloadBossFrameAtlas().then(() => this.applyPixiBossLayer(frameKey, mood));
+  }
+
+  private applyPixiBossLayer(frameKey: string, mood: string) {
+    if (!this.boardApp || !this.boardLayers.ui || !frameKey) return;
+    const texture = this.resolveBossFrameTexture(frameKey);
+    if (!texture) return;
+    if (!this.bossLayerAura) {
+      this.bossLayerAura = new Graphics().circle(0, 0, 58).fill({ color: PALETTE.violet, alpha: 0.18 }).circle(0, 0, 36).fill({ color: PALETTE.sky, alpha: 0.14 });
+      this.bossLayerAura.blendMode = 'add';
+      this.boardLayers.ui.addChild(this.bossLayerAura);
+    }
+    if (!this.bossLayerSprite) {
+      this.bossLayerSprite = new Sprite(texture);
+      this.bossLayerSprite.anchor.set(0.5);
+      this.boardLayers.ui.addChild(this.bossLayerSprite);
+    }
+    this.bossLayerSprite.texture = texture;
+    const app = this.boardApp;
+    const targetSize = Math.max(66, Math.min(112, app.renderer.width * 0.22));
+    const fit = targetSize / Math.max(texture.width || targetSize, texture.height || targetSize);
+    const scale = mood === 'break' ? fit * 1.12 : mood === 'warn' ? fit * 1.06 : fit;
+    this.bossLayerSprite.scale.set(scale);
+    this.bossLayerSprite.x = app.renderer.width - targetSize * 0.64;
+    this.bossLayerSprite.y = Math.max(34, targetSize * 0.58);
+    this.bossLayerSprite.alpha = mood === 'idle' ? 0.72 : 0.96;
+    this.bossLayerSprite.rotation = mood === 'hit' ? -0.025 : mood === 'warn' ? 0.018 : 0;
+    this.bossLayerAura.x = this.bossLayerSprite.x;
+    this.bossLayerAura.y = this.bossLayerSprite.y;
+    this.bossLayerAura.alpha = mood === 'idle' ? 0.26 : 0.52;
+    const host = document.querySelector<HTMLElement>('.battle-stage');
+    if (host) {
+      host.dataset.bossLayer = 'pixi';
+      host.dataset.bossLayerMood = mood;
+    }
+    gsap.killTweensOf([this.bossLayerSprite, this.bossLayerAura]);
+    if (mood !== 'idle') {
+      gsap.fromTo(this.bossLayerSprite.scale, { x: scale * 0.88, y: scale * 0.88 }, { x: scale, y: scale, duration: 0.22 * this.quality.motionScale, ease: 'back.out(2.4)' });
+      gsap.fromTo(this.bossLayerAura.scale, { x: 0.7, y: 0.7 }, { x: 1.22, y: 1.22, duration: 0.36 * this.quality.motionScale, ease: 'power2.out' });
+    }
+  }
+
+  private resolveBossFrameTexture(frameKey: string) {
+    try {
+      const file = frameKey.split('/').pop() || frameKey;
+      const texture = Assets.get(frameKey)
+        || Assets.get(file)
+        || Assets.get(`boss-frames-v2/${frameKey}`)
+        || Assets.get(`assets/characters/${frameKey}`);
+      if (texture instanceof Texture) return texture;
+    } catch {
+      // DOM fallback remains active if atlas lookup is unavailable.
+    }
+    return null;
   }
 
   async preloadAssets(assets: string[]) {
@@ -136,6 +215,7 @@ export class DreamPixiRenderer {
     this.boardLayers = createLayers(['runes', 'board', 'paths', 'particles', 'ui']);
     Object.values(this.boardLayers).forEach((layer) => this.boardApp!.stage.addChild(layer));
     this.boardApp.ticker.add((ticker: any) => this.tickBoard(ticker.deltaTime || 1));
+    if (this.pendingBossFrame) this.syncPixiBossLayer(this.pendingBossFrame.frameKey, this.pendingBossFrame.mood);
   }
 
   async renderBoard(board: BoardCell[][]) {
@@ -150,6 +230,7 @@ export class DreamPixiRenderer {
     this.layout = this.calculateLayout(rows, cols);
     const uniqueAssets = [...new Set(board.flat().filter(Boolean).flatMap((tile: any) => tile.stateAssets ? Object.values(tile.stateAssets) : [tile.asset]))];
     await this.preloadAssets(uniqueAssets);
+    if (this.pendingBossFrame) this.syncPixiBossLayer(this.pendingBossFrame.frameKey, this.pendingBossFrame.mood);
     document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-atlas', uniqueAssets.some((asset) => isV2StateAsset(String(asset))) ? 'v2' : 'fallback');
 
     for (let row = 0; row < rows; row += 1) {

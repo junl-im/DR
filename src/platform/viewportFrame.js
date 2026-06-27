@@ -104,11 +104,14 @@ export function applyPortraitFrame(options = {}) {
   root.style.setProperty('--scaled-app-height', `${Math.round(frame.appHeight * (frame.appScale || 1))}px`);
   root.classList.toggle('portrait-runtime', mobileLike);
   root.classList.toggle('source-landscape', frame.sourceLandscape && mobileLike);
+  root.classList.toggle('portrait-fit-landscape', Boolean(frame.fittedLandscape));
   root.classList.toggle('landscape-locked', false);
+  root.dataset.viewportQa = frame.fittedLandscape ? 'fit-landscape' : frame.virtualPortrait ? 'virtual-portrait' : 'native';
 
   document.body.dataset.orientation = 'portrait';
   document.body.dataset.sourceOrientation = frame.sourceLandscape ? 'landscape' : 'portrait';
   document.body.dataset.viewportFrame = frame.virtualPortrait ? 'virtual-portrait' : 'native';
+  document.body.dataset.inappDeviceQa = frame.fittedLandscape ? 'fit-landscape' : 'stable-portrait';
 
   return frame;
 }
