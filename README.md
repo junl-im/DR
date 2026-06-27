@@ -1762,3 +1762,64 @@ Apply 꿈의 서고 v1.0.55 engine render budget store reward polish and lobby d
 - 실기기에서 시즌 패널, 보스바, 옵션 팝업, 이메일 팝업의 터치 범위를 추가 QA합니다.
 - 로비 드래그가 상점/기록/미션/챕터 위에서 더 안정적인지 계속 점검합니다.
 - 미니맵, `보기 / 중앙 / + / -` 라인, 카메라 도움말은 계속 재도입하지 않습니다.
+
+## v1.0.56 Patch Notes - Reward Detail Showcase, Boss Warning Readability and Real Device Touch QA Patch
+
+v1.0.56은 v1.0.55의 렌더링 예산/시즌 상점 polish 위에, 실제 플레이 중 보상 상세가 부족하게 느껴지던 부분과 보스 경고 가독성, 실기기 터치 충돌 가능성을 정리한 디자인/QA 패치입니다.
+
+### 핵심 변경
+
+- 시즌 상점 `보상 상세` 버튼을 단순 이동형 흐름에서 실제 상세 쇼케이스 팝업으로 확장했습니다.
+- `v1056-reward-detail-showcase` 훅을 추가해 보상 수량, 필요 재화, 복원 프로젝트 연결, 현재 진행률을 한 카드 안에서 확인할 수 있게 했습니다.
+- 상세 팝업 CTA를 `복원으로 보기`/`컬렉션 보기`로 정리해 보상 확인 후 연결 패널로 자연스럽게 이동하게 했습니다.
+- `v1056-boss-warning-readability` 훅을 추가해 작은 화면/절약 연출 상태에서도 보스 경고 문구가 완전히 사라지지 않고 압축 표시되도록 보강했습니다.
+- Pixi 보스 경고 lane에 `readabilityWidthScale`을 추가해 절약/균형 예산에서 경고선 두께와 flare가 타일 선택 링을 과하게 덮지 않도록 조정했습니다.
+- `v1056-real-device-touch-qa` 훅을 추가해 시즌 상점 상세/수령/기록 버튼의 실기기 터치 영역과 로비 드래그 중 오탭 방지 처리를 강화했습니다.
+- 로비 드래그 보정 대상에 시즌 상점 상세, 수령 기록, 보상 미리보기, 디자인 점검 카드를 추가했습니다.
+- service worker cache를 `dream-library-cache-v1.0.56`으로 갱신하고, `texture-atlas-manifest-v1.0.56.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:reward-detail-touch-qa`를 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 패 크기 고정 구조 유지
+- 자동 fullscreen/orientation API 호출 추가 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 63개 check:* QA suite 통과
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:season-store-engine-design
+npm run check:mobile-playability
+npm run check:selection-stability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.56 reward detail showcase boss warning readability and real device touch QA patch
+```
+
+다음 업데이트 예정: v1.0.57 - Chapter Finale Reward Theater, Boss Pattern Telegraph Polish and Store Progress Routing Patch
+
+### v1.0.57 예정 - Chapter Finale Reward Theater, Boss Pattern Telegraph Polish and Store Progress Routing Patch
+
+- 챕터/피날레 클리어 보상 연출을 더 고급스럽게 분리합니다.
+- 보스 패턴별 경고 색상과 보드 경로 라인의 우선순위를 더 세밀하게 조정합니다.
+- 시즌 상점에서 부족 재화가 있을 때 추천 스테이지/챕터로 이동하는 경로를 더 명확히 표시합니다.
+- 복원/컬렉션/상점 간 왕복 동선을 더 짧게 다듬습니다.
+- 미니맵, `보기 / 중앙 / + / -` 라인, 카메라 도움말은 계속 재도입하지 않습니다.

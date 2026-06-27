@@ -75,7 +75,8 @@
     "check:summer-shop-reward-polish": "node tools/check-summer-shop-reward-polish.mjs",
     "check:summer-history-finale-density": "node tools/check-summer-history-finale-density.mjs",
     "check:season-store-engine-design": "node tools/check-season-store-engine-design.mjs",
-    "check:engine-render-budget": "node tools/check-engine-render-budget.mjs"
+    "check:engine-render-budget": "node tools/check-engine-render-budget.mjs",
+    "check:reward-detail-touch-qa": "node tools/check-reward-detail-touch-qa.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -88,5 +89,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.55"
+  "version": "1.0.56"
 }

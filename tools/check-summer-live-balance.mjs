@@ -10,7 +10,7 @@ const pages = read('.github/workflows/github-pages.yml');
 const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
-if (!['1.0.48', '1.0.49', '1.0.50', '1.0.51', '1.0.52', '1.0.53', '1.0.54', '1.0.55'].includes(pkg.version)) errors.push(`package version must be 1.0.48-1.0.53, got ${pkg.version}`);
+if (!['1.0.48', '1.0.49', '1.0.50', '1.0.51', '1.0.52', '1.0.53', '1.0.54', '1.0.55', '1.0.56'].includes(pkg.version)) errors.push(`package version must be 1.0.48-1.0.53, got ${pkg.version}`);
 if (!pkg.scripts['check:summer-live-balance']) errors.push('missing package script check:summer-live-balance');
 const stageMatches = [...stages.matchAll(/stage\('/g)].length;
 if (stageMatches < 78) errors.push(`expected at least 78 stages, got ${stageMatches}`);

@@ -32,6 +32,7 @@ const BOSS_FLOW_TEMPO_PATCH = 'v1040-boss-flow-tempo';
 const SUMMER_EVENT_VFX_PATCH = 'v1049-summer-event-vfx';
 const SUMMER_PASS_MISSIONS_PATCH = 'v1049-summer-pass-missions';
 const ENGINE_RENDER_BUDGET_TUNING_PATCH = 'v1055-engine-render-budget-tuning';
+const BOSS_WARNING_READABILITY_PATCH = 'v1056-boss-warning-readability';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -528,6 +529,7 @@ export class DreamPixiRenderer {
     core.dataset.warningPattern = pattern;
     core.dataset.bossWarningDepth = bossId;
     core.dataset.warningDepthPatch = 'v1040';
+    core.dataset.bossWarningReadability = BOSS_WARNING_READABILITY_PATCH;
     core.dataset.bossFlowTempo = tempo.name;
     core.dataset.bossFlowTempoPatch = BOSS_FLOW_TEMPO_PATCH;
     window.setTimeout(() => core.classList.remove('boss-warning'), Math.round(profile.duration * tempo.durationScale * 1000 + 140));
@@ -1297,8 +1299,9 @@ export class DreamPixiRenderer {
     const lane = new Graphics();
     lane.label = `boss-warning-depth-${bossId}-${pattern}-${this.bossWarningIndex += 1}`;
     lane.blendMode = 'add';
-    const strongWidth = Math.max(10, power * 1.72 * profile.widthBoost * tempo.powerScale);
-    const coreWidth = Math.max(2.2, power * 0.34 * profile.widthBoost * tempo.powerScale);
+    const readabilityWidthScale = budget.name === 'lite' ? 0.72 : budget.name === 'balanced' ? 0.88 : 1;
+    const strongWidth = Math.max(8, power * 1.72 * profile.widthBoost * tempo.powerScale * readabilityWidthScale);
+    const coreWidth = Math.max(2, power * 0.34 * profile.widthBoost * tempo.powerScale * readabilityWidthScale);
     const drawLine = (x1: number, y1: number, x2: number, y2: number, color = profile.primary, coreColor = profile.aura) => {
       lane.moveTo(x1, y1).lineTo(x2, y2);
       lane.stroke({ color, width: strongWidth, alpha: profile.laneAlpha * budget.warningAlphaScale });
@@ -1321,7 +1324,7 @@ export class DreamPixiRenderer {
     }
     this.boardLayers.paths.addChild(lane);
 
-    const flareThickness = Math.max(6, power * 1.32 * profile.widthBoost);
+    const flareThickness = Math.max(5, power * 1.32 * profile.widthBoost * readabilityWidthScale);
     const flare = new Graphics()
       .rect(0, 0, app.renderer.width, flareThickness)
       .fill({ color: pattern === 'row' ? profile.secondary : profile.primary, alpha: profile.flareAlpha * budget.warningAlphaScale })

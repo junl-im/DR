@@ -62,7 +62,7 @@ if (/class="email-form(?![^>]*retired-inline-email-form)/.test(html)) errors.pus
 for (const banned of ['미니맵', '>보기<', '>중앙<', '>+<', '드래그 이동 도움말']) {
   if (html.includes(banned)) errors.push(`Removed UI/copy should not return in HTML: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && (!pkg.includes('"version": "1.0.53"') && (!pkg.includes('"version": "1.0.54"') && !pkg.includes('"version": "1.0.55"'))))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
+if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && (!pkg.includes('"version": "1.0.53"') && (!pkg.includes('"version": "1.0.54"') && (!pkg.includes('"version": "1.0.55"') && !pkg.includes('"version": "1.0.56"')))))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
 if (!pkg.includes('check:auth-modal-boss-role')) errors.push('package.json must expose check:auth-modal-boss-role.');
 if (!sw.includes('dream-library-cache-v1.0.47') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must be v1.0.47.');
 if (!sw.includes('v1043-cache-slim-auth-modal-boss-role')) errors.push('service worker cache slim policy must be v1043 auth modal boss role.');

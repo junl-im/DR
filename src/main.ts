@@ -70,6 +70,9 @@ const STORE_REWARD_COLLECTION_POLISH_PATCH = 'v1055-store-reward-collection-poli
 const LOBBY_DENSITY_FINAL_QA_PATCH = 'v1055-lobby-density-final-qa';
 const STORE_REWARD_PREVIEW_LENS_PATCH = 'v1055-store-reward-preview-lens';
 const TOUCH_CONFLICT_AUDIT_PATCH = 'v1055-lobby-touch-conflict-audit';
+const REWARD_DETAIL_SHOWCASE_PATCH = 'v1056-reward-detail-showcase';
+const BOSS_WARNING_READABILITY_PATCH = 'v1056-boss-warning-readability';
+const REAL_DEVICE_TOUCH_QA_PATCH = 'v1056-real-device-touch-qa';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
@@ -691,7 +694,8 @@ function bindEvents() {
     writeText('dream-library-restoration-focus', state.restorationFocus);
     closeRestorationDetail();
     renderRestoration();
-    setStatus('집중 복원 프로젝트를 변경했습니다.');
+    scrollLobbyTarget('.restoration-panel');
+    setStatus('집중 복원 프로젝트를 변경하고 복원 패널로 이동했습니다.');
   });
 
   window.addEventListener('resize', () => {
@@ -814,7 +818,7 @@ function initLobbyScrollGuard() {
       dragLocked = dy > 4;
       document.body.classList.add('is-lobby-dragging');
       const deltaY = event.clientY - lastY;
-      if (Math.abs(deltaY) > 0.55 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel, .stage-ladder-summary, .ladder-chip, .world-map, .lobby-grid, .summer-season-panel, .season-jump-button, .season-shop-card, .season-shop-claim, .season-shop-earn, .season-finale-card, .season-pass-mission')) {
+      if (Math.abs(deltaY) > 0.55 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel, .stage-ladder-summary, .ladder-chip, .world-map, .lobby-grid, .summer-season-panel, .season-jump-button, .season-shop-card, .season-shop-claim, .season-shop-earn, .season-shop-detail, .season-shop-history-card, .season-shop-reward-preview, .season-design-audit, .season-finale-card, .season-pass-mission')) {
         shell.scrollTop -= deltaY * 1.28;
         document.body.dataset.lobbyDragRescue = LOBBY_DRAG_DEEP_RESCUE_PATCH;
       }
@@ -1054,6 +1058,25 @@ function advanceSpecialRulesAfterMatch() {
   }
 }
 
+
+function applyBossWarningReadability(reason: 'combo' | 'time' | 'pressure' | 'mismatch', boss: any = {}) {
+  const stage = document.querySelector<HTMLElement>('.battle-stage');
+  const lane = document.querySelector<HTMLElement>('.boss-lane');
+  const compact = state.renderBudget?.name === 'lite' || state.hudDensity === 'micro';
+  const warningTone = reason === 'mismatch' ? 'mistake' : reason === 'time' ? 'time' : reason === 'pressure' ? 'pressure' : 'combo';
+  stage?.setAttribute('data-boss-warning-readability', BOSS_WARNING_READABILITY_PATCH);
+  stage?.setAttribute('data-boss-warning-tone', warningTone);
+  stage?.setAttribute('data-boss-warning-density', compact ? 'compact' : 'readable');
+  lane?.setAttribute('data-boss-warning-readability', BOSS_WARNING_READABILITY_PATCH);
+  lane?.setAttribute('data-boss-warning-tone', warningTone);
+  el.bossTelegraph.dataset.bossWarningReadability = BOSS_WARNING_READABILITY_PATCH;
+  el.bossTelegraph.dataset.warningTone = warningTone;
+  if (compact) {
+    const title = boss.telegraphTitle || (reason === 'time' ? '시간 압박' : reason === 'mismatch' ? '실수 반격' : '반격 예고');
+    el.bossTelegraph.textContent = `${title} · 짝을 맞춰 흐름 회복`;
+  }
+}
+
 function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch') {
   setBossFrame('warn');
   const boss = state.activeBoss || {};
@@ -1069,6 +1092,7 @@ function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch'
   el.bossTelegraph.dataset.bossId = boss.id || 'forgotten-spirit';
   el.bossCore.dataset.warningPattern = getBossWarningPattern(reason);
   el.bossCore.dataset.bossWarningDepth = boss.id || 'forgotten-spirit';
+  applyBossWarningReadability(reason, boss);
   el.bossTelegraph.classList.remove('hidden', 'telegraph-pop');
   void el.bossTelegraph.offsetWidth;
   el.bossTelegraph.classList.add('telegraph-pop');
@@ -1548,6 +1572,7 @@ function applyAdaptiveVisualBudget() {
   document.body.dataset.storeRewardPolish = STORE_REWARD_COLLECTION_POLISH_PATCH;
   document.body.dataset.lobbyDensityFinalQa = LOBBY_DENSITY_FINAL_QA_PATCH;
   document.body.dataset.touchConflictAudit = TOUCH_CONFLICT_AUDIT_PATCH;
+  document.body.dataset.realDeviceTouchQa = REAL_DEVICE_TOUCH_QA_PATCH;
   document.body.dataset.effectBudget = budget.name;
   document.body.dataset.renderBudgetReason = budget.reason;
   document.body.style.setProperty('--season-vfx-alpha', String(budget.vfxAlpha));
@@ -1556,9 +1581,12 @@ function applyAdaptiveVisualBudget() {
   renderer.setRenderBudget(budget.name);
   el.app?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   el.app?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
+  el.app?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
+  document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-reward-detail-showcase', REWARD_DETAIL_SHOWCASE_PATCH);
+  document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
 }
 
 function qualityText(tier: string) {
@@ -1688,6 +1716,9 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
   panel.dataset.storeRewardPolish = STORE_REWARD_COLLECTION_POLISH_PATCH;
   panel.dataset.lobbyDensityFinalQa = LOBBY_DENSITY_FINAL_QA_PATCH;
   panel.dataset.touchConflictAudit = TOUCH_CONFLICT_AUDIT_PATCH;
+  panel.dataset.rewardDetailShowcase = REWARD_DETAIL_SHOWCASE_PATCH;
+  panel.dataset.bossWarningReadability = BOSS_WARNING_READABILITY_PATCH;
+  panel.dataset.realDeviceTouchQa = REAL_DEVICE_TOUCH_QA_PATCH;
   panel.dataset.duplicateIdCleanup = DUPLICATE_ID_CLEANUP_PATCH;
   applyAdaptiveVisualBudget();
   panel.dataset.seasonStageCount = String(seasonStages.length);
@@ -1707,7 +1738,7 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
     `<div class="season-finale-missions" data-finale-missions="${SUMMER_FINALE_MISSION_PATCH}" aria-label="썸머 피날레 미션">${getSummerFinaleMissionCards(cleared)}</div>`,
     `<div class="season-shop-preview" data-season-shop="${SUMMER_FINALE_SHOP_PATCH}" data-shop-burst="${SUMMER_SHOP_BURST_PATCH}" data-shop-shortcut="${SUMMER_SHOP_SHORTCUT_PATCH}" aria-label="시즌 상점 미리보기">${getSummerShopCards()}</div>`,
     `<div class="season-shop-history" data-shop-history="${SUMMER_SHOP_HISTORY_PATCH}" aria-label="시즌 상점 최근 수령 기록">${getSummerShopHistoryCards()}</div>`,
-    `<div class="season-design-audit" data-engine-upgrade="${ENGINE_DESIGN_UPGRADE_PATCH}" data-engine-render-budget="${ENGINE_RENDER_BUDGET_TUNING_PATCH}" data-store-link="${SEASON_STORE_COLLECTION_LINK_PATCH}" data-lobby-density-final-qa="${LOBBY_DENSITY_FINAL_QA_PATCH}" aria-label="시즌 디자인 점검"><span>겹침 자동 압축</span><span>보상 미리보기</span><span>${renderBudgetText(state.renderBudget.name)}</span></div>`
+    `<div class="season-design-audit" data-engine-upgrade="${ENGINE_DESIGN_UPGRADE_PATCH}" data-engine-render-budget="${ENGINE_RENDER_BUDGET_TUNING_PATCH}" data-store-link="${SEASON_STORE_COLLECTION_LINK_PATCH}" data-lobby-density-final-qa="${LOBBY_DENSITY_FINAL_QA_PATCH}" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}" data-real-device-touch-qa="${REAL_DEVICE_TOUCH_QA_PATCH}" aria-label="시즌 디자인 점검"><span>겹침 자동 압축</span><span>상세 쇼케이스</span><span>${renderBudgetText(state.renderBudget.name)}</span></div>`
   ].join('');
 }
 
@@ -1750,7 +1781,7 @@ function getSummerShopHistoryCards() {
   }
   return history.map((entry: any) => {
     const time = entry.time ? new Date(entry.time).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : '최근';
-    return `<button type="button" class="season-shop-history-card" data-shop-history-item="${escapeHtml(entry.id || 'reward')}" data-store-link="${SEASON_STORE_COLLECTION_LINK_PATCH}"><b>${escapeHtml(entry.title || '시즌 보상')}</b><em>${escapeHtml(entry.rewardLabel || '보상 수령')}</em><i>${escapeHtml(time)}</i><small>상세 보기</small></button>`;
+    return `<button type="button" class="season-shop-history-card" data-shop-history-item="${escapeHtml(entry.id || 'reward')}" data-store-link="${SEASON_STORE_COLLECTION_LINK_PATCH}" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}"><b>${escapeHtml(entry.title || '시즌 보상')}</b><em>${escapeHtml(entry.rewardLabel || '보상 수령')}</em><i>${escapeHtml(time)}</i><small>상세 보기</small></button>`;
   }).join('');
 }
 
@@ -1770,7 +1801,7 @@ function getSummerShopCards() {
       : claimed
         ? `<button type="button" class="season-shop-claim" data-shop-item="${escapeHtml(item.id)}" disabled>${stateLabel}</button>`
         : `<button type="button" class="season-shop-earn" data-shop-item="${escapeHtml(item.id)}" data-cost-type="${escapeHtml(item.costType)}">모으러 가기</button>`;
-    return `<span class="season-shop-card ${stateName}" data-shop-item="${escapeHtml(item.id)}" data-shop-state="${stateName}" data-shop-polish="${SUMMER_SHOP_BURST_PATCH}" data-store-reward-polish="${STORE_REWARD_COLLECTION_POLISH_PATCH}"><b>${escapeHtml(item.title)}</b><em>${escapeHtml(item.costLabel)} · 보유 ${owned}</em><i>${escapeHtml(item.rewardLabel)}</i>${ownedBadge}${help}${getSummerShopCollectionLink(item)}${getSummerShopRewardPreview(item, claimed)}<strong class="season-shop-missing">${claimed ? '수령 완료' : affordable ? '바로 수령 가능' : `${missing}개 더 필요`}</strong>${action}<button type="button" class="season-shop-detail" data-shop-item="${escapeHtml(item.id)}">보상 상세</button></span>`;
+    return `<span class="season-shop-card ${stateName}" data-shop-item="${escapeHtml(item.id)}" data-shop-state="${stateName}" data-shop-polish="${SUMMER_SHOP_BURST_PATCH}" data-store-reward-polish="${STORE_REWARD_COLLECTION_POLISH_PATCH}" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}"><b>${escapeHtml(item.title)}</b><em>${escapeHtml(item.costLabel)} · 보유 ${owned}</em><i>${escapeHtml(item.rewardLabel)}</i>${ownedBadge}${help}${getSummerShopCollectionLink(item)}${getSummerShopRewardPreview(item, claimed)}<strong class="season-shop-missing">${claimed ? '수령 완료' : affordable ? '바로 수령 가능' : `${missing}개 더 필요`}</strong>${action}<button type="button" class="season-shop-detail" data-shop-item="${escapeHtml(item.id)}" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}">보상 상세</button></span>`;
   }).join('');
 }
 
@@ -1780,7 +1811,7 @@ function getSummerShopRewardPreview(item: any, claimed = false) {
   const amount = Number(item.rewardAmount || 1);
   const title = claimed ? '적용됨' : '미리보기';
   const target = project ? project.label : '컬렉션 보관함';
-  return `<small class="season-shop-reward-preview" data-reward-preview="${STORE_REWARD_PREVIEW_LENS_PATCH}" data-store-reward-polish="${STORE_REWARD_COLLECTION_POLISH_PATCH}"><b>${title}</b><span>${escapeHtml(target)} · ${escapeHtml(item.rewardLabel)} +${amount}</span></small>`;
+  return `<small class="season-shop-reward-preview" data-reward-preview="${STORE_REWARD_PREVIEW_LENS_PATCH}" data-store-reward-polish="${STORE_REWARD_COLLECTION_POLISH_PATCH}" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}"><b>${title}</b><span>${escapeHtml(target)} · ${escapeHtml(item.rewardLabel)} +${amount}</span></small>`;
 }
 
 function getSummerShopCollectionLink(item: any) {
@@ -1800,19 +1831,37 @@ function openSeasonShopRewardDetail(itemId: string) {
   const item = (SUMMER_SEASON_EVENT.shopItems || []).find((entry: any) => entry.id === itemId);
   if (!item) return;
   const project = getSeasonShopRewardProject(item);
-  if (project) {
-    state.restorationFocus = project.id;
-    writeText('dream-library-restoration-focus', state.restorationFocus);
-  }
+  const current = project ? getRestorationCurrent(project) : 0;
+  const need = Number(project?.need || 1);
+  const ratio = Math.min(100, Math.round((current / need) * 100));
+  const owned = Number(state.inventory[item.costType] || 0);
+  const cost = Number(item.cost || 0);
+  const rewardAmount = Number(item.rewardAmount || 1);
+  const claimed = Boolean(state.seasonShopClaims[item.id]);
+  const missing = Math.max(0, cost - owned);
+  if (project) state.pendingRestorationProjectId = project.id;
   state.collectionFilter = 'owned';
   writeText('dream-library-collection-filter', state.collectionFilter);
   document.body.dataset.storeCollectionLink = SEASON_STORE_COLLECTION_LINK_PATCH;
   document.body.dataset.storeRewardPolish = STORE_REWARD_COLLECTION_POLISH_PATCH;
   document.body.dataset.lobbyDensityFinalQa = LOBBY_DENSITY_FINAL_QA_PATCH;
+  document.body.dataset.rewardDetailShowcase = REWARD_DETAIL_SHOWCASE_PATCH;
+  document.body.dataset.realDeviceTouchQa = REAL_DEVICE_TOUCH_QA_PATCH;
   renderRestoration();
   renderCollection();
-  scrollLobbyTarget(project ? '.restoration-panel' : '.collection-panel');
-  setStatus(`${item.title} 상세 · ${project ? project.label : '컬렉션'}에 연결된 보상입니다.`);
+  el.restorationDetailModal.dataset.rewardDetailShowcase = REWARD_DETAIL_SHOWCASE_PATCH;
+  el.restorationDetailModal.dataset.detailMode = 'season-shop';
+  el.restorationDetailTitle.textContent = `${item.title} 보상 상세`;
+  el.restorationDetailMessage.textContent = `${item.rewardLabel} +${rewardAmount} · ${project ? `${project.label} 진행률 ${ratio}%` : '컬렉션 보관함'} · ${claimed ? '이미 수령됨' : missing > 0 ? `${missing}개 더 필요` : '수령 가능'}`;
+  el.restorationDetailItems.innerHTML = [
+    `<span class="detail-item reward-showcase-main" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}"><b>보상</b><strong>${escapeHtml(item.rewardLabel)} +${rewardAmount}</strong><em>${escapeHtml(project?.label || '컬렉션 보관함')}</em></span>`,
+    `<span class="detail-item reward-showcase-cost" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}"><b>필요 재화</b><strong>${escapeHtml(item.costLabel || item.costType)} · ${owned}/${cost}</strong><em>${claimed ? '보관함 활성' : missing > 0 ? `${missing}개 부족` : '바로 수령 가능'}</em></span>`,
+    `<span class="detail-item reward-showcase-link" data-reward-detail-showcase="${REWARD_DETAIL_SHOWCASE_PATCH}"><b>연결</b><strong>${escapeHtml(project?.label || '컬렉션')}</strong><em>${project ? `복원 ${current}/${need}` : '수집 보관함에서 확인'}</em></span>`
+  ].join('');
+  (el.restorationDetailFocusButton as HTMLButtonElement).disabled = false;
+  el.restorationDetailFocusButton.textContent = project ? '복원으로 보기' : '컬렉션 보기';
+  el.restorationDetailModal.classList.remove('hidden');
+  setStatus(`${item.title} 보상 상세를 열었습니다.`);
 }
 
 function claimSummerShopItem(itemId: string) {
@@ -2114,6 +2163,7 @@ function renderBossPanel() {
   bossLane?.setAttribute('data-boss-layout', 'statusbar-icon-right-v1046');
   bossLane?.setAttribute('data-boss-season-polish', BOSS_SEASON_POLISH_PATCH);
   bossLane?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
+  bossLane?.setAttribute('data-boss-warning-readability', BOSS_WARNING_READABILITY_PATCH);
   bossLane?.setAttribute('data-season-claim-visual', getSeasonClaimVisualState());
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
   el.bossName.textContent = boss.name;
@@ -2397,6 +2447,8 @@ function openRestorationDetail(projectId: string) {
 
 function closeRestorationDetail() {
   el.restorationDetailModal.classList.add('hidden');
+  delete el.restorationDetailModal.dataset.rewardDetailShowcase;
+  delete el.restorationDetailModal.dataset.detailMode;
 }
 
 function renderDailyPanel() {
