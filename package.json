@@ -41,7 +41,8 @@
     "check:scroll-polish": "node tools/check-scroll-polish.mjs",
     "check:boss-atlas-rendering": "node tools/check-boss-atlas-rendering.mjs",
     "check:asset-compression": "node tools/check-asset-compression.mjs",
-    "check:interaction-polish": "node tools/check-interaction-polish.mjs"
+    "check:interaction-polish": "node tools/check-interaction-polish.mjs",
+    "check:kakao-lobby-rotation": "node tools/check-kakao-lobby-rotation.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -54,5 +55,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.24"
+  "version": "1.0.25"
 }

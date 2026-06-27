@@ -8,7 +8,7 @@ import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, fin
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { BOSS_ATLAS_SHEET, getBossAtlasFrame } from './game/bossAtlas.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
-import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
+import { initFullscreenControls, requestGameFullscreen, syncGameViewport } from './platform/fullscreen.js';
 import { initPortraitRuntimeGuard } from './platform/portraitLock.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 import { GAME_TITLE } from './config/design';
@@ -246,11 +246,15 @@ async function init() {
   browserRecovery = initBrowserGuard();
   portraitRuntime = initPortraitRuntimeGuard({ onStatus: setStatus });
   document.addEventListener('dream-library:portrait-lock-requested', () => {
-    portraitRuntime?.requestLock('kakao-panel');
+    portraitRuntime?.syncViewport();
+  });
+  document.addEventListener('dream-library:viewport-frame-requested', () => {
+    syncGameViewport({ reason: 'custom-event' });
+    portraitRuntime?.syncViewport();
   });
   if (browserRecovery.inApp) {
     browserRecovery.maybeShowSoftTip();
-    requestKakaoPortraitLock('init');
+    syncGameViewport({ reason: 'init-inapp' });
     setStatus('로비 준비가 끝났습니다.');
   }
 
@@ -544,29 +548,25 @@ function handleSoftBack() {
 }
 
 
-function suggestKakaoAssist(message: string) {
-  browserRecovery?.showRecovery?.(message);
-  requestKakaoPortraitLock('assist');
+function suggestKakaoAssist(_message: string) {
+  syncGameViewport({ reason: 'assist-soft-fit' });
+  portraitRuntime?.syncViewport();
 }
 
 async function requestKakaoPortraitLock(source = 'game') {
+  syncGameViewport({ reason: source });
   if (browserRecovery?.inApp) {
-    await browserRecovery.requestPortraitFullscreen?.();
-    await portraitRuntime?.requestLock(source);
-  } else {
-    await portraitRuntime?.requestLock(source);
+    portraitRuntime?.syncViewport();
+    return true;
   }
+  await portraitRuntime?.requestLock(source);
+  return true;
 }
 
 async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
   if (!browserRecovery?.inApp) return false;
   audio.play('tap');
-  if (mode === 'auth') {
-    browserRecovery.showRecovery('게임 화면을 정리합니다.');
-    setStatus('계정 저장을 시도합니다.');
-  } else {
-    browserRecovery.showRecovery('게임 화면을 정리합니다.');
-  }
+  if (mode === 'auth') setStatus('계정 저장을 시도합니다.');
   await requestKakaoPortraitLock(mode);
   return false;
 }
@@ -638,8 +638,8 @@ function enterLobbyFromStart() {
     writeJson('dream-library-local-guest', state.localGuest);
     renderAuth();
   }
-  requestKakaoPortraitLock('lobby');
-  requestGameFullscreen();
+  syncGameViewport({ reason: 'enter-lobby' });
+  portraitRuntime?.syncViewport();
   renderLobby();
   updateScreen('lobby');
   setStatus('로비에 입장했습니다. 스테이지를 고른 뒤 진짜 게임 시작을 누르세요.');
@@ -673,8 +673,8 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   renderBossPanel();
   audio.unlock();
   audio.play('tap');
-  await requestKakaoPortraitLock('stage-start');
-  requestGameFullscreen();
+  syncGameViewport({ reason: 'stage-start' });
+  portraitRuntime?.syncViewport();
   state.board = createBoard(difficulty, stage.modifiers || []);
   state.selected = null;
   state.locked = false;
@@ -930,7 +930,10 @@ function updateScreen(screen: ScreenName) {
   el.app.dataset.screen = screen;
   document.body.dataset.screen = screen;
   const bg = screen === 'login' ? 'moon-library-v2' : screen === 'lobby' ? 'gothic-window-v2' : 'library-hall';
-  if (screen === 'lobby' || screen === 'game') requestKakaoPortraitLock(`screen-${screen}`);
+  if (screen === 'lobby' || screen === 'game') {
+    syncGameViewport({ reason: `screen-${screen}` });
+    portraitRuntime?.syncViewport();
+  }
   document.documentElement.style.setProperty('--library-background-url', bg.endsWith('-v2') ? backgroundImageSet(bg) : `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
   el.backButton.classList.toggle('hidden', screen === 'login');

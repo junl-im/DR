@@ -2014,3 +2014,46 @@ body[data-screen="lobby"] .mission-deck {
   42% { box-shadow: 0 0 18px rgba(125, 220, 255, 0.2); }
   100% { box-shadow: inherit; }
 }
+
+/* v1.0.25 Kakao lobby entry rotation root fix and stable portrait shell */
+html.source-landscape body {
+  width: var(--raw-width);
+  height: var(--raw-height);
+  min-height: var(--raw-height);
+  display: block;
+  overflow: hidden;
+}
+html.source-landscape .app-shell {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  width: var(--app-width);
+  min-width: var(--app-width);
+  max-width: var(--app-width);
+  height: var(--app-height);
+  min-height: var(--app-height);
+  max-height: var(--app-height);
+  transform: translate(-50%, -50%) scale(var(--app-scale));
+  transform-origin: center center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+body[data-browser="kakao"] .browser-guard,
+body[data-browser="kakao"] .portrait-lock-overlay {
+  display: none !important;
+}
+body[data-browser="kakao"] .app-shell {
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+body[data-browser="kakao"] .pixi-board-host,
+body[data-screen="game"] .pixi-board-host {
+  touch-action: none;
+}
+body[data-browser="kakao"] .start-now-button,
+body[data-browser="kakao"] .stage-node,
+body[data-browser="kakao"] .mission-card {
+  touch-action: manipulation;
+}

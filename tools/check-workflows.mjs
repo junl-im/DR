@@ -21,8 +21,9 @@ if (!pagesWorkflow.includes('npm run check:scroll-polish')) errors.push('github-
 if (!pagesWorkflow.includes('npm run check:boss-atlas-rendering')) errors.push('github-pages.yml: expected boss atlas rendering check.');
 if (!pagesWorkflow.includes('npm run check:asset-compression')) errors.push('github-pages.yml: expected asset compression check.');
 if (!pagesWorkflow.includes('npm run check:interaction-polish')) errors.push('github-pages.yml: expected interaction polish check.');
+if (!pagesWorkflow.includes('npm run check:kakao-lobby-rotation')) errors.push('github-pages.yml: expected Kakao lobby rotation check.');
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.24 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.25 QA checks.');

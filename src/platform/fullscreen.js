@@ -1,38 +1,47 @@
 import { isStandaloneDisplayMode } from './browserGuard.js';
 import { applyPortraitFrame } from './viewportFrame.js';
 
-function syncAppViewport() {
-  return applyPortraitFrame();
+const KAKAO_PATTERNS = [/KAKAOTALK/i, /KakaoTalk/i, /KAKAO/i];
+
+function isKakaoInApp() {
+  return KAKAO_PATTERNS.some((pattern) => pattern.test(navigator.userAgent || ''));
 }
 
-export async function requestGameFullscreen() {
+export function syncGameViewport(options = {}) {
+  return applyPortraitFrame(options);
+}
+
+export async function requestGameFullscreen(options = {}) {
   const root = document.documentElement;
-  syncAppViewport();
+  const hardRequest = options.hard === true && !isKakaoInApp();
+  syncGameViewport({ reason: options.reason || 'manual' });
 
-  try {
-    if (!document.fullscreenElement && root.requestFullscreen) {
-      await root.requestFullscreen({ navigationUI: 'hide' });
+  if (hardRequest) {
+    try {
+      if (!document.fullscreenElement && root.requestFullscreen) {
+        await root.requestFullscreen({ navigationUI: 'hide' });
+      }
+    } catch {
+      // Fullscreen is optional. The virtual portrait frame is the layout source of truth.
     }
-  } catch {
-    // Some in-app browsers reject fullscreen. The virtual portrait frame keeps the UI stable.
+
+    try {
+      if (screen.orientation?.lock) {
+        await screen.orientation.lock('portrait');
+      }
+    } catch {
+      // Orientation lock is optional and is intentionally skipped in Kakao in-app browsers.
+    }
   }
 
-  try {
-    if (screen.orientation?.lock) {
-      await screen.orientation.lock('portrait');
-    }
-  } catch {
-    // Best effort only. Layout does not depend on this succeeding.
-  }
-
-  syncAppViewport();
+  syncGameViewport({ reason: options.reason || 'manual-after' });
   return document.fullscreenElement || isStandaloneDisplayMode();
 }
 
 export function initFullscreenControls(button, statusCallback) {
-  syncAppViewport();
-  window.addEventListener('resize', syncAppViewport, { passive: true });
-  window.visualViewport?.addEventListener('resize', syncAppViewport, { passive: true });
+  syncGameViewport({ reason: 'init' });
+  window.addEventListener('resize', () => syncGameViewport({ reason: 'resize' }), { passive: true });
+  window.visualViewport?.addEventListener('resize', () => syncGameViewport({ reason: 'visual-resize' }), { passive: true });
 
   if (!button) return;
 
@@ -43,13 +52,16 @@ export function initFullscreenControls(button, statusCallback) {
   };
 
   button.addEventListener('click', async () => {
-    const active = await requestGameFullscreen();
+    const active = await requestGameFullscreen({ hard: true, reason: 'settings-button' });
     updateLabel();
     if (statusCallback) {
       statusCallback(active ? '게임 화면을 맞췄습니다.' : '화면 크기에 맞춰 게임 프레임을 유지합니다.');
     }
   });
 
-  document.addEventListener('fullscreenchange', updateLabel);
+  document.addEventListener('fullscreenchange', () => {
+    syncGameViewport({ reason: 'fullscreenchange' });
+    updateLabel();
+  });
   updateLabel();
 }

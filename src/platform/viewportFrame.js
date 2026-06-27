@@ -54,12 +54,15 @@ export function computePortraitFrame(forcePortrait = isMobileLikeViewport()) {
   }
 
   if (sourceLandscape) {
-    const usableHeight = Math.max(360, raw.height - LANDSCAPE_HEIGHT_MARGIN);
-    const stored = readStoredPortraitFrame();
-    const idealWidth = Math.max(MIN_APP_WIDTH, Math.min(stored?.appWidth || Math.round(usableHeight * PORTRAIT_RATIO), MAX_APP_WIDTH));
-    const idealHeight = Math.max(Math.round(idealWidth / PORTRAIT_RATIO), stored?.appHeight || 0, usableHeight);
+    // v1.0.25: do not reuse a tall portrait-session frame after Kakao reports landscape.
+    // Rebuild a fresh 9:16 virtual stage from the current short side so the app never
+    // adopts the landscape width and never stays pinned to a stale orientation frame.
+    const usableHeight = Math.max(320, raw.height - LANDSCAPE_HEIGHT_MARGIN);
+    const baseWidth = Math.round(usableHeight * PORTRAIT_RATIO);
+    const idealWidth = Math.max(MIN_APP_WIDTH, Math.min(baseWidth, MAX_APP_WIDTH, raw.width));
+    const idealHeight = Math.round(idealWidth / PORTRAIT_RATIO);
     const appScale = Math.min(1, raw.width / idealWidth, usableHeight / idealHeight);
-    const safeScale = Math.max(0.42, appScale);
+    const safeScale = Math.max(0.48, appScale);
     return {
       rawWidth: raw.width,
       rawHeight: raw.height,

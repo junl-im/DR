@@ -1,3 +1,5 @@
+import { applyPortraitFrame } from './viewportFrame.js';
+
 const kakaoInAppPatterns = [
   /KAKAOTALK/i,
   /KakaoTalk/i,
@@ -25,14 +27,12 @@ export function initBrowserGuard() {
   };
 
   const requestPortraitFullscreen = async () => {
-    try {
-      if (screen.orientation?.lock) await screen.orientation.lock('portrait');
-    } catch {
-      // Best effort only. Counter-rotated portrait frame is the layout fallback.
-    }
-    setStatus('화면을 맞췄습니다.');
-    document.dispatchEvent(new CustomEvent('dream-library:portrait-lock-requested'));
-    return true;
+    // Kakao in-app browsers can report a landscape visualViewport after fullscreen/orientation APIs.
+    // Keep this path soft: recompute the virtual portrait frame only.
+    applyPortraitFrame({ forcePortrait: true, reason: 'browser-guard-soft-fit' });
+    setStatus('게임 화면을 맞췄습니다.');
+    document.dispatchEvent(new CustomEvent('dream-library:viewport-frame-requested'));
+    return false;
   };
 
   fullscreenButton?.addEventListener('click', requestPortraitFullscreen);
@@ -64,7 +64,7 @@ export function initBrowserGuard() {
     },
     showRecovery(_message = '') {
       hide();
-      document.dispatchEvent(new CustomEvent('dream-library:portrait-lock-requested'));
+      document.dispatchEvent(new CustomEvent('dream-library:viewport-frame-requested'));
     },
     maybeShowSoftTip() {
       hide();

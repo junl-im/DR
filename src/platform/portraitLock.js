@@ -3,7 +3,6 @@ import { applyPortraitFrame } from './viewportFrame.js';
 const KAKAO_PATTERNS = [/KAKAOTALK/i, /KakaoTalk/i, /KAKAO/i];
 const MOBILE_PATTERNS = [/Android/i, /iPhone/i, /iPad/i, /iPod/i];
 const LOCK_KEY = 'dream-library-portrait-frame-applied';
-const TAP_SLOP = 10;
 
 export function initPortraitRuntimeGuard(options = {}) {
   const userAgent = navigator.userAgent || '';
@@ -29,7 +28,7 @@ export function initPortraitRuntimeGuard(options = {}) {
     const point = readPoint(event);
     const distance = Math.hypot(point.x - gestureStart.x, point.y - gestureStart.y);
     const duration = point.time - gestureStart.time;
-    return distance <= TAP_SLOP && duration <= 520;
+    return distance <= 14 && duration <= 650;
   };
 
   const setStatus = (message) => {
@@ -38,27 +37,33 @@ export function initPortraitRuntimeGuard(options = {}) {
   };
 
   const syncViewport = () => {
-    const view = applyPortraitFrame({ forcePortrait: isMobile || isKakao });
-    document.body.dataset.fullscreenRuntime = isKakao ? 'kakao-inapp' : isMobile ? 'mobile' : 'desktop';
+    const view = applyPortraitFrame({ forcePortrait: isMobile || isKakao, reason: 'portrait-runtime' });
+    document.body.dataset.fullscreenRuntime = isKakao ? 'kakao-inapp-soft' : isMobile ? 'mobile-soft' : 'desktop';
     overlay?.classList.add('hidden');
     return { width: view.appWidth, height: view.appHeight, landscape: false, sourceLandscape: view.sourceLandscape };
   };
 
   const requestLock = async (source = 'auto') => {
+    // v1.0.25: In Kakao in-app browser, fullscreen/orientation APIs are skipped because
+    // they can pin visualViewport to landscape after the lobby entry tap. The virtual
+    // portrait frame is now the only automatic correction path.
     syncViewport();
     requestCount += 1;
-    try {
-      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-      }
-    } catch {
-      // Best effort only. The virtual portrait frame is the real layout fallback.
-    }
 
-    try {
-      if (screen.orientation?.lock) await screen.orientation.lock('portrait');
-    } catch {
-      // Best effort only.
+    if (!isKakao) {
+      try {
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement && source === 'button') {
+          await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        }
+      } catch {
+        // Best effort only.
+      }
+
+      try {
+        if (screen.orientation?.lock && source === 'button') await screen.orientation.lock('portrait');
+      } catch {
+        // Best effort only.
+      }
     }
 
     syncViewport();
@@ -84,16 +89,16 @@ export function initPortraitRuntimeGuard(options = {}) {
   const onResize = () => syncViewport();
   window.addEventListener('resize', onResize, { passive: true });
   window.visualViewport?.addEventListener('resize', onResize, { passive: true });
-  window.addEventListener('orientationchange', () => window.setTimeout(() => {
-    syncViewport();
-    if (isKakao || isMobile) void requestLock('orientationchange');
-  }, 80), { passive: true });
+  window.addEventListener('orientationchange', () => window.setTimeout(syncViewport, 80), { passive: true });
+  document.addEventListener('dream-library:viewport-frame-requested', syncViewport);
 
   const gestureLock = (event) => {
     if (!(isKakao || isMobile)) return;
     if (!isTapLikeGesture(event)) return;
     if (requestCount >= 2 && sessionStorage.getItem(LOCK_KEY) === 'yes') return;
-    void requestLock('gesture');
+    syncViewport();
+    requestCount += 1;
+    sessionStorage.setItem(LOCK_KEY, 'yes');
   };
   document.addEventListener('pointerdown', rememberGestureStart, { passive: true });
   document.addEventListener('touchstart', rememberGestureStart, { passive: true });
