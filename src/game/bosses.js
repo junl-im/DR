@@ -2,6 +2,12 @@ const bossAsset = (name) => `${import.meta.env.BASE_URL}assets/characters/${name
 
 const bossFrameAsset = (name) => `${import.meta.env.BASE_URL}assets/characters/boss-motion-v2/${name}.png`;
 const bossStickerAsset = (name) => `${import.meta.env.BASE_URL}assets/characters/boss-sticker-v2/${name}.png`;
+const bossAtlasFrame = (folder, name) => `${folder}/${name}.png`;
+const BOSS_ATLAS_FRAME_SETS = {
+  forgottenSpirit: { idle: bossAtlasFrame('boss-motion-v2', 'frame-01'), warn: bossAtlasFrame('boss-motion-v2', 'frame-02'), hit: bossAtlasFrame('boss-motion-v2', 'frame-03'), break: bossAtlasFrame('boss-motion-v2', 'frame-04') },
+  shadowLibrarian: { idle: bossAtlasFrame('boss-motion-v2', 'frame-05'), warn: bossAtlasFrame('boss-motion-v2', 'frame-06'), hit: bossAtlasFrame('boss-motion-v2', 'frame-07'), break: bossAtlasFrame('boss-motion-v2', 'frame-08') },
+  sealedPageGolem: { idle: bossAtlasFrame('boss-motion-v2', 'frame-09'), warn: bossAtlasFrame('boss-sticker-v2', 'frame-02'), hit: bossAtlasFrame('boss-sticker-v2', 'frame-05'), break: bossAtlasFrame('boss-sticker-v2', 'frame-08') }
+};
 const BOSS_FRAME_SETS = {
   forgottenSpirit: {
     idle: bossFrameAsset('frame-01'),
@@ -38,7 +44,8 @@ export const BOSSES = {
     warningSeconds: 15,
     comboWarningEvery: 6,
     shakePower: 7,
-    frames: BOSS_FRAME_SETS.forgottenSpirit
+    frames: BOSS_FRAME_SETS.forgottenSpirit,
+    atlasFrames: BOSS_ATLAS_FRAME_SETS.forgottenSpirit
   },
   shadowLibrarian: {
     id: 'shadow-librarian',
@@ -54,7 +61,8 @@ export const BOSSES = {
     warningSeconds: 18,
     comboWarningEvery: 5,
     shakePower: 8,
-    frames: BOSS_FRAME_SETS.shadowLibrarian
+    frames: BOSS_FRAME_SETS.shadowLibrarian,
+    atlasFrames: BOSS_ATLAS_FRAME_SETS.shadowLibrarian
   },
   sealedPageGolem: {
     id: 'sealed-page-golem',
@@ -70,7 +78,8 @@ export const BOSSES = {
     warningSeconds: 20,
     comboWarningEvery: 4,
     shakePower: 10,
-    frames: BOSS_FRAME_SETS.sealedPageGolem
+    frames: BOSS_FRAME_SETS.sealedPageGolem,
+    atlasFrames: BOSS_ATLAS_FRAME_SETS.sealedPageGolem
   }
 };
 

@@ -166,16 +166,23 @@ export const TILE_ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.png`
 ];
 
+export const BOSS_FRAME_ATLAS_ASSETS = [
+  `${import.meta.env.BASE_URL}assets/atlas/boss-frames-v2.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/atlas/boss-frames-v2.png`
+];
+
 export const ATLAS_ASSETS = [
   ...TILE_ATLAS_ASSETS,
+  ...BOSS_FRAME_ATLAS_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.22.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.23.json`
 ];
 
 export const PRELOAD_ASSETS = [
-  // v1.0.22: keep packed tile atlas explicit so Actions policy checks never miss it.
+  // v1.0.23: keep packed tile and boss atlas explicit so Actions policy checks never miss them.
   ...TILE_ATLAS_ASSETS,
+  ...BOSS_FRAME_ATLAS_ASSETS,
   ...ATLAS_ASSETS,
   `${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/lobby-garden.png`,
@@ -211,7 +218,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.22.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.23.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.webp`,

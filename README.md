@@ -60,6 +60,24 @@ Atlas 생성
 
 ## Version History
 
+
+### v1.0.23 - Boss Frame Atlas, Mobile Layout QA, Ranking and Scroll Polish Patch
+
+- 보스 모션/스티커 프레임 18장을 `public/assets/atlas/boss-frames-v2.png`와 `boss-frames-v2.atlas.json`으로 패킹
+- `BOSS_FRAME_ATLAS_ASSETS`를 추가해 보스 프레임 atlas도 preload/cache 정책에 포함
+- 보스 데이터에 `atlasFrames` 키를 추가하고, 전투 UI의 `boss-core`에 현재 프레임 상태와 atlas frame key를 기록
+- 보스 warning/hit/break 프레임 전환 시 DOM 이미지 fallback은 유지하면서, 이후 Pixi 렌더링 연결을 위한 atlas metadata를 확보
+- 작은 화면 전투 HUD를 추가 압축해 퍼즐판 높이를 더 확보
+- source landscape 상태에서 앱 shell이 가로폭을 다시 차지하지 않도록 모바일 layout QA rule 추가
+- 로비 세로 드래그 guard 기준을 완화/강화해 스크롤 중 카드 클릭 오동작을 줄임
+- 랭킹 리스트에 Cloud/Local 혼합 표시 안내 행을 추가하고, 모바일 rank row 밀도를 재정리
+- 기술 라벨처럼 보이던 `v2 atlas 우선 매핑` 노출 문구를 사용자용 `프리미엄 타일` 문구로 교체
+- `npm run check:boss-atlas`, `npm run check:mobile-layout`, `npm run check:scroll-polish` 추가 및 Actions 검사에 반영
+- Texture Atlas manifest v1.0.23 갱신
+- service worker 캐시를 v1.0.23으로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.22 - CI Atlas Preload, Annotation Cleanup, Background Optimization and HUD Density Patch
 
 - v1.0.20 Actions 실패 로그를 기준으로 `check:v2-assets` 실패 원인을 우선 수정
@@ -699,7 +717,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했고, v1.0.20에서는 v2 상태별 타일을 실제 atlas로 패킹했고, v1.0.21에서는 로비 모션/버튼 상태/랭킹 UX를 강화했고, v1.0.22에서는 atlas preload CI와 WebP 배경 최적화/HUD 밀도 개선을 적용했고, v1.0.23에서는 보스 프레임 atlas와 모바일 layout QA/스크롤 polish를 추가했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              84+ files
@@ -709,7 +727,7 @@ public/assets/ui/*.png                    80+ files
 public/assets/effects/*.png               44+ files
 public/assets/meta/*                      11 files
 public/assets/atlas/dream-objects.png     1 file
-public/assets/atlas/*.json                1 file
+public/assets/atlas/*.json                3+ files
 public/assets/meta/tile-manifest.json     1 file
 ```
 
@@ -733,16 +751,17 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 
 ## Next Version Plan
 
-### v1.0.21 예정 - Lobby Motion, Button States and Ranking UX Patch
+### v1.0.24 예정 - Real Boss Atlas Rendering, Asset Compression and Interaction Polish Patch
 
-- 로비 마스코트 표정/동작 카드와 호흡 애니메이션 강화
-- 버튼 hover/pressed PNG를 실제 pointer 상태와 더 깊게 연결
-- Firebase/로컬 랭킹 혼합 표시 UX 개선
-- 작은 화면 전투 HUD 높이 추가 압축
-- atlas frame lookup을 VFX와 보스 프레임까지 확장
+- 보스 프레임 atlas metadata를 Pixi 전투 레이어와 더 깊게 연결
+- boss DOM 이미지 fallback과 atlas 렌더링 후보를 분리해 전환 실험
+- `boss-frames-v2.png` WebP/압축 후보 생성 및 용량 비교
+- `v2-tiles.png` atlas 압축 후보와 품질 비교
 - 로비/도감/복원 패널 스크롤 QA 계속 개선
-- 흰 배경 잔여 에셋 2차 검사
-- 큰 JS chunk lazy loading 범위 확대
+- 가로 viewport 실제 기기 대응 로그 없는 내부 보정 추가 점검
+- 버튼 상태 PNG를 더 많은 카드형 액션 버튼에 연결
+- 랭킹 Cloud/Local 혼합 표시 시각 밀도 추가 정리
+- 작은 화면 전투 HUD와 보스 컷인 높이 추가 조정
 
 ## KakaoTalk / In-App Browser Policy
 

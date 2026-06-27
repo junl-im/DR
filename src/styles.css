@@ -1605,7 +1605,7 @@ body[data-screen="game"] .app-shell {
   -webkit-user-select: none;
 }
 .selected-stage-card::after {
-  content: 'v2 오브젝트 우선 배정';
+  content: '추천 오브젝트'; /* v2 오브젝트 우선 배정 */
   position: absolute;
   right: 1rem;
   top: 0.9rem;
@@ -1680,7 +1680,7 @@ body[data-screen="lobby"] .collection-tile {
   image-rendering: auto;
 }
 .selected-stage-card::after {
-  content: 'v2 atlas 우선 매핑';
+  content: '프리미엄 타일';
 }
 @media (orientation: landscape) and (max-height: 520px) {
   html.source-landscape .topbar { transform: scale(0.92); transform-origin: top center; }
@@ -1874,4 +1874,71 @@ body[data-screen="game"] .hud-meters span {
 }
 @supports (background-image: image-set(url('x.webp') type('image/webp'))) {
   body::before { image-rendering: auto; }
+}
+
+
+/* v1.0.23 boss frame atlas, mobile layout QA, ranking and scroll polish */
+:root {
+  --boss-motion-atlas-url: url('/DR/assets/atlas/boss-frames-v2.png');
+}
+.boss-core[data-boss-atlas-frame] {
+  isolation: isolate;
+}
+.boss-core[data-boss-frame="warn"] img { transform: translateY(-2px) scale(1.08) rotate(1deg); filter: drop-shadow(0 0 24px rgba(125, 220, 255, 0.5)) brightness(1.08); }
+.boss-core[data-boss-frame="hit"] img { transform: translateY(-4px) scale(1.14) rotate(-1.3deg); filter: drop-shadow(0 0 26px rgba(245, 200, 107, 0.6)) brightness(1.22); }
+.boss-core[data-boss-frame="break"] img { transform: translateY(-6px) scale(1.18) rotate(-2deg); filter: drop-shadow(0 0 30px rgba(143, 107, 255, 0.72)) brightness(1.3); }
+.boss-core[data-boss-frame="break"]::before,
+.boss-core[data-boss-frame="hit"]::before {
+  content: '';
+  position: absolute;
+  inset: -18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 200, 107, 0.24), rgba(125, 220, 255, 0.12) 42%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: bossFramePulse 0.56s ease-out both;
+  z-index: -1;
+}
+.leaderboard-list .rank-source-note,
+.daily-leaderboard-list .rank-source-note {
+  display: block;
+  padding: 0.34rem 0.52rem;
+  border-radius: 14px;
+  border: 1px solid rgba(125, 220, 255, 0.12);
+  background: rgba(6, 21, 45, 0.24);
+  color: var(--muted);
+  font-size: 0.68rem;
+  list-style: none;
+}
+.rank-row { grid-template-columns: 1.45rem minmax(0, 1fr) auto auto; min-height: 32px; }
+.rank-row[data-rank-mode="mixed"] { background: linear-gradient(135deg, rgba(6, 21, 45, 0.38), rgba(15, 47, 87, 0.28)); }
+body[data-screen="lobby"] .app-shell { scroll-padding-bottom: max(42px, env(safe-area-inset-bottom)); }
+body[data-screen="lobby"] .mission-card,
+body[data-screen="lobby"] .stage-node,
+body[data-screen="lobby"] .collection-tile,
+body[data-screen="lobby"] .restore-node {
+  -webkit-tap-highlight-color: transparent;
+}
+body.is-lobby-dragging .mission-card *,
+body.is-lobby-dragging .stage-node *,
+body.is-lobby-dragging .collection-tile * { pointer-events: none; }
+@media (max-height: 700px), (max-width: 380px) {
+  body[data-screen="game"] .topbar { min-height: 40px; padding-block: 0.36rem; }
+  body[data-screen="game"] .game-hud { padding: 0.46rem 0.54rem; margin-bottom: 0.42rem; }
+  body[data-screen="game"] .hud-topline h2 { font-size: clamp(1rem, 4vw, 1.28rem); }
+  body[data-screen="game"] .hud-meters { gap: 0.24rem; margin-top: 0.34rem; }
+  body[data-screen="game"] .hud-meters div { padding: 0.24rem 0.14rem; border-radius: 12px; }
+  body[data-screen="game"] .boss-lane { min-height: 50px; gap: 0.42rem; margin-bottom: 0.24rem; }
+  body[data-screen="game"] .boss-core { width: 48px; height: 48px; }
+  body[data-screen="game"] .boss-core img { width: 70px; height: 70px; }
+  body[data-screen="game"] .battle-stage { padding: 0.42rem; }
+  body[data-screen="game"] .pixi-board-host { min-height: min(64vh, 430px); }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  html.source-landscape .app-shell { max-width: min(var(--app-width), calc(var(--raw-height) * 0.5625)); }
+  html.source-landscape body { overscroll-behavior: none; }
+}
+@keyframes bossFramePulse {
+  0% { opacity: 0; transform: scale(0.72); }
+  38% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0; transform: scale(1.22); }
 }

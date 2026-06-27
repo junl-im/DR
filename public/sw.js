@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.22';
+const CACHE_NAME = 'dream-library-cache-v1.0.23';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -21,6 +21,8 @@ const CORE_ASSETS = [
   './assets/characters/boss-motion-v2/frame-09.png',
   './assets/atlas/v2-tiles.png',
   './assets/atlas/v2-tiles.atlas.json',
+  './assets/atlas/boss-frames-v2.png',
+  './assets/atlas/boss-frames-v2.atlas.json',
   './assets/ui/logo-dream-library-v2.png',
   './assets/ui/keys-v2/back-normal.png',
   './assets/ui/keys-v2/hint-normal.png',
@@ -48,7 +50,7 @@ const CORE_ASSETS = [
   './assets/meta/browser-handoff.png',
   './assets/meta/collection-codex.png',
   './assets/meta/asset-import-v1.0.11.json',
-  './assets/meta/texture-atlas-manifest-v1.0.22.json',
+  './assets/meta/texture-atlas-manifest-v1.0.23.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',

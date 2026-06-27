@@ -2,7 +2,7 @@ import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDo
 import './styles.css';
 import { db, firebaseReady } from './firebase.js';
 import { getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
-import { ATLAS_ASSETS, DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
+import { ATLAS_ASSETS, BOSS_FRAME_ATLAS_ASSETS, DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
 import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
 import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, findHint, getTileAt, isCleared, isSpecialTileBlocked, revealAllSpecial, revealPairSpecials, revealSpecialTile, removePair, shuffleRemaining } from './game/shisen.js';
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
@@ -264,6 +264,7 @@ async function init() {
 
   await renderer.initAmbient(el.pixiStage);
   await renderer.preloadAssets(ATLAS_ASSETS);
+  void renderer.preloadAssets(BOSS_FRAME_ATLAS_ASSETS);
   renderer.preloadAssets(PRELOAD_ASSETS);
   void loadSpineRuntime();
 
@@ -571,6 +572,7 @@ function initLobbyScrollGuard() {
   let startY = 0;
   let startTime = 0;
   let dragging = false;
+  let dragLocked = false;
 
   shell.addEventListener('pointerdown', (event) => {
     if (state.screen !== 'lobby') return;
@@ -578,6 +580,7 @@ function initLobbyScrollGuard() {
     startY = event.clientY;
     startTime = performance.now();
     dragging = false;
+    dragLocked = false;
     document.body.classList.remove('is-lobby-dragging');
   }, { passive: true });
 
@@ -585,8 +588,9 @@ function initLobbyScrollGuard() {
     if (state.screen !== 'lobby') return;
     const dx = Math.abs(event.clientX - startX);
     const dy = Math.abs(event.clientY - startY);
-    if (dy > 10 && dy > dx * 1.2) {
+    if (dy > 7 && dy > dx * 0.85) {
       dragging = true;
+      dragLocked = dy > 14;
       document.body.classList.add('is-lobby-dragging');
     }
   }, { passive: true });
@@ -594,7 +598,7 @@ function initLobbyScrollGuard() {
   shell.addEventListener('click', (event) => {
     if (state.screen !== 'lobby') return;
     const elapsed = performance.now() - startTime;
-    if (dragging && elapsed < 900) {
+    if ((dragging || dragLocked) && elapsed < 1100) {
       event.preventDefault();
       event.stopPropagation();
     }
@@ -1222,16 +1226,22 @@ function renderBossPanel() {
   el.bossTelegraph.classList.add('hidden');
   el.bossCore.dataset.bossId = boss.id;
   el.bossCore.dataset.phase = 'stable';
+  el.bossCore.dataset.bossFrame = 'idle';
+  el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.idle || '';
 }
 
 
 function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
   const src = boss.frames?.[stateName] || boss.frames?.idle || boss.asset;
+  el.bossCore.dataset.bossFrame = stateName;
+  el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.[stateName] || boss.atlasFrames?.idle || '';
   if (el.bossImage.src !== src) el.bossImage.src = src;
   if (stateName !== 'idle') {
     window.setTimeout(() => {
       const idle = boss.frames?.idle || boss.asset;
+      el.bossCore.dataset.bossFrame = 'idle';
+      el.bossCore.dataset.bossAtlasFrame = boss.atlasFrames?.idle || '';
       if (el.bossImage.src !== idle) el.bossImage.src = idle;
     }, stateName === 'break' ? 680 : 420);
   }
@@ -1476,7 +1486,8 @@ function mergeRankRows(cloudRows: any[], localRows: any[]) {
 
 function renderRankRows(rows: any[], emptyLabel = '로컬 플레이 준비 완료', mode: 'cloud' | 'local' | 'mixed' = 'mixed') {
   if (!rows.length) return `<li class="rank-empty">${escapeHtml(emptyLabel)}</li>`;
-  return rows.map((entry, index) => {
+  const sourceSummary = mode === 'mixed' ? '<li class="rank-source-note">Cloud 기록과 기기 기록을 함께 표시합니다.</li>' : mode === 'local' ? '<li class="rank-source-note">기기 기록 기준으로 표시합니다.</li>' : '';
+  return sourceSummary + rows.map((entry, index) => {
     const rankClass = index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '';
     const sourceClass = entry.source === 'cloud' ? 'rank-cloud' : 'rank-local';
     const sourceLabel = entry.source === 'cloud' ? 'Cloud' : 'Local';

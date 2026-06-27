@@ -63,6 +63,9 @@ jobs:
           npm run check:ranking-ux
           npm run check:atlas-extended
           npm run check:background-optimization
+          npm run check:boss-atlas
+          npm run check:mobile-layout
+          npm run check:scroll-polish
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

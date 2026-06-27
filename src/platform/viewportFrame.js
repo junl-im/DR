@@ -3,6 +3,7 @@ const PORTRAIT_RATIO = 9 / 16;
 const MAX_APP_WIDTH = 560;
 const MIN_APP_WIDTH = 320;
 const FRAME_KEY = 'dream-library-last-portrait-frame';
+const lastPortraitFrame = FRAME_KEY;
 const LANDSCAPE_HEIGHT_MARGIN = 14;
 
 function readRawViewport() {
