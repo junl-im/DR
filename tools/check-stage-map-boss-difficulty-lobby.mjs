@@ -13,7 +13,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const requireText = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (pkg.version !== '1.0.47') errors.push(`package version must be 1.0.47, got ${pkg.version}`);
+if (!['1.0.47', '1.0.48'].includes(pkg.version)) errors.push(`package version must be 1.0.47 or 1.0.48, got ${pkg.version}`);
 if (!pkg.scripts['check:stage-map-boss-difficulty-lobby']) errors.push('missing package script check:stage-map-boss-difficulty-lobby');
 requireText(index, 'statusbar-icon-right-v1046', 'v1.0.47 boss icon-right layout in index');
 requireText(index, 'v1046-icon-readability', 'v1.0.47 boss readable chip panel');

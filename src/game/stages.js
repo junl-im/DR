@@ -127,7 +127,7 @@ export const CHAPTERS = [
 export const SUMMER_SEASON_EVENT = {
   id: 'summer-2026',
   title: '한여름 꿈결 축제',
-  subtitle: '썸머 시즌 대규모 업데이트',
+  subtitle: '썸머 시즌 라이브 밸런스 업데이트',
   totalStages: 36,
   startStageNumber: 43,
   endStageNumber: 78,
@@ -135,7 +135,10 @@ export const SUMMER_SEASON_EVENT = {
   currencyType: 'premium-07',
   clearReward: 1,
   comboEvery: 5,
-  comboBonusSeconds: 5
+  comboBonusSeconds: 5,
+  passMilestones: [6, 12, 18, 24, 30, 36],
+  passRewardType: 'premium-12',
+  passRewardLabel: '태양 왕관'
 };
 
 const stage = (id, chapterId, bossId, number, title, subtitle, difficultyKey, reward, unlockAfter, modifiers = [], extra = {}) => ({

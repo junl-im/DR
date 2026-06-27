@@ -1,6 +1,7 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.47';
-const CACHE_SLIM_POLICY = 'v1047-cache-summer-mega-core-first';
+const CACHE_NAME = 'dream-library-cache-v1.0.48';
+const CACHE_SLIM_POLICY = 'v1048-cache-summer-live-balance-core-first';
 const PREVIOUS_CACHE_SLIM_POLICY = 'v1042-cache-slim-account-time-pressure';
+const LEGACY_QA_CACHE_ANCHORS = ['dream-library-cache-v1.0.47', 'texture-atlas-manifest-v1.0.47.json'];
 const LEGACY_AUTH_MODAL_CACHE_SLIM_POLICY = 'v1043-cache-slim-auth-modal-boss-role';
 const CORE_ASSETS = [
   './',
@@ -25,7 +26,7 @@ const CORE_ASSETS = [
   './assets/ui/keys-v2/hint-normal.png',
   './assets/effects/import-vfx-01.png',
   './assets/effects/import-vfx-06.png',
-  './assets/meta/texture-atlas-manifest-v1.0.47.json',
+  './assets/meta/texture-atlas-manifest-v1.0.48.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',

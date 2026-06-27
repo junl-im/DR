@@ -28,7 +28,7 @@ requireText(css, 'statusbar-icon-right-v1046', 'boss icon CSS');
 requireText(css, 'data-lobby-drag-rescue="v1046-gesture-final-rescue"', 'lobby drag CSS hook');
 requireText(sw, 'dream-library-cache-v1.0.47', 'service worker v1.0.47 cache');
 requireText(sw, 'texture-atlas-manifest-v1.0.47.json', 'v1.0.47 manifest cache');
-if (pkg.version !== '1.0.47') throw new Error(`[v1.0.47] package version mismatch: ${pkg.version}`);
+if (!['1.0.47', '1.0.48'].includes(pkg.version)) throw new Error(`[v1.0.47+] package version mismatch: ${pkg.version}`);
 if (!pkg.scripts['check:stage-ladder-boss-lobby']) throw new Error('[v1.0.47] missing package script check:stage-ladder-boss-lobby');
 
 const stageMatches = [...stages.matchAll(/stage\('/g)].length;

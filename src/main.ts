@@ -29,11 +29,11 @@ document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
-const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1047-summer';
+const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1048-summer-pass';
 const LEGACY_BOSS_VISUAL_STACK_TOKEN = 'stable-atlas-v1040';
-const STAGE_LADDER_EXPANSION_PATCH = 'v1047-summer-stage-comfort-78';
+const STAGE_LADDER_EXPANSION_PATCH = 'v1048-summer-live-balance-78';
 const LEGACY_STAGE_MAP_COMFORT_TOKEN = 'v1046-stage-map-comfort-42';
-const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1047-season-gesture-fluid';
+const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1048-campaign-gesture-fluid';
 const LEGACY_LOBBY_DRAG_RESCUE_TOKEN = 'v1046-gesture-final-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
@@ -41,9 +41,21 @@ const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
 const AUTH_MODAL_BOSS_ROLE_PATCH = 'v1043-auth-modal-boss-role';
 const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
-const DIFFICULTY_TEMPO_PATCH = 'v1047-season-difficulty-tempo-wide-ladder';
+const DIFFICULTY_TEMPO_PATCH = 'v1048-summer-live-difficulty-tempo';
 const LEGACY_DIFFICULTY_TEMPO_TOKEN = 'v1046-difficulty-tempo-wide-ladder';
-const SUMMER_SEASON_PATCH = 'v1047-summer-mega-season';
+const SUMMER_SEASON_PATCH = 'v1048-summer-live-balance-pass';
+const SUMMER_REWARD_PASS_PATCH = 'v1048-summer-reward-pass-track';
+const SUMMER_LIVE_BALANCE_PATCH = 'v1048-summer-live-balance';
+const SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY: Record<string, number> = {
+  beginner: 6,
+  easy: 6,
+  normal: 5,
+  growth: 5,
+  skilled: 4,
+  expert: 4,
+  hard: 3,
+  nightmare: 3
+};
 const DIFFICULTY_TEMPO_PROFILES: Record<string, { bonus: number; first: number; repeat: number; pressure: string }> = {
   beginner: { bonus: 4, first: 22, repeat: 14, pressure: 'very-soft' },
   easy: { bonus: 4, first: 20, repeat: 13, pressure: 'soft' },
@@ -307,6 +319,7 @@ const state = {
   qualityProfile: detectDeviceProfile(),
   warnedLowTime: false,
   lastClearedStageId: '',
+  lastSeasonPassReward: null as null | { label: string; amount: number; milestone: number },
   stageModifiers: [] as string[],
   pressureTick: 0,
   timeSealBonusCount: 0,
@@ -1141,6 +1154,8 @@ async function clearStage() {
   clearInterval(state.timerId);
   const stage = getStageById(state.selectedStageId);
   const difficulty = DIFFICULTIES[stage.difficultyKey];
+  const wasAlreadyCleared = Boolean(state.campaignProgress.cleared[stage.id]);
+  state.lastSeasonPassReward = null;
   const timeBonus = state.remainingSeconds * 5;
   const comboBonus = state.comboMax * 80;
   const score = Math.round((state.score + timeBonus + comboBonus) * difficulty.scoreMultiplier);
@@ -1149,7 +1164,16 @@ async function clearStage() {
   state.lastClearedStageId = stage.id;
   unlockStage(stage.id, stars, score);
   addReward(stage.reward.type, stage.reward.amount);
-  if (isSummerSeasonStage(stage)) addReward(SUMMER_SEASON_EVENT.currencyType, SUMMER_SEASON_EVENT.clearReward);
+  if (isSummerSeasonStage(stage)) {
+    addReward(SUMMER_SEASON_EVENT.currencyType, SUMMER_SEASON_EVENT.clearReward);
+    if (!wasAlreadyCleared) {
+      const passReward = getSummerSeasonPassRewardForClears(getSummerSeasonClears());
+      if (passReward) {
+        addReward(passReward.type, passReward.amount);
+        state.lastSeasonPassReward = passReward;
+      }
+    }
+  }
   if (state.currentBoardId === 'daily') addReward('spark', state.dailyChallenge.rewardBoost);
   state.localStats.bestScore = Math.max(state.localStats.bestScore, score);
   state.localStats.clearCount += 1;
@@ -1463,7 +1487,7 @@ function renderStageLadderSummary(clearCount: number, selectedStage: any) {
   const nextMeta = DIFFICULTIES[nextOpen.difficultyKey] || DIFFICULTIES.normal;
   const selectedMeta = DIFFICULTIES[selectedStage?.difficultyKey] || nextMeta;
   el.stageLadderSummary.dataset.stageLadder = STAGE_LADDER_EXPANSION_PATCH;
-  el.stageLadderSummary.dataset.stageMapComfort = 'next-goal-v1047-summer';
+  el.stageLadderSummary.dataset.stageMapComfort = 'next-goal-v1048-summer-pass';
   el.stageLadderSummary.dataset.legacyStageMapComfort = LEGACY_STAGE_MAP_COMFORT_TOKEN;
   el.stageLadderSummary.innerHTML = `<div class="ladder-progress"><strong>${clearCount}/${STAGES.length}</strong><span>현재 ${selectedIndex + 1}번 · 다음 목표 ${nextOpen.number}번 ${escapeHtml(nextOpen.title)} · ${progressPercent}%</span></div><div class="ladder-path"><span>현재 ${escapeHtml(selectedMeta.label)}</span><i></i><span>다음 ${escapeHtml(nextMeta.label)}</span><em>시즌 ${getSummerSeasonClears()}/${SUMMER_SEASON_EVENT.totalStages}</em></div><div class="ladder-chips">${grouped}</div><p>${nextLocked ? `다음 해금: ${nextLocked.number}번은 이전 스테이지 클리어 후 열립니다.` : '모든 스테이지가 열렸습니다.'}</p>`;
 }
@@ -1494,28 +1518,54 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
   const cleared = getSummerSeasonClears();
   const next = getSummerSeasonNextStage();
   const percent = Math.round((cleared / Math.max(1, seasonStages.length)) * 100);
+  const nextMilestone = SUMMER_SEASON_EVENT.passMilestones.find((milestone: number) => milestone > cleared) || SUMMER_SEASON_EVENT.totalStages;
+  const passLevel = SUMMER_SEASON_EVENT.passMilestones.filter((milestone: number) => cleared >= milestone).length;
+  const currentStage = getStageById(state.selectedStageId);
+  const currentBonus = getSummerSeasonLiveComboBonus(currentStage);
   panel.dataset.summerSeason = SUMMER_SEASON_PATCH;
+  panel.dataset.seasonPass = SUMMER_REWARD_PASS_PATCH;
+  panel.dataset.liveBalance = SUMMER_LIVE_BALANCE_PATCH;
   panel.dataset.seasonStageCount = String(seasonStages.length);
-  progress.innerHTML = `<div><strong>${cleared}/${seasonStages.length}</strong><span>${SUMMER_SEASON_EVENT.title} · 전체 ${clearCount}/${STAGES.length} 클리어 · ${percent}%</span></div><button type="button" class="season-jump-button" data-stage-id="${next?.id || DEFAULT_STAGE_ID}">다음 시즌 스테이지</button>`;
+  progress.innerHTML = `<div><strong>${cleared}/${seasonStages.length}</strong><span>${SUMMER_SEASON_EVENT.title} · 전체 ${clearCount}/${STAGES.length} 클리어 · ${percent}% · 패스 ${passLevel}/${SUMMER_SEASON_EVENT.passMilestones.length}단계</span></div><button type="button" class="season-jump-button" data-stage-id="${next?.id || DEFAULT_STAGE_ID}">다음 시즌 스테이지</button>`;
+  const passTrack = SUMMER_SEASON_EVENT.passMilestones.map((milestone: number, index: number) => {
+    const reached = cleared >= milestone;
+    const nextGoal = !reached && milestone === nextMilestone;
+    return `<span class="season-pass-node ${reached ? 'reached' : ''} ${nextGoal ? 'next' : ''}" data-milestone="${milestone}"><b>${index + 1}</b><em>${milestone}클리어</em><i>${reached ? '수령' : nextGoal ? '다음' : '대기'}</i></span>`;
+  }).join('');
   rewards.innerHTML = [
-    `<span>짝 ${SUMMER_SEASON_EVENT.comboEvery}콤보마다 +${SUMMER_SEASON_EVENT.comboBonusSeconds}초</span>`,
+    `<span>난이도별 시즌 콤보 +${currentBonus}초</span>`,
     `<span>시즌 클리어 보상 ${SUMMER_SEASON_EVENT.currencyLabel} +${SUMMER_SEASON_EVENT.clearReward}</span>`,
-    `<span>신규 시즌 6챕터 · 36스테이지</span>`
+    `<span>패스 마일스톤마다 ${SUMMER_SEASON_EVENT.passRewardLabel} +1</span>`,
+    `<div class="season-pass-track" data-season-pass="${SUMMER_REWARD_PASS_PATCH}" aria-label="썸머 시즌 보상 패스">${passTrack}</div>`
   ].join('');
+}
+
+function getSummerSeasonLiveComboBonus(stage = getStageById(state.selectedStageId)) {
+  const key = stage?.difficultyKey || 'normal';
+  return SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY[key] || SUMMER_SEASON_EVENT.comboBonusSeconds;
+}
+
+function getSummerSeasonPassRewardForClears(clears: number) {
+  const milestone = SUMMER_SEASON_EVENT.passMilestones.find((item: number) => item === clears);
+  if (!milestone) return null;
+  return { label: SUMMER_SEASON_EVENT.passRewardLabel, type: SUMMER_SEASON_EVENT.passRewardType, amount: 1, milestone };
 }
 
 function grantSummerSeasonComboBonus(stage = getStageById(state.selectedStageId)) {
   if (!isSummerSeasonStage(stage) || state.combo <= 0 || state.combo % SUMMER_SEASON_EVENT.comboEvery !== 0) return false;
-  state.remainingSeconds += SUMMER_SEASON_EVENT.comboBonusSeconds;
-  state.score += 180 + (state.combo * 12);
-  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-summer-combo-bonus', SUMMER_SEASON_PATCH);
-  el.timeLabel.dataset.seasonBonus = `+${SUMMER_SEASON_EVENT.comboBonusSeconds}초`;
+  const bonusSeconds = getSummerSeasonLiveComboBonus(stage);
+  state.remainingSeconds += bonusSeconds;
+  state.score += 160 + (state.combo * 14) + (bonusSeconds * 10);
+  const battleStage = document.querySelector<HTMLElement>('.battle-stage');
+  battleStage?.setAttribute('data-summer-combo-bonus', SUMMER_SEASON_PATCH);
+  battleStage?.setAttribute('data-summer-live-balance', SUMMER_LIVE_BALANCE_PATCH);
+  el.timeLabel.dataset.seasonBonus = `+${bonusSeconds}초`;
   el.timeLabel.classList.remove('time-bonus-pop');
   void el.timeLabel.offsetWidth;
   el.timeLabel.classList.add('time-bonus-pop');
   audio.play('combo');
   HAPTIC.combo();
-  setStatus(`한여름 축제 공명 · ${SUMMER_SEASON_EVENT.comboEvery}콤보 보너스 +${SUMMER_SEASON_EVENT.comboBonusSeconds}초`);
+  setStatus(`한여름 축제 공명 · ${SUMMER_SEASON_EVENT.comboEvery}콤보 보너스 +${bonusSeconds}초`);
   return true;
 }
 
@@ -2023,9 +2073,10 @@ function openReward(stars: number, score: number) {
   el.rewardMessage.textContent = `별 ${stars}개 · ${formatNumber(score)}점 · 획득 재료가 ${progressText}에 반영되었습니다.`;
   const dailyBonus = state.currentBoardId === 'daily' ? `<span class="reward-chip reward-chip-daily">오늘의 별가루 ×${state.dailyChallenge.rewardBoost}</span>` : '';
   const seasonBonus = isSummerSeasonStage(stage) ? `<span class="reward-chip reward-chip-season">${escapeHtml(SUMMER_SEASON_EVENT.currencyLabel)} ×${SUMMER_SEASON_EVENT.clearReward}</span>` : '';
+  const seasonPassBonus = state.lastSeasonPassReward ? `<span class="reward-chip reward-chip-season-pass">패스 ${state.lastSeasonPassReward.milestone} 클리어 · ${escapeHtml(state.lastSeasonPassReward.label)} ×${state.lastSeasonPassReward.amount}</span>` : '';
   const restoreChip = focusProject ? `<span class="reward-chip reward-chip-restore">복원 연결 · ${escapeHtml(focusProject.label)}</span>` : '';
   el.rewardItems.dataset.rewardFlow = 'materials-linked-v1040';
-  el.rewardItems.innerHTML = `<span class="reward-chip reward-chip-stars">★ ${stars}</span><span class="reward-chip reward-chip-material">${escapeHtml(stage.reward.label)} ×${stage.reward.amount}</span>${restoreChip}${dailyBonus}${seasonBonus}`;
+  el.rewardItems.innerHTML = `<span class="reward-chip reward-chip-stars">★ ${stars}</span><span class="reward-chip reward-chip-material">${escapeHtml(stage.reward.label)} ×${stage.reward.amount}</span>${restoreChip}${dailyBonus}${seasonBonus}${seasonPassBonus}`;
   el.rewardModal.dataset.rewardFlow = CLEAR_REWARD_FLOW_PATCH;
   const next = getNextStage(stage.id);
   el.nextStageButton.classList.toggle('hidden', !next);

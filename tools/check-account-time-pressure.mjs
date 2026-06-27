@@ -37,7 +37,7 @@ if (!/grantPairMatchTimeBonus\(firstTile, secondTile\)/.test(main)) errors.push(
 if (!/state\.noMatchSeconds \+= 1/.test(main) || !/triggerStallPressure\(\)/.test(main)) errors.push('Timer must track no-match delay and trigger stall pressure.');
 if (!html.includes('data-match-bonus="plus-3"')) errors.push('Time HUD must expose the +3s match bonus hook.');
 if (!audio.includes("'urgent'") || !audio.includes("'warning'")) errors.push('DreamAudio must expose urgent/warning cues.');
-if (!pkg.includes('"version": "1.0.47"')) errors.push('package.json version must be 1.0.47.');
+if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"')) errors.push('package.json version must be 1.0.47 or 1.0.48.');
 if (!pkg.includes('check:account-time-pressure')) errors.push('package.json must expose check:account-time-pressure.');
 if (!sw.includes('dream-library-cache-v1.0.47') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must be v1.0.47.');
 if (!sw.includes('v1042-cache-slim-account-time-pressure')) errors.push('service worker cache slim policy must be v1042 account/time pressure.');

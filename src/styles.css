@@ -3311,7 +3311,7 @@ body[data-screen="lobby"] .campaign-panel {
 
 
 /* v1.0.47 mega summer season update, 78-stage campaign and season gesture polish */
-.summer-season-panel[data-summer-season="v1047-mega-season"] {
+.summer-season-panel[data-summer-season="v1048-summer-live-balance-pass"] {
   position: relative;
   display: grid;
   gap: 0.72rem;
@@ -3322,7 +3322,7 @@ body[data-screen="lobby"] .campaign-panel {
     linear-gradient(135deg, rgba(6, 21, 45, 0.72), rgba(18, 63, 102, 0.38));
   touch-action: pan-y;
 }
-.summer-season-panel[data-summer-season="v1047-mega-season"]::after {
+.summer-season-panel[data-summer-season="v1048-summer-live-balance-pass"]::after {
   content: '';
   position: absolute;
   right: 1rem;
@@ -3387,29 +3387,114 @@ body[data-screen="lobby"] .campaign-panel {
   font-size: 0.64rem;
   font-weight: 800;
 }
-.stage-ladder-summary[data-stage-map-comfort="next-goal-v1047-summer"] {
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1048-summer-pass"] {
   border-color: rgba(125, 220, 255, 0.3);
   background: linear-gradient(135deg, rgba(6, 21, 45, 0.62), rgba(17, 74, 108, 0.28), rgba(245, 200, 107, 0.08));
 }
-.stage-ladder-summary[data-stage-map-comfort="next-goal-v1047-summer"] .ladder-path em {
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1048-summer-pass"] .ladder-path em {
   color: var(--gold-300);
   font-style: normal;
   white-space: nowrap;
   font-size: 0.58rem;
 }
-.battle-stage[data-summer-combo-bonus="v1047-summer-mega-season"] .time-meter {
+.battle-stage[data-summer-combo-bonus="v1048-summer-live-balance-pass"] .time-meter {
   box-shadow: 0 0 22px rgba(125, 220, 255, 0.18), inset 0 0 18px rgba(245, 200, 107, 0.08);
 }
-body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .summer-season-panel,
-body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .stage-ladder-summary,
-body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .chapter-tab,
-body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .stage-node,
-body[data-lobby-drag-rescue="v1047-season-gesture-fluid"] .mission-card {
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .summer-season-panel,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .stage-ladder-summary,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .chapter-tab,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .stage-node,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .mission-card {
   touch-action: pan-y;
 }
 @media (max-width: 430px) {
   .summer-season-progress { grid-template-columns: 1fr; gap: 0.48rem; }
   .season-jump-button { width: 100%; }
-  .summer-season-panel[data-summer-season="v1047-mega-season"] { padding: 0.72rem; }
+  .summer-season-panel[data-summer-season="v1048-summer-live-balance-pass"] { padding: 0.72rem; }
   .summer-season-rewards span { font-size: 0.58rem; }
+}
+
+
+/* v1.0.48 summer season live balance, reward pass polish and mobile campaign QA */
+.summer-season-panel[data-summer-season="v1048-summer-live-balance-pass"] {
+  gap: 0.64rem;
+  border-color: rgba(54, 214, 164, 0.32);
+  background:
+    radial-gradient(circle at 14% 8%, rgba(54, 214, 164, 0.2), transparent 32%),
+    radial-gradient(circle at 92% 4%, rgba(255, 226, 142, 0.2), transparent 34%),
+    linear-gradient(135deg, rgba(6, 21, 45, 0.76), rgba(18, 63, 102, 0.34));
+}
+.summer-season-panel[data-season-pass="v1048-summer-reward-pass-track"] .season-badge::after {
+  content: ' · 패스';
+}
+.season-pass-track {
+  flex: 1 0 100%;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.34rem;
+  margin-top: 0.12rem;
+  touch-action: pan-y;
+}
+.season-pass-node {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.08rem;
+  padding: 0.38rem 0.22rem;
+  border-radius: 16px;
+  border: 1px solid rgba(125, 220, 255, 0.18);
+  background: rgba(3, 14, 30, 0.36);
+  color: var(--muted);
+  font-size: 0.54rem;
+  font-weight: 850;
+}
+.season-pass-node b {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(125, 220, 255, 0.12);
+  color: var(--sky-200);
+  font-size: 0.68rem;
+}
+.season-pass-node.reached {
+  border-color: rgba(54, 214, 164, 0.42);
+  color: var(--emerald-200);
+  background: rgba(54, 214, 164, 0.12);
+}
+.season-pass-node.next {
+  border-color: rgba(245, 200, 107, 0.56);
+  color: var(--gold-300);
+  box-shadow: 0 0 18px rgba(245, 200, 107, 0.14);
+}
+.reward-chip-season-pass {
+  background: linear-gradient(135deg, rgba(245, 200, 107, 0.18), rgba(54, 214, 164, 0.12));
+  border-color: rgba(245, 200, 107, 0.34);
+  color: var(--gold-300);
+}
+.battle-stage[data-summer-live-balance="v1048-summer-live-balance"] .time-meter {
+  box-shadow: 0 0 20px rgba(54, 214, 164, 0.16), inset 0 0 18px rgba(255, 226, 142, 0.08);
+}
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1048-summer-pass"] .ladder-progress strong::after {
+  content: ' 시즌 패스';
+  font-size: 0.58rem;
+  color: var(--emerald-200);
+  margin-left: 0.28rem;
+}
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .summer-season-panel,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .season-pass-track,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .stage-ladder-summary,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .ladder-chip,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .chapter-tab,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .stage-node,
+body[data-lobby-drag-rescue="v1048-campaign-gesture-fluid"] .mission-card {
+  touch-action: pan-y;
+}
+@media (max-width: 430px) {
+  .season-pass-track { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.28rem; }
+  .season-pass-node { padding: 0.3rem 0.18rem; font-size: 0.5rem; }
+  .summer-season-panel[data-summer-season="v1048-summer-live-balance-pass"] .section-heading.compact {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
 }
