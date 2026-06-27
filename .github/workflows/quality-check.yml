@@ -73,6 +73,8 @@ jobs:
           npm run check:pixi-boss-layer
           npm run check:inapp-device-qa
           npm run check:ranking-flow
+          npm run check:display-copy
+          npm run check:tile-readability
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

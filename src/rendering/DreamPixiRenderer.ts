@@ -65,6 +65,7 @@ export class DreamPixiRenderer {
   board: BoardCell[][] = [];
   host?: HTMLElement;
   tileSize = 64;
+  readonly minReadableTile = 34;
   gap = 7;
   selectedKey: string | null = null;
   onTileTap?: TileTapHandler;
@@ -248,7 +249,7 @@ export class DreamPixiRenderer {
     if (this.selectedKey) {
       const previous = this.tileViews.get(this.selectedKey);
       if (previous && !previous.removing) {
-        gsap.to(previous.root.scale, { x: 1, y: 1, duration: 0.16 * this.quality.motionScale, ease: 'power2.out' });
+        previous.root.scale.set(1);
         this.applyTileStateTexture(previous, previous.tile.special && !previous.tile.specialRevealed ? previous.tile.special === 'locked' ? 'locked' : 'disabled' : 'normal');
         gsap.to(previous.glow, { alpha: 0.16, duration: 0.18 * this.quality.motionScale });
         gsap.to([previous.selectionRing, previous.selectionCore], { alpha: 0, duration: 0.12 * this.quality.motionScale });
@@ -258,11 +259,12 @@ export class DreamPixiRenderer {
     if (!point) return;
     const view = this.tileViews.get(keyOf(point));
     if (!view || view.removing) return;
+    view.root.scale.set(1);
     this.applyTileStateTexture(view, 'selected');
-    gsap.to(view.root.scale, { x: 1.16, y: 1.16, duration: 0.1 * this.quality.motionScale, ease: 'back.out(3)' });
     gsap.to(view.glow, { alpha: 1, duration: 0.12 * this.quality.motionScale });
-    gsap.to(view.selectionRing, { alpha: 1, rotation: view.selectionRing.rotation + Math.PI * 0.18, duration: 0.18 * this.quality.motionScale, ease: 'power2.out' });
-    gsap.to(view.selectionCore, { alpha: 0.9, duration: 0.1 * this.quality.motionScale });
+    gsap.fromTo(view.selectionRing.scale, { x: 0.96, y: 0.96 }, { x: 1.04, y: 1.04, duration: 0.28 * this.quality.motionScale, yoyo: true, repeat: 1, ease: 'sine.inOut' });
+    gsap.to(view.selectionRing, { alpha: 1, rotation: view.selectionRing.rotation + Math.PI * 0.12, duration: 0.18 * this.quality.motionScale, ease: 'power2.out' });
+    gsap.to(view.selectionCore, { alpha: 0.96, duration: 0.1 * this.quality.motionScale });
     this.emitSelectionWave(view.root.x, view.root.y, PALETTE.sky);
   }
 
@@ -272,7 +274,7 @@ export class DreamPixiRenderer {
       if (!view || view.removing) return;
       this.applyTileStateTexture(view, 'hint');
       window.setTimeout(() => this.applyTileStateTexture(view, 'normal'), 740);
-      gsap.fromTo(view.root.scale, { x: 1, y: 1 }, { x: 1.14, y: 1.14, yoyo: true, repeat: 3, delay: index * 0.05, duration: 0.16 * this.quality.motionScale, ease: 'sine.inOut' });
+      gsap.fromTo(view.selectionRing.scale, { x: 0.98, y: 0.98 }, { x: 1.05, y: 1.05, yoyo: true, repeat: 3, delay: index * 0.05, duration: 0.16 * this.quality.motionScale, ease: 'sine.inOut' });
       this.emitSelectionWave(view.root.x, view.root.y, PALETTE.emerald);
     });
   }
@@ -289,7 +291,7 @@ export class DreamPixiRenderer {
     this.cameraShake(Math.min(15, 4 + combo));
     await new Promise<void>((resolve) => {
       const tl = gsap.timeline({ onComplete: resolve });
-      tl.to([a.root.scale, b.root.scale], { x: 1.2, y: 1.2, duration: 0.08 * this.quality.motionScale, ease: 'power2.out' })
+      tl.to([a.root.scale, b.root.scale], { x: 1.06, y: 1.06, duration: 0.08 * this.quality.motionScale, ease: 'power2.out' })
         .to([a.glow, b.glow], { alpha: 1, duration: 0.08 * this.quality.motionScale }, '<')
         .add(() => this.drawConnectionBeamByPath(path, a.root.x, a.root.y, b.root.x, b.root.y), '>-0.01')
         .add(() => this.emitBoardPulse(combo), '>-0.01')
@@ -340,13 +342,15 @@ export class DreamPixiRenderer {
     const width = app.renderer.width;
     const height = app.renderer.height;
     const minSide = Math.min(width, height);
-    this.gap = Math.max(4, Math.min(8, Math.round(minSide / 98)));
-    const sidePadding = width <= 380 ? 22 : 34;
-    const topReserve = height <= 420 ? 48 : 68;
-    const bottomReserve = height <= 420 ? 22 : 34;
+    this.gap = Math.max(3, Math.min(6, Math.round(minSide / 126)));
+    const sidePadding = width <= 380 ? 8 : 14;
+    const topReserve = height <= 420 ? 26 : 38;
+    const bottomReserve = height <= 420 ? 10 : 16;
     const maxTileW = (width - sidePadding - (cols - 1) * this.gap) / Math.max(cols, 1);
     const maxTileH = (height - topReserve - bottomReserve - (rows - 1) * this.gap) / Math.max(rows, 1);
-    this.tileSize = Math.max(26, Math.min(this.quality.maxBoardTile, maxTileW, maxTileH));
+    const rawTileSize = Math.min(this.quality.maxBoardTile, maxTileW, maxTileH);
+    this.tileSize = Math.max(this.minReadableTile, rawTileSize);
+    if (this.tileSize > rawTileSize) this.tileSize = Math.max(30, rawTileSize);
     const boardW = cols * this.tileSize + (cols - 1) * this.gap;
     const boardH = rows * this.tileSize + (rows - 1) * this.gap;
     const startX = (width - boardW) / 2 + this.tileSize / 2;
@@ -406,9 +410,10 @@ export class DreamPixiRenderer {
   }
 
   private applyTileStateTexture(view: TileView, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled') {
-    if (view.tile.stateAssets) view.sprite.texture = this.resolveTileTexture(view.tile, state);
+    const textureState = state === 'selected' ? 'normal' : state;
+    if (view.tile.stateAssets) view.sprite.texture = this.resolveTileTexture(view.tile, textureState);
     view.sprite.alpha = state === 'disabled' ? 0.52 : state === 'locked' ? 0.72 : 1;
-    view.sprite.scale.set(state === 'selected' ? 1.08 : state === 'hint' ? 1.04 : 1);
+    view.sprite.scale.set(1);
     view.selectionRing.alpha = state === 'selected' ? 1 : state === 'hint' ? 0.72 : 0;
     view.selectionCore.alpha = state === 'selected' ? 0.9 : 0;
   }
@@ -431,8 +436,8 @@ export class DreamPixiRenderer {
     const texture = this.resolveTileTexture(tile, startState);
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
-    sprite.width = this.tileSize * 0.92;
-    sprite.height = this.tileSize * 0.92;
+    sprite.width = this.tileSize * 0.98;
+    sprite.height = this.tileSize * 0.98;
     sprite.alpha = hiddenSpecial && tile.special === 'fog' ? 0.16 : hiddenSpecial ? 0.46 : 1;
     const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: specialColor, width: tile.special ? 2.2 : 1.4, alpha: tile.special ? 0.58 : 0.2 });
     const selectionCore = new Graphics()

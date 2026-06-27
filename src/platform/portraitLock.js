@@ -68,7 +68,7 @@ export function initPortraitRuntimeGuard(options = {}) {
 
     syncViewport();
     sessionStorage.setItem(LOCK_KEY, 'yes');
-    if (source === 'button') setStatus('게임 화면을 맞췄습니다.');
+    if (source === 'button') setStatus('');
     return true;
   };
 
@@ -83,7 +83,7 @@ export function initPortraitRuntimeGuard(options = {}) {
   continueButton?.addEventListener('click', () => {
     syncViewport();
     overlay?.classList.add('hidden');
-    setStatus('게임 화면을 맞췄습니다.');
+    setStatus('');
   });
 
   const onResize = () => syncViewport();

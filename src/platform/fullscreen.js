@@ -55,7 +55,7 @@ export function initFullscreenControls(button, statusCallback) {
     const active = await requestGameFullscreen({ hard: true, reason: 'settings-button' });
     updateLabel();
     if (statusCallback) {
-      statusCallback(active ? '게임 화면을 맞췄습니다.' : '화면 크기에 맞춰 게임 프레임을 유지합니다.');
+      statusCallback(active ? '화면 보정을 적용했습니다.' : '화면 보정 상태를 유지합니다.');
     }
   });
 

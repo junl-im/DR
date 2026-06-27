@@ -30,7 +30,7 @@ export function initBrowserGuard() {
     // Kakao in-app browsers can report a landscape visualViewport after fullscreen/orientation APIs.
     // Keep this path soft: recompute the virtual portrait frame only.
     applyPortraitFrame({ forcePortrait: true, reason: 'browser-guard-soft-fit' });
-    setStatus('게임 화면을 맞췄습니다.');
+    setStatus('');
     document.dispatchEvent(new CustomEvent('dream-library:viewport-frame-requested'));
     return false;
   };

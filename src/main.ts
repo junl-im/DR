@@ -364,7 +364,7 @@ function bindEvents() {
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
-    suggestKakaoAssist('게임 화면을 정리한 뒤 로비로 입장합니다.');
+    suggestKakaoAssist('');
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();

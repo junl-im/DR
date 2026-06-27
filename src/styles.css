@@ -2071,20 +2071,7 @@ body[data-inapp-device-qa="fit-landscape"] .app-shell {
 .battle-stage[data-boss-layer="pixi"] .boss-core {
   box-shadow: 0 0 28px rgba(125, 220, 255, 0.18), inset 0 0 24px rgba(245, 200, 107, 0.1);
 }
-.battle-stage[data-boss-layer="pixi"] .boss-info::after {
-  content: '전투 레이어 동기화';
-  display: inline-flex;
-  width: fit-content;
-  margin-top: 0.22rem;
-  padding: 0.12rem 0.38rem;
-  border-radius: 999px;
-  color: rgba(125, 220, 255, 0.92);
-  background: rgba(6, 21, 45, 0.36);
-  border: 1px solid rgba(125, 220, 255, 0.14);
-  font-size: 0.52rem;
-  font-weight: 950;
-  letter-spacing: -0.04em;
-}
+.battle-stage[data-boss-layer="pixi"] .boss-info::after { content: none !important; display: none !important; }
 .battle-stage[data-boss-layer-mood="warn"] .boss-info::after { color: var(--gold-300); border-color: rgba(245, 200, 107, 0.2); }
 .battle-stage[data-boss-layer-mood="hit"] .boss-info::after,
 .battle-stage[data-boss-layer-mood="break"] .boss-info::after { color: var(--violet-500); border-color: rgba(143, 107, 255, 0.24); }
@@ -2130,3 +2117,33 @@ body.is-lobby-dragging .collection-tile *,
 body.is-lobby-dragging .restore-node * {
   pointer-events: none;
 }
+
+
+/* v1.0.27 Quiet display hooks, readable tile scale and selection clarity */
+.silent-frame-hook,
+.silent-frame-hook * {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body[data-screen="game"] .pixi-board-host {
+  min-height: clamp(390px, 60svh, 560px);
+}
+body[data-screen="game"] .battle-stage {
+  grid-template-rows: auto minmax(360px, 1fr) auto;
+}
+body[data-screen="game"] .game-hud[data-hud-density="compact"] {
+  padding-block: 0.48rem;
+}
+@media (max-height: 740px) {
+  body[data-screen="game"] .pixi-board-host { min-height: clamp(360px, 58svh, 520px); }
+  body[data-screen="game"] .battle-stage { grid-template-rows: auto minmax(330px, 1fr) auto; }
+}
+@media (max-width: 390px) {
+  body[data-screen="game"] .pixi-board-host { min-height: clamp(350px, 57svh, 500px); }
+}
+@media (max-height: 640px) {
+  body[data-screen="game"] .pixi-board-host { min-height: clamp(318px, 55svh, 460px); }
+}
+
+.battle-stage[data-boss-layer="pixi"] .boss-info::after { content: none !important; display: none !important; }

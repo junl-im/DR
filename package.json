@@ -45,7 +45,9 @@
     "check:kakao-lobby-rotation": "node tools/check-kakao-lobby-rotation.mjs",
     "check:pixi-boss-layer": "node tools/check-pixi-boss-layer.mjs",
     "check:inapp-device-qa": "node tools/check-inapp-device-qa.mjs",
-    "check:ranking-flow": "node tools/check-ranking-flow.mjs"
+    "check:ranking-flow": "node tools/check-ranking-flow.mjs",
+    "check:display-copy": "node tools/check-display-copy.mjs",
+    "check:tile-readability": "node tools/check-tile-readability.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -58,5 +60,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.26"
+  "version": "1.0.27"
 }
