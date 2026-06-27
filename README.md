@@ -1823,3 +1823,37 @@ Apply 꿈의 서고 v1.0.56 reward detail showcase boss warning readability and 
 - 시즌 상점에서 부족 재화가 있을 때 추천 스테이지/챕터로 이동하는 경로를 더 명확히 표시합니다.
 - 복원/컬렉션/상점 간 왕복 동선을 더 짧게 다듬습니다.
 - 미니맵, `보기 / 중앙 / + / -` 라인, 카메라 도움말은 계속 재도입하지 않습니다.
+
+
+## v1.0.57 Patch Notes - Daily Start Signal and Mobile Back Action Sheet Patch
+
+v1.0.57은 로비에서 핵심 시작점인 `오늘의 복원`이 한눈에 게임 시작 버튼처럼 보이지 않던 문제와, 폰 뒤로가기에서 기대하던 선택 팝업 흐름이 약해진 문제를 함께 복구한 UX/디자인 패치입니다.
+
+### 변경점
+
+- `v1057-daily-start-signal-widget` 훅을 추가해 로비 상단 `오늘의 복원` 버튼 위에 공중에 떠 있는 손가락, 화살표, `게임 시작` 말풍선 유도 위젯을 배치했습니다.
+- 일일 콘텐츠 카드의 `오늘 스테이지 시작` 버튼에도 작은 `게임 시작` 배지를 붙여 핵심 진입점이 아래쪽에서도 다시 보이게 했습니다.
+- `v1057-back-action-sheet-restored` 훅을 추가해 폰 뒤로가기/소프트 뒤로가기 시 `첫 화면`, `옵션 톱니바퀴`, `나가기`를 선택할 수 있는 액션 시트 흐름을 복구했습니다.
+- `v1057-mobile-exit-options-qa` 훅으로 옵션 톱니바퀴 터치 영역과 나가기 시트 버튼 밀도를 모바일 기준으로 보강했습니다.
+- 자동 fullscreen/orientation API, 미니맵, 카메라 상단 조작 라인, SVG는 추가하지 않았습니다.
+- service worker cache를 `dream-library-cache-v1.0.57`로 갱신하고, `texture-atlas-manifest-v1.0.57.json`을 생성/선로드에 추가했습니다.
+
+### 검사
+
+- `npm run typecheck` 통과
+- `npm run check:start-signal-back-exit` 통과
+- `npm run check:reward-detail-touch-qa` 통과
+- `npm run check:mobile-playability` 통과
+- `npm run check:no-minimap-topbar` 통과
+- `npm run check:assets` 통과
+- `npm run check:health` 통과
+- `npm run check:workflows` 통과
+- `npm run build:github` 통과
+
+### GitHub Desktop 커밋 메시지
+
+```
+Apply 꿈의 서고 v1.0.57 daily start signal and mobile back action sheet patch
+```
+
+다음 업데이트 예정: v1.0.58 - First Session Tutorial, Daily Restore Reward Drama and Lobby Hero Motion Patch

@@ -108,6 +108,7 @@ jobs:
           npm run check:season-store-engine-design
           npm run check:engine-render-budget
           npm run check:reward-detail-touch-qa
+          npm run check:start-signal-back-exit
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

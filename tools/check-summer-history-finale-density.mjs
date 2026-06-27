@@ -11,7 +11,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.53', '1.0.54', '1.0.55', '1.0.56'].includes(pkg.version)) errors.push(`package version must be 1.0.53 or 1.0.54, got ${pkg.version}`);
+if (!['1.0.53', '1.0.54', '1.0.55', '1.0.56', '1.0.57'].includes(pkg.version)) errors.push(`package version must be 1.0.53 or 1.0.54, got ${pkg.version}`);
 if (!pkg.scripts['check:summer-history-finale-density']) errors.push('missing package script check:summer-history-finale-density');
 
 has(index, 'data-season-pass="v1053-shop-history-pass"', 'v1.0.53 season pass lobby mount');

@@ -4210,3 +4210,146 @@ body.is-lobby-dragging[data-real-device-touch-qa="v1056-real-device-touch-qa"] .
 }
 
 /* v1056 compatibility anchors: v1056-reward-detail-showcase v1056-boss-warning-readability v1056-real-device-touch-qa */
+
+
+/* v1.0.57 daily start signal and restored mobile back action sheet */
+.lobby-hero[data-start-signal="v1057-daily-start-signal-widget"] {
+  position: relative;
+  overflow: visible;
+  border-color: rgba(255, 231, 164, 0.34);
+  box-shadow: 0 20px 58px rgba(6, 21, 45, 0.42), inset 0 0 0 1px rgba(125, 220, 255, 0.1), 0 0 34px rgba(54, 214, 164, 0.12);
+}
+.lobby-quick-actions { position: relative; isolation: isolate; }
+.start-signal-target[data-start-signal="v1057-daily-start-signal-widget"] {
+  position: relative;
+  z-index: 3;
+  border-color: rgba(255, 231, 164, 0.72);
+  box-shadow: 0 12px 28px rgba(54, 214, 164, 0.2), 0 0 0 1px rgba(255, 231, 164, 0.24), 0 0 24px rgba(125, 220, 255, 0.22);
+  animation: startTargetPulse 1.6s ease-in-out infinite;
+}
+.daily-start-signal[data-start-signal="v1057-daily-start-signal-widget"] {
+  position: absolute;
+  right: min(100%, 118px);
+  top: -1.05rem;
+  min-width: 124px;
+  padding: 0.42rem 0.58rem 0.42rem 0.5rem;
+  border-radius: 18px 18px 8px 18px;
+  border: 1px solid rgba(255, 231, 164, 0.58);
+  background: linear-gradient(145deg, rgba(11, 29, 55, 0.96), rgba(42, 33, 82, 0.9));
+  box-shadow: 0 16px 34px rgba(6, 21, 45, 0.44), 0 0 24px rgba(255, 231, 164, 0.18);
+  color: var(--gold-300);
+  pointer-events: none;
+  z-index: 4;
+  transform-origin: 100% 70%;
+  animation: startGuideFloat 1.75s ease-in-out infinite;
+}
+.daily-start-signal::after {
+  content: '';
+  position: absolute;
+  right: -0.34rem;
+  top: 48%;
+  width: 0.7rem;
+  height: 0.7rem;
+  background: inherit;
+  border-right: 1px solid rgba(255, 231, 164, 0.48);
+  border-top: 1px solid rgba(255, 231, 164, 0.48);
+  transform: rotate(45deg);
+}
+.daily-start-signal strong { display: block; font-size: 0.66rem; line-height: 1; letter-spacing: -0.03em; }
+.daily-start-signal small { display: block; margin-top: 0.12rem; color: rgba(230, 238, 255, 0.82); font-size: 0.48rem; font-weight: 900; }
+.signal-finger { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; margin-right: 0.2rem; border-radius: 999px; background: rgba(255, 231, 164, 0.14); filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)); animation: signalFingerTap 0.9s ease-in-out infinite; }
+.signal-arrow { display: inline-block; margin-right: 0.18rem; color: var(--sky-200); animation: signalArrowNudge 0.92s ease-in-out infinite; }
+.daily-panel[data-start-signal="v1057-daily-start-signal-widget"] {
+  position: relative;
+  border-color: rgba(255, 231, 164, 0.34);
+  background: radial-gradient(circle at 88% 18%, rgba(255, 231, 164, 0.14), transparent 30%), rgba(11, 29, 55, 0.52);
+}
+.daily-start-stack[data-start-signal="v1057-daily-start-signal-widget"] { display: grid; justify-items: stretch; gap: 0.26rem; min-width: 116px; }
+.daily-panel-signal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
+  min-height: 24px;
+  padding: 0.18rem 0.44rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--emerald-500));
+  font-size: 0.55rem;
+  font-weight: 950;
+  box-shadow: 0 8px 18px rgba(245, 200, 107, 0.22);
+  animation: startBubbleBreath 1.4s ease-in-out infinite;
+}
+.daily-panel-signal span { transform: translateY(-1px); animation: signalArrowNudge 0.92s ease-in-out infinite; }
+.reward-modal[data-back-action-sheet="v1057-back-action-sheet-restored"] .exit-card {
+  border-color: rgba(255, 231, 164, 0.4);
+  background: radial-gradient(circle at 92% 14%, rgba(125, 220, 255, 0.14), transparent 34%), linear-gradient(160deg, rgba(9, 18, 35, 0.96), rgba(30, 25, 63, 0.94));
+}
+.reward-modal[data-back-action-sheet="v1057-back-action-sheet-restored"] .exit-card-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.exit-sheet-actions {
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.42rem;
+}
+.exit-sheet-actions #exit-home-button {
+  background-image: var(--ui-home-url);
+  background-repeat: no-repeat;
+  background-position: 0.62rem center;
+  background-size: 1rem 1rem;
+  padding-left: 1.92rem;
+}
+.exit-sheet-actions #exit-confirm-button {
+  background-image: var(--ui-close-url);
+  background-repeat: no-repeat;
+  background-position: 0.62rem center;
+  background-size: 1rem 1rem;
+  padding-left: 1.92rem;
+}
+body[data-mobile-exit-options="v1057-mobile-exit-options-qa"] .exit-options-button {
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+@keyframes startGuideFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(1.5deg); }
+}
+@keyframes signalFingerTap {
+  0%, 100% { transform: translateY(-1px) scale(1); }
+  48% { transform: translateY(4px) scale(0.92); }
+  66% { transform: translateY(0) scale(1.08); }
+}
+@keyframes signalArrowNudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+@keyframes startTargetPulse {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.14) saturate(1.18); }
+}
+@keyframes startBubbleBreath {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.035); }
+}
+@media (max-width: 430px) {
+  .daily-start-signal[data-start-signal="v1057-daily-start-signal-widget"] { right: 106px; top: -0.9rem; min-width: 108px; padding: 0.36rem 0.5rem; }
+  .daily-start-signal strong { font-size: 0.6rem; }
+  .daily-start-signal small { font-size: 0.44rem; }
+  .signal-finger { width: 1.2rem; height: 1.2rem; }
+  .daily-start-stack[data-start-signal="v1057-daily-start-signal-widget"] { min-width: 102px; }
+  .exit-sheet-actions { grid-template-columns: 1fr; }
+  .exit-sheet-actions button { min-height: 42px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .daily-start-signal[data-start-signal="v1057-daily-start-signal-widget"],
+  .signal-finger,
+  .signal-arrow,
+  .daily-panel-signal,
+  .start-signal-target[data-start-signal="v1057-daily-start-signal-widget"] { animation: none !important; }
+}
+
+/* v1057 compatibility anchors: v1057-daily-start-signal-widget v1057-back-action-sheet-restored v1057-mobile-exit-options-qa */

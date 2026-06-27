@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (pkg.version !== '1.0.56') errors.push(`package version must be 1.0.56, got ${pkg.version}`);
+if (!['1.0.56', '1.0.57'].includes(pkg.version)) errors.push(`package version must be 1.0.56, got ${pkg.version}`);
 if (!pkg.scripts['check:reward-detail-touch-qa']) errors.push('missing package script check:reward-detail-touch-qa');
 
 for (const token of ['v1056-reward-detail-showcase', 'v1056-boss-warning-readability', 'v1056-real-device-touch-qa']) {

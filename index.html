@@ -111,7 +111,8 @@
           <div class="lobby-hero luxury-panel alive-panel">
             <div><p class="eyebrow">Adventure Lobby</p><h2>기억을 고르고 시작하세요</h2><p id="lobby-greeting">사서님, 서고의 문이 열렸습니다.</p><small class="lobby-flow-note">로그인 후 바로 이곳에서 스테이지를 고르고 진짜 게임을 시작합니다.</small></div>
             <div class="lobby-quick-actions">
-              <button id="daily-stage-button" type="button" class="daily-stage-button">오늘의 복원</button>
+              <button id="daily-stage-button" type="button" class="daily-stage-button start-signal-target" data-start-signal="v1057-daily-start-signal-widget" aria-describedby="daily-start-signal">오늘의 복원</button>
+              <div id="daily-start-signal" class="daily-start-signal" data-start-signal="v1057-daily-start-signal-widget" aria-hidden="true"><span class="signal-finger">☝</span><span class="signal-arrow">➜</span><strong>게임 시작</strong><small>오늘의 복원부터!</small></div>
               <button id="restoration-focus-button" type="button" class="secondary">복원 작업대</button>
             </div>
             <img src="%BASE_URL%assets/characters/mascot-companions-v2.png" alt="" aria-hidden="true" draggable="false" />
@@ -145,7 +146,7 @@
             <span data-season-pass="v1052-season-shop-reward-polish-pass"></span>
             <span data-season-pass="v1053-shop-history-pass"></span>
             <span data-season-pass="v1054-store-collection-pass"></span>
-            <span data-engine-render-budget="v1055-engine-render-budget-tuning" data-store-reward-polish="v1055-store-reward-collection-polish" data-reward-preview="v1055-store-reward-preview-lens" data-lobby-density-final-qa="v1055-lobby-density-final-qa" data-touch-conflict-audit="v1055-lobby-touch-conflict-audit" data-reward-detail-showcase="v1056-reward-detail-showcase" data-boss-warning-readability="v1056-boss-warning-readability" data-real-device-touch-qa="v1056-real-device-touch-qa"></span>
+            <span data-engine-render-budget="v1055-engine-render-budget-tuning" data-store-reward-polish="v1055-store-reward-collection-polish" data-reward-preview="v1055-store-reward-preview-lens" data-lobby-density-final-qa="v1055-lobby-density-final-qa" data-touch-conflict-audit="v1055-lobby-touch-conflict-audit" data-reward-detail-showcase="v1056-reward-detail-showcase" data-boss-warning-readability="v1056-boss-warning-readability" data-real-device-touch-qa="v1056-real-device-touch-qa" data-start-signal="v1057-daily-start-signal-widget" data-back-action-sheet="v1057-back-action-sheet-restored" data-mobile-exit-options="v1057-mobile-exit-options-qa"></span>
             <span data-season-vfx="v1051-summer-shop-claim-vfx" data-season-pass="v1051-summer-shop-claim-pass" data-season-shop="v1051-summer-shop-claim-flow" data-finale-missions="v1051-finale-balance-missions" data-design-qa="v1053-mobile-density-qa" data-compat="v1054-panel-legacy-compat"></span>
             <span data-season-vfx="v1052-season-shop-reward-vfx" data-season-pass="v1052-season-shop-reward-pass" data-season-shop="v1052-season-shop-reward-claim-flow" data-finale-missions="v1052-finale-boss-missions" data-compat="v1054-panel-legacy-compat"></span>
             <span data-season-vfx="v1053-shop-history-vfx" data-season-pass="v1053-shop-history-pass" data-season-shop="v1053-season-shop-history-claim-flow" data-finale-missions="v1053-finale-boss-balance-missions" data-compat="v1054-panel-legacy-compat"></span>
@@ -162,7 +163,10 @@
           <section class="daily-panel luxury-panel" aria-label="일일 콘텐츠" data-lobby-panel="daily">
             <img src="%BASE_URL%assets/meta/daily-badge.png" alt="" aria-hidden="true" draggable="false" />
             <div><div class="panel-title-row"><div><p class="eyebrow">Daily Content</p><h3 id="daily-title">오늘의 복원</h3></div><button type="button" class="text-button panel-collapse-button" data-collapse-target="daily">접기</button></div><p id="daily-desc">매일 바뀌는 보상 스테이지가 준비 중입니다.</p><div id="daily-rank-tabs" class="mini-tabs" aria-label="일일 랭킹 범위"><button type="button" data-daily-rank="today" class="selected">오늘</button><button type="button" data-daily-rank="all">전체</button></div><ol id="daily-leaderboard-list" class="daily-leaderboard-list"></ol></div>
-            <button id="daily-start-button" type="button" class="secondary">오늘 스테이지 시작</button>
+            <div class="daily-start-stack" data-start-signal="v1057-daily-start-signal-widget">
+              <div class="daily-panel-signal" aria-hidden="true"><span>↗</span><b>게임 시작</b></div>
+              <button id="daily-start-button" type="button" class="secondary start-signal-target" data-start-signal="v1057-daily-start-signal-widget">오늘 스테이지 시작</button>
+            </div>
           </section>
 
           <section class="collection-panel luxury-panel alive-panel" aria-label="컬렉션 도감" data-lobby-panel="collection">
@@ -228,8 +232,8 @@
     </div>
 
 
-    <div id="exit-confirm-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="게임 종료 확인">
-      <div class="reward-card exit-card luxury-panel"><div class="exit-card-toolbar"><p class="eyebrow">Exit</p><button id="exit-options-button" type="button" class="icon-button gear-button exit-options-button" aria-label="옵션 열기">⚙</button></div><h2>꿈의 서고를 닫을까요?</h2><p id="exit-confirm-message">종료를 누르면 게임 상태를 정리하고 화면을 잠시 덮습니다.</p><div class="reward-actions"><button id="exit-cancel-button" type="button">계속하기</button><button id="exit-confirm-button" type="button" class="secondary danger">종료 하기</button></div></div>
+    <div id="exit-confirm-modal" class="reward-modal hidden" role="dialog" aria-modal="true" aria-label="뒤로가기 선택" data-back-action-sheet="v1057-back-action-sheet-restored" data-mobile-exit-options="v1057-mobile-exit-options-qa">
+      <div class="reward-card exit-card luxury-panel"><div class="exit-card-toolbar"><p class="eyebrow">Exit</p><button id="exit-options-button" type="button" class="icon-button gear-button exit-options-button" aria-label="옵션 열기">⚙</button></div><h2>꿈의 서고를 닫을까요?</h2><p id="exit-confirm-message">종료를 누르면 게임 상태를 정리하고 화면을 잠시 덮습니다.</p><div class="reward-actions exit-sheet-actions"><button id="exit-home-button" type="button" class="secondary">첫 화면</button><button id="exit-cancel-button" type="button">계속하기</button><button id="exit-confirm-button" type="button" class="secondary danger">나가기</button></div></div>
     </div>
 
 

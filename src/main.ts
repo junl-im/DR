@@ -73,6 +73,9 @@ const TOUCH_CONFLICT_AUDIT_PATCH = 'v1055-lobby-touch-conflict-audit';
 const REWARD_DETAIL_SHOWCASE_PATCH = 'v1056-reward-detail-showcase';
 const BOSS_WARNING_READABILITY_PATCH = 'v1056-boss-warning-readability';
 const REAL_DEVICE_TOUCH_QA_PATCH = 'v1056-real-device-touch-qa';
+const DAILY_START_SIGNAL_PATCH = 'v1057-daily-start-signal-widget';
+const BACK_ACTION_SHEET_PATCH = 'v1057-back-action-sheet-restored';
+const MOBILE_EXIT_OPTIONS_QA_PATCH = 'v1057-mobile-exit-options-qa';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
@@ -233,6 +236,7 @@ const el = {
   exitConfirmMessage: $('#exit-confirm-message'),
   exitCancelButton: $('#exit-cancel-button'),
   exitConfirmButton: $('#exit-confirm-button'),
+  exitHomeButton: $('#exit-home-button'),
   exitOptionsButton: $('#exit-options-button'),
   exitSleepModal: $('#exit-sleep-modal'),
   exitSleepMessage: $('#exit-sleep-message'),
@@ -472,9 +476,7 @@ async function loadSpineRuntime() {
 
 function bindEvents() {
   el.backButton.addEventListener('click', () => {
-    if (state.screen === 'settings') updateScreen(state.previousScreen || 'login');
-    else if (state.screen === 'game') exitToLobby();
-    else updateScreen('login');
+    openExitConfirm();
   });
   // v1.0.37: the visible top option line was removed. Options now open from the back/exit sheet gear.
   el.openSettingsButton?.addEventListener('click', openOptions);
@@ -564,6 +566,7 @@ function bindEvents() {
   }, '로그아웃했습니다.'));
   el.enterLobbyButton.addEventListener('click', () => enterLobbyFromAuth('resume')); // retired direct lobby button kept hidden for DOM compatibility
   el.exitCancelButton.addEventListener('click', closeExitConfirm);
+  el.exitHomeButton.addEventListener('click', exitHomeFromBackSheet);
   el.exitConfirmButton.addEventListener('click', confirmExitApp);
   el.exitOptionsButton.addEventListener('click', openOptionsFromExitSheet);
   el.exitWakeButton.addEventListener('click', wakeFromExitSleep);
@@ -730,14 +733,8 @@ function handleSoftBack() {
   if (!el.optionsModal.classList.contains('hidden')) { closeOptionsPanel(); return; }
   if (!el.exitConfirmModal.classList.contains('hidden')) { closeExitConfirm(); return; }
   if (!el.exitSleepModal.classList.contains('hidden')) { wakeFromExitSleep(); return; }
-  if (state.screen === 'game') {
-    exitToFirstScreen();
-    setStatus('진행 중인 판을 정리하고 첫 화면으로 돌아왔습니다.');
-    return;
-  }
-  if (state.screen === 'lobby' || state.screen === 'settings') {
-    updateScreen('login');
-    setStatus('첫 화면으로 돌아왔습니다.');
+  if (state.screen === 'game' || state.screen === 'lobby' || state.screen === 'settings' || state.screen === 'login') {
+    openExitConfirm();
     return;
   }
   openExitConfirm();
@@ -870,6 +867,10 @@ function enterLobbyFromStart() {
 
 async function startDailyStage() {
   const daily = state.dailyChallenge;
+  document.body.dataset.dailyStartSignalActivated = DAILY_START_SIGNAL_PATCH;
+  el.dailyStageButton?.classList.add('start-signal-activated');
+  el.dailyStartButton?.classList.add('start-signal-activated');
+  HAPTIC.select();
   state.selectedStageId = daily.stageId;
   state.selectedChapterId = getStageById(daily.stageId).chapterId;
   writeText('dream-library-selected-stage', daily.stageId);
@@ -1453,11 +1454,22 @@ function stopCurrentBoard() {
 }
 
 function openExitConfirm() {
-  el.exitConfirmMessage.textContent = state.screen === 'login'
-    ? '첫 화면입니다. 종료를 누르면 현재 판과 타이머를 정리하고 종료 상태 화면으로 전환합니다.'
-    : '진행 화면을 정리하고 첫 화면 상태로 저장한 뒤 종료 상태 화면으로 전환합니다.';
+  el.exitConfirmModal.dataset.backActionSheet = BACK_ACTION_SHEET_PATCH;
+  el.exitConfirmModal.dataset.mobileExitOptions = MOBILE_EXIT_OPTIONS_QA_PATCH;
+  el.exitConfirmMessage.textContent = state.screen === 'game'
+    ? '진행 중인 판을 멈추고 첫 화면으로 돌아가거나, 옵션을 확인하거나, 서고를 정리할 수 있습니다.'
+    : state.screen === 'login'
+      ? '첫 화면입니다. 옵션을 확인하거나 서고를 정리하고 나갈 수 있습니다.'
+      : '첫 화면으로 돌아가거나, 옵션을 확인하거나, 서고를 정리하고 나갈 수 있습니다.';
   el.exitConfirmModal.classList.remove('hidden');
+  setStatus('뒤로가기 선택지를 열었습니다.');
   HAPTIC.warning();
+}
+
+function exitHomeFromBackSheet() {
+  closeExitConfirm();
+  exitToFirstScreen();
+  setStatus('첫 화면으로 돌아왔습니다.');
 }
 
 function closeExitConfirm() {
@@ -1573,6 +1585,9 @@ function applyAdaptiveVisualBudget() {
   document.body.dataset.lobbyDensityFinalQa = LOBBY_DENSITY_FINAL_QA_PATCH;
   document.body.dataset.touchConflictAudit = TOUCH_CONFLICT_AUDIT_PATCH;
   document.body.dataset.realDeviceTouchQa = REAL_DEVICE_TOUCH_QA_PATCH;
+  document.body.dataset.dailyStartSignal = DAILY_START_SIGNAL_PATCH;
+  document.body.dataset.backActionSheet = BACK_ACTION_SHEET_PATCH;
+  document.body.dataset.mobileExitOptions = MOBILE_EXIT_OPTIONS_QA_PATCH;
   document.body.dataset.effectBudget = budget.name;
   document.body.dataset.renderBudgetReason = budget.reason;
   document.body.style.setProperty('--season-vfx-alpha', String(budget.vfxAlpha));
@@ -1582,15 +1597,36 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   el.app?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   el.app?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
+  el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.app?.setAttribute('data-back-action-sheet', BACK_ACTION_SHEET_PATCH);
+  el.app?.setAttribute('data-mobile-exit-options', MOBILE_EXIT_OPTIONS_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-reward-detail-showcase', REWARD_DETAIL_SHOWCASE_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
+  document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.dailyStageButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.dailyStartButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
 }
 
 function qualityText(tier: string) {
   return tier === 'high' ? '고품질' : tier === 'medium' ? '균형' : '절전';
+}
+
+function syncDailyStartSignal() {
+  document.body.dataset.dailyStartSignal = DAILY_START_SIGNAL_PATCH;
+  el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelectorAll<HTMLElement>('[data-start-signal]').forEach((node) => {
+    node.dataset.startSignal = DAILY_START_SIGNAL_PATCH;
+  });
+  el.dailyStageButton?.classList.toggle('start-signal-ready', state.screen === 'lobby');
+  el.dailyStartButton?.classList.toggle('start-signal-ready', state.screen === 'lobby');
 }
 
 function renderLobby() {
@@ -1636,6 +1672,7 @@ function renderLobby() {
   renderCollection();
   renderDailyPanel();
   renderLobbyPanelState();
+  syncDailyStartSignal();
   applyAdaptiveVisualBudget();
 }
 
