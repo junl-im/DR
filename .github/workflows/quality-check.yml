@@ -87,6 +87,7 @@ jobs:
           npm run check:boss-asset-visibility
           npm run check:boss-pattern-density
           npm run check:board-focus-tempo-cache
+          npm run check:mobile-board-reward-flow
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

@@ -2551,14 +2551,14 @@ body[data-screen="game"] .screen-stack {
   pointer-events: none;
   opacity: 0.72;
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1039"] {
+.boss-core[data-boss-visual-stack="stable-atlas-v1040"] {
   isolation: isolate;
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1039"] #boss-image {
+.boss-core[data-boss-visual-stack="stable-atlas-v1040"] #boss-image {
   z-index: 2;
   opacity: 1;
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1039"].boss-atlas-ready .boss-atlas-sprite {
+.boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
   z-index: 3;
   opacity: 0.58;
   mix-blend-mode: screen;
@@ -2601,7 +2601,7 @@ body[data-screen="game"] .screen-stack {
     right: 0.42rem;
     top: 0.42rem;
   }
-  .boss-core[data-boss-visual-stack="stable-atlas-v1039"].boss-atlas-ready .boss-atlas-sprite {
+  .boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
     opacity: 0.48;
   }
   .boss-telegraph[data-boss-id] {
@@ -2612,7 +2612,7 @@ body[data-screen="game"] .screen-stack {
 
 
 /* v1.0.39 Board focus balance, boss flow tempo and cache slim polish */
-.battle-stage[data-board-focus-balance="v1039-board-focus-balance"] .pixi-board-host {
+.battle-stage[data-board-focus-balance="v1040-board-focus-balance"] .pixi-board-host {
   --board-focus-ring: rgba(125, 220, 255, 0.12);
   box-shadow: inset 0 0 0 1px rgba(245, 200, 107, 0.1), inset 0 0 30px rgba(6, 21, 45, 0.3), 0 14px 28px rgba(0, 0, 0, 0.2);
 }
@@ -2627,10 +2627,10 @@ body[data-screen="game"] .screen-stack {
 .battle-stage[data-board-focus-follow="large-soft-follow"] .pixi-board-host::before {
   opacity: 0.16;
 }
-.battle-stage[data-objective-marker-density="compressed-v1039"] .pixi-board-host {
+.battle-stage[data-objective-marker-density="compressed-v1040"] .pixi-board-host {
   box-shadow: inset 0 0 0 1px rgba(245, 200, 107, 0.09), inset 0 0 24px rgba(6, 21, 45, 0.34), 0 12px 24px rgba(0, 0, 0, 0.2);
 }
-.battle-stage[data-objective-marker-density="compressed-v1039"][data-objective-marker-overflow]:not([data-objective-marker-overflow="0"]) .pixi-board-host::after,
+.battle-stage[data-objective-marker-density="compressed-v1040"][data-objective-marker-overflow]:not([data-objective-marker-overflow="0"]) .pixi-board-host::after,
 .battle-stage[data-objective-marker-density="compressed"][data-objective-marker-overflow]:not([data-objective-marker-overflow="0"]) .pixi-board-host::after {
   content: '';
   position: absolute;
@@ -2654,7 +2654,7 @@ body[data-screen="game"] .screen-stack {
 .boss-core[data-boss-flow-tempo="heavy-slow"]::after {
   box-shadow: 0 0 34px rgba(245, 200, 107, 0.3);
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1039"].boss-atlas-ready .boss-atlas-sprite {
+.boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
   opacity: 0.5;
 }
 .battle-stage[data-boss-cutin-priority="compact"] .boss-hit-cutin[data-visual-priority="compact-hit"] {
@@ -2665,7 +2665,76 @@ body[data-screen="game"] .screen-stack {
   .pixi-board-host[data-zoom-readability="far"] canvas {
     filter: saturate(1.12) contrast(1.1);
   }
-  .boss-core[data-boss-visual-stack="stable-atlas-v1039"].boss-atlas-ready .boss-atlas-sprite {
+  .boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
     opacity: 0.42;
+  }
+}
+
+/* v1.0.40 Mobile board feel, boss asset polish and clear reward bridge */
+.battle-stage[data-mobile-board-feel="v1040-mobile-board-feel"] .pixi-board-host {
+  --board-touch-comfort: 1;
+  border-color: rgba(125, 220, 255, 0.22);
+}
+.pixi-board-host[data-mobile-board-feel="v1040-mobile-board-feel"][data-zoom-readability="far-boost"] canvas,
+.pixi-board-host[data-mobile-board-feel="v1040-mobile-board-feel"][data-zoom-readability="far"] canvas {
+  filter: saturate(1.08) contrast(1.08) drop-shadow(0 1px 0 rgba(245, 200, 107, 0.14));
+}
+.battle-stage[data-visual-priority="tile-contrast-natural-v1040"] .pixi-board-host {
+  box-shadow: inset 0 0 0 1px rgba(245, 200, 107, 0.13), inset 0 0 22px rgba(125, 220, 255, 0.08), 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+.battle-stage[data-visual-priority="boss-route-soft-v1040"] .boss-telegraph:not(.hidden) {
+  opacity: 0.8;
+  max-width: min(68vw, 272px);
+}
+.battle-stage[data-board-focus-follow="large-soft-follow-v1040"] .pixi-board-host::before,
+.battle-stage[data-board-focus-follow="near-edge-only-v1040"] .pixi-board-host::before {
+  opacity: 0.1;
+}
+.boss-core[data-boss-visual-stack="stable-atlas-v1040"] #boss-image[data-boss-asset-polish="v1040-stable-visible"] {
+  opacity: 1;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22)) saturate(1.04);
+}
+.boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+  opacity: 0.38;
+  transform: translate(-50%, -50%) scale(calc(var(--boss-frame-scale, 0.28) * 0.94));
+}
+.reward-modal[data-reward-flow="v1040-clear-to-restoration"] .reward-card {
+  border-color: rgba(245, 200, 107, 0.3);
+  box-shadow: 0 24px 60px rgba(2, 9, 22, 0.5), inset 0 0 34px rgba(125, 220, 255, 0.1);
+}
+.reward-items[data-reward-flow="materials-linked-v1040"] {
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+.reward-items[data-reward-flow="materials-linked-v1040"] .reward-chip {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  background: linear-gradient(150deg, rgba(16, 43, 87, 0.88), rgba(6, 21, 45, 0.72));
+  border: 1px solid rgba(245, 200, 107, 0.18);
+}
+.reward-items[data-reward-flow="materials-linked-v1040"] .reward-chip-restore {
+  grid-column: 1 / -1;
+  color: var(--sky-500);
+  border-color: rgba(125, 220, 255, 0.24);
+}
+.reward-items[data-reward-flow="materials-linked-v1040"] .reward-chip-daily {
+  grid-column: 1 / -1;
+  color: var(--emerald-400);
+}
+.battle-stage[data-clear-reward-flow="v1040-board-to-reward-flow"] .boss-lane {
+  filter: saturate(1.06) brightness(1.03);
+}
+@media (max-height: 680px), (max-width: 380px) {
+  .reward-items[data-reward-flow="materials-linked-v1040"] {
+    gap: 0.42rem;
+  }
+  .reward-items[data-reward-flow="materials-linked-v1040"] .reward-chip {
+    min-height: 40px;
+    padding: 0.48rem;
+    font-size: 0.78rem;
+  }
+  .boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+    opacity: 0.32;
   }
 }

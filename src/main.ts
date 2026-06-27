@@ -29,6 +29,8 @@ document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
+const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1040';
+const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 let bossAtlasImageReady = false;
 function preloadBossAtlasImage() {
   const image = new Image();
@@ -979,6 +981,8 @@ async function clearStage() {
   renderLobby();
   renderGameHud();
   audio.play('clear');
+  renderer.playClearRewardFlow(stars, score);
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-clear-flow-stage', 'v1040-reward-bridge');
   await saveScore(score, stars);
   await refreshRankingPanelsAfterScore();
   openReward(stars, score);
@@ -1314,7 +1318,7 @@ function renderBossPanel() {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
   setBossStableImage(boss.asset, boss.name);
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
-  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1039';
+  el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
   el.bossName.textContent = boss.name;
   el.bossPattern.textContent = boss.patternLabel;
   el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
@@ -1331,6 +1335,7 @@ function renderBossPanel() {
 function setBossStableImage(src = BOSS_IMAGE_FALLBACK_SRC, alt = '망각의 서고령') {
   el.bossImage.alt = alt;
   el.bossImage.dataset.bossImgGuard = 'stable';
+  el.bossImage.dataset.bossAssetPolish = 'v1040-stable-visible';
   el.bossImage.onerror = () => {
     el.bossImage.onerror = null;
     el.bossImage.src = BOSS_IMAGE_FALLBACK_SRC;
@@ -1351,9 +1356,9 @@ function applyBossAtlasFrame(frameKey = '') {
     return;
   }
   const coreSize = Math.max(44, el.bossCore.clientWidth || 64);
-  const scale = Math.min(0.42, Math.max(0.23, (coreSize * 1.62) / Math.max(frame.w, frame.h)));
+  const scale = Math.min(0.38, Math.max(0.2, (coreSize * 1.48) / Math.max(frame.w, frame.h))); // v1.0.40: keep atlas overlay behind stable monster art
   el.bossCore.classList.add('boss-atlas-ready');
-  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1039';
+  el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
   el.bossCore.style.setProperty('--boss-frame-w', `${frame.w}px`);
   el.bossCore.style.setProperty('--boss-frame-h', `${frame.h}px`);
   el.bossCore.style.setProperty('--boss-frame-x', `-${frame.x}px`);
@@ -1598,10 +1603,17 @@ function showBossHitCutin(combo: number) {
 
 function openReward(stars: number, score: number) {
   const stage = getStageById(state.selectedStageId);
+  const focusProject = RESTORATION_PROJECTS.find((project) => project.types.includes(stage.reward.type)) || RESTORATION_PROJECTS.find((project) => !state.restorationCompleted[project.id]) || RESTORATION_PROJECTS[0];
+  const current = focusProject ? getRestorationCurrent(focusProject) : 0;
+  const need = focusProject?.need || 0;
+  const progressText = focusProject ? `${focusProject.label} ${Math.min(current, need)}/${need}` : '복원 재료 보관';
   el.rewardTitle.textContent = `${stage.title} 복원 완료`;
-  el.rewardMessage.textContent = `별 ${stars}개와 ${formatNumber(score)}점을 획득했습니다.`;
-  const dailyBonus = state.currentBoardId === 'daily' ? `<span>오늘의 별가루 ×${state.dailyChallenge.rewardBoost}</span>` : '';
-  el.rewardItems.innerHTML = `<span>★ ${stars}</span><span>${stage.reward.label} ×${stage.reward.amount}</span>${dailyBonus}`;
+  el.rewardMessage.textContent = `별 ${stars}개 · ${formatNumber(score)}점 · 획득 재료가 ${progressText}에 반영되었습니다.`;
+  const dailyBonus = state.currentBoardId === 'daily' ? `<span class="reward-chip reward-chip-daily">오늘의 별가루 ×${state.dailyChallenge.rewardBoost}</span>` : '';
+  const restoreChip = focusProject ? `<span class="reward-chip reward-chip-restore">복원 연결 · ${escapeHtml(focusProject.label)}</span>` : '';
+  el.rewardItems.dataset.rewardFlow = 'materials-linked-v1040';
+  el.rewardItems.innerHTML = `<span class="reward-chip reward-chip-stars">★ ${stars}</span><span class="reward-chip reward-chip-material">${escapeHtml(stage.reward.label)} ×${stage.reward.amount}</span>${restoreChip}${dailyBonus}`;
+  el.rewardModal.dataset.rewardFlow = CLEAR_REWARD_FLOW_PATCH;
   const next = getNextStage(stage.id);
   el.nextStageButton.classList.toggle('hidden', !next);
   el.rewardModal.classList.remove('hidden');

@@ -59,7 +59,8 @@
     "check:space-reclaim-back-options": "node tools/check-space-reclaim-back-options.mjs",
     "check:boss-asset-visibility": "node tools/check-boss-asset-visibility.mjs",
     "check:boss-pattern-density": "node tools/check-boss-pattern-density.mjs",
-    "check:board-focus-tempo-cache": "node tools/check-board-focus-tempo-cache.mjs"
+    "check:board-focus-tempo-cache": "node tools/check-board-focus-tempo-cache.mjs",
+    "check:mobile-board-reward-flow": "node tools/check-mobile-board-reward-flow.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -72,5 +73,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.39"
+  "version": "1.0.40"
 }

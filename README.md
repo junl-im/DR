@@ -61,6 +61,34 @@ Atlas 생성
 ## Version History
 
 
+
+### v1.0.40 - Mobile Board Feel, Boss Asset Polish and Clear Flow Reward Patch
+
+- v1.0.39 기준 통파일을 점검하고, 미니맵/보기·중앙·+/- 라인/드래그 이동 도움말을 재도입하지 않은 채 모바일 보드 조작감과 클리어 보상 흐름을 다듬음
+- `MOBILE_BOARD_FEEL_PATCH`와 `data-mobile-board-feel="v1040-mobile-board-feel"`을 추가해 카메라 버튼 없이도 큰 보드 선택 후 follow가 더 부드럽게 반응하도록 조정
+- `getBoardFocusProfile()`을 v1.0.40 기준으로 재조정해 far zoom/큰 보드에서 카메라가 과하게 튀지 않고, 가장자리 선택 시에만 완만하게 따라오도록 감도와 cooldown을 완화
+- `getVisualPriorityState()`를 `tile-contrast-natural-v1040 / boss-route-soft-v1040 / balanced-v1040`로 정리해 먼 줌에서도 타일 본체가 먼저 읽히도록 명암과 보스 경고 우선순위를 조정
+- 보스 기본 그림과 atlas overlay 계층을 `stable-atlas-v1040`으로 갱신하고, `v1040-stable-visible` guard를 추가해 atlas overlay가 몬스터 기본 그림을 덮지 않도록 보강
+- `applyBossAtlasFrame()`의 overlay scale을 낮춰 작은 화면에서 보스 base asset이 빈 자리처럼 보이거나 지나치게 덮이는 문제를 줄임
+- `renderer.playClearRewardFlow()`를 추가해 클리어 직후 보드 중앙에서 별/재료 획득 감각이 먼저 터진 뒤 보상 모달로 이어지도록 연결
+- 보상 모달에 `v1040-clear-to-restoration`, `materials-linked-v1040` hook을 추가하고, 획득 재료가 어느 복원 프로젝트에 연결되는지 한 줄로 보여주도록 개선
+- service worker cache slim 정책을 `v1040-cache-slim-core-first`로 갱신하고 Texture Atlas manifest를 v1.0.40으로 추가
+- `npm run check:mobile-board-reward-flow` 신규 추가 및 GitHub Pages / Quality Check workflow에 연결
+- 기존 `check:selection-stability`, `check:mobile-playability`, `check:no-minimap-topbar`, `check:board-focus-tempo-cache`와 함께 v1.0.40 신규 검사를 통과
+- 선택 패 크기 고정과 tile body geometry guard 유지
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
+다음 업데이트 예정: v1.0.41 - Reward Restoration UX, Boss Flow Audio-Haptic and Loading Polish Patch
+
+- 보상 모달에서 복원 프로젝트 바로가기/집중 프로젝트 전환 흐름 개선
+- 클리어 연출에 사운드/haptic feedback 연결 강화
+- 보스 warning/cut-in이 반복될 때 오디오와 화면 흔들림의 피로도를 줄이는 tempo polish
+- 초기 로딩/서비스워커 캐시 교체 중 첫 화면 잔상 방지 추가 점검
+- 작은 화면에서 보상 모달, 보스 패널, 하단 액션 버튼의 겹침 추가 압축
+- 미니맵, 보기/중앙/+/- 라인, 드래그 이동 도움말은 계속 재도입하지 않음
+
+
 ### v1.0.39 - Board Focus Balance, Boss Flow Tempo and Asset Cache Slim Patch
 
 - v1.0.38 기준 통파일을 점검하고, 미니맵/보기·중앙·+/- 라인/드래그 이동 도움말을 재도입하지 않은 채 큰 보드 조작감을 내부적으로 조정

@@ -25,8 +25,10 @@ const SELECTION_OVERLAY_INSET_RATIO = 0.09;
 const TOUCH_HIT_SLOP_RATIO = 0.075;
 const TOUCH_HIT_SLOP_MAX = 7;
 const REAL_DEVICE_SELECTION_QA_LABEL = 'real-device-selection-geometry-qa';
-const BOARD_FOCUS_BALANCE_PATCH = 'v1039-board-focus-balance';
-const BOSS_FLOW_TEMPO_PATCH = 'v1039-boss-flow-tempo';
+const BOARD_FOCUS_BALANCE_PATCH = 'v1040-board-focus-balance';
+const MOBILE_BOARD_FEEL_PATCH = 'v1040-mobile-board-feel';
+const CLEAR_REWARD_FLOW_PATCH = 'v1040-board-to-reward-flow';
+const BOSS_FLOW_TEMPO_PATCH = 'v1040-boss-flow-tempo';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -460,7 +462,7 @@ export class DreamPixiRenderer {
     core.classList.add('boss-warning');
     core.dataset.warningPattern = pattern;
     core.dataset.bossWarningDepth = bossId;
-    core.dataset.warningDepthPatch = 'v1039';
+    core.dataset.warningDepthPatch = 'v1040';
     core.dataset.bossFlowTempo = tempo.name;
     core.dataset.bossFlowTempoPatch = BOSS_FLOW_TEMPO_PATCH;
     window.setTimeout(() => core.classList.remove('boss-warning'), Math.round(profile.duration * tempo.durationScale * 1000 + 140));
@@ -522,10 +524,12 @@ export class DreamPixiRenderer {
     const tier = scaledTile < 32 ? 'far-boost' : scaledTile < 38 ? 'far' : scaledTile > 58 ? 'close' : 'balanced';
     host.dataset.zoomReadability = tier;
     host.dataset.boardFocusBalance = BOARD_FOCUS_BALANCE_PATCH;
+    host.dataset.mobileBoardFeel = MOBILE_BOARD_FEEL_PATCH;
     host.style.setProperty('--tile-readability-scale', String(Math.max(0.82, Math.min(1.18, 42 / Math.max(28, scaledTile)))));
     const stage = document.querySelector<HTMLElement>('.battle-stage');
     stage?.setAttribute('data-zoom-readability', tier);
     stage?.setAttribute('data-board-focus-balance', BOARD_FOCUS_BALANCE_PATCH);
+    stage?.setAttribute('data-mobile-board-feel', MOBILE_BOARD_FEEL_PATCH);
     stage?.setAttribute('data-visual-priority', this.getVisualPriorityState(tier));
   }
 
@@ -615,16 +619,23 @@ export class DreamPixiRenderer {
     const scaledTile = this.tileSize * this.camera.scale;
     const boardArea = Math.max(1, this.layout.rows * this.layout.cols);
     const largeBoard = boardArea >= 90 || this.layout.rows >= 10 || this.layout.cols >= 10;
-    if (scaledTile < 32 || largeBoard) {
-      return { name: 'large-soft-follow', margin: Math.max(38, this.tileSize * this.camera.scale * 0.68), targetScale: Math.min(0.82, this.camera.maxScale), followBlend: 0.58, cooldownMs: 420 };
+    const farZoom = scaledTile < 34;
+    if (farZoom || largeBoard) {
+      return {
+        name: 'large-soft-follow-v1040',
+        margin: Math.max(34, scaledTile * 0.56),
+        targetScale: Math.min(farZoom ? 0.78 : 0.74, this.camera.maxScale),
+        followBlend: farZoom ? 0.42 : 0.34,
+        cooldownMs: farZoom ? 540 : 620
+      };
     }
-    return { name: 'near-edge-only', margin: Math.max(34, this.tileSize * this.camera.scale * 0.58), targetScale: Math.min(0.76, this.camera.maxScale), followBlend: 0.42, cooldownMs: 520 };
+    return { name: 'near-edge-only-v1040', margin: Math.max(30, scaledTile * 0.5), targetScale: Math.min(0.72, this.camera.maxScale), followBlend: 0.32, cooldownMs: 650 };
   }
 
   private getVisualPriorityState(tier = 'balanced') {
-    if (tier === 'far-boost') return 'tile-contrast-first';
-    if (tier === 'far') return 'boss-route-first';
-    return 'balanced-v1039';
+    if (tier === 'far-boost') return 'tile-contrast-natural-v1040';
+    if (tier === 'far') return 'boss-route-soft-v1040';
+    return 'balanced-v1040';
   }
 
   private animateCameraTo(x: number, y: number, scale: number, animated = true) {
@@ -1102,18 +1113,18 @@ export class DreamPixiRenderer {
     const boostFar = scaledTile < 30;
     const denseBoard = boardArea >= 96 || count > 10;
     const limit = boostFar ? 4 : farZoom ? 5 : denseBoard ? 7 : 9;
-    const density = count > limit ? 'compressed-v1039' : denseBoard ? 'balanced-v1039' : 'open-v1039';
+    const density = count > limit ? 'compressed-v1040' : denseBoard ? 'balanced-v1040' : 'open-v1040';
     return {
       density,
       limit,
-      radiusRatio: density === 'compressed-v1039' ? 0.061 : 0.086,
-      fillAlpha: density === 'compressed-v1039' ? 0.1 : 0.16,
-      coreAlpha: density === 'compressed-v1039' ? 0.54 : 0.76,
-      strokeAlpha: density === 'compressed-v1039' ? 0.3 : 0.48,
-      minAlpha: density === 'compressed-v1039' ? 0.28 : 0.44,
-      maxAlpha: density === 'compressed-v1039' ? 0.62 : 0.88,
-      delay: density === 'compressed-v1039' ? 0.014 : 0.028,
-      duration: density === 'compressed-v1039' ? 0.74 : 0.56
+      radiusRatio: density === 'compressed-v1040' ? 0.061 : 0.086,
+      fillAlpha: density === 'compressed-v1040' ? 0.1 : 0.16,
+      coreAlpha: density === 'compressed-v1040' ? 0.54 : 0.76,
+      strokeAlpha: density === 'compressed-v1040' ? 0.3 : 0.48,
+      minAlpha: density === 'compressed-v1040' ? 0.28 : 0.44,
+      maxAlpha: density === 'compressed-v1040' ? 0.62 : 0.88,
+      delay: density === 'compressed-v1040' ? 0.014 : 0.028,
+      duration: density === 'compressed-v1040' ? 0.74 : 0.56
     };
   }
 
@@ -1179,7 +1190,7 @@ export class DreamPixiRenderer {
     const points = path?.length ? path.map((point) => this.paddedToCanvas(point)) : [{ x: x1, y: y1 }, { x: x2, y: y2 }];
     if (!points.length) return;
     const beam = new Graphics();
-    beam.label = 'route-assist-priority-v1039';
+    beam.label = 'route-assist-priority-v1040-clear-readable';
     const routeWidth = this.tileSize * this.camera.scale < 34 ? 6.2 : 8;
     beam.moveTo(points[0].x, points[0].y);
     points.slice(1).forEach((point) => beam.lineTo(point.x, point.y));
@@ -1317,6 +1328,46 @@ export class DreamPixiRenderer {
     gsap.to(sprite, { alpha: 0, rotation: Math.random() * 0.5 - 0.25, duration: 0.42 * this.quality.motionScale, ease: 'power2.out', onComplete: () => sprite.destroy() });
   }
 
+
+  playClearRewardFlow(stars = 1, score = 0) {
+    if (!this.boardApp || !this.boardLayers.particles || !this.boardLayers.ui) return;
+    const app = this.boardApp;
+    const center = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2);
+    const rewardColor = stars >= 3 ? PALETTE.goldLight : stars >= 2 ? PALETTE.sky : PALETTE.emerald;
+    const baseRadius = Math.max(this.tileSize * 1.24, Math.min(this.camera.worldWidth, this.camera.worldHeight) * 0.16);
+    const ring = new Graphics()
+      .circle(center.x, center.y, baseRadius)
+      .stroke({ color: rewardColor, width: Math.max(2, this.tileSize * 0.045), alpha: 0.68 })
+      .circle(center.x, center.y, baseRadius * 0.58)
+      .stroke({ color: PALETTE.gold, width: Math.max(1.4, this.tileSize * 0.024), alpha: 0.52 });
+    ring.label = `clear-reward-flow-${stars}-${score}`;
+    ring.blendMode = 'add';
+    this.boardLayers.particles.addChild(ring);
+    const sparkleCount = Math.max(10, Math.min(22, stars * 5 + Math.round(score / 9000)));
+    for (let i = 0; i < sparkleCount; i += 1) {
+      const angle = (Math.PI * 2 * i) / sparkleCount;
+      const sparkle = new Graphics()
+        .circle(0, 0, Math.max(2, this.tileSize * 0.04))
+        .fill({ color: i % 2 ? PALETTE.sky : rewardColor, alpha: 0.88 });
+      sparkle.x = center.x + Math.cos(angle) * baseRadius * 0.38;
+      sparkle.y = center.y + Math.sin(angle) * baseRadius * 0.38;
+      sparkle.blendMode = 'add';
+      this.boardLayers.particles.addChild(sparkle);
+      gsap.to(sparkle, {
+        x: center.x + Math.cos(angle) * baseRadius * (0.92 + Math.random() * 0.18),
+        y: center.y + Math.sin(angle) * baseRadius * (0.92 + Math.random() * 0.18),
+        alpha: 0,
+        duration: (0.48 + Math.random() * 0.16) * this.quality.motionScale,
+        ease: 'power2.out',
+        onComplete: () => sparkle.destroy()
+      });
+    }
+    this.emitParticles(center.x, center.y, 18 + stars * 8, rewardColor);
+    this.cameraShake(3 + stars * 1.6);
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-clear-reward-flow', CLEAR_REWARD_FLOW_PATCH);
+    gsap.to(ring.scale, { x: 1.86, y: 1.86, duration: 0.58 * this.quality.motionScale, ease: 'power2.out' });
+    gsap.to(ring, { alpha: 0, duration: 0.58 * this.quality.motionScale, ease: 'sine.out', onComplete: () => ring.destroy() });
+  }
 
   private emitTileFragments(x: number, y: number, combo: number) {
     const count = Math.max(3, Math.min(9, Math.round((4 + combo) * this.quality.particleScale)));
