@@ -14,7 +14,7 @@ for (const token of [
   'boss-warning-depth-',
   "bossId === 'shadow-librarian'",
   "bossId === 'sealed-page-golem'",
-  'drawBossWarningLane(power, pattern, bossId)'
+  'drawBossWarningLane(adjustedPower, pattern, bossId, tempo)'
 ]) {
   if (!renderer.includes(token)) errors.push(`Renderer missing boss depth token: ${token}`);
 }
@@ -30,27 +30,27 @@ for (const token of [
 for (const token of [
   'dataset.bossWarningDepth',
   'dataset.bossVisualStack',
-  'stable-atlas-v1038',
+  'stable-atlas-v1039',
   'renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason), boss.id ||'
 ]) {
   if (!main.includes(token)) errors.push(`Runtime missing boss/depth token: ${token}`);
 }
 for (const token of [
-  'data-objective-marker-density="compressed"',
-  'data-boss-visual-stack="stable-atlas-v1038"',
+  'data-objective-marker-density="compressed-v1039"',
+  'data-boss-visual-stack="stable-atlas-v1039"',
   'data-boss-warning-depth="forgotten-spirit"',
   'data-boss-warning-depth="shadow-librarian"',
   'data-boss-warning-depth="sealed-page-golem"',
   'data-visual-priority="boss-route-first"'
 ]) {
-  if (!css.includes(token)) errors.push(`CSS missing v1.0.38 polish token: ${token}`);
+  if (!css.includes(token)) errors.push(`CSS missing v1.0.39 polish token: ${token}`);
 }
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭', '보기 맞춤', '드래그 이동']) {
   if (`${renderer}\n${main}\n${css}`.includes(banned)) errors.push(`Removed UI/minimap token came back: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.38"')) errors.push('package.json version must be 1.0.38.');
+if (!pkg.includes('"version": "1.0.39"')) errors.push('package.json version must be 1.0.39.');
 if (!pkg.includes('check:boss-pattern-density')) errors.push('package.json must expose check:boss-pattern-density.');
-if (!sw.includes('dream-library-cache-v1.0.38') || !sw.includes('texture-atlas-manifest-v1.0.38.json')) errors.push('service worker cache/manifest must be v1.0.38.');
+if (!sw.includes('dream-library-cache-v1.0.39') || !sw.includes('texture-atlas-manifest-v1.0.39.json')) errors.push('service worker cache/manifest must be v1.0.39.');
 if (!workflows.includes('npm run check:boss-pattern-density')) errors.push('workflows must run boss pattern density check.');
 
 if (errors.length) {

@@ -90,6 +90,7 @@ jobs:
           npm run check:space-reclaim-back-options
           npm run check:boss-asset-visibility
           npm run check:boss-pattern-density
+          npm run check:board-focus-tempo-cache
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

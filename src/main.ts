@@ -1314,7 +1314,7 @@ function renderBossPanel() {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
   setBossStableImage(boss.asset, boss.name);
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
-  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1038';
+  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1039';
   el.bossName.textContent = boss.name;
   el.bossPattern.textContent = boss.patternLabel;
   el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
@@ -1353,7 +1353,7 @@ function applyBossAtlasFrame(frameKey = '') {
   const coreSize = Math.max(44, el.bossCore.clientWidth || 64);
   const scale = Math.min(0.42, Math.max(0.23, (coreSize * 1.62) / Math.max(frame.w, frame.h)));
   el.bossCore.classList.add('boss-atlas-ready');
-  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1038';
+  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1039';
   el.bossCore.style.setProperty('--boss-frame-w', `${frame.w}px`);
   el.bossCore.style.setProperty('--boss-frame-h', `${frame.h}px`);
   el.bossCore.style.setProperty('--boss-frame-x', `-${frame.x}px`);

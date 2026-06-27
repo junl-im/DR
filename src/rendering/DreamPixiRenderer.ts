@@ -25,6 +25,8 @@ const SELECTION_OVERLAY_INSET_RATIO = 0.09;
 const TOUCH_HIT_SLOP_RATIO = 0.075;
 const TOUCH_HIT_SLOP_MAX = 7;
 const REAL_DEVICE_SELECTION_QA_LABEL = 'real-device-selection-geometry-qa';
+const BOARD_FOCUS_BALANCE_PATCH = 'v1039-board-focus-balance';
+const BOSS_FLOW_TEMPO_PATCH = 'v1039-boss-flow-tempo';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -148,6 +150,8 @@ export class DreamPixiRenderer {
   geometryGuardFrame = 0;
   selectionGeometrySnapshots = new Map<string, { rootScaleX: number; rootScaleY: number; spriteWidth: number; spriteHeight: number }>();
   lastSelectionFollowAt = 0;
+  lastBossWarningAt = 0;
+  bossWarningCooldownMs = 520;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
@@ -372,16 +376,25 @@ export class DreamPixiRenderer {
   private keepSelectedTileComfortablyVisible(view: TileView) {
     if (!this.boardApp || this.layout.cameraMode !== 'panZoom') return;
     const now = performance.now();
-    if (now - this.lastSelectionFollowAt < 220) return;
-    const margin = Math.max(44, this.tileSize * this.camera.scale * 0.78);
+    const profile = this.getBoardFocusProfile();
+    if (now - this.lastSelectionFollowAt < profile.cooldownMs) return;
     const screenX = view.baseX * this.camera.scale + this.camera.x;
     const screenY = view.baseY * this.camera.scale + this.camera.y;
-    const outX = screenX < margin || screenX > this.camera.viewportWidth - margin;
-    const outY = screenY < margin || screenY > this.camera.viewportHeight - margin;
+    const outX = screenX < profile.margin || screenX > this.camera.viewportWidth - profile.margin;
+    const outY = screenY < profile.margin || screenY > this.camera.viewportHeight - profile.margin;
     if (!outX && !outY) return;
     this.lastSelectionFollowAt = now;
-    const targetScale = Math.max(this.camera.scale, Math.min(this.camera.maxScale, 0.92));
-    this.centerCameraOnWorld(view.baseX, view.baseY, targetScale, true);
+    const targetScale = Math.max(this.camera.minScale, Math.min(this.camera.maxScale, Math.max(this.camera.scale, profile.targetScale)));
+    const nextX = this.camera.viewportWidth / 2 - view.baseX * targetScale;
+    const nextY = this.camera.viewportHeight / 2 - view.baseY * targetScale;
+    const blend = profile.followBlend;
+    this.animateCameraTo(
+      this.camera.x + (nextX - this.camera.x) * blend,
+      this.camera.y + (nextY - this.camera.y) * blend,
+      this.camera.scale + (targetScale - this.camera.scale) * blend,
+      true
+    );
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-focus-follow', profile.name);
   }
 
   async playMatchSequence(first: BoardPoint, second: BoardPoint, combo: number, onRemove: () => void, path?: PaddedPathPoint[] | null) {
@@ -440,15 +453,21 @@ export class DreamPixiRenderer {
   playBossWarning(power = 7, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column', bossId = 'forgotten-spirit') {
     const core = document.querySelector<HTMLElement>('#boss-core');
     if (!core) return;
+    const now = performance.now();
+    const tempo = this.getBossWarningTempo(bossId, now);
     const profile = this.getBossWarningDepthProfile(bossId);
+    const adjustedPower = Math.max(3.5, power * tempo.powerScale);
     core.classList.add('boss-warning');
     core.dataset.warningPattern = pattern;
     core.dataset.bossWarningDepth = bossId;
-    core.dataset.warningDepthPatch = 'v1038';
-    window.setTimeout(() => core.classList.remove('boss-warning'), Math.round(profile.duration * 1000 + 160));
-    this.cameraShake(Math.round(power * profile.widthBoost));
-    this.drawBossWarningLane(power, pattern, bossId);
-    if (this.boardApp) {
+    core.dataset.warningDepthPatch = 'v1039';
+    core.dataset.bossFlowTempo = tempo.name;
+    core.dataset.bossFlowTempoPatch = BOSS_FLOW_TEMPO_PATCH;
+    window.setTimeout(() => core.classList.remove('boss-warning'), Math.round(profile.duration * tempo.durationScale * 1000 + 140));
+    this.lastBossWarningAt = now;
+    this.cameraShake(Math.round(adjustedPower * profile.widthBoost * tempo.shakeScale));
+    this.drawBossWarningLane(adjustedPower, pattern, bossId, tempo);
+    if (this.boardApp && tempo.spawnImpact) {
       const impact = this.screenToWorld(this.boardApp.renderer.width / 2, 42);
       this.spawnVfxSprite(impact.x, impact.y, bossId === 'sealed-page-golem' || pattern === 'diagonal' ? 'import-vfx-05' : 'import-vfx-06');
     }
@@ -500,10 +519,14 @@ export class DreamPixiRenderer {
     const host = this.host || document.querySelector<HTMLElement>('#pixi-board-host');
     if (!host) return;
     const scaledTile = this.tileSize * this.camera.scale;
-    host.dataset.zoomReadability = scaledTile < 34 ? 'far' : scaledTile > 56 ? 'close' : 'balanced';
+    const tier = scaledTile < 32 ? 'far-boost' : scaledTile < 38 ? 'far' : scaledTile > 58 ? 'close' : 'balanced';
+    host.dataset.zoomReadability = tier;
+    host.dataset.boardFocusBalance = BOARD_FOCUS_BALANCE_PATCH;
+    host.style.setProperty('--tile-readability-scale', String(Math.max(0.82, Math.min(1.18, 42 / Math.max(28, scaledTile)))));
     const stage = document.querySelector<HTMLElement>('.battle-stage');
-    stage?.setAttribute('data-zoom-readability', host.dataset.zoomReadability);
-    stage?.setAttribute('data-visual-priority', host.dataset.zoomReadability === 'far' ? 'boss-route-first' : 'balanced');
+    stage?.setAttribute('data-zoom-readability', tier);
+    stage?.setAttribute('data-board-focus-balance', BOARD_FOCUS_BALANCE_PATCH);
+    stage?.setAttribute('data-visual-priority', this.getVisualPriorityState(tier));
   }
 
   private configureBoardCamera(reset = false) {
@@ -519,9 +542,9 @@ export class DreamPixiRenderer {
     this.camera.viewportHeight = viewportHeight;
     this.camera.worldWidth = worldWidth;
     this.camera.worldHeight = worldHeight;
-    this.camera.minScale = panZoom ? Math.max(0.34, Math.min(0.82, fitScale * 0.98)) : Math.min(1, fitScale);
-    this.camera.maxScale = panZoom ? 1.65 : 1.08;
-    const nextScale = panZoom ? Math.max(this.camera.minScale, Math.min(0.92, this.camera.maxScale)) : Math.min(1, this.camera.maxScale);
+    this.camera.minScale = panZoom ? Math.max(0.36, Math.min(0.78, fitScale * 1.02)) : Math.min(1, fitScale);
+    this.camera.maxScale = panZoom ? 1.58 : 1.08;
+    const nextScale = panZoom ? Math.max(this.camera.minScale, Math.min(0.88, this.camera.maxScale)) : Math.min(1, this.camera.maxScale);
     if (reset || !Number.isFinite(this.camera.scale)) this.camera.scale = nextScale;
     this.camera.scale = Math.max(this.camera.minScale, Math.min(this.camera.maxScale, this.camera.scale));
     if (reset) {
@@ -568,7 +591,7 @@ export class DreamPixiRenderer {
     if (!views.length || !this.boardApp) return;
     const centerX = views.reduce((sum, view) => sum + view.baseX, 0) / views.length;
     const centerY = views.reduce((sum, view) => sum + view.baseY, 0) / views.length;
-    const targetScale = this.layout.cameraMode === 'panZoom' ? Math.min(this.camera.maxScale, Math.max(this.camera.scale, 0.96)) : this.camera.scale;
+    const targetScale = this.layout.cameraMode === 'panZoom' ? Math.min(this.camera.maxScale, Math.max(this.camera.scale, this.getBoardFocusProfile().targetScale)) : this.camera.scale;
     this.centerCameraOnWorld(centerX, centerY, targetScale, animated);
   }
 
@@ -585,6 +608,23 @@ export class DreamPixiRenderer {
       x: (x - this.camera.x) / scale,
       y: (y - this.camera.y) / scale
     };
+  }
+
+
+  private getBoardFocusProfile() {
+    const scaledTile = this.tileSize * this.camera.scale;
+    const boardArea = Math.max(1, this.layout.rows * this.layout.cols);
+    const largeBoard = boardArea >= 90 || this.layout.rows >= 10 || this.layout.cols >= 10;
+    if (scaledTile < 32 || largeBoard) {
+      return { name: 'large-soft-follow', margin: Math.max(38, this.tileSize * this.camera.scale * 0.68), targetScale: Math.min(0.82, this.camera.maxScale), followBlend: 0.58, cooldownMs: 420 };
+    }
+    return { name: 'near-edge-only', margin: Math.max(34, this.tileSize * this.camera.scale * 0.58), targetScale: Math.min(0.76, this.camera.maxScale), followBlend: 0.42, cooldownMs: 520 };
+  }
+
+  private getVisualPriorityState(tier = 'balanced') {
+    if (tier === 'far-boost') return 'tile-contrast-first';
+    if (tier === 'far') return 'boss-route-first';
+    return 'balanced-v1039';
   }
 
   private animateCameraTo(x: number, y: number, scale: number, animated = true) {
@@ -1047,29 +1087,33 @@ export class DreamPixiRenderer {
   }
 
   private getObjectiveMarkerPriority(view: TileView) {
-    if (view.tile.special === 'locked') return 3;
-    if (view.tile.special === 'timeSeal') return 2;
-    if (view.tile.special === 'fog') return 1;
-    return 0;
+    const specialWeight = view.tile.special === 'locked' ? 30 : view.tile.special === 'timeSeal' ? 22 : view.tile.special === 'fog' ? 12 : 0;
+    const centerX = (this.screenToWorld(this.camera.viewportWidth / 2, this.camera.viewportHeight / 2).x || this.camera.worldWidth / 2);
+    const centerY = (this.screenToWorld(this.camera.viewportWidth / 2, this.camera.viewportHeight / 2).y || this.camera.worldHeight / 2);
+    const dist = Math.hypot(view.baseX - centerX, view.baseY - centerY);
+    const nearViewBonus = Math.max(0, 8 - dist / Math.max(this.tileSize * 1.8, 1));
+    return specialWeight + nearViewBonus;
   }
 
   private getObjectiveMarkerDensity(count: number) {
     const boardArea = Math.max(1, this.layout.rows * this.layout.cols);
-    const farZoom = this.tileSize * this.camera.scale < 34;
+    const scaledTile = this.tileSize * this.camera.scale;
+    const farZoom = scaledTile < 34;
+    const boostFar = scaledTile < 30;
     const denseBoard = boardArea >= 96 || count > 10;
-    const limit = farZoom ? 5 : denseBoard ? 7 : 10;
-    const density = count > limit ? 'compressed' : denseBoard ? 'balanced' : 'open';
+    const limit = boostFar ? 4 : farZoom ? 5 : denseBoard ? 7 : 9;
+    const density = count > limit ? 'compressed-v1039' : denseBoard ? 'balanced-v1039' : 'open-v1039';
     return {
       density,
       limit,
-      radiusRatio: density === 'compressed' ? 0.072 : 0.095,
-      fillAlpha: density === 'compressed' ? 0.12 : 0.18,
-      coreAlpha: density === 'compressed' ? 0.62 : 0.82,
-      strokeAlpha: density === 'compressed' ? 0.36 : 0.54,
-      minAlpha: density === 'compressed' ? 0.34 : 0.48,
-      maxAlpha: density === 'compressed' ? 0.72 : 0.96,
-      delay: density === 'compressed' ? 0.018 : 0.032,
-      duration: density === 'compressed' ? 0.68 : 0.52
+      radiusRatio: density === 'compressed-v1039' ? 0.061 : 0.086,
+      fillAlpha: density === 'compressed-v1039' ? 0.1 : 0.16,
+      coreAlpha: density === 'compressed-v1039' ? 0.54 : 0.76,
+      strokeAlpha: density === 'compressed-v1039' ? 0.3 : 0.48,
+      minAlpha: density === 'compressed-v1039' ? 0.28 : 0.44,
+      maxAlpha: density === 'compressed-v1039' ? 0.62 : 0.88,
+      delay: density === 'compressed-v1039' ? 0.014 : 0.028,
+      duration: density === 'compressed-v1039' ? 0.74 : 0.56
     };
   }
 
@@ -1135,12 +1179,14 @@ export class DreamPixiRenderer {
     const points = path?.length ? path.map((point) => this.paddedToCanvas(point)) : [{ x: x1, y: y1 }, { x: x2, y: y2 }];
     if (!points.length) return;
     const beam = new Graphics();
+    beam.label = 'route-assist-priority-v1039';
+    const routeWidth = this.tileSize * this.camera.scale < 34 ? 6.2 : 8;
     beam.moveTo(points[0].x, points[0].y);
     points.slice(1).forEach((point) => beam.lineTo(point.x, point.y));
-    beam.stroke({ color: PALETTE.sky, width: 8, alpha: 0.8 });
+    beam.stroke({ color: PALETTE.sky, width: routeWidth, alpha: this.tileSize * this.camera.scale < 34 ? 0.68 : 0.8 });
     beam.moveTo(points[0].x, points[0].y);
     points.slice(1).forEach((point) => beam.lineTo(point.x, point.y));
-    beam.stroke({ color: PALETTE.goldLight, width: 3, alpha: 1 });
+    beam.stroke({ color: PALETTE.goldLight, width: Math.max(2.1, routeWidth * 0.36), alpha: 0.94 });
     this.boardLayers.paths.addChild(beam);
     this.emitParticles(x1, y1, 14, PALETTE.gold);
     this.emitParticles(x2, y2, 14, PALETTE.sky);
@@ -1152,7 +1198,19 @@ export class DreamPixiRenderer {
     return BOSS_WARNING_DEPTH_PROFILES[bossId] || BOSS_WARNING_DEPTH_PROFILES.default;
   }
 
-  private drawBossWarningLane(power: number, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column', bossId = 'default') {
+
+  private getBossWarningTempo(bossId = 'default', now = performance.now()) {
+    const elapsed = now - this.lastBossWarningAt;
+    const bossCooldown = bossId === 'sealed-page-golem' ? 680 : bossId === 'shadow-librarian' ? 480 : this.bossWarningCooldownMs;
+    if (elapsed < bossCooldown) {
+      return { name: 'cooldown-softened', powerScale: 0.62, durationScale: 0.78, shakeScale: 0.48, spawnImpact: false };
+    }
+    if (bossId === 'sealed-page-golem') return { name: 'heavy-slow', powerScale: 1.04, durationScale: 1.08, shakeScale: 0.88, spawnImpact: true };
+    if (bossId === 'shadow-librarian') return { name: 'quick-slice', powerScale: 0.92, durationScale: 0.86, shakeScale: 0.74, spawnImpact: true };
+    return { name: 'balanced-tempo', powerScale: 1, durationScale: 1, shakeScale: 0.8, spawnImpact: true };
+  }
+
+  private drawBossWarningLane(power: number, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column', bossId = 'default', tempo = this.getBossWarningTempo(bossId)) {
     if (!this.boardApp || !this.boardLayers.paths || !this.boardLayers.ui) return;
     const app = this.boardApp;
     const profile = this.getBossWarningDepthProfile(bossId);
@@ -1162,8 +1220,8 @@ export class DreamPixiRenderer {
     const lane = new Graphics();
     lane.label = `boss-warning-depth-${bossId}-${pattern}-${this.bossWarningIndex += 1}`;
     lane.blendMode = 'add';
-    const strongWidth = Math.max(12, power * 1.9 * profile.widthBoost);
-    const coreWidth = Math.max(2.6, power * 0.4 * profile.widthBoost);
+    const strongWidth = Math.max(10, power * 1.72 * profile.widthBoost * tempo.powerScale);
+    const coreWidth = Math.max(2.2, power * 0.34 * profile.widthBoost * tempo.powerScale);
     const drawLine = (x1: number, y1: number, x2: number, y2: number, color = profile.primary, coreColor = profile.aura) => {
       lane.moveTo(x1, y1).lineTo(x2, y2);
       lane.stroke({ color, width: strongWidth, alpha: profile.laneAlpha });
@@ -1194,8 +1252,8 @@ export class DreamPixiRenderer {
       .fill({ color: profile.aura, alpha: profile.flareAlpha * 0.82 });
     flare.blendMode = 'add';
     this.boardLayers.ui.addChild(flare);
-    gsap.to(lane, { alpha: 0, duration: profile.duration * this.quality.motionScale, ease: 'power2.out', onComplete: () => lane.destroy() });
-    gsap.to(flare, { alpha: 0, duration: Math.max(0.42, profile.duration - 0.08) * this.quality.motionScale, ease: 'power2.out', onComplete: () => flare.destroy() });
+    gsap.to(lane, { alpha: 0, duration: profile.duration * tempo.durationScale * this.quality.motionScale, ease: 'power2.out', onComplete: () => lane.destroy() });
+    gsap.to(flare, { alpha: 0, duration: Math.max(0.36, profile.duration * tempo.durationScale - 0.1) * this.quality.motionScale, ease: 'power2.out', onComplete: () => flare.destroy() });
   }
 
   private fireAtBoss(x: number, y: number, combo: number) {
@@ -1239,7 +1297,8 @@ export class DreamPixiRenderer {
   private emitBoardPulse(combo: number) {
     const app = this.boardApp!;
     const center = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2 + 18);
-    const pulse = new Graphics().circle(center.x, center.y, Math.min(app.renderer.width, app.renderer.height) * 0.2 / Math.max(0.6, this.camera.scale)).stroke({ color: combo >= 4 ? PALETTE.gold : PALETTE.sky, width: 4, alpha: 0.52 });
+    const farZoom = this.tileSize * this.camera.scale < 34;
+    const pulse = new Graphics().circle(center.x, center.y, Math.min(app.renderer.width, app.renderer.height) * (farZoom ? 0.16 : 0.2) / Math.max(0.6, this.camera.scale)).stroke({ color: combo >= 4 ? PALETTE.gold : PALETTE.sky, width: farZoom ? 2.6 : 4, alpha: farZoom ? 0.36 : 0.52 });
     this.boardLayers.particles.addChild(pulse);
     gsap.to(pulse.scale, { x: 2.5, y: 2.5, duration: 0.46 * this.quality.motionScale, ease: 'power2.out' });
     gsap.to(pulse, { alpha: 0, duration: 0.46 * this.quality.motionScale, onComplete: () => pulse.destroy() });

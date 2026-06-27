@@ -40,9 +40,11 @@ if (!pagesWorkflow.includes('npm run check:real-device-selection')) errors.push(
 if (!qualityWorkflow.includes('npm run check:real-device-selection')) errors.push('quality-check.yml: expected real device selection QA check.');
 if (!pagesWorkflow.includes('npm run check:boss-pattern-density')) errors.push('github-pages.yml: expected boss pattern density check.');
 if (!qualityWorkflow.includes('npm run check:boss-pattern-density')) errors.push('quality-check.yml: expected boss pattern density check.');
+if (!pagesWorkflow.includes('npm run check:board-focus-tempo-cache')) errors.push('github-pages.yml: expected board focus tempo cache check.');
+if (!qualityWorkflow.includes('npm run check:board-focus-tempo-cache')) errors.push('quality-check.yml: expected board focus tempo cache check.');
 
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.38 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.39 QA checks.');

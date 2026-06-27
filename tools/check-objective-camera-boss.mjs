@@ -21,7 +21,7 @@ if (!main.includes('getBossWarningPattern') || !renderer.includes("pattern: 'col
 if (!renderer.includes("pattern === 'diagonal'") || !renderer.includes("pattern === 'cross'") || !renderer.includes("pattern === 'row'")) {
   errors.push('Boss warning renderer must draw row, cross and diagonal variants.');
 }
-if (!renderer.includes('screenToWorld') || !renderer.includes('drawBossWarningLane(power, pattern')) {
+if (!renderer.includes('screenToWorld') || !(renderer.includes('drawBossWarningLane(power, pattern') || renderer.includes('drawBossWarningLane(adjustedPower, pattern'))) {
   errors.push('Boss warnings must remain camera-aware in world coordinates.');
 }
 const runtime = `${html}\n${main}\n${renderer}\n${css}`;
