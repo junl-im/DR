@@ -1649,3 +1649,57 @@ Apply 꿈의 서고 v1.0.53 season pass build fix shop history finale balance an
 - 로비 드래그가 시즌 기록/상점/피날레/챕터 carousel 위에서도 끊기지 않는지 추가 QA
 - GitHub Actions 검사 token이 누락되지 않도록 시즌 패스 mount 호환성 계속 유지
 - 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
+
+## v1.0.54 Patch Notes - Season Store Collection Link, Adaptive Engine Budget and Design QA Polish Patch
+
+v1.0.54는 v1.0.53 이후 시즌 상점, 모바일 밀도, 로비 중복 카드, 성능 예산을 함께 정리한 디자인/문제점 체크 패치입니다.
+
+### 핵심 변경
+
+- 시즌 상점 보상 카드에 `보상 상세` 버튼을 추가했습니다.
+- 시즌 상점 최근 수령 기록을 누르면 연결된 복원/컬렉션 영역으로 이동하도록 `v1054-season-store-collection-link-detail` 흐름을 추가했습니다.
+- 로비 하단 `내 진행` 카드가 중복되어 같은 ID가 두 번 생기던 문제를 정리했습니다.
+- 중복 카드 자리는 `디자인 점검` 카드로 교체해 시즌 패널, 보스바, 팝업 겹침 자동 압축 상태를 보여줍니다.
+- 기기 성능/화면 크기에 따라 시즌 VFX와 cut-in 밀도를 조절하는 `v1054-adaptive-visual-budget` 엔진 hook을 추가했습니다.
+- 시즌 패널, 시즌 상점, 수령 기록, 이메일 팝업, 옵션 계정 전환, 보스 상태바가 작은 화면에서 겹치지 않도록 CSS를 추가했습니다.
+- 로비 드래그 보정 범위에 시즌 상점 상세 버튼, 수령 기록 카드, 디자인 점검 카드까지 포함했습니다.
+- service worker cache를 `dream-library-cache-v1.0.54`로 갱신했습니다.
+- `texture-atlas-manifest-v1.0.54.json`을 추가했습니다.
+- 신규 검사 `check:season-store-engine-design`을 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 패 크기 고정 구조 유지
+- 보스 상태바 우측 아이콘 구조 유지
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 check:* QA suite 통과
+npm run check:season-store-engine-design
+```
+
+`npm run build:github`는 현재 작업 환경에 `vite` 실행 파일이 없어 실행하지 못했습니다. GitHub Actions에서는 safe install 후 실행됩니다.
+
+### 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.54 season store collection link adaptive engine budget and design QA polish patch
+```
+
+다음 업데이트 예정: v1.0.55 - Engine Render Budget Tuning, Store Reward Collection Polish and Lobby Density Final QA Patch
+
+### v1.0.55 예정 - Engine Render Budget Tuning, Store Reward Collection Polish and Lobby Density Final QA Patch
+
+- 시즌 상점 보상 상세 화면을 더 고급스럽게 꾸미고 컬렉션 보상 미리보기를 강화합니다.
+- 저사양/작은 화면에서 시즌 VFX와 cut-in이 타일 선택 overlay를 가리지 않도록 alpha/z-order를 더 정리합니다.
+- 보스 상태바 우측 아이콘과 시즌 상점 보상 상태가 더 자연스럽게 연결되도록 polish합니다.
+- 로비 드래그와 클릭 충돌 로그성 QA hook을 보강합니다.
+- 시즌 패널, 상점, 수령 기록, 챕터 carousel의 모바일 밀도를 추가로 압축합니다.
+- 미니맵, `보기 / 중앙 / + / -` 라인, 카메라 도움말은 계속 재도입하지 않습니다.

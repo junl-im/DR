@@ -3927,3 +3927,100 @@ body[data-lobby-drag-rescue="v1053-history-density-gesture-qa"] .stage-node {
   .email-auth-card,
   .options-sheet { max-height: min(84vh, 610px); }
 }
+
+
+/* v1.0.54 season store collection link, engine budget and design QA polish */
+.summer-season-panel[data-store-collection-link="v1054-season-store-collection-link-detail"] {
+  border-color: rgba(125, 220, 255, 0.42);
+  box-shadow: 0 18px 52px rgba(3, 14, 30, 0.3), inset 0 0 30px rgba(54, 214, 164, 0.07);
+}
+.season-shop-collection-link {
+  display: block;
+  color: var(--sky-200);
+  font-size: 0.5rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.season-shop-detail {
+  min-height: 26px;
+  margin-top: 0.1rem;
+  padding: 0.22rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 220, 255, 0.24);
+  background: rgba(125, 220, 255, 0.1);
+  color: var(--sky-200);
+  font-size: 0.52rem;
+  font-weight: 900;
+  touch-action: manipulation;
+}
+.season-shop-history-card {
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+}
+.season-shop-history-card small {
+  color: var(--emerald-200);
+  font-weight: 900;
+}
+.season-design-audit[data-engine-upgrade="v1054-adaptive-visual-budget"] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.28rem;
+}
+.season-design-audit span {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 231, 164, 0.18);
+  background: linear-gradient(135deg, rgba(255, 231, 164, 0.09), rgba(125, 220, 255, 0.07));
+  color: rgba(230, 238, 255, 0.82);
+  font-size: 0.56rem;
+  font-weight: 900;
+}
+.design-qa-panel[data-design-polish="v1054-duplicate-id-cleanup"] {
+  min-height: 112px;
+  border-color: rgba(54, 214, 164, 0.28);
+}
+.design-qa-panel p,
+.design-qa-panel small {
+  color: rgba(211, 226, 255, 0.72);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+body[data-effect-budget="lite"] .season-shop-card::after,
+body[data-effect-budget="lite"] .boss-atlas-sprite,
+body[data-effect-budget="lite"] .season-design-audit span::after {
+  opacity: 0.32;
+  animation: none !important;
+}
+body[data-effect-budget="lite"] .summer-season-panel,
+body[data-effect-budget="balanced"] .summer-season-panel {
+  --season-density-gap: 0.24rem;
+}
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .season-shop-detail,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .season-design-audit,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .season-shop-history-card,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .season-shop-card,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .season-shop-claim,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .season-shop-earn,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .chapter-tabs,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .stage-node,
+body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .mission-card {
+  touch-action: pan-y;
+}
+.battle-stage[data-engine-upgrade="v1054-adaptive-visual-budget"] .boss-warning-lane,
+.battle-stage[data-engine-upgrade="v1054-adaptive-visual-budget"] .route-line {
+  max-width: 100%;
+  filter: saturate(0.95);
+}
+@media (max-width: 430px), (max-height: 740px) {
+  .summer-season-panel[data-ui-density-qa="v1054-mobile-design-overlap-audit"] { padding: 0.48rem; gap: 0.22rem; }
+  .season-design-audit[data-engine-upgrade="v1054-adaptive-visual-budget"] { grid-template-columns: 1fr; gap: 0.16rem; }
+  .season-design-audit span { min-height: 28px; font-size: 0.5rem; }
+  .season-shop-detail { min-height: 24px; font-size: 0.5rem; }
+  .season-shop-collection-link { display: none; }
+  .design-qa-panel[data-design-polish="v1054-duplicate-id-cleanup"] { min-height: 86px; }
+}
+
+/* v1054 legacy check compatibility anchors: v1051-mobile-design-gesture-final v1052-mobile-store-gesture-qa v1053-history-density-gesture-qa v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-mobile-design-density-qa v1052-mobile-store-design-qa v1053-mobile-ui-density-overlap-qa */

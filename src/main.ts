@@ -29,11 +29,11 @@ document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
-const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1053-claim-history-polish';
+const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1054-collection-link-polish';
 const LEGACY_BOSS_VISUAL_STACK_TOKEN = 'stable-atlas-v1040';
-const STAGE_LADDER_EXPANSION_PATCH = 'v1053-history-density-90';
+const STAGE_LADDER_EXPANSION_PATCH = 'v1054-stage-map-polish-90';
 const LEGACY_STAGE_MAP_COMFORT_TOKEN = 'v1046-stage-map-comfort-42';
-const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1053-history-density-gesture-qa';
+const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1054-engine-design-gesture-qa';
 const LEGACY_LOBBY_DRAG_RESCUE_TOKEN = 'v1046-gesture-final-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
@@ -41,30 +41,35 @@ const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
 const AUTH_MODAL_BOSS_ROLE_PATCH = 'v1043-auth-modal-boss-role';
 const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
-const DIFFICULTY_TEMPO_PATCH = 'v1053-finale-boss-cooldown-balance';
+const DIFFICULTY_TEMPO_PATCH = 'v1054-finale-tempo-audio-balance';
 const LEGACY_DIFFICULTY_TEMPO_TOKEN = 'v1046-difficulty-tempo-wide-ladder';
-const SUMMER_SEASON_PATCH = 'v1053-shop-history-vfx';
-const SUMMER_REWARD_PASS_PATCH = 'v1053-shop-history-pass';
-const SUMMER_LIVE_BALANCE_PATCH = 'v1053-finale-boss-cooldown-balance';
-const SUMMER_EVENT_VFX_PATCH = 'v1053-shop-history-vfx';
-const SUMMER_PASS_MISSIONS_PATCH = 'v1053-shop-history-pass';
-const SUMMER_COMPACT_CAROUSEL_PATCH = 'v1053-shortcut-focus-carousel';
-const BOSS_SEASON_POLISH_PATCH = 'v1053-claimed-boss-icon-polish';
-const SUMMER_FINALE_SHOP_PATCH = 'v1053-season-shop-history-claim-flow';
-const SUMMER_FINALE_MISSION_PATCH = 'v1053-finale-boss-balance-missions';
-const SUMMER_DESIGN_QA_PATCH = 'v1053-mobile-density-qa';
-const SUMMER_SHOP_BURST_PATCH = 'v1053-season-shop-history-burst';
-const SUMMER_SHOP_SHORTCUT_PATCH = 'v1053-season-shop-earn-focus-shortcut';
-const FINALE_BOSS_CUTIN_PATCH = 'v1053-finale-boss-cooldown-cutin';
-const SUMMER_SHOP_HISTORY_PATCH = 'v1053-season-store-claim-history';
+const SUMMER_SEASON_PATCH = 'v1054-store-collection-link-vfx';
+const SUMMER_REWARD_PASS_PATCH = 'v1054-store-collection-pass';
+const SUMMER_LIVE_BALANCE_PATCH = 'v1054-finale-tempo-audio-balance';
+const SUMMER_EVENT_VFX_PATCH = 'v1054-store-collection-link-vfx';
+const SUMMER_PASS_MISSIONS_PATCH = 'v1054-store-collection-pass';
+const SUMMER_COMPACT_CAROUSEL_PATCH = 'v1054-current-chapter-polish-carousel';
+const BOSS_SEASON_POLISH_PATCH = 'v1054-reward-linked-boss-icon-polish';
+const SUMMER_FINALE_SHOP_PATCH = 'v1054-season-store-collection-link';
+const SUMMER_FINALE_MISSION_PATCH = 'v1054-finale-reward-audio-missions';
+const SUMMER_DESIGN_QA_PATCH = 'v1054-mobile-polish-density';
+const SUMMER_SHOP_BURST_PATCH = 'v1054-season-store-reward-burst';
+const SUMMER_SHOP_SHORTCUT_PATCH = 'v1054-season-shop-material-shortcut';
+const FINALE_BOSS_CUTIN_PATCH = 'v1054-finale-reward-audio-cutin';
+const SUMMER_SHOP_HISTORY_PATCH = 'v1054-season-store-detail-history';
 const SUMMER_SHOP_HISTORY_LIMIT = 4;
-const FINALE_BOSS_CUTIN_COOLDOWN_PATCH = 'v1053-finale-cutin-cooldown-priority';
+const FINALE_BOSS_CUTIN_COOLDOWN_PATCH = 'v1054-finale-audio-cooldown-priority';
 const FINALE_BOSS_CUTIN_COOLDOWN_MS = 4200;
 const FINALE_BOSS_CUTIN_MISMATCH_MS = 2600;
-const MOBILE_UI_DENSITY_QA_PATCH = 'v1053-mobile-ui-density-overlap-qa';
+const MOBILE_UI_DENSITY_QA_PATCH = 'v1054-mobile-design-overlap-audit';
+const SEASON_STORE_COLLECTION_LINK_PATCH = 'v1054-season-store-collection-link-detail';
+const ENGINE_DESIGN_UPGRADE_PATCH = 'v1054-adaptive-visual-budget';
+const DUPLICATE_ID_CLEANUP_PATCH = 'v1054-duplicate-id-cleanup';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
+const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
+void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
 const SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY: Record<string, number> = {
   beginner: 6,
@@ -378,6 +383,7 @@ async function init() {
   registerServiceWorker();
   void loadAudioRuntime();
   renderer.setQuality(state.qualityProfile);
+  applyAdaptiveVisualBudget();
   renderQualityButton();
   initFullscreenControls(el.fullscreenButton, setStatus);
   initInstallPrompt(el.installButton, setStatus);
@@ -482,6 +488,7 @@ function bindEvents() {
     saveQualityTier(nextTier);
     state.qualityProfile = detectDeviceProfile();
     renderer.setQuality(state.qualityProfile);
+    applyAdaptiveVisualBudget();
     renderQualityButton();
     if (state.screen === 'game' && state.board.length) {
       renderer.renderBoard(state.board);
@@ -607,6 +614,15 @@ function bindEvents() {
     if (claimTarget) claimSummerShopItem(claimTarget.dataset.shopItem || '');
     if (earnTarget) focusSummerShopMaterial(earnTarget.dataset.shopItem || '', earnTarget.dataset.costType || '');
   });
+  document.addEventListener('click', (event) => {
+    const detailTarget = (event.target as HTMLElement).closest<HTMLElement>('.season-shop-detail, .season-shop-history-card');
+    if (!detailTarget) return;
+    const itemId = detailTarget.dataset.shopItem || detailTarget.dataset.shopHistoryItem || '';
+    if (!itemId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openSeasonShopRewardDetail(itemId);
+  });
   el.dailyRankTabs.addEventListener('click', (event) => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-daily-rank]');
     if (!node) return;
@@ -674,6 +690,7 @@ function bindEvents() {
 
   window.addEventListener('resize', () => {
     portraitRuntime?.syncViewport();
+    applyAdaptiveVisualBudget();
     if (state.screen === 'game' && state.board.length) {
       renderer.renderBoard(state.board);
       renderBoardCameraGuide();
@@ -1478,6 +1495,20 @@ function renderQualityButton() {
   el.qualityLabel.textContent = `${text} · ${state.qualityProfile.reason}`;
 }
 
+
+function applyAdaptiveVisualBudget() {
+  const smallViewport = Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 390;
+  const longLobby = STAGES.length >= 90;
+  const tier = state.qualityProfile?.tier || 'medium';
+  const budget = tier === 'low' || smallViewport ? 'lite' : tier === 'medium' || longLobby ? 'balanced' : 'rich';
+  document.body.dataset.adaptiveVisualBudget = ENGINE_DESIGN_UPGRADE_PATCH;
+  document.body.dataset.effectBudget = budget;
+  document.body.dataset.designQa = MOBILE_UI_DENSITY_QA_PATCH;
+  document.body.dataset.duplicateIdCleanup = DUPLICATE_ID_CLEANUP_PATCH;
+  el.app?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
+}
+
 function qualityText(tier: string) {
   return tier === 'high' ? '고품질' : tier === 'medium' ? '균형' : '절전';
 }
@@ -1525,6 +1556,7 @@ function renderLobby() {
   renderCollection();
   renderDailyPanel();
   renderLobbyPanelState();
+  applyAdaptiveVisualBudget();
 }
 
 function renderStageLadderSummary(clearCount: number, selectedStage: any) {
@@ -1597,9 +1629,13 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
   panel.dataset.designQa = SUMMER_DESIGN_QA_PATCH;
   panel.dataset.passMissions = SUMMER_PASS_MISSIONS_PATCH;
   panel.dataset.shopHistory = SUMMER_SHOP_HISTORY_PATCH;
+  panel.dataset.storeCollectionLink = SEASON_STORE_COLLECTION_LINK_PATCH;
   panel.dataset.uiDensityQa = MOBILE_UI_DENSITY_QA_PATCH;
+  panel.dataset.engineUpgrade = ENGINE_DESIGN_UPGRADE_PATCH;
+  panel.dataset.duplicateIdCleanup = DUPLICATE_ID_CLEANUP_PATCH;
+  applyAdaptiveVisualBudget();
   panel.dataset.seasonStageCount = String(seasonStages.length);
-  panel.querySelector<HTMLElement>('#summer-season-desc')?.replaceChildren(document.createTextNode('시즌 상점 수령 기록, 피날레 보스 쿨다운, 모바일 UI 밀도를 다듬었습니다.'));
+  panel.querySelector<HTMLElement>('#summer-season-desc')?.replaceChildren(document.createTextNode('시즌 상점 보상 상세, 복원/컬렉션 연결, 모바일 디자인 밀도를 다듬었습니다.'));
   progress.innerHTML = `<div><strong>${cleared}/${seasonStages.length}</strong><span>${SUMMER_SEASON_EVENT.title} · 전체 ${clearCount}/${STAGES.length} 클리어 · ${percent}% · 패스 ${passLevel}/${SUMMER_SEASON_EVENT.passMilestones.length}단계</span></div><button type="button" class="season-jump-button" data-stage-id="${next?.id || DEFAULT_STAGE_ID}">다음 시즌 도전</button>`;
   const passTrack = SUMMER_SEASON_EVENT.passMilestones.map((milestone: number, index: number) => {
     const reached = cleared >= milestone;
@@ -1614,7 +1650,8 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
     `<div class="season-pass-missions" data-pass-missions="${SUMMER_PASS_MISSIONS_PATCH}" aria-label="시즌 패스 미션">${missionCards}</div>`,
     `<div class="season-finale-missions" data-finale-missions="${SUMMER_FINALE_MISSION_PATCH}" aria-label="썸머 피날레 미션">${getSummerFinaleMissionCards(cleared)}</div>`,
     `<div class="season-shop-preview" data-season-shop="${SUMMER_FINALE_SHOP_PATCH}" data-shop-burst="${SUMMER_SHOP_BURST_PATCH}" data-shop-shortcut="${SUMMER_SHOP_SHORTCUT_PATCH}" aria-label="시즌 상점 미리보기">${getSummerShopCards()}</div>`,
-    `<div class="season-shop-history" data-shop-history="${SUMMER_SHOP_HISTORY_PATCH}" aria-label="시즌 상점 최근 수령 기록">${getSummerShopHistoryCards()}</div>`
+    `<div class="season-shop-history" data-shop-history="${SUMMER_SHOP_HISTORY_PATCH}" aria-label="시즌 상점 최근 수령 기록">${getSummerShopHistoryCards()}</div>`,
+    `<div class="season-design-audit" data-engine-upgrade="${ENGINE_DESIGN_UPGRADE_PATCH}" data-store-link="${SEASON_STORE_COLLECTION_LINK_PATCH}" aria-label="시즌 디자인 점검"><span>겹침 자동 압축</span><span>복원/컬렉션 연결</span><span>저사양 VFX 절약</span></div>`
   ].join('');
 }
 
@@ -1657,7 +1694,7 @@ function getSummerShopHistoryCards() {
   }
   return history.map((entry: any) => {
     const time = entry.time ? new Date(entry.time).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : '최근';
-    return `<span class="season-shop-history-card" data-shop-history-item="${escapeHtml(entry.id || 'reward')}"><b>${escapeHtml(entry.title || '시즌 보상')}</b><em>${escapeHtml(entry.rewardLabel || '보상 수령')}</em><i>${escapeHtml(time)}</i></span>`;
+    return `<button type="button" class="season-shop-history-card" data-shop-history-item="${escapeHtml(entry.id || 'reward')}" data-store-link="${SEASON_STORE_COLLECTION_LINK_PATCH}"><b>${escapeHtml(entry.title || '시즌 보상')}</b><em>${escapeHtml(entry.rewardLabel || '보상 수령')}</em><i>${escapeHtml(time)}</i><small>상세 보기</small></button>`;
   }).join('');
 }
 
@@ -1677,8 +1714,39 @@ function getSummerShopCards() {
       : claimed
         ? `<button type="button" class="season-shop-claim" data-shop-item="${escapeHtml(item.id)}" disabled>${stateLabel}</button>`
         : `<button type="button" class="season-shop-earn" data-shop-item="${escapeHtml(item.id)}" data-cost-type="${escapeHtml(item.costType)}">모으러 가기</button>`;
-    return `<span class="season-shop-card ${stateName}" data-shop-item="${escapeHtml(item.id)}" data-shop-state="${stateName}" data-shop-polish="${SUMMER_SHOP_BURST_PATCH}"><b>${escapeHtml(item.title)}</b><em>${escapeHtml(item.costLabel)} · 보유 ${owned}</em><i>${escapeHtml(item.rewardLabel)}</i>${ownedBadge}${help}<strong class="season-shop-missing">${claimed ? '수령 완료' : affordable ? '바로 수령 가능' : `${missing}개 더 필요`}</strong>${action}</span>`;
+    return `<span class="season-shop-card ${stateName}" data-shop-item="${escapeHtml(item.id)}" data-shop-state="${stateName}" data-shop-polish="${SUMMER_SHOP_BURST_PATCH}"><b>${escapeHtml(item.title)}</b><em>${escapeHtml(item.costLabel)} · 보유 ${owned}</em><i>${escapeHtml(item.rewardLabel)}</i>${ownedBadge}${help}${getSummerShopCollectionLink(item)}<strong class="season-shop-missing">${claimed ? '수령 완료' : affordable ? '바로 수령 가능' : `${missing}개 더 필요`}</strong>${action}<button type="button" class="season-shop-detail" data-shop-item="${escapeHtml(item.id)}">보상 상세</button></span>`;
   }).join('');
+}
+
+
+function getSummerShopCollectionLink(item: any) {
+  const project = getSeasonShopRewardProject(item);
+  const linkLabel = project ? `복원 연결 · ${project.label}` : '컬렉션 보관함 연결';
+  return `<small class="season-shop-collection-link" data-store-link="${SEASON_STORE_COLLECTION_LINK_PATCH}">${escapeHtml(linkLabel)}</small>`;
+}
+
+function getSeasonShopRewardProject(item: any) {
+  return RESTORATION_PROJECTS.find((project) => project.types.includes(item?.rewardType))
+    || RESTORATION_PROJECTS.find((project) => project.types.includes(item?.costType))
+    || RESTORATION_PROJECTS.find((project) => project.id === 'summer-festival')
+    || RESTORATION_PROJECTS[0];
+}
+
+function openSeasonShopRewardDetail(itemId: string) {
+  const item = (SUMMER_SEASON_EVENT.shopItems || []).find((entry: any) => entry.id === itemId);
+  if (!item) return;
+  const project = getSeasonShopRewardProject(item);
+  if (project) {
+    state.restorationFocus = project.id;
+    writeText('dream-library-restoration-focus', state.restorationFocus);
+  }
+  state.collectionFilter = 'owned';
+  writeText('dream-library-collection-filter', state.collectionFilter);
+  document.body.dataset.storeCollectionLink = SEASON_STORE_COLLECTION_LINK_PATCH;
+  renderRestoration();
+  renderCollection();
+  scrollLobbyTarget(project ? '.restoration-panel' : '.collection-panel');
+  setStatus(`${item.title} 상세 · ${project ? project.label : '컬렉션'}에 연결된 보상입니다.`);
 }
 
 function claimSummerShopItem(itemId: string) {
@@ -2115,6 +2183,7 @@ function renderGameHud() {
   state.hudDensity = getHudDensity();
   el.app.dataset.hudDensity = state.hudDensity;
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-real-device-qa', 'touch-precision-readability');
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-game')?.setAttribute('data-hud-density', state.hudDensity);
   document.querySelector<HTMLElement>('.game-hud')?.setAttribute('data-hud-density', state.hudDensity);
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-hud-density', state.hudDensity);

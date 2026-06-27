@@ -101,6 +101,7 @@ jobs:
           npm run check:summer-shop-claim-design
           npm run check:summer-shop-reward-polish
           npm run check:summer-history-finale-density
+          npm run check:season-store-engine-design
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
