@@ -1703,3 +1703,62 @@ Apply 꿈의 서고 v1.0.54 season store collection link adaptive engine budget 
 - 로비 드래그와 클릭 충돌 로그성 QA hook을 보강합니다.
 - 시즌 패널, 상점, 수령 기록, 챕터 carousel의 모바일 밀도를 추가로 압축합니다.
 - 미니맵, `보기 / 중앙 / + / -` 라인, 카메라 도움말은 계속 재도입하지 않습니다.
+
+
+## v1.0.55 Patch Notes - Engine Render Budget Tuning, Store Reward Collection Polish and Lobby Density Final QA Patch
+
+v1.0.55는 v1.0.54의 시즌 상점/복원 연결 구조를 기반으로, 저사양/작은 화면에서 효과가 타일 선택과 UI를 가리지 않도록 엔진 예산과 모바일 밀도를 다듬은 패치입니다.
+
+### 핵심 변경
+
+- `v1055-engine-render-budget-tuning` 훅을 추가해 화면 크기, 기기 메모리/코어, 난이도별 보드 크기, 로비 길이를 바탕으로 `lite / balanced / rich` 연출 예산을 자동 선택합니다.
+- Pixi 렌더러에 `setRenderBudget()`와 `getRenderBudgetProfile()`을 추가해 파티클 수, VFX 스프라이트 발생 빈도, 보스 경고 알파, 카메라 쉐이크를 예산별로 조정합니다.
+- 시즌 상점 보상 카드에 `v1055-store-reward-preview-lens` 미리보기 블록을 추가해 복원/컬렉션 연결과 보상 수량을 더 빠르게 읽을 수 있게 했습니다.
+- 시즌 상점 수령 연출은 절약 예산에서 짧게 끝나도록 조정해 작은 화면에서 팝업/보스바와 덜 겹치게 했습니다.
+- `v1055-lobby-density-final-qa`와 `v1055-lobby-touch-conflict-audit` 훅을 추가해 시즌 상점, 수령 기록, 미션, 챕터 카드 위의 드래그/터치 충돌을 줄였습니다.
+- service worker cache를 `dream-library-cache-v1.0.55`로 갱신하고, `texture-atlas-manifest-v1.0.55.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:engine-render-budget`을 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 패 크기 고정 구조 유지
+- 자동 fullscreen/orientation API 호출 추가 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+npm run check:engine-render-budget
+npm run check:season-store-engine-design
+npm run check:summer-history-finale-density
+npm run check:summer-shop-reward-polish
+npm run check:mobile-playability
+npm run check:selection-stability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:content
+npm run check:workflows
+npm run build:github
+```
+
+### 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.55 engine render budget store reward polish and lobby density final QA patch
+```
+
+다음 업데이트 예정: v1.0.56 - Reward Detail Showcase, Boss Warning Readability and Real Device Touch QA Patch
+
+### v1.0.56 예정 - Reward Detail Showcase, Boss Warning Readability and Real Device Touch QA Patch
+
+- 시즌 상점 보상 상세를 더 고급스럽게 꾸미고 복원/컬렉션 링크를 강화합니다.
+- 보스 경고선과 타일 선택 링/광채가 겹치는 구간을 추가 정리합니다.
+- 실기기에서 시즌 패널, 보스바, 옵션 팝업, 이메일 팝업의 터치 범위를 추가 QA합니다.
+- 로비 드래그가 상점/기록/미션/챕터 위에서 더 안정적인지 계속 점검합니다.
+- 미니맵, `보기 / 중앙 / + / -` 라인, 카메라 도움말은 계속 재도입하지 않습니다.

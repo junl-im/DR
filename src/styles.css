@@ -4024,3 +4024,72 @@ body[data-lobby-drag-rescue="v1054-engine-design-gesture-qa"] .mission-card {
 }
 
 /* v1054 legacy check compatibility anchors: v1051-mobile-design-gesture-final v1052-mobile-store-gesture-qa v1053-history-density-gesture-qa v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-mobile-design-density-qa v1052-mobile-store-design-qa v1053-mobile-ui-density-overlap-qa */
+
+
+/* v1.0.55 engine render budget tuning, store reward preview and lobby density final QA */
+.summer-season-panel[data-engine-render-budget="v1055-engine-render-budget-tuning"] {
+  isolation: isolate;
+  contain: layout paint;
+}
+.season-shop-card[data-store-reward-polish="v1055-store-reward-collection-polish"] {
+  border-color: rgba(255, 231, 164, 0.24);
+  box-shadow: inset 0 0 24px rgba(125, 220, 255, 0.055), 0 12px 28px rgba(3, 14, 30, 0.18);
+}
+.season-shop-reward-preview[data-reward-preview="v1055-store-reward-preview-lens"] {
+  display: grid;
+  gap: 0.06rem;
+  margin-top: 0.12rem;
+  padding: 0.2rem 0.26rem;
+  border-radius: 14px;
+  border: 1px solid rgba(54, 214, 164, 0.2);
+  background: linear-gradient(135deg, rgba(54, 214, 164, 0.1), rgba(125, 220, 255, 0.075));
+  color: rgba(230, 238, 255, 0.82);
+  font-size: 0.5rem;
+  font-weight: 850;
+}
+.season-shop-reward-preview b {
+  color: var(--emerald-200);
+  font-size: 0.48rem;
+}
+.season-design-audit[data-engine-render-budget="v1055-engine-render-budget-tuning"] span {
+  position: relative;
+  overflow: hidden;
+}
+body[data-effect-budget="lite"] .season-shop-reward-preview,
+body[data-effect-budget="lite"] .season-finale-card,
+body[data-effect-budget="lite"] .season-pass-mission {
+  border-color: rgba(125, 220, 255, 0.14);
+  background: rgba(9, 18, 35, 0.36);
+}
+body[data-effect-budget="lite"] .boss-hit-cutin,
+body[data-effect-budget="lite"] .route-line,
+body[data-effect-budget="lite"] .boss-warning-lane {
+  opacity: var(--season-vfx-alpha, 0.5);
+}
+body[data-effect-budget="rich"] .season-shop-card[data-store-reward-polish="v1055-store-reward-collection-polish"]::before {
+  opacity: 0.56;
+}
+.screen-lobby[data-lobby-density-final-qa="v1055-lobby-density-final-qa"] .lobby-main,
+.summer-season-panel[data-lobby-density-final-qa="v1055-lobby-density-final-qa"] {
+  scroll-margin-bottom: 96px;
+}
+body[data-touch-conflict-audit="v1055-lobby-touch-conflict-audit"] .season-shop-reward-preview,
+body[data-touch-conflict-audit="v1055-lobby-touch-conflict-audit"] .season-shop-detail,
+body[data-touch-conflict-audit="v1055-lobby-touch-conflict-audit"] .season-shop-history-card,
+body[data-touch-conflict-audit="v1055-lobby-touch-conflict-audit"] .season-pass-mission,
+body[data-touch-conflict-audit="v1055-lobby-touch-conflict-audit"] .season-finale-card,
+body[data-touch-conflict-audit="v1055-lobby-touch-conflict-audit"] .season-design-audit {
+  touch-action: pan-y;
+}
+.battle-stage[data-engine-render-budget="v1055-engine-render-budget-tuning"] .boss-lane[data-engine-render-budget="v1055-engine-render-budget-tuning"] {
+  contain: layout paint;
+}
+@media (max-width: 430px), (max-height: 740px) {
+  .summer-season-panel[data-lobby-density-final-qa="v1055-lobby-density-final-qa"] .season-shop-preview { gap: 0.18rem; }
+  .season-shop-reward-preview[data-reward-preview="v1055-store-reward-preview-lens"] { padding: 0.16rem 0.22rem; font-size: 0.46rem; }
+  .summer-season-panel[data-lobby-density-final-qa="v1055-lobby-density-final-qa"] .season-pass-track { gap: 0.12rem; }
+  .summer-season-panel[data-lobby-density-final-qa="v1055-lobby-density-final-qa"] .season-finale-missions,
+  .summer-season-panel[data-lobby-density-final-qa="v1055-lobby-density-final-qa"] .season-pass-missions { grid-template-columns: 1fr; }
+}
+
+/* v1055 compatibility anchors: v1055-engine-render-budget-tuning v1055-store-reward-collection-polish v1055-lobby-density-final-qa v1055-store-reward-preview-lens v1055-lobby-touch-conflict-audit */

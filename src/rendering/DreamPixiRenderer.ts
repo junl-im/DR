@@ -31,6 +31,7 @@ const CLEAR_REWARD_FLOW_PATCH = 'v1040-board-to-reward-flow';
 const BOSS_FLOW_TEMPO_PATCH = 'v1040-boss-flow-tempo';
 const SUMMER_EVENT_VFX_PATCH = 'v1049-summer-event-vfx';
 const SUMMER_PASS_MISSIONS_PATCH = 'v1049-summer-pass-missions';
+const ENGINE_RENDER_BUDGET_TUNING_PATCH = 'v1055-engine-render-budget-tuning';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -84,6 +85,9 @@ type BoardLayout = {
   worldHeight: number;
   cameraMode: 'fit' | 'panZoom';
 };
+
+type RenderBudgetName = 'lite' | 'balanced' | 'rich';
+type RenderBudgetProfile = { name: RenderBudgetName; particleScale: number; particleCap: number; spriteStride: number; warningAlphaScale: number; burstScale: number };
 
 type BoardCamera = {
   x: number;
@@ -156,10 +160,24 @@ export class DreamPixiRenderer {
   lastSelectionFollowAt = 0;
   lastBossWarningAt = 0;
   bossWarningCooldownMs = 520;
+  renderBudgetName: RenderBudgetName = 'balanced';
+  renderBudgetFrame = 0;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
     document.body.dataset.quality = profile.tier;
+  }
+
+  setRenderBudget(name: RenderBudgetName | string = 'balanced') {
+    const normalized: RenderBudgetName = name === 'lite' || name === 'rich' ? name : 'balanced';
+    this.renderBudgetName = normalized;
+    document.body.dataset.pixiRenderBudget = `${ENGINE_RENDER_BUDGET_TUNING_PATCH}-${normalized}`;
+  }
+
+  private getRenderBudgetProfile(): RenderBudgetProfile {
+    if (this.renderBudgetName === 'lite') return { name: 'lite', particleScale: 0.52, particleCap: 14, spriteStride: 2, warningAlphaScale: 0.62, burstScale: 0.78 };
+    if (this.renderBudgetName === 'rich') return { name: 'rich', particleScale: 1.08, particleCap: 34, spriteStride: 1, warningAlphaScale: 1, burstScale: 1.08 };
+    return { name: 'balanced', particleScale: 0.78, particleCap: 24, spriteStride: 1, warningAlphaScale: 0.82, burstScale: 0.92 };
   }
 
   async preloadTileAtlas() {
@@ -1272,6 +1290,7 @@ export class DreamPixiRenderer {
     if (!this.boardApp || !this.boardLayers.paths || !this.boardLayers.ui) return;
     const app = this.boardApp;
     const profile = this.getBossWarningDepthProfile(bossId);
+    const budget = this.getRenderBudgetProfile();
     const centerWorld = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2);
     const laneX = Math.max(0, Math.min(this.camera.worldWidth, centerWorld.x));
     const laneY = Math.max(0, Math.min(this.camera.worldHeight, centerWorld.y));
@@ -1282,16 +1301,16 @@ export class DreamPixiRenderer {
     const coreWidth = Math.max(2.2, power * 0.34 * profile.widthBoost * tempo.powerScale);
     const drawLine = (x1: number, y1: number, x2: number, y2: number, color = profile.primary, coreColor = profile.aura) => {
       lane.moveTo(x1, y1).lineTo(x2, y2);
-      lane.stroke({ color, width: strongWidth, alpha: profile.laneAlpha });
+      lane.stroke({ color, width: strongWidth, alpha: profile.laneAlpha * budget.warningAlphaScale });
       lane.moveTo(x1, y1).lineTo(x2, y2);
-      lane.stroke({ color: coreColor, width: coreWidth, alpha: profile.coreAlpha });
+      lane.stroke({ color: coreColor, width: coreWidth, alpha: profile.coreAlpha * budget.warningAlphaScale });
       if (bossId === 'shadow-librarian') {
         lane.moveTo(x1 + 3, y1 + 3).lineTo(x2 + 3, y2 + 3);
-        lane.stroke({ color: profile.secondary, width: Math.max(1.4, coreWidth * 0.45), alpha: 0.38 });
+        lane.stroke({ color: profile.secondary, width: Math.max(1.4, coreWidth * 0.45), alpha: 0.38 * budget.warningAlphaScale });
       }
       if (bossId === 'sealed-page-golem') {
         lane.moveTo(x1 - 4, y1 - 4).lineTo(x2 - 4, y2 - 4);
-        lane.stroke({ color: profile.secondary, width: Math.max(2, coreWidth * 0.6), alpha: 0.34 });
+        lane.stroke({ color: profile.secondary, width: Math.max(2, coreWidth * 0.6), alpha: 0.34 * budget.warningAlphaScale });
       }
     };
     if (pattern === 'row' || pattern === 'cross') drawLine(0, laneY, this.camera.worldWidth, laneY, profile.secondary);
@@ -1305,9 +1324,9 @@ export class DreamPixiRenderer {
     const flareThickness = Math.max(6, power * 1.32 * profile.widthBoost);
     const flare = new Graphics()
       .rect(0, 0, app.renderer.width, flareThickness)
-      .fill({ color: pattern === 'row' ? profile.secondary : profile.primary, alpha: profile.flareAlpha })
+      .fill({ color: pattern === 'row' ? profile.secondary : profile.primary, alpha: profile.flareAlpha * budget.warningAlphaScale })
       .rect(0, app.renderer.height - flareThickness, app.renderer.width, flareThickness)
-      .fill({ color: profile.aura, alpha: profile.flareAlpha * 0.82 });
+      .fill({ color: profile.aura, alpha: profile.flareAlpha * budget.warningAlphaScale * 0.82 });
     flare.blendMode = 'add';
     this.boardLayers.ui.addChild(flare);
     gsap.to(lane, { alpha: 0, duration: profile.duration * tempo.durationScale * this.quality.motionScale, ease: 'power2.out', onComplete: () => lane.destroy() });
@@ -1356,20 +1375,24 @@ export class DreamPixiRenderer {
     const app = this.boardApp!;
     const center = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2 + 18);
     const farZoom = this.tileSize * this.camera.scale < 34;
-    const pulse = new Graphics().circle(center.x, center.y, Math.min(app.renderer.width, app.renderer.height) * (farZoom ? 0.16 : 0.2) / Math.max(0.6, this.camera.scale)).stroke({ color: combo >= 4 ? PALETTE.gold : PALETTE.sky, width: farZoom ? 2.6 : 4, alpha: farZoom ? 0.36 : 0.52 });
+    const budget = this.getRenderBudgetProfile();
+    const pulse = new Graphics().circle(center.x, center.y, Math.min(app.renderer.width, app.renderer.height) * (farZoom ? 0.16 : 0.2) / Math.max(0.6, this.camera.scale)).stroke({ color: combo >= 4 ? PALETTE.gold : PALETTE.sky, width: (farZoom ? 2.6 : 4) * budget.burstScale, alpha: (farZoom ? 0.36 : 0.52) * budget.warningAlphaScale });
     this.boardLayers.particles.addChild(pulse);
     gsap.to(pulse.scale, { x: 2.5, y: 2.5, duration: 0.46 * this.quality.motionScale, ease: 'power2.out' });
     gsap.to(pulse, { alpha: 0, duration: 0.46 * this.quality.motionScale, onComplete: () => pulse.destroy() });
   }
 
   private spawnVfxSprite(x: number, y: number, name: string) {
+    const budget = this.getRenderBudgetProfile();
+    this.renderBudgetFrame += 1;
+    if (budget.spriteStride > 1 && this.renderBudgetFrame % budget.spriteStride !== 0) return;
     const sprite = new Sprite(this.resolveAssetTexture(effectAsset(name)));
     sprite.anchor.set(0.5);
     sprite.x = x;
     sprite.y = y;
-    const scale = (0.36 + Math.random() * 0.16) * this.quality.motionScale;
+    const scale = (0.36 + Math.random() * 0.16) * this.quality.motionScale * budget.burstScale;
     sprite.scale.set(scale);
-    sprite.alpha = 0.88;
+    sprite.alpha = 0.88 * budget.warningAlphaScale;
     this.boardLayers.particles.addChild(sprite);
     gsap.to(sprite.scale, { x: scale * 1.8, y: scale * 1.8, duration: 0.38 * this.quality.motionScale, ease: 'power2.out' });
     gsap.to(sprite, { alpha: 0, rotation: Math.random() * 0.5 - 0.25, duration: 0.42 * this.quality.motionScale, ease: 'power2.out', onComplete: () => sprite.destroy() });
@@ -1390,7 +1413,8 @@ export class DreamPixiRenderer {
     ring.label = `clear-reward-flow-${stars}-${score}`;
     ring.blendMode = 'add';
     this.boardLayers.particles.addChild(ring);
-    const sparkleCount = Math.max(10, Math.min(22, stars * 5 + Math.round(score / 9000)));
+    const budget = this.getRenderBudgetProfile();
+    const sparkleCount = Math.max(8, Math.min(budget.particleCap, Math.round((stars * 5 + Math.round(score / 9000)) * budget.particleScale)));
     for (let i = 0; i < sparkleCount; i += 1) {
       const angle = (Math.PI * 2 * i) / sparkleCount;
       const sparkle = new Graphics()
@@ -1417,7 +1441,8 @@ export class DreamPixiRenderer {
   }
 
   private emitTileFragments(x: number, y: number, combo: number) {
-    const count = Math.max(3, Math.min(9, Math.round((4 + combo) * this.quality.particleScale)));
+    const budget = this.getRenderBudgetProfile();
+    const count = Math.max(3, Math.min(9, Math.round((4 + combo) * this.quality.particleScale * budget.particleScale)));
     for (let i = 0; i < count; i += 1) {
       const index = ((i + combo * 3) % 24) + 1;
       const sprite = new Sprite(this.resolveAssetTexture(effectAsset(`v2-fragments/v2-fragment-${String(index).padStart(2, '0')}`)));
@@ -1441,7 +1466,8 @@ export class DreamPixiRenderer {
   }
 
   private emitParticles(x: number, y: number, count: number, color: number) {
-    const finalCount = Math.max(4, Math.round(count * this.quality.particleScale));
+    const budget = this.getRenderBudgetProfile();
+    const finalCount = Math.max(3, Math.min(budget.particleCap, Math.round(count * this.quality.particleScale * budget.particleScale)));
     for (let i = 0; i < finalCount; i += 1) {
       const p = new Graphics().circle(0, 0, Math.random() * 3 + 2).fill({ color, alpha: 0.9 });
       p.x = x;
@@ -1454,7 +1480,7 @@ export class DreamPixiRenderer {
   private cameraShake(power: number) {
     if (!this.boardViewport) return;
     const viewport = this.boardViewport;
-    const amount = power * this.quality.motionScale;
+    const amount = power * this.quality.motionScale * this.getRenderBudgetProfile().burstScale;
     const baseX = this.camera.x;
     const baseY = this.camera.y;
     gsap.killTweensOf(viewport);
