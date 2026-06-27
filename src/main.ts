@@ -3,7 +3,7 @@ import './styles.css';
 import { db, firebaseReady } from './firebase.js';
 import { completeGoogleRedirect, getDisplayName, loginAnonymously, loginWithEmail, loginWithGoogle, logout, observeAuth, signupWithEmail } from './auth.js';
 import { ATLAS_ASSETS, BOSS_FRAME_ATLAS_ASSETS, DIFFICULTIES, PRELOAD_ASSETS, TILE_SET } from './game/difficulty.js';
-import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getDailyChallenge, getNextStage, getStageById } from './game/stages.js';
+import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, getDailyChallenge, getNextStage, getStageById, getStageIndex } from './game/stages.js';
 import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, findHint, getTileAt, isCleared, isSpecialTileBlocked, revealAllSpecial, revealPairSpecials, revealSpecialTile, removePair, shuffleRemaining } from './game/shisen.js';
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { BOSS_ATLAS_SHEET, getBossAtlasFrame } from './game/bossAtlas.js';
@@ -30,14 +30,25 @@ document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
 const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1040';
-const STAGE_LADDER_EXPANSION_PATCH = 'v1045-stage-ladder-42';
-const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1045-deep-drag-rescue';
+const STAGE_LADDER_EXPANSION_PATCH = 'v1046-stage-map-comfort-42';
+const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1046-gesture-final-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
 const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
 const AUTH_MODAL_BOSS_ROLE_PATCH = 'v1043-auth-modal-boss-role';
 const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
+const DIFFICULTY_TEMPO_PATCH = 'v1046-difficulty-tempo-wide-ladder';
+const DIFFICULTY_TEMPO_PROFILES: Record<string, { bonus: number; first: number; repeat: number; pressure: string }> = {
+  beginner: { bonus: 4, first: 22, repeat: 14, pressure: 'very-soft' },
+  easy: { bonus: 4, first: 20, repeat: 13, pressure: 'soft' },
+  normal: { bonus: 3, first: 17, repeat: 11, pressure: 'balanced' },
+  growth: { bonus: 3, first: 16, repeat: 10, pressure: 'balanced' },
+  skilled: { bonus: 3, first: 15, repeat: 10, pressure: 'tense' },
+  expert: { bonus: 2, first: 14, repeat: 9, pressure: 'expert' },
+  hard: { bonus: 2, first: 13, repeat: 8, pressure: 'hard' },
+  nightmare: { bonus: 2, first: 12, repeat: 8, pressure: 'nightmare' }
+};
 const STALL_PRESSURE_FIRST_SECONDS = 14;
 const STALL_PRESSURE_REPEAT_SECONDS = 9;
 let bossAtlasImageReady = false;
@@ -674,7 +685,7 @@ function initButtonStateFeedback() {
   }, { passive: true });
 }
 
-const LEGACY_LOBBY_DRAG_THRESHOLD_NOTE = 'dy > 5'; // retained for scroll-polish policy while v1.0.45 uses dy > 2 deep rescue
+const LEGACY_LOBBY_DRAG_THRESHOLD_NOTE = 'dy > 5'; // retained for scroll-polish policy while v1.0.46 uses dy > 1.6 gesture final rescue
 
 function initLobbyScrollGuard() {
   const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
@@ -701,13 +712,13 @@ function initLobbyScrollGuard() {
     if (state.screen !== 'lobby') return;
     const dx = Math.abs(event.clientX - startX);
     const dy = Math.abs(event.clientY - startY);
-    if (dy > 2 && dy > dx * 0.42) {
+    if (dy > 1.6 && dy > dx * 0.34) {
       dragging = true;
-      dragLocked = dy > 5;
+      dragLocked = dy > 4;
       document.body.classList.add('is-lobby-dragging');
       const deltaY = event.clientY - lastY;
-      if (Math.abs(deltaY) > 0.8 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel')) {
-        shell.scrollTop -= deltaY * 1.08;
+      if (Math.abs(deltaY) > 0.55 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel, .stage-ladder-summary, .ladder-chip, .world-map, .lobby-grid')) {
+        shell.scrollTop -= deltaY * 1.18;
         document.body.dataset.lobbyDragRescue = LOBBY_DRAG_DEEP_RESCUE_PATCH;
       }
       lastY = event.clientY;
@@ -859,8 +870,26 @@ function handleSpecialTileGate(point: BoardPoint, tile: any) {
   return false;
 }
 
+function getDifficultyTempoProfile(stage = getStageById(state.selectedStageId)) {
+  const key = stage?.difficultyKey || 'normal';
+  return DIFFICULTY_TEMPO_PROFILES[key] || DIFFICULTY_TEMPO_PROFILES.normal;
+}
+
+function getPairMatchTimeBonus(stage = getStageById(state.selectedStageId)) {
+  return getDifficultyTempoProfile(stage).bonus || PAIR_MATCH_TIME_BONUS_SECONDS;
+}
+
+function getStallPressureThresholds(stage = getStageById(state.selectedStageId)) {
+  const profile = getDifficultyTempoProfile(stage);
+  return {
+    first: profile.first || STALL_PRESSURE_FIRST_SECONDS,
+    repeat: profile.repeat || STALL_PRESSURE_REPEAT_SECONDS,
+    pressure: profile.pressure || 'balanced'
+  };
+}
+
 function grantPairMatchTimeBonus(firstTile?: any, secondTile?: any) {
-  const bonus = PAIR_MATCH_TIME_BONUS_SECONDS;
+  const bonus = getPairMatchTimeBonus();
   state.remainingSeconds += bonus;
   state.pairTimeBonusTotal += bonus;
   state.noMatchSeconds = 0;
@@ -884,19 +913,20 @@ function grantPairMatchTimeBonus(firstTile?: any, secondTile?: any) {
 function triggerStallPressure() {
   if (state.screen !== 'game' || state.locked || state.remainingSeconds <= 0) return;
   const seconds = state.noMatchSeconds;
-  if (seconds < STALL_PRESSURE_FIRST_SECONDS) return;
-  if (state.lastStallPressureSecond && seconds - state.lastStallPressureSecond < STALL_PRESSURE_REPEAT_SECONDS) return;
+  const tempo = getStallPressureThresholds();
+  if (seconds < tempo.first) return;
+  if (state.lastStallPressureSecond && seconds - state.lastStallPressureSecond < tempo.repeat) return;
   state.lastStallPressureSecond = seconds;
   state.urgentPressureActive = true;
   document.body.dataset.timePressurePatch = ACCOUNT_TIME_PRESSURE_PATCH;
   document.body.classList.add('time-pressure-action');
-  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stall-pressure', 'urgent');
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stall-pressure', `urgent-${tempo.pressure}`);
   el.timeLabel.classList.add('urgent-time');
   audio.play('urgent');
   window.setTimeout(() => audio.play('warning'), 120);
   HAPTIC.warning();
   triggerBossTelegraph('time');
-  setStatus('시간이 흔들립니다. 한 쌍을 맞추면 보너스 시간 +3초를 얻습니다.');
+  setStatus(`시간이 흔들립니다. 한 쌍을 맞추면 보너스 시간 +${getPairMatchTimeBonus()}초를 얻습니다.`);
   window.setTimeout(() => {
     document.body.classList.remove('time-pressure-action');
     el.timeLabel.classList.remove('urgent-time');
@@ -1382,21 +1412,31 @@ function renderLobby() {
 
 function renderStageLadderSummary(clearCount: number, selectedStage: any) {
   const order = ['beginner', 'easy', 'normal', 'growth', 'skilled', 'expert', 'hard', 'nightmare'];
+  const nextOpen = STAGES.find((stage: any) => isStageUnlocked(stage.id) && !state.campaignProgress.cleared[stage.id]) || selectedStage;
+  const nextLocked = STAGES.find((stage: any) => !isStageUnlocked(stage.id));
+  const selectedIndex = Math.max(0, getStageIndex(selectedStage?.id));
+  const nextOpenIndex = Math.max(0, getStageIndex(nextOpen?.id));
   const grouped = order
     .map((key) => {
-      const total = STAGES.filter((stage: any) => stage.difficultyKey === key).length;
+      const stages = STAGES.filter((stage: any) => stage.difficultyKey === key);
+      const total = stages.length;
       if (!total) return null;
-      const cleared = STAGES.filter((stage: any) => stage.difficultyKey === key && state.campaignProgress.cleared[stage.id]).length;
+      const cleared = stages.filter((stage: any) => state.campaignProgress.cleared[stage.id]).length;
+      const first = stages[0];
       const meta = DIFFICULTIES[key] || { label: key };
       const active = selectedStage?.difficultyKey === key;
-      return `<span class="ladder-chip ${active ? 'active' : ''}" data-difficulty="${key}"><b>${escapeHtml(meta.label)}</b><em>${cleared}/${total}</em></span>`;
+      const reachable = isStageUnlocked(first.id);
+      const next = nextOpen?.difficultyKey === key;
+      return `<button type="button" class="ladder-chip ${active ? 'active' : ''} ${next ? 'next' : ''}" data-difficulty="${key}" data-first-stage-id="${first.id}" data-reachable="${reachable ? 'true' : 'false'}"><b>${escapeHtml(meta.label)}</b><em>${cleared}/${total}</em><i>${reachable ? (next ? '다음' : '열림') : '잠김'}</i></button>`;
     })
     .filter(Boolean)
     .join('');
-  const nextLocked = STAGES.find((stage: any) => !isStageUnlocked(stage.id));
-  const nextOpen = STAGES.find((stage: any) => isStageUnlocked(stage.id) && !state.campaignProgress.cleared[stage.id]) || selectedStage;
+  const progressPercent = Math.round((clearCount / Math.max(1, STAGES.length)) * 100);
+  const nextMeta = DIFFICULTIES[nextOpen.difficultyKey] || DIFFICULTIES.normal;
+  const selectedMeta = DIFFICULTIES[selectedStage?.difficultyKey] || nextMeta;
   el.stageLadderSummary.dataset.stageLadder = STAGE_LADDER_EXPANSION_PATCH;
-  el.stageLadderSummary.innerHTML = `<div class="ladder-progress"><strong>${clearCount}/${STAGES.length}</strong><span>스테이지 진행 · ${escapeHtml(DIFFICULTIES[nextOpen.difficultyKey]?.label || '진행')}</span></div><div class="ladder-chips">${grouped}</div><p>${nextLocked ? `${nextLocked.number}번은 이전 스테이지 클리어 후 열립니다.` : '모든 스테이지가 열렸습니다.'}</p>`;
+  el.stageLadderSummary.dataset.stageMapComfort = 'next-goal-v1046';
+  el.stageLadderSummary.innerHTML = `<div class="ladder-progress"><strong>${clearCount}/${STAGES.length}</strong><span>현재 ${selectedIndex + 1}번 · 다음 목표 ${nextOpen.number}번 ${escapeHtml(nextOpen.title)} · ${progressPercent}%</span></div><div class="ladder-path"><span>현재 ${escapeHtml(selectedMeta.label)}</span><i></i><span>다음 ${escapeHtml(nextMeta.label)}</span></div><div class="ladder-chips">${grouped}</div><p>${nextLocked ? `다음 해금: ${nextLocked.number}번은 이전 스테이지 클리어 후 열립니다.` : '모든 스테이지가 열렸습니다.'}</p>`;
 }
 
 function syncLobbyMotion(clearCount: number, stageId: string) {
@@ -1567,7 +1607,7 @@ function renderBossPanel() {
   setBossStableImage(boss.asset, boss.name);
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
-  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-layout', 'statusbar-chip-right-v1045');
+  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-layout', 'statusbar-icon-right-v1046');
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
   el.bossName.textContent = boss.name;
   const role = getBossReadableRole(boss);
@@ -1586,16 +1626,17 @@ function renderBossPanel() {
 }
 
 function getBossReadableRole(boss: any) {
+  const bonus = getPairMatchTimeBonus();
   const base = {
-    pattern: '보스 상태 · HP와 반격 예고',
-    title: '보스 상태바 오른쪽 그림은 현재 상대 보스입니다. HP, 시간 압박, 실수 반격 예고를 함께 확인하세요.',
-    help: '오른쪽 그림은 현재 보스입니다. 오래 멈추거나 실수하면 반격하고, 짝을 맞추면 HP가 줄고 +3초를 얻습니다.'
+    pattern: '보스 상태 · HP/압박/반격',
+    title: '오른쪽 작은 보스 아이콘은 현재 상대와 위험도를 표시합니다. HP와 반격 예고를 같이 확인하세요.',
+    help: `오른쪽 보스 아이콘은 현재 상대입니다. 멈추거나 실수하면 압박하고, 짝을 맞추면 HP가 줄고 +${bonus}초를 얻습니다.`
   };
   if (boss?.id === 'shadow-librarian') {
-    return { ...base, pattern: '보스 상태 · 빠른 실수 반격', help: '그림자 장서관장은 실수에 빠르게 반응합니다. 연속 매칭으로 반격 예고를 끊으세요.' };
+    return { ...base, pattern: '보스 상태 · 빠른 실수 반격', help: `그림자 장서관장은 실수에 빠르게 반응합니다. 연속 매칭으로 반격 예고를 끊고 +${bonus}초를 챙기세요.` };
   }
   if (boss?.id === 'sealed-page-golem') {
-    return { ...base, pattern: '보스 상태 · 묵직한 시간 압박', help: '페이지 골렘은 느리지만 강하게 압박합니다. 멈추지 말고 한 쌍씩 시간을 회복하세요.' };
+    return { ...base, pattern: '보스 상태 · 묵직한 시간 압박', help: `페이지 골렘은 느리지만 강하게 압박합니다. 멈추지 말고 한 쌍씩 +${bonus}초를 회복하세요.` };
   }
   return base;
 }
@@ -1604,10 +1645,10 @@ function showBossRolePulseOnce() {
   const seen = readText('dream-library-boss-role-help-seen') === '1';
   const stage = document.querySelector<HTMLElement>('.battle-stage');
   if (!stage || seen) return;
-  stage.dataset.bossRoleTutorial = 'v1045-statusbar-chip-right';
+  stage.dataset.bossRoleTutorial = 'v1046-statusbar-icon-right';
   writeText('dream-library-boss-role-help-seen', '1');
   window.setTimeout(() => {
-    if (stage.dataset.bossRoleTutorial === 'v1045-statusbar-chip-right') delete stage.dataset.bossRoleTutorial;
+    if (stage.dataset.bossRoleTutorial === 'v1046-statusbar-icon-right') delete stage.dataset.bossRoleTutorial;
   }, 4200);
 }
 
@@ -1690,8 +1731,14 @@ function renderGameHud() {
   el.stageLabel.textContent = `${chapter.shortTitle} · Stage ${stage.number}`;
   el.difficultyTitle.textContent = difficulty.label;
   el.timeLabel.textContent = formatTime(state.remainingSeconds);
-  el.timeLabel.title = `짝 맞춤 보너스 +${PAIR_MATCH_TIME_BONUS_SECONDS}초 · 누적 +${state.pairTimeBonusTotal}초`;
+  const tempo = getDifficultyTempoProfile(stage);
+  const matchBonus = getPairMatchTimeBonus(stage);
+  el.timeLabel.title = `짝 맞춤 보너스 +${matchBonus}초 · ${tempo.pressure} 압박 · 누적 +${state.pairTimeBonusTotal}초`;
   el.timeLabel.dataset.timeBonusTotal = String(state.pairTimeBonusTotal);
+  el.timeLabel.dataset.matchBonus = String(matchBonus);
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-difficulty-tempo', `${stage.difficultyKey}-${tempo.pressure}`);
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-difficulty-tempo-patch', DIFFICULTY_TEMPO_PATCH);
+  document.querySelector<HTMLElement>('.time-meter')?.setAttribute('data-match-bonus-label', `${matchBonus}초`);
   el.scoreLabel.textContent = formatNumber(state.score);
   el.comboLabel.textContent = `${state.combo}`;
   el.movesLabel.textContent = `${state.moves}`;

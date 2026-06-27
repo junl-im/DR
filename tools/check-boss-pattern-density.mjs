@@ -43,14 +43,14 @@ for (const token of [
   'data-boss-warning-depth="sealed-page-golem"',
   'data-visual-priority="boss-route-first"'
 ]) {
-  if (!css.includes(token)) errors.push(`CSS missing v1.0.45 polish token: ${token}`);
+  if (!css.includes(token)) errors.push(`CSS missing v1.0.46 polish token: ${token}`);
 }
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭', '보기 맞춤', '드래그 이동']) {
   if (`${renderer}\n${main}\n${css}`.includes(banned)) errors.push(`Removed UI/minimap token came back: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.45"')) errors.push('package.json version must be 1.0.45.');
+if (!pkg.includes('"version": "1.0.46"')) errors.push('package.json version must be 1.0.46.');
 if (!pkg.includes('check:boss-pattern-density')) errors.push('package.json must expose check:boss-pattern-density.');
-if (!sw.includes('dream-library-cache-v1.0.45') || !sw.includes('texture-atlas-manifest-v1.0.45.json')) errors.push('service worker cache/manifest must be v1.0.45.');
+if (!sw.includes('dream-library-cache-v1.0.46') || !sw.includes('texture-atlas-manifest-v1.0.46.json')) errors.push('service worker cache/manifest must be v1.0.46.');
 if (!workflows.includes('npm run check:boss-pattern-density')) errors.push('workflows must run boss pattern density check.');
 
 if (errors.length) {

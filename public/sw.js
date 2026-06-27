@@ -1,5 +1,5 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.45';
-const CACHE_SLIM_POLICY = 'v1045-cache-stage-ladder-boss-lobby';
+const CACHE_NAME = 'dream-library-cache-v1.0.46';
+const CACHE_SLIM_POLICY = 'v1046-cache-stage-map-boss-icon-lobby-gesture';
 const PREVIOUS_CACHE_SLIM_POLICY = 'v1042-cache-slim-account-time-pressure';
 const LEGACY_AUTH_MODAL_CACHE_SLIM_POLICY = 'v1043-cache-slim-auth-modal-boss-role';
 const CORE_ASSETS = [
@@ -25,7 +25,7 @@ const CORE_ASSETS = [
   './assets/ui/keys-v2/hint-normal.png',
   './assets/effects/import-vfx-01.png',
   './assets/effects/import-vfx-06.png',
-  './assets/meta/texture-atlas-manifest-v1.0.45.json',
+  './assets/meta/texture-atlas-manifest-v1.0.46.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',

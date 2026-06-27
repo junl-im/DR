@@ -77,7 +77,7 @@ export const DIFFICULTIES = {
     rows: 10,
     cols: 12,
     iconTypes: 30,
-    timeLimitSeconds: 500,
+    timeLimitSeconds: 540,
     hints: 3,
     shuffles: 3,
     scoreMultiplier: 1.65,
@@ -90,7 +90,7 @@ export const DIFFICULTIES = {
     rows: 12,
     cols: 14,
     iconTypes: 36,
-    timeLimitSeconds: 650,
+    timeLimitSeconds: 690,
     hints: 2,
     shuffles: 2,
     scoreMultiplier: 2.05,
@@ -99,16 +99,16 @@ export const DIFFICULTIES = {
   },
   expert: {
     key: 'expert',
-    label: '악몽',
-    rows: 12,
-    cols: 14,
-    iconTypes: 36,
-    timeLimitSeconds: 650,
-    hints: 2,
-    shuffles: 2,
-    scoreMultiplier: 2.05,
+    label: '도전',
+    rows: 9,
+    cols: 10,
+    iconTypes: 25,
+    timeLimitSeconds: 440,
+    hints: 4,
+    shuffles: 3,
+    scoreMultiplier: 1.48,
     cameraMode: 'panZoom',
-    boardProfile: 'huge'
+    boardProfile: 'challenge-soft'
   }
 };
 
@@ -239,7 +239,7 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.45.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.46.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -282,7 +282,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.45.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.46.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.webp`,

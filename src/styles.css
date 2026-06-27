@@ -3184,3 +3184,127 @@ body[data-lobby-drag-rescue="v1045-deep-drag-rescue"] .screen-lobby {
   .world-map { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.46rem; padding: 0.66rem; }
   .stage-node { min-height: 54px; padding: 0.38rem 0.3rem; }
 }
+
+
+/* v1.0.46 stage map comfort, boss status icon set and lobby gesture final QA */
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1046"] {
+  border-color: rgba(245, 200, 107, 0.22);
+  background: linear-gradient(135deg, rgba(6, 21, 45, 0.58), rgba(16, 43, 87, 0.34), rgba(245, 200, 107, 0.08));
+}
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1046"] .ladder-path {
+  display: grid;
+  grid-template-columns: auto minmax(30px, 1fr) auto;
+  align-items: center;
+  gap: 0.42rem;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+.stage-ladder-summary[data-stage-map-comfort="next-goal-v1046"] .ladder-path i {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(54, 214, 164, 0.4), rgba(245, 200, 107, 0.75), rgba(125, 220, 255, 0.38));
+}
+.ladder-chip {
+  border: 0;
+  appearance: none;
+  color: inherit;
+}
+.ladder-chip i {
+  color: var(--sky-200);
+  font-size: 0.54rem;
+  font-style: normal;
+  opacity: 0.78;
+}
+.ladder-chip.next {
+  border-color: rgba(54, 214, 164, 0.56);
+  background: linear-gradient(135deg, rgba(54, 214, 164, 0.2), rgba(125, 220, 255, 0.12));
+}
+.ladder-chip[data-reachable="false"] {
+  opacity: 0.58;
+}
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(38px, 9vw, 50px);
+  align-items: center;
+  gap: 0.28rem;
+  min-height: 46px;
+  padding: 0.24rem 0.3rem 0.24rem 0.46rem;
+  overflow: hidden;
+}
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-info { min-width: 0; order: 1; }
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-info strong { font-size: 0.78rem; }
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-info small { font-size: 0.58rem; }
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-core {
+  order: 2;
+  justify-self: end;
+  width: clamp(38px, 9vw, 50px);
+  height: clamp(38px, 9vw, 50px);
+  margin-inline-start: auto;
+  box-shadow: 0 0 14px rgba(143, 107, 255, 0.26);
+  z-index: 1;
+}
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-core::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1px solid rgba(245, 200, 107, 0.32);
+  box-shadow: 0 0 14px rgba(245, 200, 107, 0.12);
+}
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-core img {
+  width: clamp(48px, 11vw, 62px);
+  height: clamp(48px, 11vw, 62px);
+  left: 50%;
+  top: 50%;
+}
+.boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-atlas-sprite {
+  opacity: 0.24;
+  transform: translate(-50%, -50%) scale(calc(var(--boss-frame-scale, 0.26) * 0.58));
+}
+.boss-info[data-boss-role="statusbar-icon-v1046"] .boss-role-stack[data-boss-role-panel="v1046-icon-readability"] {
+  display: flex;
+  max-width: min(100%, 290px);
+  gap: 0.18rem;
+}
+.boss-info[data-boss-role="statusbar-icon-v1046"] .boss-role-stack span,
+.boss-info[data-boss-role="statusbar-icon-v1046"] .boss-role-stack b {
+  padding-inline: 0.26rem;
+  font-size: 0.54rem;
+  min-height: 18px;
+}
+.boss-core[data-boss-id="forgotten-spirit"]::before { border-color: rgba(194, 155, 255, 0.45); }
+.boss-core[data-boss-id="shadow-librarian"]::before { border-color: rgba(125, 220, 255, 0.48); }
+.boss-core[data-boss-id="sealed-page-golem"]::before { border-color: rgba(245, 200, 107, 0.52); }
+.battle-stage[data-boss-role-tutorial="v1046-statusbar-icon-right"] .boss-lane[data-boss-layout="statusbar-icon-right-v1046"] {
+  animation: bossRoleReadablePulse 0.86s ease-in-out 2;
+}
+.battle-stage[data-difficulty-tempo-patch="v1046-difficulty-tempo-wide-ladder"] .time-meter::after {
+  content: '+' attr(data-match-bonus-label);
+}
+body[data-lobby-drag-rescue="v1046-gesture-final-rescue"] .screen-lobby,
+body[data-lobby-drag-rescue="v1046-gesture-final-rescue"] .app-shell {
+  overscroll-behavior-y: contain;
+  scroll-behavior: auto;
+}
+body[data-screen="lobby"] .stage-ladder-summary,
+body[data-screen="lobby"] .ladder-chip,
+body[data-screen="lobby"] .world-map,
+body[data-screen="lobby"] .stage-node,
+body[data-screen="lobby"] .mission-card,
+body[data-screen="lobby"] .restore-node,
+body[data-screen="lobby"] .collection-tile,
+body[data-screen="lobby"] .campaign-panel {
+  touch-action: pan-y;
+}
+@media (max-width: 430px) {
+  .stage-ladder-summary[data-stage-map-comfort="next-goal-v1046"] .ladder-path { font-size: 0.58rem; }
+  .boss-lane[data-boss-layout="statusbar-icon-right-v1046"] {
+    grid-template-columns: minmax(0, 1fr) 38px;
+    min-height: 44px;
+    padding: 0.22rem 0.26rem 0.22rem 0.36rem;
+  }
+  .boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-core { width: 38px; height: 38px; }
+  .boss-lane[data-boss-layout="statusbar-icon-right-v1046"] .boss-core img { width: 52px; height: 52px; }
+  .boss-info[data-boss-role="statusbar-icon-v1046"] .boss-role-stack[data-boss-role-panel="v1046-icon-readability"] span:nth-last-child(-n+2) { display: none; }
+}

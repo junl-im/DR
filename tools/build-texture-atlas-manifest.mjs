@@ -15,7 +15,7 @@ const manifest = {
   entries
 };
 mkdirSync(join(assetRoot, 'meta'), { recursive: true });
-writeFileSync(join(assetRoot, 'meta', 'texture-atlas-manifest-v1.0.45.json'), JSON.stringify(manifest, null, 2));
+writeFileSync(join(assetRoot, 'meta', 'texture-atlas-manifest-v1.0.46.json'), JSON.stringify(manifest, null, 2));
 console.log(`Texture atlas manifest written with ${entries.length} entries.`);
 
 function walk(dir) {

@@ -79,7 +79,7 @@ Atlas 생성
 - SVG 금지 유지
 - 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
 
-다음 업데이트 예정: v1.0.45 - Stage Progress UX, Boss Bar Icon Polish and Lobby Gesture QA Patch
+다음 업데이트 예정: v1.0.46 - Stage Map Comfort, Boss Status Icon Set and Lobby Gesture Final QA Patch
 
 - 30개 스테이지 확장 후 로비에서 현재 진행 위치를 더 쉽게 파악하도록 챕터/스테이지 진행 UI polish
 - 보스 상태바 오른쪽 보스 그림을 보스별 아이콘/색감으로 더 명확하게 차별화
@@ -1159,6 +1159,31 @@ npm run deploy:rules
 ```
 
 
+
+## v1.0.46 Patch Notes - Stage Map Comfort, Boss Status Icon Set and Lobby Gesture Final QA
+
+- 42개 스테이지 확장 이후 현재 위치와 다음 목표가 더 잘 보이도록 `next-goal-v1046` stage map comfort UI를 추가했습니다.
+- 보스 그림은 보스 상태바 우측의 더 작은 icon 슬롯으로 압축하고 `statusbar-icon-right-v1046` 레이아웃으로 보드 시야를 덜 가리게 정리했습니다.
+- 보스 상태 chip은 HP/압박/반격을 짧게 표시하고 보스별 테두리 톤으로 역할을 구분합니다.
+- 초보/입문은 매칭 보너스를 +4초, 일반~숙련은 +3초, 도전~악몽은 +2초로 조정해 난이도별 템포를 더 폭넓게 만들었습니다.
+- 지체 압박 시작/반복 주기를 난이도별로 다르게 적용해 초반은 여유롭고 후반은 긴장감 있게 조정했습니다.
+- 로비 드래그 보조를 `v1046-gesture-final-rescue`로 강화해 카드, 챕터 탭, 스테이지 노드, 진행 chip 위에서도 세로 스크롤이 더 잘 먹도록 조정했습니다.
+- 미니맵, 게임 내 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않았습니다.
+
+검사:
+
+```bash
+npm run check:stage-map-boss-difficulty-lobby
+```
+
+커밋 메시지:
+
+```text
+Apply 꿈의 서고 v1.0.46 stage map comfort boss icon set difficulty tempo and lobby gesture QA patch
+```
+
+다음 업데이트 예정: v1.0.47 - Campaign Reward Curve, Boss Tutorial Polish and Lobby Compact Carousel Patch
+
 ## v1.0.45 Patch Notes - Stage Progress UX, Boss Chip Bar and Lobby Gesture QA
 
 - 보스 그림을 보스 상태바 우측의 더 작은 chip 슬롯으로 압축해 보드 시야를 덜 가리도록 조정했습니다.
@@ -1177,7 +1202,7 @@ Apply 꿈의 서고 v1.0.45 stage progress UX boss chip bar and lobby gesture QA
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했고, v1.0.20에서는 v2 상태별 타일을 실제 atlas로 패킹했고, v1.0.21에서는 로비 모션/버튼 상태/랭킹 UX를 강화했고, v1.0.22에서는 atlas preload CI와 WebP 배경 최적화/HUD 밀도 개선을 적용했고, v1.0.23에서는 보스 프레임 atlas와 모바일 layout QA/스크롤 polish를 추가했고, v1.0.24에서는 보스 atlas sprite 실제 렌더링, atlas WebP 압축 후보, 로비 상호작용 polish를 추가했고, v1.0.25에서는 카카오 인앱 로비 진입 시 fullscreen/orientation API로 인해 가로 viewport가 고정되는 경로를 제거하고 stable portrait shell을 추가했고, v1.0.26에서는 보스 atlas를 Pixi layer 후보와 동기화하고 인앱 device QA/랭킹 flow를 보강했고, v1.0.27에서는 화면 보조 문구를 silent hook으로 제거하고 타일 크기/선택 강조를 가독성 중심으로 재조정했고, v1.0.28에서는 큰 보드맵을 유지하면서 드래그 이동/두 손가락 확대축소가 가능한 board camera 구조를 추가했고, v1.0.29에서는 선택 타일 크기 고정과 보드 카메라 컨트롤/모바일 조작 안정성을 추가했고, v1.0.30에서는 보드 레이더, 빛길 힌트, 보스 카메라 충격 연출을 추가했고, v1.0.31에서는 선택 효과를 타일 셀 내부로 제한하고 첫 화면 부트 안정성을 보강했고, v1.0.32에서는 미니맵/상단 브랜드를 제거하고 선택 표시를 타일 본체와 완전히 분리한 고정 overlay 방식으로 바꿔 패 geometry가 선택으로 커지는 경로를 차단했고, v1.0.33에서는 미니맵 없이 objective marker, 첫 큰 보드 카메라 가이드, 보스 warning pattern 분리를 추가했고, v1.0.34에서는 타일 본체 geometry guard와 boss cut-in polish, 작은 화면 micro HUD 압축을 추가했고, v1.0.35에서는 실제 모바일 선택 QA, touch precision hitArea 분리, 선택 후 카메라 보조와 줌 가독성 hook을 추가했고, v1.0.36에서는 게임 내 카메라 조절 라인과 도움말, 모든 화면 최상단 옵션 라인을 제거하고 뒤로가기/종료 확인 화면 안에 톱니 옵션 진입을 추가해 플레이 공간을 확장했고, v1.0.37에서는 상단 라인 제거 후 남은 여백을 더 정리하고 보스/몬스터 그림 자리가 atlas 지연이나 frame lookup 실패로 비어 보이지 않도록 stable boss image fallback과 boss asset visibility 검사를 추가했고, v1.0.38에서는 보스별 warning depth, objective marker density 자동 압축, boss stable image/atlas overlay 시각 계층과 모바일 cut-in 우선순위를 추가로 다듬었고, v1.0.39에서는 선택 후 카메라 follow 감도, far zoom 타일 가독성, 보스 warning tempo cooldown, objective marker 시야 우선순위와 service worker cache slim 정책을 추가했고, v1.0.40에서는 모바일 보드 조작감과 보스 에셋 polish, 클리어 보상 흐름을 연결했고, v1.0.41에서는 첫 화면을 게스트/구글/이메일 로그인 구조로 정리했고, v1.0.42에서는 옵션 계정 전환, 매칭 +3초 보너스, 지체 압박 연출과 보스 역할 라벨을 추가했고, v1.0.43에서는 구글 로그인 popup/redirect fallback, 중앙 이메일 로그인 팝업, 더 읽기 쉬운 보스 상태 UI를 적용했고, v1.0.44에서는 보스 그림을 상태바 우측 슬롯으로 이동하고 초보~악몽 6단계/30스테이지 캠페인으로 확장했으며 로비 드래그 보조를 강화했고, v1.0.45에서는 보스 그림을 더 작은 상태바 우측 chip 슬롯으로 압축하고 초보~악몽 사이에 성장/도전 완충 난이도를 추가해 7챕터/42스테이지 캠페인으로 확장했으며 로비 카드/버튼 위 드래그 구조를 더 깊게 보정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했고, v1.0.20에서는 v2 상태별 타일을 실제 atlas로 패킹했고, v1.0.21에서는 로비 모션/버튼 상태/랭킹 UX를 강화했고, v1.0.22에서는 atlas preload CI와 WebP 배경 최적화/HUD 밀도 개선을 적용했고, v1.0.23에서는 보스 프레임 atlas와 모바일 layout QA/스크롤 polish를 추가했고, v1.0.24에서는 보스 atlas sprite 실제 렌더링, atlas WebP 압축 후보, 로비 상호작용 polish를 추가했고, v1.0.25에서는 카카오 인앱 로비 진입 시 fullscreen/orientation API로 인해 가로 viewport가 고정되는 경로를 제거하고 stable portrait shell을 추가했고, v1.0.26에서는 보스 atlas를 Pixi layer 후보와 동기화하고 인앱 device QA/랭킹 flow를 보강했고, v1.0.27에서는 화면 보조 문구를 silent hook으로 제거하고 타일 크기/선택 강조를 가독성 중심으로 재조정했고, v1.0.28에서는 큰 보드맵을 유지하면서 드래그 이동/두 손가락 확대축소가 가능한 board camera 구조를 추가했고, v1.0.29에서는 선택 타일 크기 고정과 보드 카메라 컨트롤/모바일 조작 안정성을 추가했고, v1.0.30에서는 보드 레이더, 빛길 힌트, 보스 카메라 충격 연출을 추가했고, v1.0.31에서는 선택 효과를 타일 셀 내부로 제한하고 첫 화면 부트 안정성을 보강했고, v1.0.32에서는 미니맵/상단 브랜드를 제거하고 선택 표시를 타일 본체와 완전히 분리한 고정 overlay 방식으로 바꿔 패 geometry가 선택으로 커지는 경로를 차단했고, v1.0.33에서는 미니맵 없이 objective marker, 첫 큰 보드 카메라 가이드, 보스 warning pattern 분리를 추가했고, v1.0.34에서는 타일 본체 geometry guard와 boss cut-in polish, 작은 화면 micro HUD 압축을 추가했고, v1.0.35에서는 실제 모바일 선택 QA, touch precision hitArea 분리, 선택 후 카메라 보조와 줌 가독성 hook을 추가했고, v1.0.36에서는 게임 내 카메라 조절 라인과 도움말, 모든 화면 최상단 옵션 라인을 제거하고 뒤로가기/종료 확인 화면 안에 톱니 옵션 진입을 추가해 플레이 공간을 확장했고, v1.0.37에서는 상단 라인 제거 후 남은 여백을 더 정리하고 보스/몬스터 그림 자리가 atlas 지연이나 frame lookup 실패로 비어 보이지 않도록 stable boss image fallback과 boss asset visibility 검사를 추가했고, v1.0.38에서는 보스별 warning depth, objective marker density 자동 압축, boss stable image/atlas overlay 시각 계층과 모바일 cut-in 우선순위를 추가로 다듬었고, v1.0.39에서는 선택 후 카메라 follow 감도, far zoom 타일 가독성, 보스 warning tempo cooldown, objective marker 시야 우선순위와 service worker cache slim 정책을 추가했고, v1.0.40에서는 모바일 보드 조작감과 보스 에셋 polish, 클리어 보상 흐름을 연결했고, v1.0.41에서는 첫 화면을 게스트/구글/이메일 로그인 구조로 정리했고, v1.0.42에서는 옵션 계정 전환, 매칭 +3초 보너스, 지체 압박 연출과 보스 역할 라벨을 추가했고, v1.0.43에서는 구글 로그인 popup/redirect fallback, 중앙 이메일 로그인 팝업, 더 읽기 쉬운 보스 상태 UI를 적용했고, v1.0.44에서는 보스 그림을 상태바 우측 슬롯으로 이동하고 초보~악몽 6단계/30스테이지 캠페인으로 확장했으며 로비 드래그 보조를 강화했고, v1.0.45에서는 보스 그림을 더 작은 상태바 우측 chip 슬롯으로 압축하고 초보~악몽 사이에 성장/도전 완충 난이도를 추가해 7챕터/42스테이지 캠페인으로 확장했으며 로비 카드/버튼 위 드래그 구조를 더 깊게 보정했습니다. v1.0.46에서는 42개 스테이지에서 현재 위치/다음 목표를 더 분명하게 보여주는 stage map comfort UI, 보스 상태바 우측 icon 슬롯 polish, 난이도별 +시간 보너스/압박 템포 조정, 로비 gesture final rescue를 추가했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              84+ files
