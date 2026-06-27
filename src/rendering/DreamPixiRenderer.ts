@@ -16,8 +16,10 @@ const bossFrameAtlasAssets = [
 ];
 const isV2StateAsset = (asset = '') => asset.includes('/assets/objects/v2-state/') || asset.includes('assets/objects/v2-state/');
 const SELECTION_INSET_RATIO = 0.12;
-const SELECTION_RING_RATIO = 0.43;
-const SELECTION_WAVE_RATIO = 0.44;
+const SELECTION_RING_RATIO = 0.38;
+const SELECTION_WAVE_RATIO = 0.22;
+const TILE_SPRITE_RATIO = 0.92;
+const SELECTION_OVERLAY_INSET_RATIO = 0.09;
 
 export type BoardTile = {
   id: string;
@@ -125,7 +127,7 @@ export class DreamPixiRenderer {
   bossLayerAura: Graphics | null = null;
   pendingBossFrame: { frameKey: string; mood: string } | null = null;
   routeAssistPreview: Graphics | null = null;
-  minimapViewport: HTMLElement | null = null;
+  selectionFocusOverlay: Graphics | null = null;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
@@ -267,7 +269,6 @@ export class DreamPixiRenderer {
     ['runes', 'board', 'paths', 'particles'].forEach((name) => this.boardViewport!.addChild(this.boardLayers[name]));
     this.boardApp.stage.addChild(this.boardLayers.ui);
     this.installCameraControls();
-    this.installMinimapControls();
     this.boardApp.ticker.add((ticker: any) => this.tickBoard(ticker.deltaTime || 1));
     if (this.pendingBossFrame) this.syncPixiBossLayer(this.pendingBossFrame.frameKey, this.pendingBossFrame.mood);
   }
@@ -278,6 +279,8 @@ export class DreamPixiRenderer {
     this.selectedKey = null;
     this.tileViews.clear();
     Object.values(this.boardLayers).forEach((layer) => layer.removeChildren());
+    this.selectionFocusOverlay = null;
+    this.routeAssistPreview = null;
     const rows = board.length;
     const cols = board[0]?.length ?? 0;
     this.layout = this.calculateLayout(rows, cols);
@@ -297,17 +300,16 @@ export class DreamPixiRenderer {
       }
     }
     this.configureBoardCamera(true);
-    this.refreshBoardMinimap();
   }
 
   setSelected(point: BoardPoint | null) {
+    this.clearSelectionFocusOverlay();
     if (this.selectedKey) {
       const previous = this.tileViews.get(this.selectedKey);
       if (previous && !previous.removing) {
         this.lockTileViewScale(previous);
         this.applyTileStateTexture(previous, previous.tile.special && !previous.tile.specialRevealed ? previous.tile.special === 'locked' ? 'locked' : 'disabled' : 'normal');
-        gsap.to(previous.glow, { alpha: 0.16, duration: 0.18 * this.quality.motionScale });
-        gsap.to([previous.selectionRing, previous.selectionCore], { alpha: 0, duration: 0.12 * this.quality.motionScale });
+        gsap.to(previous.glow, { alpha: 0.16, duration: 0.12 * this.quality.motionScale });
       }
     }
     this.selectedKey = point ? keyOf(point) : null;
@@ -315,11 +317,11 @@ export class DreamPixiRenderer {
     const view = this.tileViews.get(keyOf(point));
     if (!view || view.removing) return;
     this.lockTileViewScale(view);
-    this.applyTileStateTexture(view, 'selected');
-    gsap.fromTo(view.glow, { alpha: 0.34 }, { alpha: 0.58, duration: 0.16 * this.quality.motionScale, ease: 'sine.out' });
-    gsap.fromTo(view.selectionRing, { alpha: 0.82 }, { alpha: 1, rotation: view.selectionRing.rotation + Math.PI * 0.1, duration: 0.22 * this.quality.motionScale, ease: 'power2.out' });
-    gsap.fromTo(view.selectionCore, { alpha: 0.62 }, { alpha: 0.96, duration: 0.14 * this.quality.motionScale, ease: 'sine.out' });
-    this.emitSelectionWave(view.root.x, view.root.y, PALETTE.sky);
+    // Selection must never swap to selected PNG or touch tile/sprite scale.
+    // The tile body stays normal; a separate world-space overlay marks selection.
+    this.applyTileStateTexture(view, view.tile.special && !view.tile.specialRevealed ? view.tile.special === 'locked' ? 'locked' : 'disabled' : 'normal');
+    gsap.fromTo(view.glow, { alpha: 0.24 }, { alpha: 0.52, duration: 0.12 * this.quality.motionScale, ease: 'sine.out' });
+    this.drawSelectionFocusOverlay(view);
   }
 
   hint(points: BoardPoint[], path?: PaddedPathPoint[] | null) {
@@ -331,7 +333,7 @@ export class DreamPixiRenderer {
       window.setTimeout(() => {
         if (!view.removing && this.selectedKey !== keyOf(point)) this.applyTileStateTexture(view, 'normal');
       }, 820);
-      gsap.fromTo(view.selectionRing, { alpha: 0.4, rotation: view.selectionRing.rotation }, { alpha: 0.9, rotation: view.selectionRing.rotation + Math.PI * 0.16, yoyo: true, repeat: 3, delay: index * 0.05, duration: 0.16 * this.quality.motionScale, ease: 'sine.inOut' });
+      this.drawHintFocusOverlay(view, index);
       this.emitSelectionWave(view.root.x, view.root.y, PALETTE.emerald);
     });
     this.drawRouteAssist(path, points);
@@ -364,7 +366,6 @@ export class DreamPixiRenderer {
     });
     this.tileViews.delete(keyOf(first));
     this.tileViews.delete(keyOf(second));
-    this.refreshBoardMinimap();
     onRemove();
   }
 
@@ -556,7 +557,6 @@ export class DreamPixiRenderer {
     this.boardViewport.scale.set(this.camera.scale);
     this.boardViewport.x = this.camera.x;
     this.boardViewport.y = this.camera.y;
-    this.updateBoardMinimapViewport();
   }
 
   private clampCamera() {
@@ -660,67 +660,6 @@ export class DreamPixiRenderer {
     }, { passive: false });
   }
 
-  private installMinimapControls() {
-    const minimap = document.querySelector<HTMLElement>('#board-minimap');
-    const map = document.querySelector<HTMLElement>('#board-minimap .board-minimap-map');
-    if (!minimap || !map || minimap.dataset.bound === 'true') return;
-    minimap.dataset.bound = 'true';
-    map.addEventListener('pointerdown', (event) => {
-      if (this.layout.cameraMode !== 'panZoom') return;
-      event.preventDefault();
-      const rect = map.getBoundingClientRect();
-      const ratioX = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width)));
-      const ratioY = Math.max(0, Math.min(1, (event.clientY - rect.top) / Math.max(1, rect.height)));
-      this.camera.tapSuppressedUntil = performance.now() + 180;
-      this.centerCameraOnWorld(this.camera.worldWidth * ratioX, this.camera.worldHeight * ratioY, this.camera.scale, true);
-    }, { passive: false });
-  }
-
-  private refreshBoardMinimap() {
-    const minimap = document.querySelector<HTMLElement>('#board-minimap');
-    const map = document.querySelector<HTMLElement>('#board-minimap .board-minimap-map');
-    if (!minimap || !map) return;
-    const visible = this.layout.cameraMode === 'panZoom' && this.tileViews.size > 0;
-    minimap.dataset.ready = visible ? 'true' : 'false';
-    minimap.dataset.rows = String(this.layout.rows);
-    minimap.dataset.cols = String(this.layout.cols);
-    map.replaceChildren();
-    if (!visible) return;
-    for (const view of this.tileViews.values()) {
-      if (view.removing) continue;
-      const dot = document.createElement('i');
-      dot.className = 'board-minimap-dot';
-      dot.dataset.key = keyOf({ row: view.row, col: view.col });
-      dot.dataset.theme = view.tile.special && !view.tile.specialRevealed ? 'special' : view.tile.theme || 'normal';
-      dot.style.left = `${Math.max(0, Math.min(100, (view.baseX / Math.max(1, this.camera.worldWidth)) * 100))}%`;
-      dot.style.top = `${Math.max(0, Math.min(100, (view.baseY / Math.max(1, this.camera.worldHeight)) * 100))}%`;
-      map.appendChild(dot);
-    }
-    const viewport = document.createElement('b');
-    viewport.className = 'board-minimap-viewport';
-    map.appendChild(viewport);
-    this.minimapViewport = viewport;
-    this.updateBoardMinimapViewport();
-  }
-
-  private updateBoardMinimapViewport() {
-    const viewport = this.minimapViewport || document.querySelector<HTMLElement>('#board-minimap .board-minimap-viewport');
-    if (!viewport || this.layout.cameraMode !== 'panZoom') return;
-    const worldW = Math.max(1, this.camera.worldWidth);
-    const worldH = Math.max(1, this.camera.worldHeight);
-    let viewW = Math.max(0.04, Math.min(1, this.camera.viewportWidth / Math.max(1, worldW * this.camera.scale)));
-    let viewH = Math.max(0.04, Math.min(1, this.camera.viewportHeight / Math.max(1, worldH * this.camera.scale)));
-    let left = Math.max(0, Math.min(1 - viewW, -this.camera.x / Math.max(1, worldW * this.camera.scale)));
-    let top = Math.max(0, Math.min(1 - viewH, -this.camera.y / Math.max(1, worldH * this.camera.scale)));
-    if (!Number.isFinite(left)) left = 0;
-    if (!Number.isFinite(top)) top = 0;
-    if (!Number.isFinite(viewW)) viewW = 1;
-    if (!Number.isFinite(viewH)) viewH = 1;
-    viewport.style.left = `${left * 100}%`;
-    viewport.style.top = `${top * 100}%`;
-    viewport.style.width = `${viewW * 100}%`;
-    viewport.style.height = `${viewH * 100}%`;
-  }
 
   private drawRouteAssist(path?: PaddedPathPoint[] | null, points: BoardPoint[] = []) {
     if (!this.boardLayers.paths) return;
@@ -802,23 +741,35 @@ export class DreamPixiRenderer {
     return Texture.from(asset);
   }
 
+  private fitTileSprite(view: TileView) {
+    // Pixi can briefly use source texture dimensions when atlas/image loading updates.
+    // Re-apply explicit cell-bounded dimensions every time the tile is touched/ticked.
+    const size = this.tileSize * TILE_SPRITE_RATIO;
+    view.sprite.anchor.set(0.5);
+    view.sprite.x = 0;
+    view.sprite.y = 0;
+    view.sprite.width = size;
+    view.sprite.height = size;
+  }
+
   private lockTileViewScale(view: TileView) {
     gsap.killTweensOf([view.root.scale, view.sprite.scale, view.selectionRing.scale, view.selectionCore.scale]);
     view.root.scale.set(1);
-    view.sprite.scale.set(1);
     view.selectionRing.scale.set(1);
     view.selectionCore.scale.set(1);
+    this.fitTileSprite(view);
   }
 
   private applyTileStateTexture(view: TileView, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled') {
     const textureState = state === 'selected' ? 'normal' : state;
-    if (view.tile.stateAssets) view.sprite.texture = this.resolveTileTexture(view.tile, textureState);
+    if (view.tile.stateAssets && state !== 'selected') view.sprite.texture = this.resolveTileTexture(view.tile, textureState);
+    this.fitTileSprite(view);
     view.sprite.alpha = state === 'disabled' ? 0.52 : state === 'locked' ? 0.72 : 1;
-    view.sprite.scale.set(1);
     view.selectionRing.scale.set(1);
     view.selectionCore.scale.set(1);
-    view.selectionRing.alpha = state === 'selected' ? 1 : state === 'hint' ? 0.72 : 0;
-    view.selectionCore.alpha = state === 'selected' ? 0.9 : 0;
+    // Per-tile selection graphics are kept dormant. Active selection is rendered by a separate overlay layer.
+    view.selectionRing.alpha = 0;
+    view.selectionCore.alpha = 0;
   }
 
   private addTile(tile: BoardTile, row: number, col: number, x: number, y: number) {
@@ -839,8 +790,8 @@ export class DreamPixiRenderer {
     const texture = this.resolveTileTexture(tile, startState);
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
-    sprite.width = this.tileSize * 0.98;
-    sprite.height = this.tileSize * 0.98;
+    sprite.width = this.tileSize * TILE_SPRITE_RATIO;
+    sprite.height = this.tileSize * TILE_SPRITE_RATIO;
     sprite.alpha = hiddenSpecial && tile.special === 'fog' ? 0.16 : hiddenSpecial ? 0.46 : 1;
     const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: specialColor, width: tile.special ? 2.2 : 1.4, alpha: tile.special ? 0.58 : 0.2 });
     const selectionInset = Math.max(4, this.tileSize * SELECTION_INSET_RATIO);
@@ -866,9 +817,8 @@ export class DreamPixiRenderer {
     this.boardLayers.board.addChild(root);
     const view: TileView = { root, sprite, glow, selectionRing, selectionCore, row, col, baseX: x, baseY: y, phase: Math.random() * Math.PI * 2, settling: true, removing: false, tile };
     this.tileViews.set(keyOf({ row, col }), view);
-    root.scale.set(0.88);
-    gsap.fromTo(root, { y: y + 16, alpha: 0 }, { y, alpha: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'power2.out', onComplete: () => { view.settling = false; root.y = view.baseY; } });
-    gsap.to(root.scale, { x: 1, y: 1, delay: (row + col) * 0.01, duration: 0.26 * this.quality.motionScale, ease: 'power2.out' });
+    root.scale.set(1);
+    gsap.fromTo(root, { y: y + 12, alpha: 0 }, { y, alpha: 1, delay: (row + col) * 0.008, duration: 0.24 * this.quality.motionScale, ease: 'power2.out', onComplete: () => { view.settling = false; root.y = view.baseY; this.lockTileViewScale(view); } });
   }
 
   private createSpecialBadge(special: BoardTile['special'], hidden: boolean) {
@@ -937,6 +887,55 @@ export class DreamPixiRenderer {
       base.moveTo(x1, y1).lineTo(x2, y2).stroke({ color: i % 2 ? PALETTE.emerald : PALETTE.violet, width: 1, alpha: 0.16 });
     }
     this.boardLayers.runes.addChild(base);
+  }
+
+  private clearSelectionFocusOverlay() {
+    if (!this.selectionFocusOverlay) return;
+    gsap.killTweensOf(this.selectionFocusOverlay);
+    this.selectionFocusOverlay.destroy();
+    this.selectionFocusOverlay = null;
+  }
+
+  private drawSelectionFocusOverlay(view: TileView) {
+    if (!this.boardLayers.paths) return;
+    this.clearSelectionFocusOverlay();
+    const inset = Math.max(5, this.tileSize * SELECTION_OVERLAY_INSET_RATIO);
+    const size = this.tileSize - inset * 2;
+    const x = view.baseX;
+    const y = view.baseY;
+    const overlay = new Graphics();
+    overlay.blendMode = 'add';
+    overlay.roundRect(x - size / 2, y - size / 2, size, size, this.tileSize * 0.18)
+      .stroke({ color: PALETTE.sky, width: Math.max(1.5, this.tileSize * 0.028), alpha: 0.96 });
+    overlay.roundRect(x - size / 2 + 3, y - size / 2 + 3, size - 6, size - 6, this.tileSize * 0.15)
+      .stroke({ color: PALETTE.gold, width: Math.max(1, this.tileSize * 0.018), alpha: 0.86 });
+    const corner = Math.max(6, this.tileSize * 0.15);
+    const left = x - size / 2;
+    const right = x + size / 2;
+    const top = y - size / 2;
+    const bottom = y + size / 2;
+    overlay.moveTo(left, top + corner).lineTo(left, top).lineTo(left + corner, top)
+      .moveTo(right - corner, top).lineTo(right, top).lineTo(right, top + corner)
+      .moveTo(right, bottom - corner).lineTo(right, bottom).lineTo(right - corner, bottom)
+      .moveTo(left + corner, bottom).lineTo(left, bottom).lineTo(left, bottom - corner)
+      .stroke({ color: PALETTE.goldLight, width: Math.max(1.2, this.tileSize * 0.02), alpha: 0.92 });
+    overlay.alpha = 0;
+    this.boardLayers.paths.addChild(overlay);
+    this.selectionFocusOverlay = overlay;
+    gsap.to(overlay, { alpha: 1, duration: 0.1 * this.quality.motionScale, ease: 'sine.out' });
+  }
+
+  private drawHintFocusOverlay(view: TileView, index = 0) {
+    if (!this.boardLayers.paths) return;
+    const inset = Math.max(6, this.tileSize * 0.12);
+    const size = this.tileSize - inset * 2;
+    const hint = new Graphics();
+    hint.blendMode = 'add';
+    hint.roundRect(view.baseX - size / 2, view.baseY - size / 2, size, size, this.tileSize * 0.16)
+      .stroke({ color: PALETTE.emerald, width: Math.max(1.3, this.tileSize * 0.022), alpha: 0.8 });
+    hint.alpha = 0;
+    this.boardLayers.paths.addChild(hint);
+    gsap.to(hint, { alpha: 0.9, delay: index * 0.04, duration: 0.12 * this.quality.motionScale, yoyo: true, repeat: 3, ease: 'sine.inOut', onComplete: () => hint.destroy() });
   }
 
   private drawConnectionBeamByPath(path: PaddedPathPoint[] | null | undefined, x1: number, y1: number, x2: number, y2: number) {
@@ -1111,7 +1110,10 @@ export class DreamPixiRenderer {
     if (runes) runes.alpha = 0.82 + Math.sin(performance.now() / 1600) * 0.1;
     if (runes) runes.rotation += 0.00055 * delta * this.quality.motionScale;
     for (const view of this.tileViews.values()) {
-      if (view.settling || view.removing) continue;
+      if (view.removing) continue;
+      this.fitTileSprite(view);
+      if (!view.settling) view.root.scale.set(1);
+      if (view.settling) continue;
       view.root.y = view.baseY + Math.sin(performance.now() / 850 + view.phase + view.row * 0.8 + view.col * 0.3) * 1.4 * this.quality.motionScale;
       view.sprite.rotation = Math.sin(performance.now() / 1300 + view.phase) * 0.018 * this.quality.motionScale;
     }

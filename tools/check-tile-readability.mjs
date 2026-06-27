@@ -5,7 +5,9 @@ const difficulty = readFileSync('src/game/difficulty.js', 'utf8');
 const css = readFileSync('src/styles.css', 'utf8');
 const required = [
   'readonly minReadableTile = 34',
-  'sprite.width = this.tileSize * 0.98',
+  'const TILE_SPRITE_RATIO = 0.92',
+  'sprite.width = this.tileSize * TILE_SPRITE_RATIO',
+  'private fitTileSprite(view: TileView)',
   "const textureState = state === 'selected' ? 'normal' : state",
   'view.root.scale.set(1)',
   'grid-template-rows: auto minmax(360px, 1fr) auto',
@@ -25,4 +27,4 @@ if (/view\.sprite\.scale\.set\(state === 'selected'/.test(renderer)) {
   console.error('Selected tiles must not use enlarged sprite scale. Use normal texture plus rim glow.');
   process.exit(1);
 }
-console.log('Tile readability policy passed: bigger board, v2-priority tiles, non-scaling selection.');
+console.log('Tile readability policy passed: bigger board, v2-priority tiles, fixed-size texture swaps and non-scaling selection.');

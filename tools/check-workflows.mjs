@@ -26,8 +26,8 @@ if (!pagesWorkflow.includes('npm run check:kakao-lobby-rotation')) errors.push('
 if (!pagesWorkflow.includes('npm run check:display-copy')) errors.push('github-pages.yml: expected silent display copy check.');
 if (!pagesWorkflow.includes('npm run check:tile-readability')) errors.push('github-pages.yml: expected tile readability check.');
 if (!pagesWorkflow.includes('npm run check:board-camera')) errors.push('github-pages.yml: expected board camera check.');
-if (!pagesWorkflow.includes('npm run check:minimap-route-impact')) errors.push('github-pages.yml: expected minimap route impact check.');
-if (!qualityWorkflow.includes('npm run check:minimap-route-impact')) errors.push('quality-check.yml: expected minimap route impact check.');
+if (!pagesWorkflow.includes('npm run check:no-minimap-topbar')) errors.push('github-pages.yml: expected no-minimap topbar check.');
+if (!qualityWorkflow.includes('npm run check:no-minimap-topbar')) errors.push('quality-check.yml: expected no-minimap topbar check.');
 if (!pagesWorkflow.includes('npm run check:mobile-playability')) errors.push('github-pages.yml: expected mobile playability check.');
 if (!pagesWorkflow.includes('npm run check:selection-stability')) errors.push('github-pages.yml: expected selection stability check.');
 
@@ -35,4 +35,4 @@ if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.31 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.32 QA checks.');

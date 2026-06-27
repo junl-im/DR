@@ -45,7 +45,6 @@ const el = {
   boardHost: $('#pixi-board-host'),
   boardCameraGuide: $('#board-camera-guide'),
   boardCameraControls: $('#board-camera-controls'),
-  boardMinimap: $('#board-minimap'),
   screens: $$('.screen'),
   backButton: $('#back-button'),
   loginStatus: $('#login-status'),
@@ -156,7 +155,6 @@ function forceLoginBootScreen() {
   [el.optionsModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal].forEach((modal) => modal.classList.add('hidden'));
   el.boardCameraGuide?.classList.add('hidden');
   el.boardCameraControls?.classList.add('hidden');
-  el.boardMinimap?.classList.add('hidden');
 }
 
 forceLoginBootScreen();
@@ -1387,13 +1385,10 @@ function renderBoardCameraGuide(difficultyOverride?: any) {
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-camera', panZoom ? 'pan-zoom' : 'fit');
   if (el.boardCameraGuide) {
     el.boardCameraGuide.classList.toggle('hidden', !panZoom || state.screen !== 'game');
-    if (panZoom) el.boardCameraGuide.textContent = '드래그 이동 · 두 손가락 확대/축소 · 레이더 탭';
+    if (panZoom) el.boardCameraGuide.textContent = '드래그 이동 · 두 손가락 확대/축소';
   }
   if (el.boardCameraControls) {
     el.boardCameraControls.classList.toggle('hidden', !panZoom || state.screen !== 'game');
-  }
-  if (el.boardMinimap) {
-    el.boardMinimap.classList.toggle('hidden', !panZoom || state.screen !== 'game');
   }
 }
 
