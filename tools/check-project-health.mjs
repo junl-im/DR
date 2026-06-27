@@ -20,7 +20,6 @@ const requiredFiles = [
   'tools/report-image-size.mjs',
   'tools/check-workflows.mjs',
   'public/assets/meta/asset-import-v1.0.11.json',
-  'public/assets/meta/texture-atlas-manifest-v1.0.18.json',
   'public/assets/meta/texture-atlas-manifest-v1.0.19.json',
   'tools/build-texture-atlas-manifest.mjs',
   'tools/check-special-rules.mjs',
@@ -32,13 +31,11 @@ const requiredFiles = [
   'tools/check-lobby-missions.mjs',
   'tools/check-kakao-portrait.mjs',
   'tools/check-exit-scroll.mjs',
-  'src/platform/portraitLock.js',
-  'tools/check-gameplay-mapping.mjs',
-  'tools/check-transparent-assets.mjs'
+  'src/platform/portraitLock.js'
 ];
 
 for (const file of requiredFiles) {
-  try { statSync(join(root, file)); } catch { errors.push(`Missing required project file: ${file}`); }
+  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.19 file: ${file}`); }
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');

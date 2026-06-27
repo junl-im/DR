@@ -3,7 +3,7 @@
   "policy": "PNG/WebP/JPG only. SVG is forbidden.",
   "atlasStrategy": "Prefer grouped object/effect/ui atlases after visual QA. Keep source PNGs as authoring assets.",
   "total": 104,
-  "generatedAt": "2026-06-26T18:36:31.841Z",
+  "generatedAt": "2026-06-27T00:01:35.079Z",
   "entries": [
     {
       "group": "objects",
@@ -348,182 +348,182 @@
     {
       "group": "ui",
       "file": "assets/ui/button-google-v2.png",
-      "bytes": 188570
+      "bytes": 197499
     },
     {
       "group": "ui",
       "file": "assets/ui/button-start-v2.png",
-      "bytes": 225213
+      "bytes": 231201
     },
     {
       "group": "ui",
       "file": "assets/ui/frame-library-v2.png",
-      "bytes": 1127430
+      "bytes": 1141162
     },
     {
       "group": "ui",
       "file": "assets/ui/frame-ornate-v2.png",
-      "bytes": 559309
+      "bytes": 588083
     },
     {
       "group": "ui",
       "file": "assets/ui/hp-frame.png",
-      "bytes": 1737
+      "bytes": 1595
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-back.png",
-      "bytes": 16976
+      "bytes": 17491
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-calendar.png",
-      "bytes": 16543
+      "bytes": 17098
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-chest.png",
-      "bytes": 17318
+      "bytes": 17878
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-close.png",
-      "bytes": 16027
+      "bytes": 16556
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-fullscreen.png",
-      "bytes": 15860
+      "bytes": 16394
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-hint.png",
-      "bytes": 17938
+      "bytes": 18461
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-home.png",
-      "bytes": 17568
+      "bytes": 18078
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-logout.png",
-      "bytes": 16104
+      "bytes": 16636
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-play.png",
-      "bytes": 16045
+      "bytes": 16577
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-ranking.png",
-      "bytes": 15489
+      "bytes": 16019
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-refresh.png",
-      "bytes": 18671
+      "bytes": 19187
     },
     {
       "group": "ui",
       "file": "assets/ui/icon-settings.png",
-      "bytes": 20153
+      "bytes": 20661
     },
     {
       "group": "ui",
       "file": "assets/ui/logo-dream-library-v2.png",
-      "bytes": 453480
+      "bytes": 458226
     },
     {
       "group": "ui",
       "file": "assets/ui/panel-frame.png",
-      "bytes": 3681
+      "bytes": 3381
     },
     {
       "group": "ui",
       "file": "assets/ui/reward-badge.png",
-      "bytes": 4118
+      "bytes": 2474
     },
     {
       "group": "characters",
       "file": "assets/characters/assistant-01.png",
-      "bytes": 118827
+      "bytes": 120202
     },
     {
       "group": "characters",
       "file": "assets/characters/assistant-02.png",
-      "bytes": 283832
+      "bytes": 282356
     },
     {
       "group": "characters",
       "file": "assets/characters/assistant-03.png",
-      "bytes": 249957
+      "bytes": 249133
     },
     {
       "group": "characters",
       "file": "assets/characters/assistant-04.png",
-      "bytes": 209186
+      "bytes": 208508
     },
     {
       "group": "characters",
       "file": "assets/characters/boss-import-01.png",
-      "bytes": 359624
+      "bytes": 358969
     },
     {
       "group": "characters",
       "file": "assets/characters/boss-import-02.png",
-      "bytes": 337272
+      "bytes": 336554
     },
     {
       "group": "characters",
       "file": "assets/characters/boss-import-03.png",
-      "bytes": 115712
+      "bytes": 115485
     },
     {
       "group": "characters",
       "file": "assets/characters/boss-import-04.png",
-      "bytes": 111200
+      "bytes": 110989
     },
     {
       "group": "characters",
       "file": "assets/characters/boss-motion-sheet-v2.png",
-      "bytes": 1092296
+      "bytes": 1074970
     },
     {
       "group": "characters",
       "file": "assets/characters/boss-sticker-sheet-v2.png",
-      "bytes": 1079040
+      "bytes": 1066818
     },
     {
       "group": "characters",
       "file": "assets/characters/forgotten-spirit.png",
-      "bytes": 91747
+      "bytes": 102378
     },
     {
       "group": "characters",
       "file": "assets/characters/librarian-momo.png",
-      "bytes": 60544
+      "bytes": 69160
     },
     {
       "group": "characters",
       "file": "assets/characters/mascot-companions-v2.png",
-      "bytes": 665678
+      "bytes": 656353
     },
     {
       "group": "characters",
       "file": "assets/characters/mascot-scholar-v2.png",
-      "bytes": 476650
+      "bytes": 485699
     },
     {
       "group": "characters",
       "file": "assets/characters/sealed-page-golem.png",
-      "bytes": 127483
+      "bytes": 134604
     },
     {
       "group": "characters",
       "file": "assets/characters/shadow-librarian.png",
-      "bytes": 124102
+      "bytes": 130441
     }
   ]
 }

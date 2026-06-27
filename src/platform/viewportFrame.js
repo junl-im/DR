@@ -1,7 +1,8 @@
 const MOBILE_PATTERNS = [/Android/i, /iPhone/i, /iPad/i, /iPod/i, /KAKAOTALK/i, /KakaoTalk/i, /KAKAO/i];
 const PORTRAIT_RATIO = 9 / 16;
 const MAX_APP_WIDTH = 560;
-const MIN_APP_WIDTH = 180;
+const MIN_APP_WIDTH = 320;
+const FRAME_KEY = 'dream-library-last-portrait-frame';
 
 function readRawViewport() {
   const vv = window.visualViewport;
@@ -10,18 +11,23 @@ function readRawViewport() {
   return { width, height };
 }
 
-function readOrientationAngle() {
-  const angle = Number(screen.orientation?.angle ?? window.orientation ?? 0);
-  if (!Number.isFinite(angle)) return 0;
-  if (angle === 270) return -90;
-  if (angle === -270) return 90;
-  return angle;
+function readStoredPortraitFrame() {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(FRAME_KEY) || 'null');
+    if (!parsed || !Number.isFinite(parsed.appWidth) || !Number.isFinite(parsed.appHeight)) return null;
+    if (parsed.appWidth < 240 || parsed.appHeight < 420) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
 }
 
-function pickCounterRotation(sourceLandscape) {
-  // v1.0.19: do not rotate the game shell.  The app stays visually portrait
-  // by fitting a 9:16 frame inside the current viewport instead of turning UI sideways.
-  return '0deg';
+function writeStoredPortraitFrame(frame) {
+  try {
+    sessionStorage.setItem(FRAME_KEY, JSON.stringify({ appWidth: frame.appWidth, appHeight: frame.appHeight }));
+  } catch {
+    // Storage is optional. Runtime frame still works without it.
+  }
 }
 
 export function isMobileLikeViewport() {
@@ -39,44 +45,43 @@ export function computePortraitFrame(forcePortrait = isMobileLikeViewport()) {
       rawHeight: raw.height,
       appWidth: Math.min(raw.width, MAX_APP_WIDTH),
       appHeight: raw.height,
+      appScale: 1,
       sourceLandscape,
-      virtualPortrait: false,
-      counterRotated: false,
-      rotation: '0deg'
+      virtualPortrait: false
     };
   }
 
   if (sourceLandscape) {
-    // In mobile in-app browsers the physical viewport can become landscape even when
-    // the game is designed as portrait-only.  Do not use raw width as app width and
-    // do not counter-rotate the UI; fit a vertical 9:16 frame inside the visible area.
-    const fitHeight = raw.height;
-    const fitWidth = Math.max(120, Math.min(MAX_APP_WIDTH, Math.round(fitHeight * PORTRAIT_RATIO)));
-    const portraitWidth = Math.max(Math.min(MIN_APP_WIDTH, raw.height), fitWidth);
-    const portraitHeight = Math.max(fitHeight, Math.round(portraitWidth / PORTRAIT_RATIO));
+    const stored = readStoredPortraitFrame();
+    const fallbackWidth = Math.max(MIN_APP_WIDTH, Math.min(raw.height, MAX_APP_WIDTH));
+    const fallbackHeight = Math.round(fallbackWidth / PORTRAIT_RATIO);
+    const appWidth = stored?.appWidth || fallbackWidth;
+    const appHeight = stored?.appHeight || Math.max(fallbackHeight, Math.round(appWidth / PORTRAIT_RATIO));
+    const appScale = Math.max(0.48, Math.min(1, raw.width / appWidth, raw.height / appHeight));
     return {
       rawWidth: raw.width,
       rawHeight: raw.height,
-      appWidth: Math.min(portraitWidth, raw.width),
-      appHeight: Math.min(portraitHeight, raw.height),
+      appWidth,
+      appHeight,
+      appScale,
       sourceLandscape,
-      virtualPortrait: true,
-      counterRotated: false,
-      rotation: '0deg'
+      virtualPortrait: true
     };
   }
 
-  const portraitWidth = Math.max(MIN_APP_WIDTH, Math.min(raw.width, MAX_APP_WIDTH));
-  return {
+  const appWidth = Math.max(MIN_APP_WIDTH, Math.min(raw.width, MAX_APP_WIDTH));
+  const appHeight = Math.max(raw.height, Math.round(appWidth / PORTRAIT_RATIO));
+  const frame = {
     rawWidth: raw.width,
     rawHeight: raw.height,
-    appWidth: portraitWidth,
-    appHeight: raw.height,
+    appWidth,
+    appHeight,
+    appScale: 1,
     sourceLandscape,
-    virtualPortrait: true,
-    counterRotated: false,
-    rotation: '0deg'
+    virtualPortrait: true
   };
+  writeStoredPortraitFrame(frame);
+  return frame;
 }
 
 export function applyPortraitFrame(options = {}) {
@@ -88,16 +93,16 @@ export function applyPortraitFrame(options = {}) {
   root.style.setProperty('--raw-height', `${frame.rawHeight}px`);
   root.style.setProperty('--app-width', `${frame.appWidth}px`);
   root.style.setProperty('--app-height', `${frame.appHeight}px`);
-  root.style.setProperty('--portrait-rotation', frame.rotation);
+  root.style.setProperty('--app-scale', String(frame.appScale || 1));
+  root.style.setProperty('--scaled-app-width', `${Math.round(frame.appWidth * (frame.appScale || 1))}px`);
+  root.style.setProperty('--scaled-app-height', `${Math.round(frame.appHeight * (frame.appScale || 1))}px`);
   root.classList.toggle('portrait-runtime', mobileLike);
   root.classList.toggle('source-landscape', frame.sourceLandscape && mobileLike);
-  root.classList.toggle('counter-rotated-portrait', false);
   root.classList.toggle('landscape-locked', false);
 
   document.body.dataset.orientation = 'portrait';
   document.body.dataset.sourceOrientation = frame.sourceLandscape ? 'landscape' : 'portrait';
   document.body.dataset.viewportFrame = frame.virtualPortrait ? 'virtual-portrait' : 'native';
-  document.body.dataset.counterRotated = frame.counterRotated ? 'yes' : 'no';
 
   return frame;
 }

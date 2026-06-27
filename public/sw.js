@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1-0-19';
+const CACHE_NAME = 'dream-library-cache-v1.0.19';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',

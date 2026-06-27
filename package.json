@@ -25,8 +25,8 @@
     "check:exit-scroll": "node tools/check-exit-scroll.mjs",
     "check:v2-assets": "node tools/check-v2-asset-states.mjs",
     "check:viewport-frame": "node tools/check-viewport-frame.mjs",
-    "check:transparent-assets": "node tools/check-transparent-assets.mjs",
-    "check:gameplay-mapping": "node tools/check-gameplay-mapping.mjs"
+    "check:gameplay-mapping": "node tools/check-gameplay-mapping.mjs",
+    "check:alpha-clean": "node tools/check-alpha-clean.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",

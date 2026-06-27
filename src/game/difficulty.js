@@ -144,12 +144,21 @@ export const TILE_SET = [
   { type: 'v2-tile-36', icon: '✦', asset: stateTileAsset('v2-tile-36'), stateAssets: stateTileSet('v2-tile-36'), label: '마지막 기억핵', theme: 'v2 에셋' }
 ];
 
+const V2_TILE_TYPES = new Set(TILE_SET.filter((tile) => tile.theme === 'v2 에셋').map((tile) => tile.type));
 
-export function getGameplayTilePool(difficulty) {
-  const v2Tiles = TILE_SET.filter((tile) => tile.stateAssets);
-  const legacyTiles = TILE_SET.filter((tile) => !tile.stateAssets);
-  const poolSize = Math.max(2, Number(difficulty?.iconTypes || 16));
-  return [...v2Tiles, ...legacyTiles].slice(0, poolSize);
+export const GAMEPLAY_TILE_SET = [
+  ...TILE_SET.filter((tile) => tile.theme === 'v2 에셋'),
+  ...TILE_SET.filter((tile) => tile.theme === '프리미엄'),
+  ...TILE_SET.filter((tile) => tile.theme !== 'v2 에셋' && tile.theme !== '프리미엄')
+];
+
+export function getGameplayTiles(iconTypes = 16) {
+  const count = Math.max(1, Math.min(Number(iconTypes) || 16, GAMEPLAY_TILE_SET.length));
+  return GAMEPLAY_TILE_SET.slice(0, count);
+}
+
+export function isV2GameplayTile(type) {
+  return V2_TILE_TYPES.has(type);
 }
 
 export const ATLAS_ASSETS = [

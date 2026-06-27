@@ -7,7 +7,7 @@ import { CHAPTERS, DEFAULT_STAGE_ID, STAGES, getChapterById, getChapterStages, g
 import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, findHint, getTileAt, isCleared, isSpecialTileBlocked, revealAllSpecial, revealPairSpecials, revealSpecialTile, removePair, shuffleRemaining } from './game/shisen.js';
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
-import { initFullscreenControls } from './platform/fullscreen.js';
+import { initFullscreenControls, requestGameFullscreen } from './platform/fullscreen.js';
 import { initPortraitRuntimeGuard } from './platform/portraitLock.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 import { GAME_TITLE } from './config/design';
@@ -342,7 +342,7 @@ function bindEvents() {
   el.anonymousButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
-    requestKakaoPortraitLock('login');
+    suggestKakaoAssist('게임 화면을 정리한 뒤 로비로 입장합니다.');
     if (firebaseReady) await loginAnonymously();
     else {
       state.localGuest = makeLocalGuest();
@@ -437,7 +437,7 @@ function bindEvents() {
     renderCollection();
   });
   el.restorationFocusButton.addEventListener('click', () => {
-    document.querySelector('.restoration-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.querySelector('.restoration-panel')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     setStatus('복원 작업대를 확인하세요.');
   });
   el.newGameButton.addEventListener('click', () => startSelectedStage());
@@ -528,16 +528,28 @@ function handleSoftBack() {
 }
 
 
+function suggestKakaoAssist(message: string) {
+  browserRecovery?.showRecovery?.(message);
+  requestKakaoPortraitLock('assist');
+}
+
 async function requestKakaoPortraitLock(source = 'game') {
-  await portraitRuntime?.requestLock(source);
+  if (browserRecovery?.inApp) {
+    await browserRecovery.requestPortraitFullscreen?.();
+    await portraitRuntime?.requestLock(source);
+  } else {
+    await portraitRuntime?.requestLock(source);
+  }
 }
 
 async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
   if (!browserRecovery?.inApp) return false;
   audio.play('tap');
   if (mode === 'auth') {
+    browserRecovery.showRecovery('게임 화면을 정리합니다.');
     setStatus('계정 저장을 시도합니다.');
   } else {
+    browserRecovery.showRecovery('게임 화면을 정리합니다.');
   }
   await requestKakaoPortraitLock(mode);
   return false;
@@ -550,6 +562,7 @@ function enterLobbyFromStart() {
     renderAuth();
   }
   requestKakaoPortraitLock('lobby');
+  requestGameFullscreen();
   renderLobby();
   updateScreen('lobby');
   setStatus('로비에 입장했습니다. 스테이지를 고른 뒤 진짜 게임 시작을 누르세요.');
@@ -584,6 +597,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   audio.unlock();
   audio.play('tap');
   await requestKakaoPortraitLock('stage-start');
+  requestGameFullscreen();
   state.board = createBoard(difficulty, stage.modifiers || []);
   state.selected = null;
   state.locked = false;
@@ -1063,7 +1077,7 @@ function handleLobbyMissionClick(event: Event) {
     writeText('dream-library-selected-stage', stage.id);
     writeText('dream-library-selected-chapter', stage.chapterId);
     renderLobby();
-    document.querySelector('.selected-stage-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.querySelector('.selected-stage-card')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     setStatus('추천 스테이지를 선택했습니다. 진짜 게임 시작을 누르면 전투가 시작됩니다.');
     return;
   }
@@ -1079,7 +1093,7 @@ function handleLobbyMissionClick(event: Event) {
     state.collectionFilter = card.dataset.filter || 'missing';
     writeText('dream-library-collection-filter', state.collectionFilter);
     renderCollection();
-    document.querySelector('.collection-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.querySelector('.collection-panel')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     setStatus('컬렉션 도감 목표를 열었습니다. 미수집/프리미엄 오브젝트를 확인하세요.');
   }
 }

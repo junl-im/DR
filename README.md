@@ -60,20 +60,23 @@ Atlas 생성
 
 ## Version History
 
-### v1.0.19 - Gameplay Asset Mapping, Portrait Fit and Selection Clarity Patch
+### v1.0.19 - Gameplay Asset Mapping, Alpha Clean, Selection Clarity and Lobby Scroll Patch
 
-- 실제 퍼즐판에 내가 준 v2 상태별 타일이 우선 배정되지 않던 문제 수정
-- 원인: v2 타일은 `TILE_SET` 뒤쪽에 붙어 있었고, 보드 생성은 `TILE_SET.slice(0, difficulty.iconTypes)`를 사용해 구버전 타일을 먼저 가져오고 있었음
-- `getGameplayTilePool(difficulty)` 추가: v2 상태별 타일을 우선 풀로 사용하고 부족할 때만 기존/프리미엄 타일을 fallback으로 사용
-- `createBoard()`가 새 gameplay pool을 사용하도록 수정해 입문/일반/어려움/악몽 모두 v2 타일을 먼저 표시
-- 흰 배경처럼 보이는 문제를 점검하기 위해 critical UI/캐릭터/v2 normal/selected 타일 PNG의 알파 채널과 가장자리 투명도를 검사하는 `npm run check:transparent-assets` 범위 확장
-- 확인 결과 현재 반영된 v2 gameplay 타일 PNG는 알파 채널과 투명 가장자리를 가지고 있으며, 구버전 타일 매핑이 먼저 쓰이던 것이 가장 큰 시각적 원인이었음
-- 선택한 타일이 잘 보이지 않던 문제 수정: selected PNG 교체 외에 금빛/스카이블루 이중 링, 선택 펄스, spark VFX를 추가
-- 힌트 타일도 선택 링 알파 애니메이션으로 더 잘 보이도록 개선
-- 가로 전환 시 UI를 회전시키던 counter-rotation fallback 제거
-- 모바일/인앱에서 실제 viewport가 가로값을 반환해도 앱을 돌리지 않고, 가로 화면 안에 세로 9:16 fit frame을 중앙 배치하도록 변경
-- 로비 스크롤이 뻑뻑한 문제 완화: lobby/app shell/screen stack에 `pan-y`, `-webkit-overflow-scrolling: touch`, `overscroll-behavior-y`를 재정리
-- `npm run check:gameplay-mapping` 추가 및 GitHub Actions 검사에 반영
+- 사천성 보드가 여전히 기존 타일을 먼저 쓰는 원인을 수정
+- 원인: `createBoard()`가 `TILE_SET.slice(0, iconTypes)`를 사용해 배열 앞쪽의 기존 타일/프리미엄 타일을 먼저 배정하고 있었음
+- `GAMEPLAY_TILE_SET`와 `getGameplayTiles()` 추가: 실제 퍼즐판은 v2 상태별 오브젝트를 우선 배정하고, 부족할 때 프리미엄/기존 타일을 fallback으로 사용
+- 입문/일반/어려움/악몽 난이도에서 보드에 보이는 타일을 사용자가 제공한 v2 오브젝트 중심으로 재매핑
+- 선택한 타일이 잘 보이지 않던 문제 수정
+- `DreamPixiRenderer`에 `selectionRing`, `selectionCore`를 추가해 선택 타일에 스카이블루/골드 이중 링, 강한 glow, 확대 피드백을 표시
+- 선택/힌트/잠김/비활성 상태 PNG 교체와 별도 선택 링을 동시에 사용해 상태 대비 강화
+- v2 일부 UI/캐릭터 PNG에 흰 배경이 깔려 있던 문제 보정
+- 마스코트, 보조 캐릭터, 로고, 버튼, 장식 프레임, 보스 시트의 가장자리 흰 배경을 alpha-clean 처리
+- 원본 배경 이미지는 장면용으로 유지하고, 오브젝트/버튼/캐릭터류만 투명 처리
+- 로비 드래그 스크롤이 뻑뻑하던 문제 추가 완화
+- 로비 화면의 버튼/카드 터치 영역을 `pan-y` 중심으로 재정리하고, 자동 `scrollIntoView`는 부드러운 강제 스크롤 대신 즉시/근접 이동으로 변경
+- 가로 회전 시 레이아웃이 다시 가로 기준으로 커지는 문제를 추가 수정
+- `viewportFrame.js`가 마지막 정상 세로 프레임을 저장하고, 가로 viewport에서는 저장된 세로 프레임을 scale 하여 유지하도록 변경
+- `npm run check:gameplay-mapping`, `npm run check:alpha-clean` 추가 및 GitHub Actions 검사에 반영
 - Texture Atlas manifest v1.0.19 갱신
 - service worker 캐시를 v1.0.19로 갱신
 - SVG 금지 유지
@@ -631,7 +634,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 v2 타일 우선 매핑, 선택 표시 강화, 투명 에셋 QA, 가로 viewport fit frame을 추가로 수정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              84+ files
@@ -665,7 +668,7 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 
 ## Next Version Plan
 
-### v1.0.20 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
+### v1.0.19 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
 
 - v2 상태별 타일을 실제 Texture Atlas로 패킹하고 atlas JSON lookup을 우선 적용
 - 보스 공격 시퀀스 시트를 자동 분할해 공격/피격 컷인 프레임으로 배정
