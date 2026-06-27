@@ -297,7 +297,7 @@ export class DreamPixiRenderer {
     if (this.selectedKey) {
       const previous = this.tileViews.get(this.selectedKey);
       if (previous && !previous.removing) {
-        previous.root.scale.set(1);
+        this.lockTileViewScale(previous);
         this.applyTileStateTexture(previous, previous.tile.special && !previous.tile.specialRevealed ? previous.tile.special === 'locked' ? 'locked' : 'disabled' : 'normal');
         gsap.to(previous.glow, { alpha: 0.16, duration: 0.18 * this.quality.motionScale });
         gsap.to([previous.selectionRing, previous.selectionCore], { alpha: 0, duration: 0.12 * this.quality.motionScale });
@@ -307,12 +307,11 @@ export class DreamPixiRenderer {
     if (!point) return;
     const view = this.tileViews.get(keyOf(point));
     if (!view || view.removing) return;
-    view.root.scale.set(1);
+    this.lockTileViewScale(view);
     this.applyTileStateTexture(view, 'selected');
-    gsap.to(view.glow, { alpha: 1, duration: 0.12 * this.quality.motionScale });
-    gsap.fromTo(view.selectionRing.scale, { x: 0.96, y: 0.96 }, { x: 1.04, y: 1.04, duration: 0.28 * this.quality.motionScale, yoyo: true, repeat: 1, ease: 'sine.inOut' });
-    gsap.to(view.selectionRing, { alpha: 1, rotation: view.selectionRing.rotation + Math.PI * 0.12, duration: 0.18 * this.quality.motionScale, ease: 'power2.out' });
-    gsap.to(view.selectionCore, { alpha: 0.96, duration: 0.1 * this.quality.motionScale });
+    gsap.fromTo(view.glow, { alpha: 0.62 }, { alpha: 1, duration: 0.16 * this.quality.motionScale, ease: 'sine.out' });
+    gsap.fromTo(view.selectionRing, { alpha: 0.82 }, { alpha: 1, rotation: view.selectionRing.rotation + Math.PI * 0.1, duration: 0.22 * this.quality.motionScale, ease: 'power2.out' });
+    gsap.fromTo(view.selectionCore, { alpha: 0.62 }, { alpha: 0.96, duration: 0.14 * this.quality.motionScale, ease: 'sine.out' });
     this.emitSelectionWave(view.root.x, view.root.y, PALETTE.sky);
   }
 
@@ -440,7 +439,7 @@ export class DreamPixiRenderer {
     this.camera.viewportHeight = viewportHeight;
     this.camera.worldWidth = worldWidth;
     this.camera.worldHeight = worldHeight;
-    this.camera.minScale = panZoom ? Math.max(0.46, Math.min(0.86, fitScale * 1.08)) : Math.min(1, fitScale);
+    this.camera.minScale = panZoom ? Math.max(0.34, Math.min(0.82, fitScale * 0.98)) : Math.min(1, fitScale);
     this.camera.maxScale = panZoom ? 1.65 : 1.08;
     const nextScale = panZoom ? Math.max(this.camera.minScale, Math.min(0.92, this.camera.maxScale)) : Math.min(1, this.camera.maxScale);
     if (reset || !Number.isFinite(this.camera.scale)) this.camera.scale = nextScale;
@@ -456,6 +455,57 @@ export class DreamPixiRenderer {
       host.dataset.boardRows = String(this.layout.rows);
       host.dataset.boardCols = String(this.layout.cols);
     }
+  }
+
+  fitBoardView(animated = true) {
+    if (!this.boardApp) return;
+    const targetScale = this.camera.minScale;
+    const targetX = (this.camera.viewportWidth - this.camera.worldWidth * targetScale) / 2;
+    const targetY = (this.camera.viewportHeight - this.camera.worldHeight * targetScale) / 2;
+    this.animateCameraTo(targetX, targetY, targetScale, animated);
+  }
+
+  centerBoardView(animated = true) {
+    if (!this.boardApp) return;
+    const targetX = (this.camera.viewportWidth - this.camera.worldWidth * this.camera.scale) / 2;
+    const targetY = (this.camera.viewportHeight - this.camera.worldHeight * this.camera.scale) / 2;
+    this.animateCameraTo(targetX, targetY, this.camera.scale, animated);
+  }
+
+  nudgeCameraZoom(factor: number, animated = true) {
+    if (!this.boardApp) return;
+    const canvas = this.boardApp.canvas as HTMLCanvasElement;
+    const rect = canvas.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    this.zoomAt(centerX, centerY, this.camera.scale * factor, animated);
+  }
+
+  private animateCameraTo(x: number, y: number, scale: number, animated = true) {
+    gsap.killTweensOf(this.camera);
+    const fromX = this.camera.x;
+    const fromY = this.camera.y;
+    const fromScale = this.camera.scale;
+    this.camera.x = x;
+    this.camera.y = y;
+    this.camera.scale = Math.max(this.camera.minScale, Math.min(this.camera.maxScale, scale));
+    if (!animated || this.quality.motionScale <= 0.05) {
+      this.applyCameraTransform();
+      return;
+    }
+    const target = { x: this.camera.x, y: this.camera.y, scale: this.camera.scale };
+    this.camera.x = fromX;
+    this.camera.y = fromY;
+    this.camera.scale = fromScale;
+    gsap.to(this.camera, {
+      x: target.x,
+      y: target.y,
+      scale: target.scale,
+      duration: 0.18 * this.quality.motionScale,
+      ease: 'power2.out',
+      onUpdate: () => this.applyCameraTransform(),
+      onComplete: () => this.applyCameraTransform()
+    });
   }
 
   private applyCameraTransform() {
@@ -486,7 +536,7 @@ export class DreamPixiRenderer {
     }
   }
 
-  private zoomAt(clientX: number, clientY: number, nextScale: number) {
+  private zoomAt(clientX: number, clientY: number, nextScale: number, animated = false) {
     if (!this.boardApp) return;
     const canvas = this.boardApp.canvas as HTMLCanvasElement;
     const rect = canvas.getBoundingClientRect();
@@ -495,10 +545,9 @@ export class DreamPixiRenderer {
     const scale = Math.max(this.camera.minScale, Math.min(this.camera.maxScale, nextScale));
     const localX = (x - this.camera.x) / this.camera.scale;
     const localY = (y - this.camera.y) / this.camera.scale;
-    this.camera.scale = scale;
-    this.camera.x = x - localX * scale;
-    this.camera.y = y - localY * scale;
-    this.applyCameraTransform();
+    const targetX = x - localX * scale;
+    const targetY = y - localY * scale;
+    this.animateCameraTo(targetX, targetY, scale, animated);
   }
 
   private installCameraControls() {
@@ -622,11 +671,21 @@ export class DreamPixiRenderer {
     return Texture.from(asset);
   }
 
+  private lockTileViewScale(view: TileView) {
+    gsap.killTweensOf([view.root.scale, view.sprite.scale, view.selectionRing.scale, view.selectionCore.scale]);
+    view.root.scale.set(1);
+    view.sprite.scale.set(1);
+    view.selectionRing.scale.set(1);
+    view.selectionCore.scale.set(1);
+  }
+
   private applyTileStateTexture(view: TileView, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled') {
     const textureState = state === 'selected' ? 'normal' : state;
     if (view.tile.stateAssets) view.sprite.texture = this.resolveTileTexture(view.tile, textureState);
     view.sprite.alpha = state === 'disabled' ? 0.52 : state === 'locked' ? 0.72 : 1;
     view.sprite.scale.set(1);
+    view.selectionRing.scale.set(1);
+    view.selectionCore.scale.set(1);
     view.selectionRing.alpha = state === 'selected' ? 1 : state === 'hint' ? 0.72 : 0;
     view.selectionCore.alpha = state === 'selected' ? 0.9 : 0;
   }
@@ -675,9 +734,9 @@ export class DreamPixiRenderer {
     this.boardLayers.board.addChild(root);
     const view: TileView = { root, sprite, glow, selectionRing, selectionCore, row, col, baseX: x, baseY: y, phase: Math.random() * Math.PI * 2, settling: true, removing: false, tile };
     this.tileViews.set(keyOf({ row, col }), view);
-    root.scale.set(0.76);
-    gsap.fromTo(root, { y: y + 16, alpha: 0 }, { y, alpha: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'back.out(1.8)', onComplete: () => { view.settling = false; root.y = view.baseY; } });
-    gsap.to(root.scale, { x: 1, y: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'back.out(1.8)' });
+    root.scale.set(0.88);
+    gsap.fromTo(root, { y: y + 16, alpha: 0 }, { y, alpha: 1, delay: (row + col) * 0.01, duration: 0.32 * this.quality.motionScale, ease: 'power2.out', onComplete: () => { view.settling = false; root.y = view.baseY; } });
+    gsap.to(root.scale, { x: 1, y: 1, delay: (row + col) * 0.01, duration: 0.26 * this.quality.motionScale, ease: 'power2.out' });
   }
 
   private createSpecialBadge(special: BoardTile['special'], hidden: boolean) {

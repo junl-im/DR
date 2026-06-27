@@ -44,6 +44,7 @@ const el = {
   pixiStage: $('#pixi-stage'),
   boardHost: $('#pixi-board-host'),
   boardCameraGuide: $('#board-camera-guide'),
+  boardCameraControls: $('#board-camera-controls'),
   screens: $$('.screen'),
   backButton: $('#back-button'),
   loginStatus: $('#login-status'),
@@ -470,6 +471,7 @@ function bindEvents() {
   el.exitToLobbyButton.addEventListener('click', () => exitToLobby());
   el.hintButton.addEventListener('click', showHint);
   el.shuffleButton.addEventListener('click', shuffleBoard);
+  el.boardCameraControls.addEventListener('click', handleBoardCameraControl);
   el.refreshLeaderboardButton.addEventListener('click', () => { loadLeaderboard(); loadDailyLeaderboard(); });
   el.nextStageButton.addEventListener('click', () => {
     closeReward();
@@ -712,6 +714,28 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
 }
 
 
+
+
+function handleBoardCameraControl(event: Event) {
+  const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-camera-action]');
+  if (!button || state.screen !== 'game') return;
+  const action = button.dataset.cameraAction || '';
+  audio.play('tap');
+  HAPTIC.tap();
+  if (action === 'fit') {
+    renderer.fitBoardView();
+    setStatus('보드 전체가 보이도록 시야를 맞췄습니다.');
+  } else if (action === 'center') {
+    renderer.centerBoardView();
+    setStatus('보드 중앙으로 시야를 옮겼습니다.');
+  } else if (action === 'zoom-in') {
+    renderer.nudgeCameraZoom(1.16);
+    setStatus('보드를 조금 확대했습니다.');
+  } else if (action === 'zoom-out') {
+    renderer.nudgeCameraZoom(0.86);
+    setStatus('보드를 조금 축소했습니다.');
+  }
+}
 
 function handleSpecialTileGate(point: BoardPoint, tile: any) {
   if (!isSpecialTileBlocked(tile)) return false;
@@ -1341,10 +1365,12 @@ function renderBoardCameraGuide(difficultyOverride?: any) {
   const difficulty = difficultyOverride || DIFFICULTIES[getStageById(state.selectedStageId).difficultyKey];
   const panZoom = difficulty?.cameraMode === 'panZoom' || Number(difficulty?.rows || 0) * Number(difficulty?.cols || 0) > 72;
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-camera', panZoom ? 'pan-zoom' : 'fit');
-  if (!el.boardCameraGuide) return;
-  el.boardCameraGuide.classList.toggle('hidden', !panZoom || state.screen !== 'game');
-  if (panZoom) {
-    el.boardCameraGuide.textContent = '드래그로 보드 이동 · 두 손가락으로 확대/축소';
+  if (el.boardCameraGuide) {
+    el.boardCameraGuide.classList.toggle('hidden', !panZoom || state.screen !== 'game');
+    if (panZoom) el.boardCameraGuide.textContent = '드래그로 보드 이동 · 두 손가락으로 확대/축소';
+  }
+  if (el.boardCameraControls) {
+    el.boardCameraControls.classList.toggle('hidden', !panZoom || state.screen !== 'game');
   }
 }
 

@@ -2200,3 +2200,58 @@ body[data-screen="game"] .pixi-board-host {
 @media (max-height: 700px) {
   .board-camera-guide { bottom: 0.48rem; font-size: 0.62rem; padding: 0.28rem 0.54rem; }
 }
+
+/* v1.0.29 Selection scale lock, camera control polish and mobile board comfort */
+.board-camera-controls {
+  position: absolute;
+  right: 0.64rem;
+  top: 0.64rem;
+  z-index: 4;
+  display: flex;
+  gap: 0.34rem;
+  align-items: center;
+  padding: 0.28rem;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 200, 107, 0.22);
+  background: linear-gradient(135deg, rgba(6, 21, 45, 0.72), rgba(16, 43, 87, 0.48));
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22), inset 0 0 18px rgba(125, 220, 255, 0.08);
+  backdrop-filter: blur(10px);
+  touch-action: manipulation;
+}
+.board-camera-controls button {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0.34rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 220, 255, 0.24);
+  color: rgba(232, 244, 255, 0.96);
+  background: radial-gradient(circle at 50% 20%, rgba(125, 220, 255, 0.2), rgba(6, 21, 45, 0.62));
+  box-shadow: inset 0 0 12px rgba(245, 200, 107, 0.08), 0 0 12px rgba(125, 220, 255, 0.1);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.board-camera-controls button[data-camera-action="zoom-in"],
+.board-camera-controls button[data-camera-action="zoom-out"] {
+  padding-inline: 0;
+  font-size: 1rem;
+  color: var(--gold-300);
+}
+.board-camera-controls button:active {
+  transform: translateY(1px) scale(0.98);
+}
+.pixi-board-host[data-camera-mode="pan-zoom"] canvas {
+  touch-action: none;
+}
+.pixi-board-host[data-camera-mode="fit"] + .board-camera-guide,
+.pixi-board-host[data-camera-mode="fit"] ~ .board-camera-controls {
+  display: none !important;
+}
+@media (max-width: 390px) {
+  .board-camera-controls { right: 0.42rem; top: 0.42rem; gap: 0.22rem; padding: 0.22rem; }
+  .board-camera-controls button { min-width: 30px; min-height: 30px; padding: 0.28rem 0.38rem; font-size: 0.6rem; }
+}
+@media (max-height: 700px) {
+  .board-camera-controls { top: 0.42rem; }
+  .board-camera-controls button { min-height: 29px; }
+}
