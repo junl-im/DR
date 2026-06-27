@@ -29,6 +29,13 @@ const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, siz
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
 
+const BOSS_WARNING_DEPTH_PROFILES: Record<string, { primary: number; secondary: number; aura: number; laneAlpha: number; coreAlpha: number; flareAlpha: number; duration: number; widthBoost: number }> = {
+  'forgotten-spirit': { primary: PALETTE.violet, secondary: PALETTE.sky, aura: PALETTE.goldLight, laneAlpha: 0.14, coreAlpha: 0.58, flareAlpha: 0.12, duration: 0.58, widthBoost: 1 },
+  'shadow-librarian': { primary: PALETTE.sky, secondary: PALETTE.violet, aura: PALETTE.emerald, laneAlpha: 0.17, coreAlpha: 0.64, flareAlpha: 0.16, duration: 0.52, widthBoost: 1.12 },
+  'sealed-page-golem': { primary: PALETTE.gold, secondary: PALETTE.violet, aura: PALETTE.goldLight, laneAlpha: 0.2, coreAlpha: 0.7, flareAlpha: 0.19, duration: 0.66, widthBoost: 1.28 },
+  default: { primary: PALETTE.violet, secondary: PALETTE.sky, aura: PALETTE.goldLight, laneAlpha: 0.15, coreAlpha: 0.6, flareAlpha: 0.14, duration: 0.6, widthBoost: 1 }
+};
+
 export type BoardTile = {
   id: string;
   type: string;
@@ -430,17 +437,20 @@ export class DreamPixiRenderer {
     if (fill) fill.style.transform = `scaleX(${hp / 100})`;
   }
 
-  playBossWarning(power = 7, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column') {
+  playBossWarning(power = 7, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column', bossId = 'forgotten-spirit') {
     const core = document.querySelector<HTMLElement>('#boss-core');
     if (!core) return;
+    const profile = this.getBossWarningDepthProfile(bossId);
     core.classList.add('boss-warning');
     core.dataset.warningPattern = pattern;
-    window.setTimeout(() => core.classList.remove('boss-warning'), 760);
-    this.cameraShake(power);
-    this.drawBossWarningLane(power, pattern);
+    core.dataset.bossWarningDepth = bossId;
+    core.dataset.warningDepthPatch = 'v1038';
+    window.setTimeout(() => core.classList.remove('boss-warning'), Math.round(profile.duration * 1000 + 160));
+    this.cameraShake(Math.round(power * profile.widthBoost));
+    this.drawBossWarningLane(power, pattern, bossId);
     if (this.boardApp) {
       const impact = this.screenToWorld(this.boardApp.renderer.width / 2, 42);
-      this.spawnVfxSprite(impact.x, impact.y, pattern === 'diagonal' ? 'import-vfx-05' : 'import-vfx-06');
+      this.spawnVfxSprite(impact.x, impact.y, bossId === 'sealed-page-golem' || pattern === 'diagonal' ? 'import-vfx-05' : 'import-vfx-06');
     }
   }
 
@@ -491,7 +501,9 @@ export class DreamPixiRenderer {
     if (!host) return;
     const scaledTile = this.tileSize * this.camera.scale;
     host.dataset.zoomReadability = scaledTile < 34 ? 'far' : scaledTile > 56 ? 'close' : 'balanced';
-    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-zoom-readability', host.dataset.zoomReadability);
+    const stage = document.querySelector<HTMLElement>('.battle-stage');
+    stage?.setAttribute('data-zoom-readability', host.dataset.zoomReadability);
+    stage?.setAttribute('data-visual-priority', host.dataset.zoomReadability === 'far' ? 'boss-route-first' : 'balanced');
   }
 
   private configureBoardCamera(reset = false) {
@@ -1004,26 +1016,75 @@ export class DreamPixiRenderer {
     this.clearObjectiveMarkers();
     const layer = new Container();
     layer.label = 'objective-marker-layer';
-    const hiddenSpecials = [...this.tileViews.values()].filter((view) => Boolean(view.tile.special && !view.tile.specialRevealed && !view.removing));
-    hiddenSpecials.slice(0, 12).forEach((view, index) => {
+    const hiddenSpecials = [...this.tileViews.values()]
+      .filter((view) => Boolean(view.tile.special && !view.tile.specialRevealed && !view.removing))
+      .sort((a, b) => this.getObjectiveMarkerPriority(b) - this.getObjectiveMarkerPriority(a));
+    const markerPlan = this.getObjectiveMarkerDensity(hiddenSpecials.length);
+    const stage = document.querySelector<HTMLElement>('.battle-stage');
+    stage?.setAttribute('data-objective-marker-density', markerPlan.density);
+    stage?.setAttribute('data-objective-marker-overflow', String(Math.max(0, hiddenSpecials.length - markerPlan.limit)));
+    hiddenSpecials.slice(0, markerPlan.limit).forEach((view, index) => {
       const color = view.tile.special === 'locked' ? PALETTE.gold : view.tile.special === 'timeSeal' ? PALETTE.violet : PALETTE.sky;
       const marker = new Graphics();
-      const radius = Math.max(5, this.tileSize * 0.105);
-      const x = view.baseX + this.tileSize * 0.33;
-      const y = view.baseY - this.tileSize * 0.33;
-      marker.circle(x, y, radius).fill({ color, alpha: 0.2 });
-      marker.circle(x, y, radius * 0.58).fill({ color, alpha: 0.82 });
-      marker.circle(x, y, radius * 1.42).stroke({ color, width: Math.max(1.2, this.tileSize * 0.018), alpha: 0.58 });
+      const radius = Math.max(4.2, this.tileSize * markerPlan.radiusRatio);
+      const x = view.baseX + this.tileSize * 0.34;
+      const y = view.baseY - this.tileSize * 0.34;
+      marker.label = `objective-marker-${view.tile.special}-${index}`;
+      marker.circle(x, y, radius).fill({ color, alpha: markerPlan.fillAlpha });
+      marker.circle(x, y, radius * 0.56).fill({ color, alpha: markerPlan.coreAlpha });
+      marker.circle(x, y, radius * 1.34).stroke({ color, width: Math.max(1, this.tileSize * 0.014), alpha: markerPlan.strokeAlpha });
       marker.blendMode = 'add';
       layer.addChild(marker);
-      gsap.fromTo(marker, { alpha: 0.52 }, { alpha: 1, delay: index * 0.035, duration: 0.52 * this.quality.motionScale, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      gsap.fromTo(marker, { alpha: markerPlan.minAlpha }, { alpha: markerPlan.maxAlpha, delay: index * markerPlan.delay, duration: markerPlan.duration * this.quality.motionScale, repeat: -1, yoyo: true, ease: 'sine.inOut' });
     });
+    if (hiddenSpecials.length > markerPlan.limit) this.drawObjectiveOverflowMarker(layer, hiddenSpecials.length - markerPlan.limit);
     if (!layer.children.length) {
       layer.destroy();
       return;
     }
     this.boardLayers.paths.addChild(layer);
     this.objectiveMarkerLayer = layer;
+  }
+
+  private getObjectiveMarkerPriority(view: TileView) {
+    if (view.tile.special === 'locked') return 3;
+    if (view.tile.special === 'timeSeal') return 2;
+    if (view.tile.special === 'fog') return 1;
+    return 0;
+  }
+
+  private getObjectiveMarkerDensity(count: number) {
+    const boardArea = Math.max(1, this.layout.rows * this.layout.cols);
+    const farZoom = this.tileSize * this.camera.scale < 34;
+    const denseBoard = boardArea >= 96 || count > 10;
+    const limit = farZoom ? 5 : denseBoard ? 7 : 10;
+    const density = count > limit ? 'compressed' : denseBoard ? 'balanced' : 'open';
+    return {
+      density,
+      limit,
+      radiusRatio: density === 'compressed' ? 0.072 : 0.095,
+      fillAlpha: density === 'compressed' ? 0.12 : 0.18,
+      coreAlpha: density === 'compressed' ? 0.62 : 0.82,
+      strokeAlpha: density === 'compressed' ? 0.36 : 0.54,
+      minAlpha: density === 'compressed' ? 0.34 : 0.48,
+      maxAlpha: density === 'compressed' ? 0.72 : 0.96,
+      delay: density === 'compressed' ? 0.018 : 0.032,
+      duration: density === 'compressed' ? 0.68 : 0.52
+    };
+  }
+
+  private drawObjectiveOverflowMarker(layer: Container, overflowCount: number) {
+    const x = this.camera.worldWidth - Math.max(28, this.tileSize * 0.58);
+    const y = Math.max(26, this.tileSize * 0.55);
+    const radius = Math.max(6, this.tileSize * 0.115);
+    const marker = new Graphics();
+    marker.label = `objective-marker-overflow-${overflowCount}`;
+    marker.circle(x, y, radius * 1.46).fill({ color: PALETTE.gold, alpha: 0.1 });
+    marker.circle(x, y, radius).stroke({ color: PALETTE.goldLight, width: Math.max(1, this.tileSize * 0.018), alpha: 0.46 });
+    marker.circle(x, y, radius * 0.42).fill({ color: PALETTE.goldLight, alpha: 0.7 });
+    marker.blendMode = 'add';
+    layer.addChild(marker);
+    gsap.fromTo(marker, { alpha: 0.32 }, { alpha: 0.76, duration: 0.72 * this.quality.motionScale, repeat: -1, yoyo: true, ease: 'sine.inOut' });
   }
 
   private drawSelectionFocusOverlay(view: TileView) {
@@ -1087,41 +1148,54 @@ export class DreamPixiRenderer {
     gsap.to(beam, { alpha: 0, duration: 0.28 * this.quality.motionScale, ease: 'power2.out', onComplete: () => beam.destroy() });
   }
 
-  private drawBossWarningLane(power: number, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column') {
+  private getBossWarningDepthProfile(bossId = 'default') {
+    return BOSS_WARNING_DEPTH_PROFILES[bossId] || BOSS_WARNING_DEPTH_PROFILES.default;
+  }
+
+  private drawBossWarningLane(power: number, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column', bossId = 'default') {
     if (!this.boardApp || !this.boardLayers.paths || !this.boardLayers.ui) return;
     const app = this.boardApp;
+    const profile = this.getBossWarningDepthProfile(bossId);
     const centerWorld = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2);
     const laneX = Math.max(0, Math.min(this.camera.worldWidth, centerWorld.x));
     const laneY = Math.max(0, Math.min(this.camera.worldHeight, centerWorld.y));
     const lane = new Graphics();
-    lane.label = `boss-warning-${pattern}-${this.bossWarningIndex += 1}`;
+    lane.label = `boss-warning-depth-${bossId}-${pattern}-${this.bossWarningIndex += 1}`;
     lane.blendMode = 'add';
-    const strongWidth = Math.max(13, power * 2);
-    const coreWidth = Math.max(3, power * 0.42);
-    const drawLine = (x1: number, y1: number, x2: number, y2: number, color = PALETTE.violet) => {
+    const strongWidth = Math.max(12, power * 1.9 * profile.widthBoost);
+    const coreWidth = Math.max(2.6, power * 0.4 * profile.widthBoost);
+    const drawLine = (x1: number, y1: number, x2: number, y2: number, color = profile.primary, coreColor = profile.aura) => {
       lane.moveTo(x1, y1).lineTo(x2, y2);
-      lane.stroke({ color, width: strongWidth, alpha: 0.15 });
+      lane.stroke({ color, width: strongWidth, alpha: profile.laneAlpha });
       lane.moveTo(x1, y1).lineTo(x2, y2);
-      lane.stroke({ color: PALETTE.goldLight, width: coreWidth, alpha: 0.58 });
+      lane.stroke({ color: coreColor, width: coreWidth, alpha: profile.coreAlpha });
+      if (bossId === 'shadow-librarian') {
+        lane.moveTo(x1 + 3, y1 + 3).lineTo(x2 + 3, y2 + 3);
+        lane.stroke({ color: profile.secondary, width: Math.max(1.4, coreWidth * 0.45), alpha: 0.38 });
+      }
+      if (bossId === 'sealed-page-golem') {
+        lane.moveTo(x1 - 4, y1 - 4).lineTo(x2 - 4, y2 - 4);
+        lane.stroke({ color: profile.secondary, width: Math.max(2, coreWidth * 0.6), alpha: 0.34 });
+      }
     };
-    if (pattern === 'row' || pattern === 'cross') drawLine(0, laneY, this.camera.worldWidth, laneY, PALETTE.sky);
-    if (pattern === 'column' || pattern === 'cross') drawLine(laneX, 0, laneX, this.camera.worldHeight, PALETTE.violet);
+    if (pattern === 'row' || pattern === 'cross') drawLine(0, laneY, this.camera.worldWidth, laneY, profile.secondary);
+    if (pattern === 'column' || pattern === 'cross') drawLine(laneX, 0, laneX, this.camera.worldHeight, profile.primary);
     if (pattern === 'diagonal') {
-      drawLine(0, 0, this.camera.worldWidth, this.camera.worldHeight, PALETTE.violet);
-      drawLine(this.camera.worldWidth, 0, 0, this.camera.worldHeight, PALETTE.sky);
+      drawLine(0, 0, this.camera.worldWidth, this.camera.worldHeight, profile.primary);
+      drawLine(this.camera.worldWidth, 0, 0, this.camera.worldHeight, profile.secondary);
     }
     this.boardLayers.paths.addChild(lane);
 
-    const flareThickness = Math.max(7, power * 1.45);
+    const flareThickness = Math.max(6, power * 1.32 * profile.widthBoost);
     const flare = new Graphics()
       .rect(0, 0, app.renderer.width, flareThickness)
-      .fill({ color: pattern === 'row' ? PALETTE.sky : PALETTE.violet, alpha: 0.16 })
+      .fill({ color: pattern === 'row' ? profile.secondary : profile.primary, alpha: profile.flareAlpha })
       .rect(0, app.renderer.height - flareThickness, app.renderer.width, flareThickness)
-      .fill({ color: PALETTE.gold, alpha: 0.12 });
+      .fill({ color: profile.aura, alpha: profile.flareAlpha * 0.82 });
     flare.blendMode = 'add';
     this.boardLayers.ui.addChild(flare);
-    gsap.to(lane, { alpha: 0, duration: 0.62 * this.quality.motionScale, ease: 'power2.out', onComplete: () => lane.destroy() });
-    gsap.to(flare, { alpha: 0, duration: 0.5 * this.quality.motionScale, ease: 'power2.out', onComplete: () => flare.destroy() });
+    gsap.to(lane, { alpha: 0, duration: profile.duration * this.quality.motionScale, ease: 'power2.out', onComplete: () => lane.destroy() });
+    gsap.to(flare, { alpha: 0, duration: Math.max(0.42, profile.duration - 0.08) * this.quality.motionScale, ease: 'power2.out', onComplete: () => flare.destroy() });
   }
 
   private fireAtBoss(x: number, y: number, combo: number) {

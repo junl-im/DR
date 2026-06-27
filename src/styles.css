@@ -2533,3 +2533,79 @@ body[data-screen="game"] .screen-stack {
     grid-template-rows: minmax(44px, auto) minmax(300px, 1fr) auto;
   }
 }
+
+/* v1.0.38 Boss pattern depth, objective marker density and mobile flow polish */
+.battle-stage[data-objective-marker-density="compressed"] .pixi-board-host {
+  box-shadow: inset 0 0 0 1px rgba(245, 200, 107, 0.1), inset 0 0 26px rgba(6, 21, 45, 0.32), 0 16px 30px rgba(0, 0, 0, 0.22);
+}
+.battle-stage[data-objective-marker-density="compressed"][data-objective-marker-overflow]:not([data-objective-marker-overflow="0"]) .pixi-board-host::after {
+  content: '';
+  position: absolute;
+  right: 0.58rem;
+  top: 0.58rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 200, 107, 0.36);
+  background: radial-gradient(circle, rgba(245, 200, 107, 0.22), rgba(6, 21, 45, 0.1));
+  pointer-events: none;
+  opacity: 0.72;
+}
+.boss-core[data-boss-visual-stack="stable-atlas-v1038"] {
+  isolation: isolate;
+}
+.boss-core[data-boss-visual-stack="stable-atlas-v1038"] #boss-image {
+  z-index: 2;
+  opacity: 1;
+}
+.boss-core[data-boss-visual-stack="stable-atlas-v1038"].boss-atlas-ready .boss-atlas-sprite {
+  z-index: 3;
+  opacity: 0.58;
+  mix-blend-mode: screen;
+}
+.boss-core[data-boss-warning-depth="forgotten-spirit"]::after {
+  border-color: rgba(143, 107, 255, 0.62);
+  box-shadow: 0 0 22px rgba(143, 107, 255, 0.24);
+}
+.boss-core[data-boss-warning-depth="shadow-librarian"]::after {
+  border-color: rgba(125, 220, 255, 0.68);
+  box-shadow: 0 0 26px rgba(125, 220, 255, 0.28);
+}
+.boss-core[data-boss-warning-depth="sealed-page-golem"]::after {
+  border-color: rgba(245, 200, 107, 0.76);
+  box-shadow: 0 0 32px rgba(245, 200, 107, 0.32);
+}
+.boss-telegraph[data-boss-id="forgotten-spirit"] { border-color: rgba(143, 107, 255, 0.48); }
+.boss-telegraph[data-boss-id="shadow-librarian"] { border-color: rgba(125, 220, 255, 0.5); color: var(--sky-500); }
+.boss-telegraph[data-boss-id="sealed-page-golem"] { border-color: rgba(245, 200, 107, 0.58); color: var(--gold-300); }
+.battle-stage[data-visual-priority="boss-route-first"] .boss-telegraph:not(.hidden) {
+  max-width: min(76vw, 320px);
+  padding-inline: 0.48rem;
+}
+.boss-hit-cutin[data-visual-priority="compact-hit"] {
+  max-width: min(72vw, 230px);
+}
+.boss-hit-cutin[data-visual-priority="boss-break"] {
+  max-width: min(78vw, 258px);
+}
+.boss-hit-cutin[data-visual-priority="finisher-front"] {
+  z-index: 62;
+}
+.battle-stage[data-boss-cutin-priority="compact"] .boss-hit-cutin {
+  top: clamp(62px, 12svh, 104px);
+}
+@media (max-height: 680px), (max-width: 380px) {
+  .battle-stage[data-objective-marker-density="compressed"][data-objective-marker-overflow]:not([data-objective-marker-overflow="0"]) .pixi-board-host::after {
+    width: 14px;
+    height: 14px;
+    right: 0.42rem;
+    top: 0.42rem;
+  }
+  .boss-core[data-boss-visual-stack="stable-atlas-v1038"].boss-atlas-ready .boss-atlas-sprite {
+    opacity: 0.48;
+  }
+  .boss-telegraph[data-boss-id] {
+    font-size: 0.58rem;
+    padding: 0.24rem 0.42rem;
+  }
+}

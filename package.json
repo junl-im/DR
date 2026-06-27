@@ -57,7 +57,8 @@
     "check:tile-geometry-hud": "node tools/check-tile-geometry-hud.mjs",
     "check:real-device-selection": "node tools/check-real-device-selection-qa.mjs",
     "check:space-reclaim-back-options": "node tools/check-space-reclaim-back-options.mjs",
-    "check:boss-asset-visibility": "node tools/check-boss-asset-visibility.mjs"
+    "check:boss-asset-visibility": "node tools/check-boss-asset-visibility.mjs",
+    "check:boss-pattern-density": "node tools/check-boss-pattern-density.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -70,5 +71,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.37"
+  "version": "1.0.38"
 }

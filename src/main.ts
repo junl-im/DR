@@ -819,11 +819,13 @@ function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch'
   el.bossTelegraph.textContent = `${boss.telegraphTitle || reasonText[reason]} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
   el.bossTelegraph.dataset.reason = reason;
   el.bossTelegraph.dataset.pattern = getBossWarningPattern(reason);
+  el.bossTelegraph.dataset.bossId = boss.id || 'forgotten-spirit';
   el.bossCore.dataset.warningPattern = getBossWarningPattern(reason);
+  el.bossCore.dataset.bossWarningDepth = boss.id || 'forgotten-spirit';
   el.bossTelegraph.classList.remove('hidden', 'telegraph-pop');
   void el.bossTelegraph.offsetWidth;
   el.bossTelegraph.classList.add('telegraph-pop');
-  renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason));
+  renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason), boss.id || 'forgotten-spirit');
   window.setTimeout(hideBossTelegraph, 1500);
 }
 
@@ -1312,6 +1314,7 @@ function renderBossPanel() {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
   setBossStableImage(boss.asset, boss.name);
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
+  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1038';
   el.bossName.textContent = boss.name;
   el.bossPattern.textContent = boss.patternLabel;
   el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
@@ -1350,6 +1353,7 @@ function applyBossAtlasFrame(frameKey = '') {
   const coreSize = Math.max(44, el.bossCore.clientWidth || 64);
   const scale = Math.min(0.42, Math.max(0.23, (coreSize * 1.62) / Math.max(frame.w, frame.h)));
   el.bossCore.classList.add('boss-atlas-ready');
+  el.bossCore.dataset.bossVisualStack = 'stable-atlas-v1038';
   el.bossCore.style.setProperty('--boss-frame-w', `${frame.w}px`);
   el.bossCore.style.setProperty('--boss-frame-h', `${frame.h}px`);
   el.bossCore.style.setProperty('--boss-frame-x', `-${frame.x}px`);
@@ -1581,6 +1585,8 @@ function showBossHitCutin(combo: number) {
   setBossFrame(broken ? 'break' : 'hit');
   el.bossHitCutin.dataset.bossId = boss.id || 'boss';
   el.bossHitCutin.dataset.comboTier = finisher ? 'finisher' : broken ? 'break' : 'hit';
+  el.bossHitCutin.dataset.visualPriority = finisher ? 'finisher-front' : broken ? 'boss-break' : 'compact-hit';
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-cutin-priority', finisher ? 'front' : 'compact');
   el.bossHitCutin.textContent = finisher ? `${boss.name} 균열 · ${combo} COMBO` : broken ? `BOSS BREAK · ${combo} COMBO` : `BOSS HIT · ${combo} COMBO`;
   el.bossHitCutin.classList.remove('hidden', 'boss-hit-pop', 'boss-break-pop', 'boss-finisher-pop');
   if (broken) el.bossHitCutin.classList.add('boss-break-pop');
