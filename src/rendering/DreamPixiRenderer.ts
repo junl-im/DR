@@ -4,6 +4,11 @@ import { PALETTE } from '../config/design';
 import type { DeviceProfile } from '../systems/performance';
 
 const effectAsset = (name: string) => `${import.meta.env.BASE_URL}assets/effects/${name}.png`;
+const tileAtlasAssets = [
+  `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.png`
+];
+const isV2StateAsset = (asset = '') => asset.includes('/assets/objects/v2-state/') || asset.includes('assets/objects/v2-state/');
 
 export type BoardTile = {
   id: string;
@@ -61,14 +66,26 @@ export class DreamPixiRenderer {
   quality: DeviceProfile = { tier: 'high', pixelRatio: 1.5, particleScale: 1, motionScale: 1, maxBoardTile: 72, reason: '기본값' };
   layout: BoardLayout = { startX: 0, startY: 0, step: 72, rows: 0, cols: 0 };
   lastPointerMove = 0;
+  tileAtlasReady: Promise<void> | null = null;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
     document.body.dataset.quality = profile.tier;
   }
 
+  async preloadTileAtlas() {
+    if (!this.tileAtlasReady) {
+      this.tileAtlasReady = Promise.all(tileAtlasAssets.map(async (asset) => {
+        await Assets.load(asset).catch(() => null);
+        this.assetCache.add(asset);
+      })).then(() => undefined);
+    }
+    await this.tileAtlasReady;
+  }
+
   async preloadAssets(assets: string[]) {
-    const targets = assets.filter((asset) => !this.assetCache.has(asset));
+    if (assets.some((asset) => isV2StateAsset(asset))) await this.preloadTileAtlas();
+    const targets = assets.filter((asset) => !this.assetCache.has(asset) && !isV2StateAsset(asset));
     await Promise.all(targets.map(async (asset) => {
       await Assets.load(asset).catch(() => null);
       this.assetCache.add(asset);
@@ -259,19 +276,13 @@ export class DreamPixiRenderer {
   private resolveTileTexture(tile: BoardTile, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled' = 'normal') {
     const asset = tile.stateAssets?.[state] || tile.stateAssets?.normal || tile.asset;
     const filename = asset.split('/').pop() || asset;
-    const atlasFrameName = tile.stateAssets ? `${tile.type}-${state}.png` : filename;
-    const atlasCandidates = [
-      atlasFrameName,
-      filename,
-      `v2-state/${filename}`,
-      `assets/objects/v2-state/${filename}`,
-      asset
-    ];
     try {
-      for (const candidate of atlasCandidates) {
-        const atlasTexture = Assets.get(candidate);
-        if (atlasTexture instanceof Texture) return atlasTexture;
-      }
+      const atlasTexture = Assets.get(filename)
+        || Assets.get(`v2-state/${filename}`)
+        || Assets.get(`assets/objects/v2-state/${filename}`)
+        || Assets.get(`assets/objects/${filename}`)
+        || Assets.get(asset);
+      if (atlasTexture instanceof Texture) return atlasTexture;
     } catch {
       // Atlas lookup is an optimization only. Individual PNG remains the safe fallback.
     }

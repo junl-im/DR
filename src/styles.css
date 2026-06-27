@@ -1476,7 +1476,6 @@ body[data-screen="lobby"] .lobby-hero img {
 
 /* v1.0.18 virtual portrait frame and quiet in-app layout fix */
 :root {
-  --tap-slop: 10px;
   --raw-width: 100vw;
   --raw-height: 100dvh;
   --app-width: min(100vw, 560px);
@@ -1633,34 +1632,57 @@ body[data-screen="game"] .app-shell {
 }
 
 
-/* v1.0.20 real atlas, touch QA and landscape frame stability */
-html.source-landscape .app-shell {
-  will-change: transform;
-  max-width: var(--app-width);
-  min-width: var(--app-width);
+/* v1.0.20 real atlas, touch QA, boss motion and portrait fit polish */
+:root {
+  --touch-scroll-y: pan-y;
 }
-body[data-screen="lobby"] .app-shell,
-body[data-screen="lobby"] .screen-lobby {
+html.source-landscape .app-shell {
+  margin-top: max(4px, calc((var(--raw-height) - var(--scaled-app-height)) / 2));
+  max-width: var(--app-width);
+  will-change: transform;
+}
+html.source-landscape body::before,
+html.source-landscape body::after {
+  content: '';
+  position: fixed;
+  inset-block: 0;
+  width: max(0px, calc((100vw - var(--scaled-app-width)) / 2));
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(125, 220, 255, 0.08), rgba(6, 21, 45, 0.84));
+  z-index: 0;
+}
+html.source-landscape body::before { left: 0; }
+html.source-landscape body::after { right: 0; }
+body[data-screen="lobby"] .screen-stack,
+body[data-screen="lobby"] .screen-lobby,
+body[data-screen="lobby"] .lobby-grid,
+body[data-screen="lobby"] .mission-deck-panel,
+body[data-screen="lobby"] .selected-stage-card,
+body[data-screen="lobby"] .collection-panel,
+body[data-screen="lobby"] .restoration-panel,
+body[data-screen="lobby"] .daily-panel {
   touch-action: pan-y;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
 }
 body[data-screen="lobby"] button,
-body[data-screen="lobby"] .mission-card,
 body[data-screen="lobby"] .chapter-tab,
 body[data-screen="lobby"] .stage-node,
-body[data-screen="lobby"] .restore-node,
+body[data-screen="lobby"] .mission-card,
 body[data-screen="lobby"] .collection-tile {
   touch-action: manipulation;
 }
-.tile-atlas-ready .battle-stage::before {
-  opacity: 0.5;
+.boss-core img {
+  transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
 }
-button.asset-button-start:active,
-button.asset-button-google:active,
-button.asset-button-email:active,
-.primary-button:active,
-.secondary-button:active {
-  transform: translateY(1px) scale(0.985);
-  filter: brightness(1.08) saturate(1.08);
+.boss-core.cutin-hit img {
+  transform: translateY(-3px) scale(1.11) rotate(-1.4deg);
+}
+.battle-stage[data-atlas="v2"] .pixi-board-host canvas {
+  image-rendering: auto;
+}
+.selected-stage-card::after {
+  content: 'v2 atlas 우선 매핑';
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  html.source-landscape .topbar { transform: scale(0.92); transform-origin: top center; }
+  html.source-landscape .app-shell { border-radius: 22px; }
 }

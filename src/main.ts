@@ -256,7 +256,6 @@ async function init() {
 
   await renderer.initAmbient(el.pixiStage);
   await renderer.preloadAssets(ATLAS_ASSETS);
-  document.body.classList.add('tile-atlas-ready');
   renderer.preloadAssets(PRELOAD_ASSETS);
   void loadSpineRuntime();
 
@@ -438,7 +437,7 @@ function bindEvents() {
     renderCollection();
   });
   el.restorationFocusButton.addEventListener('click', () => {
-    document.querySelector('.restoration-panel')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    scrollLobbyTarget('.restoration-panel');
     setStatus('복원 작업대를 확인하세요.');
   });
   el.newGameButton.addEventListener('click', () => startSelectedStage());
@@ -686,6 +685,7 @@ function advanceSpecialRulesAfterMatch() {
 }
 
 function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch') {
+  setBossFrame('warn');
   const boss = state.activeBoss || {};
   const reasonText: Record<string, string> = {
     combo: '콤보 반격',
@@ -1078,7 +1078,7 @@ function handleLobbyMissionClick(event: Event) {
     writeText('dream-library-selected-stage', stage.id);
     writeText('dream-library-selected-chapter', stage.chapterId);
     renderLobby();
-    document.querySelector('.selected-stage-card')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    scrollLobbyTarget('.selected-stage-card');
     setStatus('추천 스테이지를 선택했습니다. 진짜 게임 시작을 누르면 전투가 시작됩니다.');
     return;
   }
@@ -1094,9 +1094,20 @@ function handleLobbyMissionClick(event: Event) {
     state.collectionFilter = card.dataset.filter || 'missing';
     writeText('dream-library-collection-filter', state.collectionFilter);
     renderCollection();
-    document.querySelector('.collection-panel')?.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+    scrollLobbyTarget('.collection-panel');
     setStatus('컬렉션 도감 목표를 열었습니다. 미수집/프리미엄 오브젝트를 확인하세요.');
   }
+}
+
+function scrollLobbyTarget(selector: string) {
+  const target = document.querySelector<HTMLElement>(selector);
+  const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
+  if (!target || !shell) return;
+  const shellRect = shell.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const current = shell.scrollTop;
+  const next = current + targetRect.top - shellRect.top - 12;
+  shell.scrollTo({ top: Math.max(0, next), behavior: 'auto' });
 }
 
 function toggleLobbyPanel(panelKey: string) {
@@ -1143,7 +1154,7 @@ function renderChapterTabs() {
 
 function renderBossPanel() {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
-  el.bossImage.src = boss.asset;
+  el.bossImage.src = boss.frames?.idle || boss.asset;
   el.bossImage.alt = boss.name;
   el.bossName.textContent = boss.name;
   el.bossPattern.textContent = boss.patternLabel;
@@ -1151,6 +1162,19 @@ function renderBossPanel() {
   el.bossTelegraph.classList.add('hidden');
   el.bossCore.dataset.bossId = boss.id;
   el.bossCore.dataset.phase = 'stable';
+}
+
+
+function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
+  const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
+  const src = boss.frames?.[stateName] || boss.frames?.idle || boss.asset;
+  if (el.bossImage.src !== src) el.bossImage.src = src;
+  if (stateName !== 'idle') {
+    window.setTimeout(() => {
+      const idle = boss.frames?.idle || boss.asset;
+      if (el.bossImage.src !== idle) el.bossImage.src = idle;
+    }, stateName === 'break' ? 680 : 420);
+  }
 }
 
 function renderStats() {
@@ -1313,12 +1337,14 @@ function showComboCutin(combo: number) {
 
 
 function showBossHitCutin(combo: number) {
-  el.bossHitCutin.textContent = combo >= 5 ? `BOSS BREAK · ${combo} COMBO` : `BOSS HIT · ${combo} COMBO`;
+  const broken = combo >= 5;
+  setBossFrame(broken ? 'break' : 'hit');
+  el.bossHitCutin.textContent = broken ? `BOSS BREAK · ${combo} COMBO` : `BOSS HIT · ${combo} COMBO`;
   el.bossHitCutin.classList.remove('hidden', 'boss-hit-pop', 'boss-break-pop');
-  if (combo >= 5) el.bossHitCutin.classList.add('boss-break-pop');
+  if (broken) el.bossHitCutin.classList.add('boss-break-pop');
   void el.bossHitCutin.offsetWidth;
   el.bossHitCutin.classList.add('boss-hit-pop');
-  window.setTimeout(() => el.bossHitCutin.classList.add('hidden'), combo >= 5 ? 920 : 720);
+  window.setTimeout(() => el.bossHitCutin.classList.add('hidden'), broken ? 920 : 720);
 }
 
 function openReward(stars: number, score: number) {

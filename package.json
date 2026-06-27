@@ -27,9 +27,10 @@
     "check:viewport-frame": "node tools/check-viewport-frame.mjs",
     "check:gameplay-mapping": "node tools/check-gameplay-mapping.mjs",
     "check:alpha-clean": "node tools/check-alpha-clean.mjs",
-    "atlas:pack": "node tools/pack-v2-atlas.mjs",
-    "check:atlas-pack": "node tools/check-atlas-pack.mjs",
-    "check:touch-qa": "node tools/check-touch-qa.mjs"
+    "atlas:tiles": "node tools/check-real-atlas.mjs",
+    "check:real-atlas": "node tools/check-real-atlas.mjs",
+    "check:touch-qa": "node tools/check-touch-qa.mjs",
+    "check:boss-sheets": "node tools/check-boss-sheets.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",

@@ -27,4 +27,4 @@ if (missing.length) {
   console.error(`Special rule check failed. Missing: ${missing.join(', ')}`);
   process.exit(1);
 }
-console.log('Special tile and boss telegraph policy passed for v1.0.19.');
+console.log('Special tile and boss telegraph policy passed for v1.0.20.');

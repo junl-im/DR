@@ -22,6 +22,11 @@ const requiredFiles = [
   'public/assets/meta/asset-import-v1.0.11.json',
   'public/assets/meta/texture-atlas-manifest-v1.0.20.json',
   'tools/build-texture-atlas-manifest.mjs',
+  'public/assets/atlas/v2-tiles.png',
+  'public/assets/atlas/v2-tiles.atlas.json',
+  'tools/check-real-atlas.mjs',
+  'tools/check-touch-qa.mjs',
+  'tools/check-boss-sheets.mjs',
   'tools/check-special-rules.mjs',
   'public/assets/backgrounds/imported-moon-library.png',
   'public/assets/objects/premium-01.png',
@@ -31,11 +36,7 @@ const requiredFiles = [
   'tools/check-lobby-missions.mjs',
   'tools/check-kakao-portrait.mjs',
   'tools/check-exit-scroll.mjs',
-  'src/platform/portraitLock.js',
-  'public/assets/atlas/v2-state-tiles.png',
-  'public/assets/atlas/v2-state-tiles.atlas.json',
-  'tools/check-atlas-pack.mjs',
-  'tools/check-touch-qa.mjs'
+  'src/platform/portraitLock.js'
 ];
 
 for (const file of requiredFiles) {

@@ -152,7 +152,6 @@ export const GAMEPLAY_TILE_SET = [
   ...TILE_SET.filter((tile) => tile.theme !== 'v2 에셋' && tile.theme !== '프리미엄')
 ];
 
-// Gameplay tile pool helper: board creation must use this v2-priority pool.
 export function getGameplayTiles(iconTypes = 16) {
   const count = Math.max(1, Math.min(Number(iconTypes) || 16, GAMEPLAY_TILE_SET.length));
   return GAMEPLAY_TILE_SET.slice(0, count);
@@ -162,11 +161,15 @@ export function isV2GameplayTile(type) {
   return V2_TILE_TYPES.has(type);
 }
 
+export const TILE_ATLAS_ASSETS = [
+  `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.png`
+];
+
 export const ATLAS_ASSETS = [
+  ...TILE_ATLAS_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/atlas/v2-state-tiles.png`,
-  `${import.meta.env.BASE_URL}assets/atlas/v2-state-tiles.atlas.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.20.json`
 ];
 

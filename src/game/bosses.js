@@ -1,5 +1,28 @@
 const bossAsset = (name) => `${import.meta.env.BASE_URL}assets/characters/${name}.png`;
 
+const bossFrameAsset = (name) => `${import.meta.env.BASE_URL}assets/characters/boss-motion-v2/${name}.png`;
+const bossStickerAsset = (name) => `${import.meta.env.BASE_URL}assets/characters/boss-sticker-v2/${name}.png`;
+const BOSS_FRAME_SETS = {
+  forgottenSpirit: {
+    idle: bossFrameAsset('frame-01'),
+    warn: bossFrameAsset('frame-02'),
+    hit: bossFrameAsset('frame-03'),
+    break: bossFrameAsset('frame-04')
+  },
+  shadowLibrarian: {
+    idle: bossFrameAsset('frame-05'),
+    warn: bossFrameAsset('frame-06'),
+    hit: bossFrameAsset('frame-07'),
+    break: bossFrameAsset('frame-08')
+  },
+  sealedPageGolem: {
+    idle: bossFrameAsset('frame-09'),
+    warn: bossStickerAsset('frame-02'),
+    hit: bossStickerAsset('frame-05'),
+    break: bossStickerAsset('frame-08')
+  }
+};
+
 export const BOSSES = {
   forgottenSpirit: {
     id: 'forgotten-spirit',
@@ -14,7 +37,8 @@ export const BOSSES = {
     pressurePenalty: 25,
     warningSeconds: 15,
     comboWarningEvery: 6,
-    shakePower: 7
+    shakePower: 7,
+    frames: BOSS_FRAME_SETS.forgottenSpirit
   },
   shadowLibrarian: {
     id: 'shadow-librarian',
@@ -29,7 +53,8 @@ export const BOSSES = {
     pressurePenalty: 35,
     warningSeconds: 18,
     comboWarningEvery: 5,
-    shakePower: 8
+    shakePower: 8,
+    frames: BOSS_FRAME_SETS.shadowLibrarian
   },
   sealedPageGolem: {
     id: 'sealed-page-golem',
@@ -44,7 +69,8 @@ export const BOSSES = {
     pressurePenalty: 45,
     warningSeconds: 20,
     comboWarningEvery: 4,
-    shakePower: 10
+    shakePower: 10,
+    frames: BOSS_FRAME_SETS.sealedPageGolem
   }
 };
 

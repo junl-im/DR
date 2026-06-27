@@ -56,12 +56,12 @@ jobs:
           npm run check:lobby-missions
           npm run check:exit-scroll
           npm run check:v2-assets
+          npm run check:real-atlas
+          npm run check:touch-qa
+          npm run check:boss-sheets
           npm run check:viewport-frame
           npm run check:gameplay-mapping
           npm run check:alpha-clean
-          npm run check:atlas-pack
-          npm run check:touch-qa
-          npm run atlas:pack
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

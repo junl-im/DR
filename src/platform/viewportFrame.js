@@ -3,25 +3,13 @@ const PORTRAIT_RATIO = 9 / 16;
 const MAX_APP_WIDTH = 560;
 const MIN_APP_WIDTH = 320;
 const FRAME_KEY = 'dream-library-last-portrait-frame';
-
-function readStableViewport() {
-  const vv = window.visualViewport;
-  const candidates = [
-    { width: vv?.width, height: vv?.height },
-    { width: window.innerWidth, height: window.innerHeight },
-    { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight }
-  ].map((item) => ({
-    width: Math.max(1, Math.round(Number(item.width) || 0)),
-    height: Math.max(1, Math.round(Number(item.height) || 0))
-  })).filter((item) => item.width > 1 && item.height > 1);
-
-  const portrait = candidates.find((item) => item.height >= item.width);
-  if (portrait) return portrait;
-  return candidates[0] || { width: 390, height: 844 };
-}
+const LANDSCAPE_HEIGHT_MARGIN = 14;
 
 function readRawViewport() {
-  return readStableViewport();
+  const vv = window.visualViewport;
+  const width = Math.max(1, Math.round(vv?.width || window.innerWidth || document.documentElement.clientWidth || 390));
+  const height = Math.max(1, Math.round(vv?.height || window.innerHeight || document.documentElement.clientHeight || 844));
+  return { width, height };
 }
 
 function readStoredPortraitFrame() {
@@ -50,9 +38,7 @@ export function isMobileLikeViewport() {
 
 export function computePortraitFrame(forcePortrait = isMobileLikeViewport()) {
   const raw = readRawViewport();
-  const directWidth = Math.max(1, Math.round(window.visualViewport?.width || window.innerWidth || raw.width));
-  const directHeight = Math.max(1, Math.round(window.visualViewport?.height || window.innerHeight || raw.height));
-  const sourceLandscape = directWidth > directHeight;
+  const sourceLandscape = raw.width > raw.height;
 
   if (!forcePortrait) {
     return {
@@ -67,20 +53,21 @@ export function computePortraitFrame(forcePortrait = isMobileLikeViewport()) {
   }
 
   if (sourceLandscape) {
+    const usableHeight = Math.max(360, raw.height - LANDSCAPE_HEIGHT_MARGIN);
     const stored = readStoredPortraitFrame();
-    const fallbackWidth = Math.max(MIN_APP_WIDTH, Math.min(raw.height, MAX_APP_WIDTH));
-    const fallbackHeight = Math.round(fallbackWidth / PORTRAIT_RATIO);
-    const appWidth = stored?.appWidth || fallbackWidth;
-    const appHeight = stored?.appHeight || Math.max(fallbackHeight, Math.round(appWidth / PORTRAIT_RATIO));
-    const appScale = Math.max(0.48, Math.min(1, raw.width / appWidth, raw.height / appHeight));
+    const idealWidth = Math.max(MIN_APP_WIDTH, Math.min(stored?.appWidth || Math.round(usableHeight * PORTRAIT_RATIO), MAX_APP_WIDTH));
+    const idealHeight = Math.max(Math.round(idealWidth / PORTRAIT_RATIO), stored?.appHeight || 0, usableHeight);
+    const appScale = Math.min(1, raw.width / idealWidth, usableHeight / idealHeight);
+    const safeScale = Math.max(0.42, appScale);
     return {
       rawWidth: raw.width,
       rawHeight: raw.height,
-      appWidth,
-      appHeight,
-      appScale,
+      appWidth: idealWidth,
+      appHeight: idealHeight,
+      appScale: safeScale,
       sourceLandscape,
-      virtualPortrait: true
+      virtualPortrait: true,
+      fittedLandscape: true
     };
   }
 
