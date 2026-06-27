@@ -256,6 +256,7 @@ async function init() {
 
   await renderer.initAmbient(el.pixiStage);
   await renderer.preloadAssets(ATLAS_ASSETS);
+  document.body.classList.add('tile-atlas-ready');
   renderer.preloadAssets(PRELOAD_ASSETS);
   void loadSpineRuntime();
 

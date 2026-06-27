@@ -26,7 +26,10 @@
     "check:v2-assets": "node tools/check-v2-asset-states.mjs",
     "check:viewport-frame": "node tools/check-viewport-frame.mjs",
     "check:gameplay-mapping": "node tools/check-gameplay-mapping.mjs",
-    "check:alpha-clean": "node tools/check-alpha-clean.mjs"
+    "check:alpha-clean": "node tools/check-alpha-clean.mjs",
+    "atlas:pack": "node tools/pack-v2-atlas.mjs",
+    "check:atlas-pack": "node tools/check-atlas-pack.mjs",
+    "check:touch-qa": "node tools/check-touch-qa.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -39,5 +42,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.19"
+  "version": "1.0.20"
 }

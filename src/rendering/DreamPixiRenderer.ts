@@ -259,9 +259,19 @@ export class DreamPixiRenderer {
   private resolveTileTexture(tile: BoardTile, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled' = 'normal') {
     const asset = tile.stateAssets?.[state] || tile.stateAssets?.normal || tile.asset;
     const filename = asset.split('/').pop() || asset;
+    const atlasFrameName = tile.stateAssets ? `${tile.type}-${state}.png` : filename;
+    const atlasCandidates = [
+      atlasFrameName,
+      filename,
+      `v2-state/${filename}`,
+      `assets/objects/v2-state/${filename}`,
+      asset
+    ];
     try {
-      const atlasTexture = Assets.get(filename) || Assets.get(`assets/objects/${filename}`) || Assets.get(asset);
-      if (atlasTexture instanceof Texture) return atlasTexture;
+      for (const candidate of atlasCandidates) {
+        const atlasTexture = Assets.get(candidate);
+        if (atlasTexture instanceof Texture) return atlasTexture;
+      }
     } catch {
       // Atlas lookup is an optimization only. Individual PNG remains the safe fallback.
     }

@@ -152,6 +152,7 @@ export const GAMEPLAY_TILE_SET = [
   ...TILE_SET.filter((tile) => tile.theme !== 'v2 에셋' && tile.theme !== '프리미엄')
 ];
 
+// Gameplay tile pool helper: board creation must use this v2-priority pool.
 export function getGameplayTiles(iconTypes = 16) {
   const count = Math.max(1, Math.min(Number(iconTypes) || 16, GAMEPLAY_TILE_SET.length));
   return GAMEPLAY_TILE_SET.slice(0, count);
@@ -164,7 +165,9 @@ export function isV2GameplayTile(type) {
 export const ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.19.json`
+  `${import.meta.env.BASE_URL}assets/atlas/v2-state-tiles.png`,
+  `${import.meta.env.BASE_URL}assets/atlas/v2-state-tiles.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.20.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -203,7 +206,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.19.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.20.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/gothic-window-v2.png`,

@@ -60,6 +60,22 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.20 - Real Atlas Packing, Touch QA and Gameplay Mapping Build Fix Patch
+
+- v1.0.19 Actions 실패 원인 수정: `check:v2-assets`가 요구하는 `getGameplayTiles()` v2 우선 게임플레이 풀을 명시적으로 검증하고, `createBoard()`가 그 풀을 사용하는지 검사하도록 정리
+- `GAMEPLAY_TILE_SET`와 `getGameplayTiles()`를 유지하면서 검사 스크립트와 실제 보드 생성 경로의 이름/정규식 불일치를 제거
+- v2 상태별 타일 36종 × 5상태, 총 180프레임을 `public/assets/atlas/v2-state-tiles.png`와 `v2-state-tiles.atlas.json`으로 실제 패킹
+- `DreamPixiRenderer`의 타일 텍스처 해석을 atlas frame 우선으로 변경하고, 실패 시 개별 PNG fallback을 사용
+- `ATLAS_ASSETS`와 `PRELOAD_ASSETS`에 v2 state atlas를 추가해 타일 표시가 기존 PNG보다 atlas를 우선 사용하도록 구성
+- 로비 스크롤 QA 2차 적용: 버튼 탭은 `manipulation`, 로비 긴 영역은 `pan-y`, 보드 캔버스는 `touch-action: none`으로 분리
+- `portraitLock.js`의 tap 판정을 `TAP_SLOP` 기준으로 좁혀 세로 드래그 중 fullscreen/portrait 재시도가 스크롤을 방해하지 않도록 조정
+- `viewportFrame.js`에 `readStableViewport()`를 추가해 visualViewport, innerWidth, documentElement 값을 비교하고 세로 기준 후보를 우선 사용
+- `npm run check:atlas-pack`, `npm run check:touch-qa`, `npm run atlas:pack` 추가 및 GitHub Actions 검사에 반영
+- Texture Atlas manifest v1.0.20 갱신
+- service worker 캐시를 v1.0.20으로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.19 - Gameplay Asset Mapping, Alpha Clean, Selection Clarity and Lobby Scroll Patch
 
 - 사천성 보드가 여전히 기존 타일을 먼저 쓰는 원인을 수정
@@ -634,7 +650,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했고, v1.0.20에서는 v2 상태별 타일을 실제 atlas PNG/JSON으로 패킹하고 Actions의 gameplay pool 검사 불일치와 모바일 터치 QA를 보정했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              84+ files
@@ -644,7 +660,8 @@ public/assets/ui/*.png                    80+ files
 public/assets/effects/*.png               44+ files
 public/assets/meta/*                      11 files
 public/assets/atlas/dream-objects.png     1 file
-public/assets/atlas/*.json                1 file
+public/assets/atlas/v2-state-tiles.png    1 file
+public/assets/atlas/*.json                2+ files
 public/assets/meta/tile-manifest.json     1 file
 ```
 
@@ -668,9 +685,8 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 
 ## Next Version Plan
 
-### v1.0.19 예정 - Atlas Packing + Boss Sheet Slicing + Lobby Animation Patch
+### v1.0.21 예정 - Boss Sheet Slicing + Button State + Lobby Animation Patch
 
-- v2 상태별 타일을 실제 Texture Atlas로 패킹하고 atlas JSON lookup을 우선 적용
 - 보스 공격 시퀀스 시트를 자동 분할해 공격/피격 컷인 프레임으로 배정
 - 로비 마스코트 표정/동작 카드 추가
 - 버튼 hover/pressed PNG를 pointer 상태에 더 깊게 연결
@@ -678,6 +694,7 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 - 모바일/인앱 화면 보정은 문구 노출 없이 내부적으로 처리하고, 게임 UI에는 표시하지 않음
 - Firebase/로컬 랭킹 혼합 표시 UX 개선
 - 큰 JS chunk lazy loading 범위 확대
+- atlas frame miss 리포트 추가
 
 ## KakaoTalk / In-App Browser Policy
 
@@ -729,9 +746,9 @@ Initial tile themes:
 
 ## Next Milestones
 
-1. v2 상태별 타일 Atlas 패킹 자동화
-2. 보스 공격 시퀀스 시트 분할/컷인 적용
-3. 로비 마스코트 모션과 카드형 가이드 추가
+1. 보스 공격 시퀀스 시트 분할/컷인 적용
+2. 로비 마스코트 모션과 카드형 가이드 추가
+3. 버튼 상태 PNG와 pointer 상태 매핑 확대
 4. 모바일/인앱 화면 보정 QA와 실제 기기별 viewport 기록 정리
 
 

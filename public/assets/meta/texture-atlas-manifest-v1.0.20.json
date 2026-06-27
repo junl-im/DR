@@ -1,0 +1,2013 @@
+{
+  "version": "1.0.20",
+  "policy": "PNG/WebP/JPG only. SVG is forbidden.",
+  "atlasStrategy": "v2 state tile atlas is loaded first. Individual PNGs remain as fallback and authoring sources.",
+  "packedAtlases": [
+    "assets/atlas/dream-objects.png",
+    "assets/atlas/v2-state-tiles.png"
+  ],
+  "total": 400,
+  "generatedAt": "2026-06-27T00:14:01.964Z",
+  "entries": [
+    {
+      "group": "objects",
+      "file": "assets/objects/bell.png",
+      "bytes": 46467
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/candle.png",
+      "bytes": 46424
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/castle.png",
+      "bytes": 45209
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/comet.png",
+      "bytes": 45737
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/crown.png",
+      "bytes": 46431
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/crystal-orb.png",
+      "bytes": 47315
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/dragon-egg.png",
+      "bytes": 46289
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/feather.png",
+      "bytes": 45495
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/flower.png",
+      "bytes": 52739
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/gem.png",
+      "bytes": 46712
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/gold-key.png",
+      "bytes": 45087
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/hourglass.png",
+      "bytes": 42952
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/ink.png",
+      "bytes": 45350
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/magic-book.png",
+      "bytes": 44595
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/map.png",
+      "bytes": 43003
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/moon.png",
+      "bytes": 44759
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/music-box.png",
+      "bytes": 47897
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/potion.png",
+      "bytes": 46975
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-01.png",
+      "bytes": 138509
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-02.png",
+      "bytes": 50448
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-03.png",
+      "bytes": 56430
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-04.png",
+      "bytes": 83187
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-05.png",
+      "bytes": 88328
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-06.png",
+      "bytes": 41907
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-07.png",
+      "bytes": 71210
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-08.png",
+      "bytes": 58676
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-09.png",
+      "bytes": 98336
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-10.png",
+      "bytes": 79859
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-11.png",
+      "bytes": 105679
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-12.png",
+      "bytes": 73455
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-13.png",
+      "bytes": 47304
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-14.png",
+      "bytes": 102682
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-15.png",
+      "bytes": 107407
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-16.png",
+      "bytes": 73469
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-17.png",
+      "bytes": 56264
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-18.png",
+      "bytes": 75607
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-19.png",
+      "bytes": 78150
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-20.png",
+      "bytes": 88296
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-21.png",
+      "bytes": 81955
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-22.png",
+      "bytes": 105412
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-23.png",
+      "bytes": 44381
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/premium-24.png",
+      "bytes": 63209
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/relic.png",
+      "bytes": 45026
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/rune.png",
+      "bytes": 45132
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/scroll.png",
+      "bytes": 44722
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/shield.png",
+      "bytes": 43006
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/spark.png",
+      "bytes": 46727
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/star.png",
+      "bytes": 50498
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-01-disabled.png",
+      "bytes": 45462
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-01-hint.png",
+      "bytes": 62256
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-01-locked.png",
+      "bytes": 43790
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-01-normal.png",
+      "bytes": 62003
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-01-selected.png",
+      "bytes": 60287
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-02-disabled.png",
+      "bytes": 25340
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-02-hint.png",
+      "bytes": 34465
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-02-locked.png",
+      "bytes": 20475
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-02-normal.png",
+      "bytes": 34562
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-02-selected.png",
+      "bytes": 32548
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-03-disabled.png",
+      "bytes": 26558
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-03-hint.png",
+      "bytes": 38327
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-03-locked.png",
+      "bytes": 23219
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-03-normal.png",
+      "bytes": 38179
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-03-selected.png",
+      "bytes": 36173
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-04-disabled.png",
+      "bytes": 33698
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-04-hint.png",
+      "bytes": 47860
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-04-locked.png",
+      "bytes": 31136
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-04-normal.png",
+      "bytes": 47724
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-04-selected.png",
+      "bytes": 45666
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-05-disabled.png",
+      "bytes": 34742
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-05-hint.png",
+      "bytes": 49027
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-05-locked.png",
+      "bytes": 31160
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-05-normal.png",
+      "bytes": 49019
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-05-selected.png",
+      "bytes": 46993
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-06-disabled.png",
+      "bytes": 22082
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-06-hint.png",
+      "bytes": 30323
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-06-locked.png",
+      "bytes": 18619
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-06-normal.png",
+      "bytes": 30432
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-06-selected.png",
+      "bytes": 28462
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-07-disabled.png",
+      "bytes": 31538
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-07-hint.png",
+      "bytes": 42188
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-07-locked.png",
+      "bytes": 26129
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-07-normal.png",
+      "bytes": 42115
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-07-selected.png",
+      "bytes": 40131
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-08-disabled.png",
+      "bytes": 27168
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-08-hint.png",
+      "bytes": 37002
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-08-locked.png",
+      "bytes": 22748
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-08-normal.png",
+      "bytes": 36927
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-08-selected.png",
+      "bytes": 35050
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-09-disabled.png",
+      "bytes": 23303
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-09-hint.png",
+      "bytes": 31454
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-09-locked.png",
+      "bytes": 19448
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-09-normal.png",
+      "bytes": 31569
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-09-selected.png",
+      "bytes": 29583
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-10-disabled.png",
+      "bytes": 34840
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-10-hint.png",
+      "bytes": 46075
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-10-locked.png",
+      "bytes": 28150
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-10-normal.png",
+      "bytes": 46160
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-10-selected.png",
+      "bytes": 44120
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-11-disabled.png",
+      "bytes": 36893
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-11-hint.png",
+      "bytes": 50781
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-11-locked.png",
+      "bytes": 32775
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-11-normal.png",
+      "bytes": 50895
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-11-selected.png",
+      "bytes": 48855
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-12-disabled.png",
+      "bytes": 36759
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-12-hint.png",
+      "bytes": 54132
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-12-locked.png",
+      "bytes": 36584
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-12-normal.png",
+      "bytes": 54047
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-12-selected.png",
+      "bytes": 52046
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-13-disabled.png",
+      "bytes": 32403
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-13-hint.png",
+      "bytes": 45713
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-13-locked.png",
+      "bytes": 28264
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-13-normal.png",
+      "bytes": 45729
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-13-selected.png",
+      "bytes": 43671
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-14-disabled.png",
+      "bytes": 36931
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-14-hint.png",
+      "bytes": 53176
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-14-locked.png",
+      "bytes": 35271
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-14-normal.png",
+      "bytes": 53130
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-14-selected.png",
+      "bytes": 51084
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-15-disabled.png",
+      "bytes": 32450
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-15-hint.png",
+      "bytes": 44274
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-15-locked.png",
+      "bytes": 29515
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-15-normal.png",
+      "bytes": 44297
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-15-selected.png",
+      "bytes": 42227
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-16-disabled.png",
+      "bytes": 23629
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-16-hint.png",
+      "bytes": 32729
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-16-locked.png",
+      "bytes": 20634
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-16-normal.png",
+      "bytes": 32769
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-16-selected.png",
+      "bytes": 30758
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-17-disabled.png",
+      "bytes": 38236
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-17-hint.png",
+      "bytes": 53333
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-17-locked.png",
+      "bytes": 34709
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-17-normal.png",
+      "bytes": 53210
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-17-selected.png",
+      "bytes": 51143
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-18-disabled.png",
+      "bytes": 40440
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-18-hint.png",
+      "bytes": 56807
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-18-locked.png",
+      "bytes": 38454
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-18-normal.png",
+      "bytes": 56820
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-18-selected.png",
+      "bytes": 54755
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-19-disabled.png",
+      "bytes": 31172
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-19-hint.png",
+      "bytes": 43299
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-19-locked.png",
+      "bytes": 26736
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-19-normal.png",
+      "bytes": 43196
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-19-selected.png",
+      "bytes": 41179
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-20-disabled.png",
+      "bytes": 40992
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-20-hint.png",
+      "bytes": 60355
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-20-locked.png",
+      "bytes": 42037
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-20-normal.png",
+      "bytes": 60096
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-20-selected.png",
+      "bytes": 58432
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-21-disabled.png",
+      "bytes": 36671
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-21-hint.png",
+      "bytes": 52784
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-21-locked.png",
+      "bytes": 34937
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-21-normal.png",
+      "bytes": 52588
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-21-selected.png",
+      "bytes": 50556
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-22-disabled.png",
+      "bytes": 30000
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-22-hint.png",
+      "bytes": 41817
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-22-locked.png",
+      "bytes": 25837
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-22-normal.png",
+      "bytes": 41905
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-22-selected.png",
+      "bytes": 39873
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-23-disabled.png",
+      "bytes": 32109
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-23-hint.png",
+      "bytes": 43640
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-23-locked.png",
+      "bytes": 28509
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-23-normal.png",
+      "bytes": 43708
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-23-selected.png",
+      "bytes": 41687
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-24-disabled.png",
+      "bytes": 35961
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-24-hint.png",
+      "bytes": 52279
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-24-locked.png",
+      "bytes": 34838
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-24-normal.png",
+      "bytes": 52226
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-24-selected.png",
+      "bytes": 50152
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-25-disabled.png",
+      "bytes": 39231
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-25-hint.png",
+      "bytes": 56097
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-25-locked.png",
+      "bytes": 37632
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-25-normal.png",
+      "bytes": 56079
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-25-selected.png",
+      "bytes": 53968
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-26-disabled.png",
+      "bytes": 44096
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-26-hint.png",
+      "bytes": 64249
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-26-locked.png",
+      "bytes": 45698
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-26-normal.png",
+      "bytes": 64110
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-26-selected.png",
+      "bytes": 62074
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-27-disabled.png",
+      "bytes": 25994
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-27-hint.png",
+      "bytes": 36120
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-27-locked.png",
+      "bytes": 23058
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-27-normal.png",
+      "bytes": 36053
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-27-selected.png",
+      "bytes": 34319
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-28-disabled.png",
+      "bytes": 32977
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-28-hint.png",
+      "bytes": 45683
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-28-locked.png",
+      "bytes": 27802
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-28-normal.png",
+      "bytes": 45705
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-28-selected.png",
+      "bytes": 43676
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-29-disabled.png",
+      "bytes": 32719
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-29-hint.png",
+      "bytes": 44929
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-29-locked.png",
+      "bytes": 27301
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-29-normal.png",
+      "bytes": 45014
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-29-selected.png",
+      "bytes": 42944
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-30-disabled.png",
+      "bytes": 34323
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-30-hint.png",
+      "bytes": 48458
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-30-locked.png",
+      "bytes": 30746
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-30-normal.png",
+      "bytes": 48509
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-30-selected.png",
+      "bytes": 46435
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-31-disabled.png",
+      "bytes": 33693
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-31-hint.png",
+      "bytes": 47784
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-31-locked.png",
+      "bytes": 30508
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-31-normal.png",
+      "bytes": 47753
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-31-selected.png",
+      "bytes": 45756
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-32-disabled.png",
+      "bytes": 37261
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-32-hint.png",
+      "bytes": 53347
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-32-locked.png",
+      "bytes": 35512
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-32-normal.png",
+      "bytes": 53301
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-32-selected.png",
+      "bytes": 51224
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-33-disabled.png",
+      "bytes": 21709
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-33-hint.png",
+      "bytes": 31453
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-33-locked.png",
+      "bytes": 19583
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-33-normal.png",
+      "bytes": 31528
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-33-selected.png",
+      "bytes": 29479
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-34-disabled.png",
+      "bytes": 27544
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-34-hint.png",
+      "bytes": 39191
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-34-locked.png",
+      "bytes": 24989
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-34-normal.png",
+      "bytes": 39217
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-34-selected.png",
+      "bytes": 37156
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-35-disabled.png",
+      "bytes": 24751
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-35-hint.png",
+      "bytes": 34903
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-35-locked.png",
+      "bytes": 21764
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-35-normal.png",
+      "bytes": 34949
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-35-selected.png",
+      "bytes": 32946
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-36-disabled.png",
+      "bytes": 30393
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-36-hint.png",
+      "bytes": 45867
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-36-locked.png",
+      "bytes": 29136
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-36-normal.png",
+      "bytes": 45788
+    },
+    {
+      "group": "objects",
+      "file": "assets/objects/v2-state/v2-tile-36-selected.png",
+      "bytes": 43834
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/boss-warning.png",
+      "bytes": 143358
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/combo-flash.png",
+      "bytes": 131818
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/hit-burst.png",
+      "bytes": 21010
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-01.png",
+      "bytes": 64909
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-02.png",
+      "bytes": 92010
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-03.png",
+      "bytes": 83139
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-04.png",
+      "bytes": 80561
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-05.png",
+      "bytes": 86639
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/import-vfx-06.png",
+      "bytes": 46174
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/magic-wave.png",
+      "bytes": 142486
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-01.png",
+      "bytes": 2428
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-02.png",
+      "bytes": 3900
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-03.png",
+      "bytes": 1909
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-04.png",
+      "bytes": 4540
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-05.png",
+      "bytes": 1382
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-06.png",
+      "bytes": 2386
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-07.png",
+      "bytes": 3851
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-08.png",
+      "bytes": 1888
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-09.png",
+      "bytes": 4498
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/particles-10.png",
+      "bytes": 1440
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-01.png",
+      "bytes": 892
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-02.png",
+      "bytes": 797
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-03.png",
+      "bytes": 1388
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-04.png",
+      "bytes": 1346
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-05.png",
+      "bytes": 1424
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-06.png",
+      "bytes": 869
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-07.png",
+      "bytes": 768
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-08.png",
+      "bytes": 1336
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-09.png",
+      "bytes": 1279
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-10.png",
+      "bytes": 1386
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-11.png",
+      "bytes": 872
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-12.png",
+      "bytes": 749
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-13.png",
+      "bytes": 1289
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-14.png",
+      "bytes": 1269
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-15.png",
+      "bytes": 1363
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-16.png",
+      "bytes": 880
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-17.png",
+      "bytes": 844
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-18.png",
+      "bytes": 1430
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-19.png",
+      "bytes": 1271
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-20.png",
+      "bytes": 1535
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-21.png",
+      "bytes": 489
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-22.png",
+      "bytes": 619
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-23.png",
+      "bytes": 1034
+    },
+    {
+      "group": "effects",
+      "file": "assets/effects/v2-fragments/v2-fragment-24.png",
+      "bytes": 1058
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/button-google-v2.png",
+      "bytes": 197499
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/button-start-v2.png",
+      "bytes": 231201
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frame-library-v2.png",
+      "bytes": 1141162
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frame-ornate-v2.png",
+      "bytes": 588083
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-01.png",
+      "bytes": 7253
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-02.png",
+      "bytes": 7237
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-03.png",
+      "bytes": 9600
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-04.png",
+      "bytes": 9657
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-05.png",
+      "bytes": 10138
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-06.png",
+      "bytes": 10187
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-07.png",
+      "bytes": 11563
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-08.png",
+      "bytes": 11524
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-09.png",
+      "bytes": 13335
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-10.png",
+      "bytes": 12410
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-11.png",
+      "bytes": 9334
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-12.png",
+      "bytes": 9298
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-13.png",
+      "bytes": 5340
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-14.png",
+      "bytes": 5322
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-15.png",
+      "bytes": 5900
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-16.png",
+      "bytes": 5875
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-17.png",
+      "bytes": 10891
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-18.png",
+      "bytes": 10852
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-19.png",
+      "bytes": 11019
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/frames-v2/frame-20.png",
+      "bytes": 10977
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/hp-frame.png",
+      "bytes": 1595
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-back.png",
+      "bytes": 17491
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-calendar.png",
+      "bytes": 17098
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-chest.png",
+      "bytes": 17878
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-close.png",
+      "bytes": 16556
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-fullscreen.png",
+      "bytes": 16394
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-hint.png",
+      "bytes": 18461
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-home.png",
+      "bytes": 18078
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-logout.png",
+      "bytes": 16636
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-play.png",
+      "bytes": 16577
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-ranking.png",
+      "bytes": 16019
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-refresh.png",
+      "bytes": 19187
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/icon-settings.png",
+      "bytes": 20661
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/back-disabled.png",
+      "bytes": 15684
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/back-hover.png",
+      "bytes": 16581
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/back-normal.png",
+      "bytes": 17491
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/back-pressed.png",
+      "bytes": 18045
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/book-disabled.png",
+      "bytes": 14864
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/book-hover.png",
+      "bytes": 16153
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/book-normal.png",
+      "bytes": 16914
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/book-pressed.png",
+      "bytes": 17253
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/close-disabled.png",
+      "bytes": 14796
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/close-hover.png",
+      "bytes": 15686
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/close-normal.png",
+      "bytes": 16556
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/close-pressed.png",
+      "bytes": 17207
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/collection-disabled.png",
+      "bytes": 15599
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/collection-hover.png",
+      "bytes": 16518
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/collection-normal.png",
+      "bytes": 17387
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/collection-pressed.png",
+      "bytes": 18080
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/confirm-disabled.png",
+      "bytes": 14752
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/confirm-hover.png",
+      "bytes": 15716
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/confirm-normal.png",
+      "bytes": 16548
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/confirm-pressed.png",
+      "bytes": 17134
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/fullscreen-disabled.png",
+      "bytes": 14610
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/fullscreen-hover.png",
+      "bytes": 15729
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/fullscreen-normal.png",
+      "bytes": 16394
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/fullscreen-pressed.png",
+      "bytes": 16869
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/gift-disabled.png",
+      "bytes": 16216
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/gift-hover.png",
+      "bytes": 17502
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/gift-normal.png",
+      "bytes": 18314
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/gift-pressed.png",
+      "bytes": 18936
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/hint-disabled.png",
+      "bytes": 16486
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/hint-hover.png",
+      "bytes": 17491
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/hint-normal.png",
+      "bytes": 18461
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/hint-pressed.png",
+      "bytes": 19060
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/home-disabled.png",
+      "bytes": 16131
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/home-hover.png",
+      "bytes": 17174
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/home-normal.png",
+      "bytes": 18078
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/home-pressed.png",
+      "bytes": 18769
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/logout-disabled.png",
+      "bytes": 14811
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/logout-hover.png",
+      "bytes": 15924
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/logout-normal.png",
+      "bytes": 16636
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/logout-pressed.png",
+      "bytes": 17162
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/map-disabled.png",
+      "bytes": 15076
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/map-hover.png",
+      "bytes": 16549
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/map-normal.png",
+      "bytes": 16876
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/map-pressed.png",
+      "bytes": 17155
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/play-disabled.png",
+      "bytes": 14920
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/play-hover.png",
+      "bytes": 15717
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/play-normal.png",
+      "bytes": 16577
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/play-pressed.png",
+      "bytes": 17325
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/ranking-disabled.png",
+      "bytes": 14163
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/ranking-hover.png",
+      "bytes": 15321
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/ranking-normal.png",
+      "bytes": 16019
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/ranking-pressed.png",
+      "bytes": 16528
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/refresh-disabled.png",
+      "bytes": 17025
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/refresh-hover.png",
+      "bytes": 18369
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/refresh-normal.png",
+      "bytes": 19187
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/refresh-pressed.png",
+      "bytes": 19768
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/restore-disabled.png",
+      "bytes": 16244
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/restore-hover.png",
+      "bytes": 17549
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/restore-normal.png",
+      "bytes": 18363
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/restore-pressed.png",
+      "bytes": 18897
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/settings-disabled.png",
+      "bytes": 18440
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/settings-hover.png",
+      "bytes": 19731
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/settings-normal.png",
+      "bytes": 20661
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/settings-pressed.png",
+      "bytes": 21318
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/warning-disabled.png",
+      "bytes": 15540
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/warning-hover.png",
+      "bytes": 16631
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/warning-normal.png",
+      "bytes": 17315
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/keys-v2/warning-pressed.png",
+      "bytes": 17813
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/logo-dream-library-v2.png",
+      "bytes": 458226
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/panel-frame.png",
+      "bytes": 3381
+    },
+    {
+      "group": "ui",
+      "file": "assets/ui/reward-badge.png",
+      "bytes": 2474
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-01.png",
+      "bytes": 120202
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-02.png",
+      "bytes": 282356
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-03.png",
+      "bytes": 249133
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/assistant-04.png",
+      "bytes": 208508
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-01.png",
+      "bytes": 358969
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-02.png",
+      "bytes": 336554
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-03.png",
+      "bytes": 115485
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-import-04.png",
+      "bytes": 110989
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-motion-sheet-v2.png",
+      "bytes": 1074970
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/boss-sticker-sheet-v2.png",
+      "bytes": 1066818
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/forgotten-spirit.png",
+      "bytes": 102378
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/librarian-momo.png",
+      "bytes": 69160
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/mascot-companions-v2.png",
+      "bytes": 656353
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/mascot-scholar-v2.png",
+      "bytes": 485699
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/sealed-page-golem.png",
+      "bytes": 134604
+    },
+    {
+      "group": "characters",
+      "file": "assets/characters/shadow-librarian.png",
+      "bytes": 130441
+    },
+    {
+      "group": "atlas",
+      "file": "assets/atlas/dream-objects.atlas.json",
+      "bytes": 5858
+    },
+    {
+      "group": "atlas",
+      "file": "assets/atlas/dream-objects.png",
+      "bytes": 902626
+    },
+    {
+      "group": "atlas",
+      "file": "assets/atlas/v2-state-tiles.atlas.json",
+      "bytes": 75019
+    },
+    {
+      "group": "atlas",
+      "file": "assets/atlas/v2-state-tiles.png",
+      "bytes": 4020445
+    }
+  ]
+}

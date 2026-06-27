@@ -3,6 +3,7 @@ import { applyPortraitFrame } from './viewportFrame.js';
 const KAKAO_PATTERNS = [/KAKAOTALK/i, /KakaoTalk/i, /KAKAO/i];
 const MOBILE_PATTERNS = [/Android/i, /iPhone/i, /iPad/i, /iPod/i];
 const LOCK_KEY = 'dream-library-portrait-frame-applied';
+const TAP_SLOP = 10;
 
 export function initPortraitRuntimeGuard(options = {}) {
   const userAgent = navigator.userAgent || '';
@@ -28,7 +29,7 @@ export function initPortraitRuntimeGuard(options = {}) {
     const point = readPoint(event);
     const distance = Math.hypot(point.x - gestureStart.x, point.y - gestureStart.y);
     const duration = point.time - gestureStart.time;
-    return distance <= 14 && duration <= 650;
+    return distance <= TAP_SLOP && duration <= 520;
   };
 
   const setStatus = (message) => {
@@ -47,14 +48,22 @@ export function initPortraitRuntimeGuard(options = {}) {
     syncViewport();
     requestCount += 1;
     try {
+      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      }
+    } catch {
+      // Best effort only. The virtual portrait frame is the real layout fallback.
+    }
+
+    try {
       if (screen.orientation?.lock) await screen.orientation.lock('portrait');
     } catch {
-      // Best effort only. Counter-rotated portrait frame is the real layout fallback.
+      // Best effort only.
     }
 
     syncViewport();
     sessionStorage.setItem(LOCK_KEY, 'yes');
-    if (source === 'button') setStatus('화면을 맞췄습니다.');
+    if (source === 'button') setStatus('게임 화면을 맞췄습니다.');
     return true;
   };
 
@@ -69,7 +78,7 @@ export function initPortraitRuntimeGuard(options = {}) {
   continueButton?.addEventListener('click', () => {
     syncViewport();
     overlay?.classList.add('hidden');
-    setStatus('화면을 맞췄습니다.');
+    setStatus('게임 화면을 맞췄습니다.');
   });
 
   const onResize = () => syncViewport();
@@ -77,7 +86,7 @@ export function initPortraitRuntimeGuard(options = {}) {
   window.visualViewport?.addEventListener('resize', onResize, { passive: true });
   window.addEventListener('orientationchange', () => window.setTimeout(() => {
     syncViewport();
-    if (isKakao || isMobile) syncViewport();
+    if (isKakao || isMobile) void requestLock('orientationchange');
   }, 80), { passive: true });
 
   const gestureLock = (event) => {

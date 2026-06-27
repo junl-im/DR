@@ -20,7 +20,7 @@ const requiredFiles = [
   'tools/report-image-size.mjs',
   'tools/check-workflows.mjs',
   'public/assets/meta/asset-import-v1.0.11.json',
-  'public/assets/meta/texture-atlas-manifest-v1.0.19.json',
+  'public/assets/meta/texture-atlas-manifest-v1.0.20.json',
   'tools/build-texture-atlas-manifest.mjs',
   'tools/check-special-rules.mjs',
   'public/assets/backgrounds/imported-moon-library.png',
@@ -31,11 +31,15 @@ const requiredFiles = [
   'tools/check-lobby-missions.mjs',
   'tools/check-kakao-portrait.mjs',
   'tools/check-exit-scroll.mjs',
-  'src/platform/portraitLock.js'
+  'src/platform/portraitLock.js',
+  'public/assets/atlas/v2-state-tiles.png',
+  'public/assets/atlas/v2-state-tiles.atlas.json',
+  'tools/check-atlas-pack.mjs',
+  'tools/check-touch-qa.mjs'
 ];
 
 for (const file of requiredFiles) {
-  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.19 file: ${file}`); }
+  try { statSync(join(root, file)); } catch { errors.push(`Missing required v1.0.20 file: ${file}`); }
 }
 
 const html = readFileSync(join(root, 'index.html'), 'utf8');
@@ -56,7 +60,7 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Project health check passed for v1.0.19.');
+console.log('Project health check passed for v1.0.20.');
 
 function walk(dir, visitor) {
   for (const entry of readdirSync(dir)) {

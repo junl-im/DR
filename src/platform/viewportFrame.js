@@ -4,11 +4,24 @@ const MAX_APP_WIDTH = 560;
 const MIN_APP_WIDTH = 320;
 const FRAME_KEY = 'dream-library-last-portrait-frame';
 
-function readRawViewport() {
+function readStableViewport() {
   const vv = window.visualViewport;
-  const width = Math.max(1, Math.round(vv?.width || window.innerWidth || document.documentElement.clientWidth || 390));
-  const height = Math.max(1, Math.round(vv?.height || window.innerHeight || document.documentElement.clientHeight || 844));
-  return { width, height };
+  const candidates = [
+    { width: vv?.width, height: vv?.height },
+    { width: window.innerWidth, height: window.innerHeight },
+    { width: document.documentElement.clientWidth, height: document.documentElement.clientHeight }
+  ].map((item) => ({
+    width: Math.max(1, Math.round(Number(item.width) || 0)),
+    height: Math.max(1, Math.round(Number(item.height) || 0))
+  })).filter((item) => item.width > 1 && item.height > 1);
+
+  const portrait = candidates.find((item) => item.height >= item.width);
+  if (portrait) return portrait;
+  return candidates[0] || { width: 390, height: 844 };
+}
+
+function readRawViewport() {
+  return readStableViewport();
 }
 
 function readStoredPortraitFrame() {
@@ -37,7 +50,9 @@ export function isMobileLikeViewport() {
 
 export function computePortraitFrame(forcePortrait = isMobileLikeViewport()) {
   const raw = readRawViewport();
-  const sourceLandscape = raw.width > raw.height;
+  const directWidth = Math.max(1, Math.round(window.visualViewport?.width || window.innerWidth || raw.width));
+  const directHeight = Math.max(1, Math.round(window.visualViewport?.height || window.innerHeight || raw.height));
+  const sourceLandscape = directWidth > directHeight;
 
   if (!forcePortrait) {
     return {

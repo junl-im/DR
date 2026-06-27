@@ -59,6 +59,9 @@ jobs:
           npm run check:viewport-frame
           npm run check:gameplay-mapping
           npm run check:alpha-clean
+          npm run check:atlas-pack
+          npm run check:touch-qa
+          npm run atlas:pack
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
