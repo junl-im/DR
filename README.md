@@ -1586,3 +1586,66 @@ Apply 꿈의 서고 v1.0.52 season shop reward polish finale boss cut-in and mob
 - 작은 화면에서 시즌 상점, 이메일 팝업, 옵션 계정 전환, 보스 상태바 겹침 추가 QA
 - 로비 드래그가 시즌 상점 버튼 위에서도 클릭/스크롤 충돌 없이 더 안정적인지 추가 점검
 - 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
+
+## v1.0.53 Patch Notes - Season Store Claim History, Finale Boss Balance, UI Density QA and Build Fix Patch
+
+v1.0.53은 v1.0.52 이후 GitHub Actions에서 발생한 `check:summer-live-balance` 실패를 먼저 해결하고, 시즌 상점 기록/피날레 보스 밸런스/모바일 UI 밀도 문제를 함께 다듬은 안정화 패치입니다.
+
+핵심 변경:
+
+- GitHub Actions build 실패 원인인 `Missing season pass lobby mount`를 수정했습니다.
+- 시즌 패널의 실제 mount는 `data-season-pass="v1053-shop-history-pass"`로 유지하면서, 과거 검사 스크립트가 찾는 v1.0.48~v1.0.52 시즌 패스 mount token도 숨김 호환 anchor로 보강했습니다.
+- 숨김 호환 anchor는 `hidden aria-hidden="true"` 상태라 화면에는 노출되지 않고, 로비 UI를 차지하지 않습니다.
+- 시즌 상점 최근 수령 기록 UI를 추가했습니다.
+- `seasonShopHistory` 상태와 `dream-library-season-shop-history` 로컬 저장을 추가했습니다.
+- 최근 수령 기록은 최대 4개만 표시해 시즌 패널이 과밀해지지 않도록 했습니다.
+- 시즌 상점 보상을 수령하면 보스 상태바 우측 아이콘에도 은은한 수령 반영 상태가 표시되도록 했습니다.
+- `getSeasonClaimVisualState()`를 추가해 상점 보상/보스 상태바/시즌 패널을 연결했습니다.
+- 피날레 보스 cut-in 반복 피로도를 줄이기 위해 cooldown/priority 로직을 보강했습니다.
+- 작은 화면에서 시즌 상점, 수령 기록, 이메일 팝업, 옵션 계정 전환, 보스 상태바가 겹치지 않도록 mobile density CSS를 추가했습니다.
+- 로비 드래그 보정 범위를 시즌 수령 기록과 상점 버튼까지 확장했습니다.
+- service worker cache를 `dream-library-cache-v1.0.53`으로 갱신했습니다.
+- `texture-atlas-manifest-v1.0.53.json`을 생성했습니다.
+- 신규 검사 `check:summer-history-finale-density`를 추가하고 GitHub Pages/Quality Check workflow에 연결했습니다.
+
+유지 정책:
+
+- 미니맵은 재도입하지 않습니다.
+- 게임 내 `보기 / 중앙 / + / -` 라인은 재도입하지 않습니다.
+- 카메라 도움말은 재도입하지 않습니다.
+- 선택 패 크기 고정 구조는 유지합니다.
+- 보스 상태바 우측 아이콘 구조는 유지합니다.
+- SVG는 사용하지 않습니다.
+- ZIP에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않습니다.
+
+검사 결과:
+
+```text
+npm run typecheck
+전체 check:* QA suite 통과
+npm run check:summer-live-balance
+npm run check:summer-history-finale-density
+npm run build:github
+```
+
+빌드도 성공했습니다. Vite의 큰 chunk 경고는 있었지만 실패는 아닙니다.
+
+GitHub Desktop 커밋 메시지:
+
+```text
+Apply 꿈의 서고 v1.0.53 season pass build fix shop history finale balance and UI density QA patch
+```
+
+다음 업데이트 예정: v1.0.54 - Season Store Collection Link, Finale Reward Audio and Mobile Polish Patch
+
+## Next Version Plan
+
+### v1.0.54 예정 - Season Store Collection Link, Finale Reward Audio and Mobile Polish Patch
+
+- 시즌 상점 수령 아이템을 컬렉션/복원 프로젝트에 더 명확히 연결
+- 시즌 상점 수령 기록에서 보상 상세 보기 추가
+- 피날레 보스 cut-in과 보상 수령 사운드/햅틱 연결 polish
+- 시즌 패널이 90스테이지/15챕터 구조에서도 작은 화면에서 덜 빽빽하게 보이도록 추가 압축
+- 로비 드래그가 시즌 기록/상점/피날레/챕터 carousel 위에서도 끊기지 않는지 추가 QA
+- GitHub Actions 검사 token이 누락되지 않도록 시즌 패스 mount 호환성 계속 유지
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음

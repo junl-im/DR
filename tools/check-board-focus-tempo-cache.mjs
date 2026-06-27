@@ -40,7 +40,7 @@ for (const token of [
   if (!runtime.includes(token)) errors.push(`Missing v1.0.47 visual priority token: ${token}`);
 }
 if (!main.includes('stable-atlas-v1040') || !css.includes('stable-atlas-v1040')) errors.push('Boss visual stack must be v1040.');
-if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"'))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
+if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && !pkg.includes('"version": "1.0.53"'))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
 if (!pkg.includes('check:board-focus-tempo-cache')) errors.push('package.json must expose check:board-focus-tempo-cache.');
 if (!sw.includes('dream-library-cache-v1.0.47') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must be v1.0.47.');
 if (!sw.includes('CACHE_SLIM_POLICY') || !sw.includes('v1042-cache-slim-account-time-pressure')) errors.push('service worker cache slim policy missing.');

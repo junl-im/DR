@@ -45,7 +45,7 @@ for (const token of [
 ]) {
   if (!css.includes(token)) errors.push(`CSS missing boss visibility fallback token: ${token}`);
 }
-if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"'))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
+if (!pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && !pkg.includes('"version": "1.0.53"'))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
 if (!pkg.includes('check:boss-asset-visibility')) errors.push('package.json must expose check:boss-asset-visibility.');
 if (!sw.includes('dream-library-cache-v1.0.47') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must be v1.0.47.');
 if (!workflows.includes('npm run check:boss-asset-visibility')) errors.push('workflows must run boss asset visibility check.');
