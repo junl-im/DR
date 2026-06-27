@@ -4,8 +4,8 @@ export const CHAPTERS = [
     number: 1,
     title: '달빛 서가의 첫 기록',
     shortTitle: '달빛 서가',
-    theme: '튜토리얼 · 서고',
-    story: '잠든 서고에 흩어진 첫 번째 꿈 조각을 모아 모모의 기록장을 되살립니다.',
+    theme: '초보 · 서고',
+    story: '처음 플레이하는 이용자가 연결 규칙과 시간 보너스를 천천히 익히는 첫 번째 서가입니다.',
     accent: '#ffe28e'
   },
   {
@@ -13,8 +13,8 @@ export const CHAPTERS = [
     number: 2,
     title: '구름 정원의 잃어버린 노래',
     shortTitle: '구름 정원',
-    theme: '성장 · 정원',
-    story: '구름꽃 사이에 감춰진 멜로디를 찾아 다음 서가의 문을 엽니다.',
+    theme: '입문 · 정원',
+    story: '작은 특수 타일과 넓어진 보드를 번갈아 경험하며 일반 난이도로 넘어가는 완충 구간입니다.',
     accent: '#94ffd0'
   },
   {
@@ -22,163 +22,84 @@ export const CHAPTERS = [
     number: 3,
     title: '별빛 탑의 봉인된 페이지',
     shortTitle: '별빛 탑',
-    theme: '도전 · 별빛',
-    story: '별빛 탑 꼭대기에서 오래된 봉인을 풀고 꿈의 지도 마지막 조각을 되찾습니다.',
+    theme: '일반 · 별빛',
+    story: '보스 반격과 시간 압박을 이해하면서 숙련 난이도 진입을 준비합니다.',
     accent: '#99e4ff'
+  },
+  {
+    id: 'chapter-04',
+    number: 4,
+    title: '심해 기록관의 푸른 봉인',
+    shortTitle: '심해 기록관',
+    theme: '숙련 · 심해',
+    story: '넓은 보드와 여러 목표 마커가 함께 등장하지만, 악몽 전에 충분히 연습할 수 있는 중후반 챕터입니다.',
+    accent: '#7ddcff'
+  },
+  {
+    id: 'chapter-05',
+    number: 5,
+    title: '왕관 서고의 마지막 꿈',
+    shortTitle: '왕관 서고',
+    theme: '어려움 · 악몽',
+    story: '큰 보드와 강한 보스 패턴이 등장하는 최종권입니다. 악몽은 마지막 구간에서만 천천히 열립니다.',
+    accent: '#d8c2ff'
   }
 ];
 
+const stage = (id, chapterId, bossId, number, title, subtitle, difficultyKey, reward, unlockAfter, modifiers = []) => ({
+  id,
+  chapterId,
+  bossId,
+  number,
+  title,
+  subtitle,
+  difficultyKey,
+  reward,
+  ...(unlockAfter ? { unlockAfter } : { unlockText: '기본 해금' }),
+  modifiers
+});
+
 export const STAGES = [
-  {
-    id: 'c1-01',
-    chapterId: 'chapter-01',
-    bossId: 'forgotten-spirit',
-    number: 1,
-    title: '잠에서 깬 책갈피',
-    subtitle: '첫 연결 규칙을 익히는 가벼운 복원',
-    difficultyKey: 'easy',
-    reward: { label: '마법서 표지', type: 'magic-book', amount: 1 },
-    unlockText: '기본 해금',
-    modifiers: []
-  },
-  {
-    id: 'c1-02',
-    chapterId: 'chapter-01',
-    bossId: 'forgotten-spirit',
-    number: 2,
-    title: '촛불 아래 열쇠',
-    subtitle: '힌트와 섞기를 아껴 쓰는 연습',
-    difficultyKey: 'easy',
-    reward: { label: '황금 열쇠', type: 'gold-key', amount: 1 },
-    unlockAfter: 'c1-01',
-    modifiers: ['fog']
-  },
-  {
-    id: 'c1-03',
-    chapterId: 'chapter-01',
-    bossId: 'forgotten-spirit',
-    number: 3,
-    title: '모래시계의 약속',
-    subtitle: '제한시간 보너스를 노리는 스테이지',
-    difficultyKey: 'normal',
-    reward: { label: '시간 모래', type: 'hourglass', amount: 2 },
-    unlockAfter: 'c1-02',
-    modifiers: ['timeSeal']
-  },
-  {
-    id: 'c1-04',
-    chapterId: 'chapter-01',
-    bossId: 'forgotten-spirit',
-    number: 4,
-    title: '달빛 문장',
-    subtitle: '첫 챕터 마무리 보스 퍼즐',
-    difficultyKey: 'normal',
-    reward: { label: '달의 기억', type: 'moon', amount: 2 },
-    unlockAfter: 'c1-03',
-    modifiers: ['fog', 'bossPressure']
-  },
-  {
-    id: 'c2-01',
-    chapterId: 'chapter-02',
-    bossId: 'shadow-librarian',
-    number: 5,
-    title: '구름꽃 산책로',
-    subtitle: '더 넓은 보드와 다양한 타일이 등장합니다',
-    difficultyKey: 'normal',
-    reward: { label: '정원 기억', type: 'flower', amount: 2 },
-    unlockAfter: 'c1-04',
-    modifiers: ['locked']
-  },
-  {
-    id: 'c2-02',
-    chapterId: 'chapter-02',
-    bossId: 'shadow-librarian',
-    number: 6,
-    title: '잉크가 번진 악보',
-    subtitle: '콤보 유지가 중요한 중반 스테이지',
-    difficultyKey: 'hard',
-    reward: { label: '뮤직 박스', type: 'music-box', amount: 3 },
-    unlockAfter: 'c2-01',
-    modifiers: ['fog', 'locked']
-  },
-  {
-    id: 'c2-03',
-    chapterId: 'chapter-02',
-    bossId: 'shadow-librarian',
-    number: 7,
-    title: '드래곤 알의 꿈',
-    subtitle: '연결 가능한 외곽 경로를 적극 활용하세요',
-    difficultyKey: 'hard',
-    reward: { label: '드래곤 알', type: 'dragon-egg', amount: 3 },
-    unlockAfter: 'c2-02',
-    modifiers: ['bossPressure']
-  },
-  {
-    id: 'c2-04',
-    chapterId: 'chapter-02',
-    bossId: 'shadow-librarian',
-    number: 8,
-    title: '구름 정원 연주회',
-    subtitle: '두 번째 챕터 클리어 관문',
-    difficultyKey: 'hard',
-    reward: { label: '기록의 깃털', type: 'feather', amount: 3 },
-    unlockAfter: 'c2-03',
-    modifiers: ['timeSeal', 'bossPressure']
-  },
-  {
-    id: 'c3-01',
-    chapterId: 'chapter-03',
-    bossId: 'sealed-page-golem',
-    number: 9,
-    title: '별빛 계단',
-    subtitle: '후반부의 넓은 판을 여는 도전',
-    difficultyKey: 'hard',
-    reward: { label: '혜성 조각', type: 'comet', amount: 4 },
-    unlockAfter: 'c2-04',
-    modifiers: ['locked', 'timeSeal']
-  },
-  {
-    id: 'c3-02',
-    chapterId: 'chapter-03',
-    bossId: 'sealed-page-golem',
-    number: 10,
-    title: '봉인된 룬',
-    subtitle: '남은 힌트와 섞기를 계산하며 진행하세요',
-    difficultyKey: 'expert',
-    reward: { label: '룬 조각', type: 'rune', amount: 4 },
-    unlockAfter: 'c3-01',
-    modifiers: ['fog', 'timeSeal', 'bossPressure']
-  },
-  {
-    id: 'c3-03',
-    chapterId: 'chapter-03',
-    bossId: 'sealed-page-golem',
-    number: 11,
-    title: '왕관의 그림자',
-    subtitle: '최대 크기 보드에 가까운 고난도 복원',
-    difficultyKey: 'expert',
-    reward: { label: '꿈의 왕관', type: 'crown', amount: 5 },
-    unlockAfter: 'c3-02',
-    modifiers: ['locked', 'fog', 'bossPressure']
-  },
-  {
-    id: 'c3-04',
-    chapterId: 'chapter-03',
-    bossId: 'sealed-page-golem',
-    number: 12,
-    title: '꿈의 지도 완성',
-    subtitle: '현재 캠페인의 마지막 보스 스테이지',
-    difficultyKey: 'expert',
-    reward: { label: '비밀 지도', type: 'map', amount: 5 },
-    unlockAfter: 'c3-03',
-    modifiers: ['locked', 'fog', 'timeSeal', 'bossPressure']
-  }
+  stage('c1-01', 'chapter-01', 'forgotten-spirit', 1, '잠에서 깬 책갈피', '초보 보드에서 첫 연결 규칙을 익힙니다', 'beginner', { label: '마법서 표지', type: 'magic-book', amount: 1 }, null, []),
+  stage('c1-02', 'chapter-01', 'forgotten-spirit', 2, '촛불 아래 열쇠', '짝 맞춤 +3초 보너스를 체감하는 쉬운 복원', 'beginner', { label: '황금 열쇠', type: 'gold-key', amount: 1 }, 'c1-01', []),
+  stage('c1-03', 'chapter-01', 'forgotten-spirit', 3, '모래시계의 약속', '시간 봉인 한 쌍을 천천히 확인합니다', 'beginner', { label: '시간 모래', type: 'hourglass', amount: 1 }, 'c1-02', ['timeSeal']),
+  stage('c1-04', 'chapter-01', 'forgotten-spirit', 4, '달빛 문장 연습', '안개 타일이 조금 섞인 입문 전환 스테이지', 'easy', { label: '달의 기억', type: 'moon', amount: 1 }, 'c1-03', ['fog']),
+  stage('c1-05', 'chapter-01', 'forgotten-spirit', 5, '작은 서가 산책', '보드가 커지기 전 마지막 편한 구간', 'easy', { label: '기억 파편', type: 'spark', amount: 2 }, 'c1-04', []),
+  stage('c1-06', 'chapter-01', 'forgotten-spirit', 6, '첫 보스의 속삭임', '보스 상태바와 HP 감소를 확인하는 첫 관문', 'easy', { label: '수정 구슬', type: 'crystal-orb', amount: 2 }, 'c1-05', ['bossPressure']),
+
+  stage('c2-01', 'chapter-02', 'forgotten-spirit', 7, '구름꽃 산책로', '조금 넓어진 판에서 로비 진행을 이어갑니다', 'easy', { label: '정원 기억', type: 'flower', amount: 2 }, 'c1-06', []),
+  stage('c2-02', 'chapter-02', 'forgotten-spirit', 8, '비밀 잉크 연못', '안개와 힌트를 함께 다루는 입문 후반', 'easy', { label: '마법 잉크', type: 'ink', amount: 2 }, 'c2-01', ['fog']),
+  stage('c2-03', 'chapter-02', 'shadow-librarian', 9, '잉크가 번진 악보', '일반 보드로 넘어가기 전 콤보를 연습합니다', 'normal', { label: '뮤직 박스', type: 'music-box', amount: 2 }, 'c2-02', []),
+  stage('c2-04', 'chapter-02', 'shadow-librarian', 10, '드래곤 알의 꿈', '잠긴 타일이 처음 등장하는 일반 스테이지', 'normal', { label: '드래곤 알', type: 'dragon-egg', amount: 2 }, 'c2-03', ['locked']),
+  stage('c2-05', 'chapter-02', 'shadow-librarian', 11, '구름 정원 연주회', '시간 봉인과 일반 보드 적응을 함께 진행합니다', 'normal', { label: '기록의 깃털', type: 'feather', amount: 3 }, 'c2-04', ['timeSeal']),
+  stage('c2-06', 'chapter-02', 'shadow-librarian', 12, '그림자 사서의 인사', '빠른 실수 반격을 가볍게 체험하는 챕터 보스', 'normal', { label: '서고 종', type: 'bell', amount: 3 }, 'c2-05', ['bossPressure']),
+
+  stage('c3-01', 'chapter-03', 'shadow-librarian', 13, '별빛 계단', '일반 후반 보드에서 외곽 연결을 익힙니다', 'normal', { label: '혜성 조각', type: 'comet', amount: 3 }, 'c2-06', ['fog']),
+  stage('c3-02', 'chapter-03', 'shadow-librarian', 14, '봉인된 룬', '숙련 전환을 위한 넓은 보드 첫 단계', 'skilled', { label: '룬 조각', type: 'rune', amount: 3 }, 'c3-01', []),
+  stage('c3-03', 'chapter-03', 'shadow-librarian', 15, '왕관의 그림자', '잠금과 보스 압박을 번갈아 경험합니다', 'skilled', { label: '꿈의 왕관', type: 'crown', amount: 3 }, 'c3-02', ['locked', 'bossPressure']),
+  stage('c3-04', 'chapter-03', 'sealed-page-golem', 16, '별빛 지도 조각', '힌트 빛길과 보스 경고의 우선순위를 읽는 구간', 'skilled', { label: '비밀 지도', type: 'map', amount: 3 }, 'c3-03', ['fog', 'timeSeal']),
+  stage('c3-05', 'chapter-03', 'sealed-page-golem', 17, '작은 골렘의 문', '묵직한 시간 압박을 낮은 강도로 연습합니다', 'skilled', { label: '서고 유물', type: 'relic', amount: 4 }, 'c3-04', ['timeSeal', 'bossPressure']),
+  stage('c3-06', 'chapter-03', 'sealed-page-golem', 18, '별빛 탑의 봉인', '숙련 챕터 마무리 보스 스테이지', 'skilled', { label: '성 조각', type: 'castle', amount: 4 }, 'c3-05', ['locked', 'bossPressure']),
+
+  stage('c4-01', 'chapter-04', 'sealed-page-golem', 19, '푸른 기록관 입구', '어려움 전의 큰 보드 적응 구간', 'skilled', { label: '푸른 유리병', type: 'premium-06', amount: 4 }, 'c3-06', []),
+  stage('c4-02', 'chapter-04', 'sealed-page-golem', 20, '심해 서가의 물결', '넓은 보드에서 선택 후 카메라 follow를 활용합니다', 'hard', { label: '별빛 사본', type: 'premium-01', amount: 4 }, 'c4-01', ['fog']),
+  stage('c4-03', 'chapter-04', 'shadow-librarian', 21, '흐린 책갈피 항로', '잠긴 타일과 안개가 함께 등장합니다', 'hard', { label: '황금 문장', type: 'premium-02', amount: 4 }, 'c4-02', ['fog', 'locked']),
+  stage('c4-04', 'chapter-04', 'shadow-librarian', 22, '파도 속 시간 봉인', '시간 봉인과 보스 경고가 겹치는 중후반 구간', 'hard', { label: '에메랄드 장식', type: 'premium-03', amount: 5 }, 'c4-03', ['timeSeal', 'bossPressure']),
+  stage('c4-05', 'chapter-04', 'sealed-page-golem', 23, '심해의 잠긴 악보', '여러 특수 타일을 읽는 어려움 후반', 'hard', { label: '비밀 표식', type: 'premium-04', amount: 5 }, 'c4-04', ['locked', 'timeSeal']),
+  stage('c4-06', 'chapter-04', 'sealed-page-golem', 24, '푸른 봉인의 수호자', '악몽 전 마지막 어려움 챕터 보스', 'hard', { label: '바이올렛 봉인', type: 'premium-05', amount: 5 }, 'c4-05', ['fog', 'locked', 'bossPressure']),
+
+  stage('c5-01', 'chapter-05', 'sealed-page-golem', 25, '왕관 서고의 문턱', '어려움 보드를 다시 정리하는 최종권 입구', 'hard', { label: '심연 보석함', type: 'v2-tile-27', amount: 5 }, 'c4-06', []),
+  stage('c5-02', 'chapter-05', 'forgotten-spirit', 26, '기억핵 회랑', '큰 보드에서 marker 과밀을 읽는 고난도 구간', 'hard', { label: '마지막 기억핵', type: 'v2-tile-36', amount: 5 }, 'c5-01', ['fog', 'timeSeal']),
+  stage('c5-03', 'chapter-05', 'shadow-librarian', 27, '검은 장서의 왕관', '악몽 진입 전 빠른 반격 패턴을 연습합니다', 'hard', { label: '왕관 장서표', type: 'v2-tile-29', amount: 6 }, 'c5-02', ['locked', 'bossPressure']),
+  stage('c5-04', 'chapter-05', 'shadow-librarian', 28, '악몽의 첫 페이지', '악몽 보드가 처음 열리는 완충 스테이지', 'nightmare', { label: '마법진 조각', type: 'v2-tile-31', amount: 6 }, 'c5-03', ['fog', 'bossPressure']),
+  stage('c5-05', 'chapter-05', 'sealed-page-golem', 29, '봉인된 꿈의 왕좌', '시간 봉인과 잠금이 함께 들어간 악몽 후반', 'nightmare', { label: '골렘 심장석', type: 'v2-tile-33', amount: 6 }, 'c5-04', ['locked', 'timeSeal', 'bossPressure']),
+  stage('c5-06', 'chapter-05', 'sealed-page-golem', 30, '꿈의 지도 완성', '현재 캠페인의 마지막 악몽 보스 스테이지', 'nightmare', { label: '빛의 스크롤', type: 'v2-tile-30', amount: 7 }, 'c5-05', ['locked', 'fog', 'timeSeal', 'bossPressure'])
 ];
 
 export const DEFAULT_STAGE_ID = STAGES[0].id;
 
 export function getStageById(stageId) {
-  return STAGES.find((stage) => stage.id === stageId) ?? STAGES[0];
+  return STAGES.find((item) => item.id === stageId) ?? STAGES[0];
 }
 
 export function getChapterById(chapterId) {
@@ -186,7 +107,7 @@ export function getChapterById(chapterId) {
 }
 
 export function getStageIndex(stageId) {
-  return STAGES.findIndex((stage) => stage.id === stageId);
+  return STAGES.findIndex((item) => item.id === stageId);
 }
 
 export function getNextStage(stageId) {
@@ -196,9 +117,8 @@ export function getNextStage(stageId) {
 }
 
 export function getChapterStages(chapterId) {
-  return STAGES.filter((stage) => stage.chapterId === chapterId);
+  return STAGES.filter((item) => item.chapterId === chapterId);
 }
-
 
 export function getDailyChallenge(date = new Date()) {
   const dateKey = date.toISOString().slice(0, 10);

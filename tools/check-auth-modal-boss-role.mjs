@@ -62,11 +62,11 @@ if (/class="email-form(?![^>]*retired-inline-email-form)/.test(html)) errors.pus
 for (const banned of ['미니맵', '>보기<', '>중앙<', '>+<', '드래그 이동 도움말']) {
   if (html.includes(banned)) errors.push(`Removed UI/copy should not return in HTML: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.43"')) errors.push('package.json version must be 1.0.43.');
+if (!pkg.includes('"version": "1.0.44"')) errors.push('package.json version must be 1.0.43.');
 if (!pkg.includes('check:auth-modal-boss-role')) errors.push('package.json must expose check:auth-modal-boss-role.');
-if (!sw.includes('dream-library-cache-v1.0.43') || !sw.includes('texture-atlas-manifest-v1.0.43.json')) errors.push('service worker cache/manifest must be v1.0.43.');
+if (!sw.includes('dream-library-cache-v1.0.44') || !sw.includes('texture-atlas-manifest-v1.0.44.json')) errors.push('service worker cache/manifest must be v1.0.44.');
 if (!sw.includes('v1043-cache-slim-auth-modal-boss-role')) errors.push('service worker cache slim policy must be v1043 auth modal boss role.');
-if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.43.json')) errors.push('v1.0.43 texture atlas manifest file missing.');
+if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.44.json')) errors.push('v1.0.44 texture atlas manifest file missing.');
 if (!pages.includes('npm run check:auth-modal-boss-role')) errors.push('github-pages workflow must run auth modal boss role check.');
 if (!quality.includes('npm run check:auth-modal-boss-role')) errors.push('quality workflow must run auth modal boss role check.');
 
@@ -74,4 +74,4 @@ if (errors.length) {
   console.error(`Auth modal boss role check failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Auth modal boss role check passed: Google fallback, centered email login and readable boss status v1.0.43 are active.');
+console.log('Auth modal boss role check passed: Google fallback, centered email login and readable boss status v1.0.44 are active.');

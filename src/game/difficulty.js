@@ -9,29 +9,54 @@ const stateTileSet = (name) => ({
 });
 
 export const DIFFICULTIES = {
+  beginner: {
+    key: 'beginner',
+    label: '초보',
+    rows: 4,
+    cols: 6,
+    iconTypes: 6,
+    timeLimitSeconds: 210,
+    hints: 7,
+    shuffles: 7,
+    scoreMultiplier: 0.85,
+    boardProfile: 'starter'
+  },
   easy: {
     key: 'easy',
     label: '입문',
     rows: 6,
     cols: 6,
     iconTypes: 9,
-    timeLimitSeconds: 240,
-    hints: 5,
-    shuffles: 5,
+    timeLimitSeconds: 250,
+    hints: 6,
+    shuffles: 6,
     scoreMultiplier: 1
   },
   normal: {
     key: 'normal',
     label: '일반',
     rows: 8,
-    cols: 10,
-    iconTypes: 20,
+    cols: 8,
+    iconTypes: 16,
     timeLimitSeconds: 330,
-    hints: 4,
-    shuffles: 4,
-    scoreMultiplier: 1.25,
+    hints: 5,
+    shuffles: 5,
+    scoreMultiplier: 1.18,
     cameraMode: 'panZoom',
     boardProfile: 'wide'
+  },
+  skilled: {
+    key: 'skilled',
+    label: '숙련',
+    rows: 8,
+    cols: 10,
+    iconTypes: 22,
+    timeLimitSeconds: 390,
+    hints: 4,
+    shuffles: 4,
+    scoreMultiplier: 1.35,
+    cameraMode: 'panZoom',
+    boardProfile: 'wide-plus'
   },
   hard: {
     key: 'hard',
@@ -39,12 +64,25 @@ export const DIFFICULTIES = {
     rows: 10,
     cols: 12,
     iconTypes: 30,
-    timeLimitSeconds: 430,
+    timeLimitSeconds: 500,
     hints: 3,
     shuffles: 3,
-    scoreMultiplier: 1.55,
+    scoreMultiplier: 1.65,
     cameraMode: 'panZoom',
     boardProfile: 'large'
+  },
+  nightmare: {
+    key: 'nightmare',
+    label: '악몽',
+    rows: 12,
+    cols: 14,
+    iconTypes: 36,
+    timeLimitSeconds: 650,
+    hints: 2,
+    shuffles: 2,
+    scoreMultiplier: 2.05,
+    cameraMode: 'panZoom',
+    boardProfile: 'huge'
   },
   expert: {
     key: 'expert',
@@ -52,10 +90,10 @@ export const DIFFICULTIES = {
     rows: 12,
     cols: 14,
     iconTypes: 36,
-    timeLimitSeconds: 560,
+    timeLimitSeconds: 650,
     hints: 2,
     shuffles: 2,
-    scoreMultiplier: 2,
+    scoreMultiplier: 2.05,
     cameraMode: 'panZoom',
     boardProfile: 'huge'
   }
@@ -188,7 +226,7 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.43.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.44.json`
 ];
 
 export const PRELOAD_ASSETS = [
@@ -231,7 +269,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.43.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.44.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.webp`,

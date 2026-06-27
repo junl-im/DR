@@ -36,7 +36,7 @@ for (const token of [
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭', '드래그 이동', '보기 맞춤']) {
   if (renderer.includes(banned) || main.includes(banned) || css.includes(banned)) errors.push(`Removed UI must remain removed: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.43"')) errors.push('package.json version must be 1.0.43.');
+if (!pkg.includes('"version": "1.0.44"')) errors.push('package.json version must be 1.0.43.');
 if (!pkg.includes('check:real-device-selection')) errors.push('package.json must expose check:real-device-selection.');
 if (!pages.includes('npm run check:real-device-selection')) errors.push('github-pages workflow must run real-device selection QA check.');
 if (!quality.includes('npm run check:real-device-selection')) errors.push('quality workflow must run real-device selection QA check.');

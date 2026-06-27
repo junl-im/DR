@@ -95,6 +95,7 @@ jobs:
           npm run check:auth-entry-flow
           npm run check:account-time-pressure
           npm run check:auth-modal-boss-role
+          npm run check:boss-stage-lobby-scroll
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

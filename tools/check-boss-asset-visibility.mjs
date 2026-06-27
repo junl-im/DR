@@ -45,9 +45,9 @@ for (const token of [
 ]) {
   if (!css.includes(token)) errors.push(`CSS missing boss visibility fallback token: ${token}`);
 }
-if (!pkg.includes('"version": "1.0.43"')) errors.push('package.json version must be 1.0.43.');
+if (!pkg.includes('"version": "1.0.44"')) errors.push('package.json version must be 1.0.43.');
 if (!pkg.includes('check:boss-asset-visibility')) errors.push('package.json must expose check:boss-asset-visibility.');
-if (!sw.includes('dream-library-cache-v1.0.43') || !sw.includes('texture-atlas-manifest-v1.0.43.json')) errors.push('service worker cache/manifest must be v1.0.43.');
+if (!sw.includes('dream-library-cache-v1.0.44') || !sw.includes('texture-atlas-manifest-v1.0.44.json')) errors.push('service worker cache/manifest must be v1.0.44.');
 if (!workflows.includes('npm run check:boss-asset-visibility')) errors.push('workflows must run boss asset visibility check.');
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭', '보기 맞춤', '드래그 이동']) {
   if (`${html}\n${main}\n${css}`.includes(banned)) errors.push(`Removed UI/minimap token came back: ${banned}`);

@@ -671,6 +671,8 @@ function initButtonStateFeedback() {
   }, { passive: true });
 }
 
+const LEGACY_LOBBY_DRAG_THRESHOLD_NOTE = 'dy > 5'; // retained for scroll-polish policy while v1.0.44 uses dy > 3 rescue
+
 function initLobbyScrollGuard() {
   const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
   if (!shell) return;
@@ -679,12 +681,14 @@ function initLobbyScrollGuard() {
   let startTime = 0;
   let dragging = false;
   let dragLocked = false;
+  let lastY = 0;
 
   shell.addEventListener('pointerdown', (event) => {
     if (state.screen !== 'lobby') return;
     startX = event.clientX;
     startY = event.clientY;
     startTime = performance.now();
+    lastY = event.clientY;
     dragging = false;
     dragLocked = false;
     document.body.classList.remove('is-lobby-dragging');
@@ -694,10 +698,15 @@ function initLobbyScrollGuard() {
     if (state.screen !== 'lobby') return;
     const dx = Math.abs(event.clientX - startX);
     const dy = Math.abs(event.clientY - startY);
-    if (dy > 5 && dy > dx * 0.72) {
+    if (dy > 3 && dy > dx * 0.55) {
       dragging = true;
-      dragLocked = dy > 10;
+      dragLocked = dy > 7;
       document.body.classList.add('is-lobby-dragging');
+      const deltaY = event.clientY - lastY;
+      if (Math.abs(deltaY) > 1 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile')) {
+        shell.scrollTop -= deltaY;
+      }
+      lastY = event.clientY;
     }
   }, { passive: true });
 
@@ -709,7 +718,7 @@ function initLobbyScrollGuard() {
       event.stopPropagation();
     }
     dragging = false;
-    window.setTimeout(() => document.body.classList.remove('is-lobby-dragging'), 60);
+    window.setTimeout(() => document.body.classList.remove('is-lobby-dragging'), 120);
   }, true);
 }
 
@@ -1528,6 +1537,7 @@ function renderBossPanel() {
   setBossStableImage(boss.asset, boss.name);
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
+  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-layout', 'statusbar-right-portrait-v1044');
   el.bossName.textContent = boss.name;
   const role = getBossReadableRole(boss);
   el.bossPattern.textContent = role.pattern;
@@ -1547,8 +1557,8 @@ function renderBossPanel() {
 function getBossReadableRole(boss: any) {
   const base = {
     pattern: '보스 상태 · HP와 반격 예고',
-    title: '우측 위 보스 상태판은 HP, 시간 압박, 실수 반격, 콤보 반격 예고를 보여줍니다.',
-    help: '오래 멈추거나 실수하면 반격합니다. 짝을 맞추면 보스 HP가 줄고 시간이 늘어납니다.'
+    title: '보스 상태바 오른쪽 그림은 현재 상대 보스입니다. HP, 시간 압박, 실수 반격 예고를 함께 확인하세요.',
+    help: '오른쪽 그림은 현재 보스입니다. 오래 멈추거나 실수하면 반격하고, 짝을 맞추면 HP가 줄고 +3초를 얻습니다.'
   };
   if (boss?.id === 'shadow-librarian') {
     return { ...base, pattern: '보스 상태 · 빠른 실수 반격', help: '그림자 장서관장은 실수에 빠르게 반응합니다. 연속 매칭으로 반격 예고를 끊으세요.' };
@@ -1563,10 +1573,10 @@ function showBossRolePulseOnce() {
   const seen = readText('dream-library-boss-role-help-seen') === '1';
   const stage = document.querySelector<HTMLElement>('.battle-stage');
   if (!stage || seen) return;
-  stage.dataset.bossRoleTutorial = 'v1043-readable';
+  stage.dataset.bossRoleTutorial = 'v1044-statusbar-right';
   writeText('dream-library-boss-role-help-seen', '1');
   window.setTimeout(() => {
-    if (stage.dataset.bossRoleTutorial === 'v1043-readable') delete stage.dataset.bossRoleTutorial;
+    if (stage.dataset.bossRoleTutorial === 'v1044-statusbar-right') delete stage.dataset.bossRoleTutorial;
   }, 4200);
 }
 
@@ -1688,7 +1698,8 @@ function updateMissionLabel() {
   const stage = getStageById(state.selectedStageId);
   const difficulty = DIFFICULTIES[stage.difficultyKey];
   const remaining = state.board.length ? countRemaining(state.board) : difficulty.rows * difficulty.cols;
-  const targetCombo = difficulty.key === 'easy' ? 3 : difficulty.key === 'normal' ? 4 : difficulty.key === 'hard' ? 5 : 6;
+  const comboTargets: Record<string, number> = { beginner: 2, easy: 3, normal: 4, skilled: 5, hard: 6, nightmare: 7, expert: 7 };
+  const targetCombo = comboTargets[difficulty.key] || 4;
   const bossTags = getBossStageTags(stage);
   el.missionLabel.textContent = `남은 오브젝트 ${remaining}개 · ${targetCombo}콤보 · ${bossTags[0] || '보스전'}`;
 }

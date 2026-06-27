@@ -63,7 +63,8 @@
     "check:mobile-board-reward-flow": "node tools/check-mobile-board-reward-flow.mjs",
     "check:auth-entry-flow": "node tools/check-auth-entry-flow.mjs",
     "check:account-time-pressure": "node tools/check-account-time-pressure.mjs",
-    "check:auth-modal-boss-role": "node tools/check-auth-modal-boss-role.mjs"
+    "check:auth-modal-boss-role": "node tools/check-auth-modal-boss-role.mjs",
+    "check:boss-stage-lobby-scroll": "node tools/check-boss-stage-lobby-scroll.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -76,5 +77,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.43"
+  "version": "1.0.44"
 }
