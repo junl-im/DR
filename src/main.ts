@@ -31,7 +31,11 @@ document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
 const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1040';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
-const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1041-auth-entry-simplified';
+const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
+const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
+const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
+const STALL_PRESSURE_FIRST_SECONDS = 14;
+const STALL_PRESSURE_REPEAT_SECONDS = 9;
 let bossAtlasImageReady = false;
 function preloadBossAtlasImage() {
   const image = new Image();
@@ -77,6 +81,9 @@ const el = {
   settingsAccountText: $('#settings-account-text'),
   settingsLoginButton: $('#settings-login-button'),
   settingsLobbyButton: $('#settings-lobby-button'),
+  settingsGuestButton: $('#settings-guest-button'),
+  settingsGoogleButton: $('#settings-google-button'),
+  settingsEmailButton: $('#settings-email-button'),
   settingsFullscreenButton: $('#settings-fullscreen-button'),
   soundToggle: $('#sound-toggle'),
   qualityToggle: $('#quality-toggle'),
@@ -267,6 +274,10 @@ const state = {
   stageModifiers: [] as string[],
   pressureTick: 0,
   timeSealBonusCount: 0,
+  pairTimeBonusTotal: 0,
+  noMatchSeconds: 0,
+  lastStallPressureSecond: 0,
+  urgentPressureActive: false,
   suppressHistorySync: false,
   browserBackReady: false,
   recentScoreKey: '',
@@ -359,6 +370,9 @@ function bindEvents() {
   el.optionsModal.addEventListener('click', (event) => { if (event.target === el.optionsModal) closeOptionsPanel(); });
   el.settingsLoginButton.addEventListener('click', () => { closeOptionsPanel(); updateScreen('login'); });
   el.settingsLobbyButton.addEventListener('click', () => { closeOptionsPanel(); hasSession() ? updateScreen('lobby') : updateScreen('login'); });
+  el.settingsGuestButton.addEventListener('click', switchToGuestAccountFromOptions);
+  el.settingsGoogleButton.addEventListener('click', switchToGoogleAccountFromOptions);
+  el.settingsEmailButton.addEventListener('click', openEmailAccountSwitchFromOptions);
   el.soundToggle.addEventListener('click', () => {
     HAPTIC.tap();
     state.soundEnabled = !state.soundEnabled;
@@ -727,6 +741,12 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   state.stageModifiers = [...(stage.modifiers || [])];
   state.pressureTick = 0;
   state.timeSealBonusCount = 0;
+  state.pairTimeBonusTotal = 0;
+  state.noMatchSeconds = 0;
+  state.lastStallPressureSecond = 0;
+  state.urgentPressureActive = false;
+  document.body.classList.remove('time-pressure-action');
+  document.querySelector<HTMLElement>('.battle-stage')?.removeAttribute('data-stall-pressure');
   state.activeBoss = getBossForStage(stage);
   renderBossPanel();
   audio.unlock();
@@ -798,6 +818,50 @@ function handleSpecialTileGate(point: BoardPoint, tile: any) {
     return true;
   }
   return false;
+}
+
+function grantPairMatchTimeBonus(firstTile?: any, secondTile?: any) {
+  const bonus = PAIR_MATCH_TIME_BONUS_SECONDS;
+  state.remainingSeconds += bonus;
+  state.pairTimeBonusTotal += bonus;
+  state.noMatchSeconds = 0;
+  state.lastStallPressureSecond = 0;
+  state.urgentPressureActive = false;
+  document.body.dataset.timePressurePatch = ACCOUNT_TIME_PRESSURE_PATCH;
+  document.body.classList.remove('time-pressure-action');
+  const stageEl = document.querySelector<HTMLElement>('.battle-stage');
+  stageEl?.setAttribute('data-time-bonus-rule', `pair-plus-${bonus}`);
+  stageEl?.removeAttribute('data-stall-pressure');
+  el.timeLabel.dataset.bonus = `+${bonus}초`;
+  el.timeLabel.classList.remove('time-bonus-pop', 'urgent-time');
+  void el.timeLabel.offsetWidth;
+  el.timeLabel.classList.add('time-bonus-pop');
+  window.setTimeout(() => el.timeLabel.classList.remove('time-bonus-pop'), 740);
+  if (![firstTile?.special, secondTile?.special].some(Boolean)) {
+    setStatus(`연결 성공 · 보너스 시간 +${bonus}초`);
+  }
+}
+
+function triggerStallPressure() {
+  if (state.screen !== 'game' || state.locked || state.remainingSeconds <= 0) return;
+  const seconds = state.noMatchSeconds;
+  if (seconds < STALL_PRESSURE_FIRST_SECONDS) return;
+  if (state.lastStallPressureSecond && seconds - state.lastStallPressureSecond < STALL_PRESSURE_REPEAT_SECONDS) return;
+  state.lastStallPressureSecond = seconds;
+  state.urgentPressureActive = true;
+  document.body.dataset.timePressurePatch = ACCOUNT_TIME_PRESSURE_PATCH;
+  document.body.classList.add('time-pressure-action');
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stall-pressure', 'urgent');
+  el.timeLabel.classList.add('urgent-time');
+  audio.play('urgent');
+  window.setTimeout(() => audio.play('warning'), 120);
+  HAPTIC.warning();
+  triggerBossTelegraph('time');
+  setStatus('시간이 흔들립니다. 한 쌍을 맞추면 보너스 시간 +3초를 얻습니다.');
+  window.setTimeout(() => {
+    document.body.classList.remove('time-pressure-action');
+    el.timeLabel.classList.remove('urgent-time');
+  }, 950);
 }
 
 function applySpecialMatchRewards(firstTile: any, secondTile: any) {
@@ -899,6 +963,7 @@ function handleTileTap(point: BoardPoint) {
     } else HAPTIC.match();
     renderer.playMatchSequence(first, point, state.combo, () => {
       state.board = removePair(state.board, first, point);
+      grantPairMatchTimeBonus(firstTile, secondTile);
       applySpecialMatchRewards(firstTile, secondTile);
       advanceSpecialRulesAfterMatch();
       state.selected = null;
@@ -929,6 +994,8 @@ function handleTileTap(point: BoardPoint) {
 function tickTimer() {
   if (state.screen !== 'game' || state.locked) return;
   state.remainingSeconds = Math.max(0, state.remainingSeconds - 1);
+  state.noMatchSeconds += 1;
+  triggerStallPressure();
   renderGameHud();
   const warningSeconds = state.activeBoss?.warningSeconds || 15;
   if (!state.warnedLowTime && state.remainingSeconds <= warningSeconds && state.remainingSeconds > 0) {
@@ -1025,6 +1092,38 @@ function updateScreen(screen: ScreenName) {
 }
 
 
+async function switchToGuestAccountFromOptions() {
+  await runAuth(async () => {
+    if (firebaseReady && state.user && !state.user.isAnonymous) await logout();
+    state.localGuest = makeLocalGuest();
+    writeJson('dream-library-local-guest', state.localGuest);
+    renderAuth();
+    closeOptionsPanel();
+    enterLobbyFromAuth('guest');
+  }, '게스트 계정으로 전환했습니다.');
+}
+
+async function switchToGoogleAccountFromOptions() {
+  await runAuth(async () => {
+    if (!firebaseReady) throw new Error('login-disabled');
+    await handoffIfNeeded('auth');
+    await loginWithGoogle();
+    state.localGuest = null;
+    writeJson('dream-library-local-guest', null);
+    renderAuth();
+    closeOptionsPanel();
+    enterLobbyFromAuth('google');
+  }, '구글 저장 계정으로 전환했습니다.');
+}
+
+function openEmailAccountSwitchFromOptions() {
+  closeOptionsPanel();
+  updateScreen('login');
+  el.emailForm.classList.remove('collapsed');
+  el.emailInput.focus({ preventScroll: true });
+  setStatus('이메일을 입력해 저장 계정으로 전환하세요.');
+}
+
 function openOptions() {
   renderAuth();
   el.optionsModal.classList.remove('hidden');
@@ -1113,6 +1212,7 @@ function renderAuth() {
   el.authName.textContent = name;
   el.authProvider.textContent = provider;
   el.settingsAccountText.textContent = `${name} · ${provider}`;
+  el.optionsModal.dataset.accountSwitch = ACCOUNT_TIME_PRESSURE_PATCH;
   el.enterLobbyButton.classList.add('hidden');
   el.enterLobbyButton.setAttribute('aria-hidden', 'true');
   el.signoutButton.classList.toggle('hidden', !hasSession());
@@ -1345,7 +1445,8 @@ function renderBossPanel() {
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
   el.bossName.textContent = boss.name;
-  el.bossPattern.textContent = boss.patternLabel;
+  el.bossPattern.textContent = `${boss.patternLabel} · 시간/실수 압박`;
+  el.bossPattern.title = '우측 위 보스는 HP와 반격 예고를 보여주고, 시간 압박·실패 반격·콤보 반격을 알립니다.';
   el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
   el.bossTelegraph.classList.add('hidden');
   el.bossCore.dataset.bossId = boss.id;
@@ -1436,6 +1537,8 @@ function renderGameHud() {
   el.stageLabel.textContent = `${chapter.shortTitle} · Stage ${stage.number}`;
   el.difficultyTitle.textContent = difficulty.label;
   el.timeLabel.textContent = formatTime(state.remainingSeconds);
+  el.timeLabel.title = `짝 맞춤 보너스 +${PAIR_MATCH_TIME_BONUS_SECONDS}초 · 누적 +${state.pairTimeBonusTotal}초`;
+  el.timeLabel.dataset.timeBonusTotal = String(state.pairTimeBonusTotal);
   el.scoreLabel.textContent = formatNumber(state.score);
   el.comboLabel.textContent = `${state.combo}`;
   el.movesLabel.textContent = `${state.moves}`;

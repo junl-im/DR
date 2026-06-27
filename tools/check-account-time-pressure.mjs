@@ -1,0 +1,53 @@
+import { readFileSync } from 'node:fs';
+
+const html = readFileSync('index.html', 'utf8');
+const main = readFileSync('src/main.ts', 'utf8');
+const css = readFileSync('src/styles.css', 'utf8');
+const audio = readFileSync('src/audio/DreamAudio.ts', 'utf8');
+const pkg = readFileSync('package.json', 'utf8');
+const sw = readFileSync('public/sw.js', 'utf8');
+const pages = readFileSync('.github/workflows/github-pages.yml', 'utf8');
+const quality = readFileSync('.github/workflows/quality-check.yml', 'utf8');
+const runtime = `${html}
+${main}
+${css}
+${audio}`;
+const errors = [];
+for (const token of [
+  'ACCOUNT_TIME_PRESSURE_PATCH',
+  'v1042-account-time-pressure',
+  'PAIR_MATCH_TIME_BONUS_SECONDS = 3',
+  'grantPairMatchTimeBonus',
+  'triggerStallPressure',
+  'STALL_PRESSURE_FIRST_SECONDS',
+  'settings-guest-button',
+  'settings-google-button',
+  'settings-email-button',
+  'switchToGuestAccountFromOptions',
+  'switchToGoogleAccountFromOptions',
+  'openEmailAccountSwitchFromOptions',
+  'boss-role-badge',
+  '보스: 시간·실패 반격',
+  'urgent',
+  'warning'
+]) {
+  if (!runtime.includes(token)) errors.push(`Missing v1.0.42 account/time pressure token: ${token}`);
+}
+if (!/grantPairMatchTimeBonus\(firstTile, secondTile\)/.test(main)) errors.push('Successful pair match must grant the +3 second bonus.');
+if (!/state\.noMatchSeconds \+= 1/.test(main) || !/triggerStallPressure\(\)/.test(main)) errors.push('Timer must track no-match delay and trigger stall pressure.');
+if (!html.includes('data-match-bonus="plus-3"')) errors.push('Time HUD must expose the +3s match bonus hook.');
+if (!audio.includes("'urgent'") || !audio.includes("'warning'")) errors.push('DreamAudio must expose urgent/warning cues.');
+if (!pkg.includes('"version": "1.0.42"')) errors.push('package.json version must be 1.0.42.');
+if (!pkg.includes('check:account-time-pressure')) errors.push('package.json must expose check:account-time-pressure.');
+if (!sw.includes('dream-library-cache-v1.0.42') || !sw.includes('texture-atlas-manifest-v1.0.42.json')) errors.push('service worker cache/manifest must be v1.0.42.');
+if (!sw.includes('v1042-cache-slim-account-time-pressure')) errors.push('service worker cache slim policy must be v1042 account/time pressure.');
+if (!pages.includes('npm run check:account-time-pressure')) errors.push('github-pages workflow must run v1.0.42 account/time pressure check.');
+if (!quality.includes('npm run check:account-time-pressure')) errors.push('quality workflow must run v1.0.42 account/time pressure check.');
+for (const banned of ['미니맵', '>보기<', '>중앙<', '>+<', '드래그 이동 도움말']) {
+  if (html.includes(banned)) errors.push(`Removed UI/copy should not return in HTML: ${banned}`);
+}
+if (errors.length) {
+  console.error(`Account/time pressure check failed: ${errors.join('; ')}`);
+  process.exit(1);
+}
+console.log('Account/time pressure check passed: options account switch, +3s pair bonus, stall urgency and boss role label are active.');

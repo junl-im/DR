@@ -2740,15 +2740,97 @@ body[data-screen="game"] .screen-stack {
 }
 
 
-/* v1.0.41 Auth entry simplification and lobby shortcut removal */
-.screen-login[data-auth-entry="v1041-auth-entry-simplified"],
-body[data-auth-entry="v1041-auth-entry-simplified"] .screen-login { --auth-entry-flow: guest-google-email; }
+/* v1.0.42 Auth entry simplification and lobby shortcut removal */
+.screen-login[data-auth-entry="v1042-auth-entry-simplified"],
+body[data-auth-entry="v1042-auth-entry-simplified"] .screen-login { --auth-entry-flow: guest-google-email; }
 .retired-direct-lobby-entry { display: none !important; }
-.login-card[data-auth-flow="guest-google-email-v1041"] .primary-actions { gap: 0.66rem; }
-.login-card[data-auth-flow="guest-google-email-v1041"] .login-provider-row { grid-template-columns: 1fr 1fr; }
-.login-card[data-auth-flow="guest-google-email-v1041"] .email-form:not(.collapsed) { max-height: 270px; }
-.login-card[data-auth-flow="guest-google-email-v1041"] .email-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.52rem; }
+.login-card[data-auth-flow="guest-google-email-v1042"] .primary-actions { gap: 0.66rem; }
+.login-card[data-auth-flow="guest-google-email-v1042"] .login-provider-row { grid-template-columns: 1fr 1fr; }
+.login-card[data-auth-flow="guest-google-email-v1042"] .email-form:not(.collapsed) { max-height: 270px; }
+.login-card[data-auth-flow="guest-google-email-v1042"] .email-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.52rem; }
 @media (max-width: 380px) {
-  .login-card[data-auth-flow="guest-google-email-v1041"] .login-provider-row,
-  .login-card[data-auth-flow="guest-google-email-v1041"] .email-buttons { grid-template-columns: 1fr; }
+  .login-card[data-auth-flow="guest-google-email-v1042"] .login-provider-row,
+  .login-card[data-auth-flow="guest-google-email-v1042"] .email-buttons { grid-template-columns: 1fr; }
+}
+
+
+/* v1.0.42 Account switch, +3s match bonus and stall pressure polish */
+.options-modal[data-account-switch="v1042-account-time-pressure"] .account-switch-row {
+  border-color: rgba(125, 220, 255, 0.2);
+  background: linear-gradient(135deg, rgba(54, 214, 164, 0.1), rgba(16, 43, 87, 0.42));
+}
+.account-switch-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.compact-account-actions {
+  margin-top: 0.5rem;
+  opacity: 0.92;
+}
+.boss-info[data-boss-role="time-pressure"] .boss-role-badge {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 200, 107, 0.28);
+  background: rgba(245, 200, 107, 0.1);
+  color: var(--gold-300);
+  font-size: 0.64rem;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.time-meter[data-match-bonus="plus-3"] strong {
+  position: relative;
+}
+#time-label.time-bonus-pop::after {
+  content: attr(data-bonus);
+  position: absolute;
+  left: 50%;
+  top: -1.05rem;
+  transform: translateX(-50%);
+  padding: 0.08rem 0.38rem;
+  border-radius: 999px;
+  background: rgba(54, 214, 164, 0.18);
+  color: var(--emerald-500);
+  font-size: 0.64rem;
+  font-weight: 950;
+  animation: timeBonusFloat 0.72s ease-out both;
+  pointer-events: none;
+}
+#time-label.urgent-time,
+body.time-pressure-action #time-label {
+  color: var(--gold-300);
+  text-shadow: 0 0 16px rgba(245, 200, 107, 0.68);
+  animation: urgentTimePulse 0.38s ease-in-out 2;
+}
+.battle-stage[data-stall-pressure="urgent"]::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 26px;
+  border: 1px solid rgba(245, 200, 107, 0.34);
+  box-shadow: inset 0 0 38px rgba(245, 200, 107, 0.1), 0 0 28px rgba(143, 107, 255, 0.12);
+  animation: stallPressureFlash 0.86s ease-out both;
+  pointer-events: none;
+  z-index: 3;
+}
+@keyframes timeBonusFloat {
+  0% { opacity: 0; transform: translate(-50%, 0.24rem) scale(0.92); }
+  22% { opacity: 1; transform: translate(-50%, -0.04rem) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -0.9rem) scale(0.98); }
+}
+@keyframes urgentTimePulse {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.045); }
+}
+@keyframes stallPressureFlash {
+  0% { opacity: 0; transform: scale(0.985); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.01); }
+}
+@media (max-width: 380px) {
+  .account-switch-actions { grid-template-columns: 1fr; }
+  .boss-info[data-boss-role="time-pressure"] .boss-role-badge { font-size: 0.58rem; }
 }

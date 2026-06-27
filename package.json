@@ -61,7 +61,8 @@
     "check:boss-pattern-density": "node tools/check-boss-pattern-density.mjs",
     "check:board-focus-tempo-cache": "node tools/check-board-focus-tempo-cache.mjs",
     "check:mobile-board-reward-flow": "node tools/check-mobile-board-reward-flow.mjs",
-    "check:auth-entry-flow": "node tools/check-auth-entry-flow.mjs"
+    "check:auth-entry-flow": "node tools/check-auth-entry-flow.mjs",
+    "check:account-time-pressure": "node tools/check-account-time-pressure.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -74,5 +75,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.41"
+  "version": "1.0.42"
 }

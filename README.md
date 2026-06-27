@@ -61,6 +61,37 @@ Atlas 생성
 ## Version History
 
 
+### v1.0.42 - Account Switch, Match Time Bonus and Stall Pressure Action Patch
+
+- v1.0.41 기준 통파일을 점검하고, 옵션 설정 안에서 바로 계정을 전환할 수 있도록 계정 섹션을 확장
+- 옵션 > 계정 전환에 `게스트 / 구글 / 이메일` 버튼을 추가해 첫 화면으로 돌아가지 않아도 저장 방식 전환 흐름을 이해할 수 있게 정리
+- 게스트/구글 전환은 옵션 안에서 바로 처리하고, 이메일 전환은 이메일 입력 폼이 있는 첫 화면을 열어 자연스럽게 로그인하도록 연결
+- 사천성 난이도가 높게 느껴지는 문제를 완화하기 위해 모든 정상 매칭마다 기본 보너스 시간 `+3초`를 지급
+- `PAIR_MATCH_TIME_BONUS_SECONDS`, `grantPairMatchTimeBonus()`를 추가하고 HUD 시간 영역에 `+3초` 팝업과 누적 보너스 QA hook을 추가
+- 매칭 없이 오래 지체되면 `triggerStallPressure()`가 보스 경고, 긴박한 warning/urgent 사운드, 시간 HUD pulse, 보드 경고 overlay를 발생시킴
+- 지체 압박은 시간을 빼앗는 벌칙이 아니라 “지금 한 쌍을 맞추면 +3초로 회복 가능”이라는 긴장 연출 중심으로 설계
+- 보드 우측 위 몬스터/보스 그림의 역할이 애매했던 문제를 해결하기 위해 boss role badge와 설명 title을 추가
+- 보스 그림은 단순 장식이 아니라 HP, 시간 압박, 실패 반격, 콤보 반격 예고를 보여주는 전투 상태 표시 영역으로 명확화
+- `DreamAudio`에 `warning`, `urgent` 합성 효과음을 추가
+- service worker cache slim 정책을 `v1042-cache-slim-account-time-pressure`로 갱신하고 Texture Atlas manifest를 v1.0.42로 추가
+- `npm run check:account-time-pressure` 신규 추가 및 GitHub Pages / Quality Check workflow에 연결
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
+- 선택 패 크기 고정과 tile body geometry guard 유지
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
+다음 업데이트 예정: v1.0.43 - Account Transition UX, Boss Role Tutorial and Difficulty Relief Patch
+
+- 옵션 안 계정 전환 후 현재 플레이/로비 상태가 더 자연스럽게 이어지도록 전환 애니메이션 polish
+- 이메일 전환도 옵션 모달 안에서 직접 입력할 수 있는 compact 계정 패널 검토
+- 보스 역할을 첫 보스전에서 짧게 알려주는 1회성 설명 연출 추가
+- +3초 보너스가 난이도를 너무 낮추지 않는지 난이도별 시간 보정값 검토
+- 지체 압박 사운드가 반복될 때 피로하지 않도록 cooldown과 볼륨 추가 조정
+- 보스 HP/반격 예고/보상 흐름을 더 직관적으로 연결
+- 작은 화면에서 옵션 계정 전환 버튼과 보상 모달 겹침 추가 압축
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
+
+
 ### v1.0.41 - Auth Entry Simplification and Direct Lobby Shortcut Cleanup Patch
 
 - v1.0.40 기준 통파일을 점검하고, 첫 시작 화면의 중복 진입 구조를 정리

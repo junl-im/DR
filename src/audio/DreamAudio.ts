@@ -1,6 +1,6 @@
 import { Howl, Howler } from 'howler';
 
-export type SfxName = 'tap' | 'select' | 'match' | 'beam' | 'burst' | 'combo' | 'clear';
+export type SfxName = 'tap' | 'select' | 'match' | 'beam' | 'burst' | 'combo' | 'clear' | 'warning' | 'urgent';
 
 export class DreamAudio {
   enabled = true;
@@ -39,6 +39,8 @@ export class DreamAudio {
     this.synthetic.burst = new Howl({ src: [tone(180, 0.12, 'square')], volume: 0.24 });
     this.synthetic.combo = new Howl({ src: [tone(1480, 0.08, 'sine')], volume: 0.36 });
     this.synthetic.clear = new Howl({ src: [tone(880, 0.22, 'triangle')], volume: 0.5 });
+    this.synthetic.warning = new Howl({ src: [tone(220, 0.18, 'sawtooth')], volume: 0.34 });
+    this.synthetic.urgent = new Howl({ src: [tone(1560, 0.075, 'square')], volume: 0.28 });
   }
 }
 

@@ -93,6 +93,7 @@ jobs:
           npm run check:board-focus-tempo-cache
           npm run check:mobile-board-reward-flow
           npm run check:auth-entry-flow
+          npm run check:account-time-pressure
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

@@ -12,8 +12,8 @@ const errors = [];
 
 for (const token of [
   'AUTH_ENTRY_SIMPLIFICATION_PATCH',
-  'v1041-auth-entry-simplified',
-  'guest-google-email-v1041',
+  'v1042-auth-entry-simplified',
+  'guest-google-email-v1042',
   'enterLobbyFromAuth',
   '게스트 로그인',
   '구글 로그인',
@@ -38,9 +38,9 @@ if (/startSelectedStage\s*\(/.test(authBlock)) errors.push('Auth buttons must no
 if (!/enterLobbyFromAuth\('guest'\)/.test(authBlock)) errors.push('Guest login must route through enterLobbyFromAuth(guest).');
 if (!/enterLobbyFromAuth\('google'\)/.test(authBlock)) errors.push('Google login must route through enterLobbyFromAuth(google).');
 if (!/enterLobbyFromAuth\('email'\)/.test(authBlock)) errors.push('Email login must route through enterLobbyFromAuth(email).');
-if (!pkg.includes('"version": "1.0.41"')) errors.push('package.json version must be 1.0.41.');
+if (!pkg.includes('"version": "1.0.42"')) errors.push('package.json version must be 1.0.42.');
 if (!pkg.includes('check:auth-entry-flow')) errors.push('package.json must expose check:auth-entry-flow.');
-if (!sw.includes('dream-library-cache-v1.0.41') || !sw.includes('texture-atlas-manifest-v1.0.41.json')) errors.push('service worker cache/manifest must be v1.0.41.');
+if (!sw.includes('dream-library-cache-v1.0.42') || !sw.includes('texture-atlas-manifest-v1.0.42.json')) errors.push('service worker cache/manifest must be v1.0.42.');
 if (!pages.includes('npm run check:auth-entry-flow')) errors.push('github-pages workflow must run auth entry flow check.');
 if (!quality.includes('npm run check:auth-entry-flow')) errors.push('quality workflow must run auth entry flow check.');
 

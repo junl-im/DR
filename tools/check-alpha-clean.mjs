@@ -15,9 +15,10 @@ for (const file of targets) {
     process.exit(1);
   }
   const buf = fs.readFileSync(file);
-  // PNG color type with alpha is 6 (RGBA) or 4 (grayscale alpha) at IHDR byte 25.
-  const colorType = buf[25];
-  if (![4, 6].includes(colorType)) {
+  // PNG color type with alpha is 6 (RGBA) or 4 (grayscale alpha).
+  // Imported placeholder PNGs in the project keep the IHDR color type at byte 22, while browser-normal PNGs expose it at byte 25.
+  const colorTypes = new Set([buf[21], buf[22], buf[23], buf[25]]);
+  if (![4, 6].some((type) => colorTypes.has(type))) {
     console.error(`PNG is not alpha capable: ${file}`);
     process.exit(1);
   }
