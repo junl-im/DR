@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.30';
+const CACHE_NAME = 'dream-library-cache-v1.0.31';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -52,7 +52,7 @@ const CORE_ASSETS = [
   './assets/meta/browser-handoff.png',
   './assets/meta/collection-codex.png',
   './assets/meta/asset-import-v1.0.11.json',
-  './assets/meta/texture-atlas-manifest-v1.0.30.json',
+  './assets/meta/texture-atlas-manifest-v1.0.31.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',
@@ -70,5 +70,21 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+  const request = event.request;
+  const url = new URL(request.url);
+  const isNavigation = request.mode === 'navigate' || request.destination === 'document';
+  const isAppCode = request.destination === 'script' || request.destination === 'style' || url.pathname.includes('/assets/index-');
+  if (isNavigation || isAppCode) {
+    event.respondWith(fetch(request).then((response) => {
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+      return response;
+    }).catch(() => caches.match(request).then((cached) => cached || caches.match('./'))));
+    return;
+  }
+  event.respondWith(caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+    const copy = response.clone();
+    caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+    return response;
+  })));
 });

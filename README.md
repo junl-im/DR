@@ -61,6 +61,27 @@ Atlas 생성
 ## Version History
 
 
+
+### v1.0.31 - Selection Containment and First Screen Stability Patch
+
+- v1.0.30 기준 통파일을 재점검하고, 사용자가 다시 지적한 선택 타일 과대 표시 문제를 우선 수정
+- 원인을 단순 `root.scale` 문제가 아니라 선택 링/광채/파동 레이어가 타일 셀 밖으로 크게 그려지는 시각 문제로 재정의
+- 선택 효과 상수를 `SELECTION_INSET_RATIO`, `SELECTION_RING_RATIO`, `SELECTION_WAVE_RATIO`로 분리해 선택 표현이 타일 셀 내부에서만 보이도록 제한
+- 선택 core/ring 반경을 축소하고 stroke 두께를 줄여 선택 시 오브젝트가 커진 것처럼 보이는 효과 제거
+- 선택 파동의 기존 2.6배 확장 애니메이션을 삭제하고, 타일 크기 안쪽에서 alpha/rotation으로 사라지는 안정형 반응으로 변경
+- 매칭 시작 시 두 타일을 1.06배 키우던 연출을 제거하고 glow/beam/fragment 중심으로 타격감을 유지
+- 선택 상태는 계속 normal texture를 사용해 selected PNG 원본 크기 차이가 보드 위 오브젝트 크기를 키우지 못하도록 유지
+- 첫 시작 시 다른 화면이 먼저 보이는 경우를 줄이기 위해 `forceLoginBootScreen()` 부트 안정화 루틴 추가
+- 앱 초기화 전에 login 화면만 active로 고정하고, 옵션/보상/종료/복원 모달과 보드 카메라 UI를 닫힌 상태로 정리
+- service worker fetch 전략을 문서/앱 코드에 대해 network-first로 변경해 이전 캐시가 첫 화면을 잘못 띄우는 상황을 완화
+- PWA 등록 시 `registration.update()`를 호출해 새 패치 반영 지연을 줄임
+- `npm run check:boot-screen` 추가
+- `npm run check:selection-stability`를 선택 효과 셀 내부 제한 기준까지 강화
+- GitHub Pages / Quality Check workflow에 신규 검사 반영
+- service worker 캐시와 Texture Atlas manifest를 v1.0.31로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.30 - Minimap, Route Assist and Boss Camera Impact Patch
 
 - v1.0.29 기준 통파일을 점검하고, 큰 보드 플레이 보조 기능을 실제 게임 화면에 추가
@@ -850,7 +871,7 @@ npm run deploy:rules
 
 ## Asset Resources
 
-v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했고, v1.0.20에서는 v2 상태별 타일을 실제 atlas로 패킹했고, v1.0.21에서는 로비 모션/버튼 상태/랭킹 UX를 강화했고, v1.0.22에서는 atlas preload CI와 WebP 배경 최적화/HUD 밀도 개선을 적용했고, v1.0.23에서는 보스 프레임 atlas와 모바일 layout QA/스크롤 polish를 추가했고, v1.0.24에서는 보스 atlas sprite 실제 렌더링, atlas WebP 압축 후보, 로비 상호작용 polish를 추가했고, v1.0.25에서는 카카오 인앱 로비 진입 시 fullscreen/orientation API로 인해 가로 viewport가 고정되는 경로를 제거하고 stable portrait shell을 추가했고, v1.0.26에서는 보스 atlas를 Pixi layer 후보와 동기화하고 인앱 device QA/랭킹 flow를 보강했고, v1.0.27에서는 화면 보조 문구를 silent hook으로 제거하고 타일 크기/선택 강조를 가독성 중심으로 재조정했고, v1.0.28에서는 큰 보드맵을 유지하면서 드래그 이동/두 손가락 확대축소가 가능한 board camera 구조를 추가했고, v1.0.29에서는 선택 타일 크기 고정과 보드 카메라 컨트롤/모바일 조작 안정성을 추가했고, v1.0.30에서는 보드 레이더, 빛길 힌트, 보스 카메라 충격 연출을 추가했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
+v1.0.6부터 에셋은 SVG를 사용하지 않습니다. v1.0.7에서는 로그인 화면과 게임 핵심 에셋을 PNG 렌더링 자원으로 전면 교체했고, v1.0.8에서는 보스/전투 피드백/성능 품질 자산을 추가했습니다. v1.0.9에서는 복원 메타/일일 콘텐츠/카카오 handoff PNG 자산을 추가했고, v1.0.10에서는 보스 3종/컬렉션 도감/daily 랭킹 PNG 자산을 추가했고, v1.0.11에서는 업로드 에셋팩의 PNG 렌더링 자산을 선별 반영해 프리미엄 퍼즐 오브젝트, 캐릭터, VFX, UI 키를 확장했고, v1.0.12에서는 특수 타일 규칙과 보스 예고 UI에 해당 VFX를 실제 배정했고, v1.0.14에서는 로비 미션 카드와 접기 UX, 동적 로딩 기반을 추가했고, v1.0.15에서는 카카오 인앱 외부 이동을 제거하고 세로 전체화면/회전 방지 런타임을 강화했고, v1.0.16에서는 종료 fallback, 로컬 랭킹 fallback, 모바일 스크롤 감도를 다듬었고, v1.0.17에서는 v2 에셋팩의 상태별 타일/마스코트/보스/VFX/UI 프레임을 선별 반영했고, v1.0.18에서는 모바일/인앱 환경의 가로 재계산 원인을 virtual portrait frame으로 수정했고, v1.0.19에서는 실제 보드 타일 매핑을 v2 에셋 우선으로 재정렬하고 선택 강조/alpha-clean/로비 스크롤을 추가 보정했고, v1.0.20에서는 v2 상태별 타일을 실제 atlas로 패킹했고, v1.0.21에서는 로비 모션/버튼 상태/랭킹 UX를 강화했고, v1.0.22에서는 atlas preload CI와 WebP 배경 최적화/HUD 밀도 개선을 적용했고, v1.0.23에서는 보스 프레임 atlas와 모바일 layout QA/스크롤 polish를 추가했고, v1.0.24에서는 보스 atlas sprite 실제 렌더링, atlas WebP 압축 후보, 로비 상호작용 polish를 추가했고, v1.0.25에서는 카카오 인앱 로비 진입 시 fullscreen/orientation API로 인해 가로 viewport가 고정되는 경로를 제거하고 stable portrait shell을 추가했고, v1.0.26에서는 보스 atlas를 Pixi layer 후보와 동기화하고 인앱 device QA/랭킹 flow를 보강했고, v1.0.27에서는 화면 보조 문구를 silent hook으로 제거하고 타일 크기/선택 강조를 가독성 중심으로 재조정했고, v1.0.28에서는 큰 보드맵을 유지하면서 드래그 이동/두 손가락 확대축소가 가능한 board camera 구조를 추가했고, v1.0.29에서는 선택 타일 크기 고정과 보드 카메라 컨트롤/모바일 조작 안정성을 추가했고, v1.0.30에서는 보드 레이더, 빛길 힌트, 보스 카메라 충격 연출을 추가했고, v1.0.31에서는 선택 효과를 타일 셀 내부로 제한하고 첫 화면 부트 안정성을 보강했습니다. 모든 게임 표시 자원은 2D~3D 렌더링 기반 PNG/WebP와 Texture Atlas 기준으로 관리합니다.
 
 ```text
 public/assets/objects/*.png              84+ files
@@ -884,8 +905,9 @@ premium-01 ~ premium-24, v2-tile-01 ~ v2-tile-36
 
 ## Next Version Plan
 
-### v1.0.31 예정 - Objective Markers, Camera Tutorial and Boss Pattern Polish Patch
+### v1.0.32 예정 - Objective Markers, Camera Tutorial and Boss Pattern Polish Patch
 
+- 이번 선택 셀 내부 제한이 실제 모바일에서도 충분한지 추가 QA
 - 첫 큰 보드 진입 시 짧은 자연스러운 카메라 조작 가이드 연출 추가
 - 미니맵에 미션 목표, 특수 타일, 보스 압박 위험 구간을 더 명확한 마커로 표시
 - 보드 위 목표 오브젝트를 은은하게 표시하는 objective marker / target pulse 추가

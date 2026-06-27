@@ -188,11 +188,11 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.30.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.31.json`
 ];
 
 export const PRELOAD_ASSETS = [
-  // v1.0.30: keep packed tile, boss atlas and compressed candidates explicit so Actions policy checks never miss them.
+  // v1.0.31: keep packed tile, boss atlas and compressed candidates explicit so Actions policy checks never miss them.
   ...TILE_ATLAS_ASSETS,
   ...BOSS_FRAME_ATLAS_ASSETS,
   ...ATLAS_WEBP_ASSETS,
@@ -231,7 +231,7 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.30.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.31.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.webp`,

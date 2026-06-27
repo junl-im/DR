@@ -5,7 +5,9 @@ export function registerServiceWorker() {
 
   const baseUrl = import.meta.env.BASE_URL || '/';
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${baseUrl}sw.js`).catch(() => {
+    navigator.serviceWorker.register(`${baseUrl}sw.js`).then((registration) => {
+      registration.update().catch(() => undefined);
+    }).catch(() => {
       // The game still works without offline cache.
     });
   });

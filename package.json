@@ -51,7 +51,8 @@
     "check:board-camera": "node tools/check-board-camera.mjs",
     "check:selection-stability": "node tools/check-selection-stability.mjs",
     "check:mobile-playability": "node tools/check-mobile-playability.mjs",
-    "check:minimap-route-impact": "node tools/check-minimap-route-impact.mjs"
+    "check:minimap-route-impact": "node tools/check-minimap-route-impact.mjs",
+    "check:boot-screen": "node tools/check-boot-screen-stability.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -64,5 +65,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.30"
+  "version": "1.0.31"
 }

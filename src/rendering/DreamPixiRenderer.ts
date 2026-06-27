@@ -15,6 +15,9 @@ const bossFrameAtlasAssets = [
   `${import.meta.env.BASE_URL}assets/atlas/boss-frames-v2.webp`
 ];
 const isV2StateAsset = (asset = '') => asset.includes('/assets/objects/v2-state/') || asset.includes('assets/objects/v2-state/');
+const SELECTION_INSET_RATIO = 0.12;
+const SELECTION_RING_RATIO = 0.43;
+const SELECTION_WAVE_RATIO = 0.44;
 
 export type BoardTile = {
   id: string;
@@ -313,7 +316,7 @@ export class DreamPixiRenderer {
     if (!view || view.removing) return;
     this.lockTileViewScale(view);
     this.applyTileStateTexture(view, 'selected');
-    gsap.fromTo(view.glow, { alpha: 0.62 }, { alpha: 1, duration: 0.16 * this.quality.motionScale, ease: 'sine.out' });
+    gsap.fromTo(view.glow, { alpha: 0.34 }, { alpha: 0.58, duration: 0.16 * this.quality.motionScale, ease: 'sine.out' });
     gsap.fromTo(view.selectionRing, { alpha: 0.82 }, { alpha: 1, rotation: view.selectionRing.rotation + Math.PI * 0.1, duration: 0.22 * this.quality.motionScale, ease: 'power2.out' });
     gsap.fromTo(view.selectionCore, { alpha: 0.62 }, { alpha: 0.96, duration: 0.14 * this.quality.motionScale, ease: 'sine.out' });
     this.emitSelectionWave(view.root.x, view.root.y, PALETTE.sky);
@@ -345,10 +348,11 @@ export class DreamPixiRenderer {
     a.removing = true;
     b.removing = true;
     this.cameraShake(Math.min(15, 4 + combo));
+    this.lockTileViewScale(a);
+    this.lockTileViewScale(b);
     await new Promise<void>((resolve) => {
       const tl = gsap.timeline({ onComplete: resolve });
-      tl.to([a.root.scale, b.root.scale], { x: 1.06, y: 1.06, duration: 0.08 * this.quality.motionScale, ease: 'power2.out' })
-        .to([a.glow, b.glow], { alpha: 1, duration: 0.08 * this.quality.motionScale }, '<')
+      tl.to([a.glow, b.glow], { alpha: 0.82, duration: 0.08 * this.quality.motionScale, ease: 'power2.out' })
         .add(() => this.drawConnectionBeamByPath(path, a.root.x, a.root.y, b.root.x, b.root.y), '>-0.01')
         .add(() => this.emitBoardPulse(combo), '>-0.01')
         .add(() => this.emitTileFragments(a.root.x, a.root.y, combo), '>-0.02')
@@ -829,7 +833,7 @@ export class DreamPixiRenderer {
     const frame = new Graphics().roundRect(-this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize, this.tileSize * 0.24).fill({ color: PALETTE.navySoft, alpha: 0.72 }).stroke({ color: PALETTE.gold, width: 1.5, alpha: 0.45 });
     const specialColor = tile.special === 'locked' ? PALETTE.gold : tile.special === 'timeSeal' ? PALETTE.violet : tile.special === 'fog' ? PALETTE.sky : PALETTE.sky;
     const hiddenSpecial = Boolean(tile.special && !tile.specialRevealed);
-    const glow = new Graphics().circle(0, 0, this.tileSize * 0.62).fill({ color: specialColor, alpha: tile.special ? 0.28 : 0.2 });
+    const glow = new Graphics().circle(0, 0, this.tileSize * 0.48).fill({ color: specialColor, alpha: tile.special ? 0.24 : 0.16 });
     glow.alpha = 0.16;
     const startState = hiddenSpecial ? tile.special === 'locked' ? 'locked' : 'disabled' : 'normal';
     const texture = this.resolveTileTexture(tile, startState);
@@ -839,16 +843,17 @@ export class DreamPixiRenderer {
     sprite.height = this.tileSize * 0.98;
     sprite.alpha = hiddenSpecial && tile.special === 'fog' ? 0.16 : hiddenSpecial ? 0.46 : 1;
     const rim = new Graphics().roundRect(-this.tileSize / 2 + 4, -this.tileSize / 2 + 4, this.tileSize - 8, this.tileSize - 8, this.tileSize * 0.2).stroke({ color: specialColor, width: tile.special ? 2.2 : 1.4, alpha: tile.special ? 0.58 : 0.2 });
+    const selectionInset = Math.max(4, this.tileSize * SELECTION_INSET_RATIO);
     const selectionCore = new Graphics()
-      .roundRect(-this.tileSize / 2 - 3, -this.tileSize / 2 - 3, this.tileSize + 6, this.tileSize + 6, this.tileSize * 0.26)
-      .stroke({ color: PALETTE.sky, width: Math.max(3, this.tileSize * 0.07), alpha: 0.95 })
-      .stroke({ color: PALETTE.gold, width: Math.max(1.5, this.tileSize * 0.03), alpha: 0.98 });
+      .roundRect(-this.tileSize / 2 + selectionInset, -this.tileSize / 2 + selectionInset, this.tileSize - selectionInset * 2, this.tileSize - selectionInset * 2, this.tileSize * 0.18)
+      .stroke({ color: PALETTE.sky, width: Math.max(1.8, this.tileSize * 0.038), alpha: 0.94 })
+      .stroke({ color: PALETTE.gold, width: Math.max(1, this.tileSize * 0.018), alpha: 0.9 });
     selectionCore.alpha = 0;
     const selectionRing = new Graphics()
-      .circle(0, 0, this.tileSize * 0.72)
-      .stroke({ color: PALETTE.gold, width: Math.max(2.5, this.tileSize * 0.055), alpha: 0.96 })
-      .circle(0, 0, this.tileSize * 0.84)
-      .stroke({ color: PALETTE.sky, width: Math.max(1.5, this.tileSize * 0.035), alpha: 0.72 });
+      .circle(0, 0, this.tileSize * SELECTION_RING_RATIO)
+      .stroke({ color: PALETTE.gold, width: Math.max(1.6, this.tileSize * 0.035), alpha: 0.92 })
+      .circle(0, 0, this.tileSize * 0.33)
+      .stroke({ color: PALETTE.sky, width: Math.max(1, this.tileSize * 0.022), alpha: 0.7 });
     selectionRing.alpha = 0;
     selectionRing.blendMode = 'add';
 
@@ -1002,12 +1007,15 @@ export class DreamPixiRenderer {
   }
 
   private emitSelectionWave(x: number, y: number, color: number) {
-    const ring = new Graphics().circle(0, 0, 18).stroke({ color, width: 3, alpha: 0.82 });
+    const radius = Math.max(10, this.tileSize * SELECTION_WAVE_RATIO);
+    const ring = new Graphics()
+      .circle(0, 0, radius)
+      .stroke({ color, width: Math.max(1.2, this.tileSize * 0.026), alpha: 0.58 });
     ring.x = x;
     ring.y = y;
+    ring.blendMode = 'add';
     this.boardLayers.particles.addChild(ring);
-    gsap.to(ring.scale, { x: 2.6, y: 2.6, duration: 0.32 * this.quality.motionScale, ease: 'power2.out' });
-    gsap.to(ring, { alpha: 0, duration: 0.32 * this.quality.motionScale, onComplete: () => ring.destroy() });
+    gsap.fromTo(ring, { alpha: 0.46, rotation: 0 }, { alpha: 0, rotation: Math.PI * 0.08, duration: 0.22 * this.quality.motionScale, ease: 'sine.out', onComplete: () => ring.destroy() });
   }
 
   private emitBoardPulse(combo: number) {

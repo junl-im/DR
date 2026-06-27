@@ -147,6 +147,20 @@ const el = {
   exitWakeButton: $('#exit-wake-button')
 };
 
+
+function forceLoginBootScreen() {
+  el.app.dataset.screen = 'login';
+  document.body.dataset.screen = 'login';
+  el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === 'screen-login'));
+  el.backButton.classList.add('hidden');
+  [el.optionsModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal].forEach((modal) => modal.classList.add('hidden'));
+  el.boardCameraGuide?.classList.add('hidden');
+  el.boardCameraControls?.classList.add('hidden');
+  el.boardMinimap?.classList.add('hidden');
+}
+
+forceLoginBootScreen();
+
 type ScreenName = 'login' | 'settings' | 'lobby' | 'game';
 type CampaignProgress = { unlocked: string[]; cleared: Record<string, { stars: number; bestScore: number }> };
 type RestorationInventory = Record<string, number>;
@@ -276,6 +290,9 @@ async function init() {
   renderLobby();
   renderStats();
   updateScreen('login');
+  window.addEventListener('pageshow', (event) => {
+    if ((event as PageTransitionEvent).persisted && state.screen !== 'game') forceLoginBootScreen();
+  });
 
   await renderer.initAmbient(el.pixiStage);
   await renderer.preloadAssets(ATLAS_ASSETS);

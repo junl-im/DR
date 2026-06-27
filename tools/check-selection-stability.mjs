@@ -14,6 +14,19 @@ if (selectionBlock.includes('gsap.fromTo(view.selectionRing.scale') || selection
   errors.push('Selection feedback must use glow/ring alpha or rotation, not scale animation.');
 }
 if (!renderer.includes("const textureState = state === 'selected' ? 'normal' : state")) errors.push('Selected state must keep the normal tile texture to prevent larger selected PNG frames.');
+
+if (!renderer.includes('SELECTION_INSET_RATIO') || !renderer.includes('SELECTION_RING_RATIO') || !renderer.includes('SELECTION_WAVE_RATIO')) {
+  errors.push('Selection effect must use bounded constants for ring, inset and wave sizing.');
+}
+if (addTileBlock.includes('tileSize * 0.72') || addTileBlock.includes('tileSize * 0.84') || addTileBlock.includes('tileSize * 0.62')) {
+  errors.push('Selection ring/glow must stay inside the tile cell instead of drawing oversized overlays.');
+}
+if (renderer.includes('tl.to([a.root.scale, b.root.scale], { x: 1.06') || renderer.includes('root.scale], { x: 1.06')) {
+  errors.push('Match start must not grow selected tile roots above natural size.');
+}
+if (renderer.includes('circle(0, 0, 18).stroke') || renderer.includes('x: 2.6, y: 2.6')) {
+  errors.push('Old large selection wave is still present.');
+}
 if (!addTileBlock.includes("root.scale.set(0.88)") || addTileBlock.includes("back.out(1.8)")) errors.push('Tile spawn must avoid overshoot that can look like selection growth.');
 
 if (errors.length) {
