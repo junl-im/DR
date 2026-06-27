@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.21';
+const CACHE_NAME = 'dream-library-cache-v1.0.22';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -8,7 +8,11 @@ const CORE_ASSETS = [
   './assets/backgrounds/world-map.png',
   './assets/backgrounds/imported-moon-library.png',
   './assets/backgrounds/moon-library-v2.png',
+  './assets/backgrounds/moon-library-v2.webp',
   './assets/backgrounds/gothic-window-v2.png',
+  './assets/backgrounds/gothic-window-v2.webp',
+  './assets/backgrounds/bookshelf-v2.png',
+  './assets/backgrounds/bookshelf-v2.webp',
   './assets/characters/mascot-scholar-v2.png',
   './assets/characters/mascot-companions-v2.png',
   './assets/characters/boss-motion-sheet-v2.png',
@@ -44,7 +48,7 @@ const CORE_ASSETS = [
   './assets/meta/browser-handoff.png',
   './assets/meta/collection-codex.png',
   './assets/meta/asset-import-v1.0.11.json',
-  './assets/meta/texture-atlas-manifest-v1.0.21.json',
+  './assets/meta/texture-atlas-manifest-v1.0.22.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',

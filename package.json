@@ -34,7 +34,8 @@
     "check:lobby-motion": "node tools/check-lobby-motion.mjs",
     "check:button-states": "node tools/check-button-states.mjs",
     "check:ranking-ux": "node tools/check-ranking-ux.mjs",
-    "check:atlas-extended": "node tools/check-atlas-extended.mjs"
+    "check:atlas-extended": "node tools/check-atlas-extended.mjs",
+    "check:background-optimization": "node tools/check-background-optimization.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -47,5 +48,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.21"
+  "version": "1.0.22"
 }

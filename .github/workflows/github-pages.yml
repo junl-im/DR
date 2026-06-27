@@ -66,6 +66,7 @@ jobs:
           npm run check:button-states
           npm run check:ranking-ux
           npm run check:atlas-extended
+          npm run check:background-optimization
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

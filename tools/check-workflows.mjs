@@ -13,8 +13,10 @@ for (const file of files) {
   if (/push:[\s\S]*branches:[\s\S]*- main/.test(text)) pushMainCount += 1;
 }
 if (pushMainCount !== 1) errors.push(`Expected exactly one push main workflow, found ${pushMainCount}.`);
+const pagesWorkflow = readFileSync(join(dir, 'github-pages.yml'), 'utf8');
+if (!pagesWorkflow.includes('npm run check:background-optimization')) errors.push('github-pages.yml: expected background optimization check.');
 if (errors.length) {
-  console.error(errors.join('\n'));
+  console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
 console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install.');

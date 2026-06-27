@@ -60,6 +60,30 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.22 - CI Atlas Preload, Annotation Cleanup, Background Optimization and HUD Density Patch
+
+- v1.0.20 Actions 실패 로그를 기준으로 `check:v2-assets` 실패 원인을 우선 수정
+- 원인: `PRELOAD_ASSETS`가 packed v2 tile atlas를 명시적으로 직접 포함하지 않아 검사 스크립트가 atlas preload 정책을 놓칠 수 있었음
+- `PRELOAD_ASSETS`에 `...TILE_ATLAS_ASSETS`를 명시적으로 추가해 GitHub Actions 검사 기준과 실제 preload 기준을 일치시킴
+- `DreamPixiRenderer`에 `resolveTileAtlasTexture()`를 분리 추가
+- v2 타일 렌더링 순서를 `atlas frame lookup -> Assets cache fallback -> individual PNG fallback`으로 명확히 고정
+- `check:v2-assets`가 atlas preload, v2 우선 게임플레이 타일 풀, renderer fallback 순서를 한 번에 검증하도록 강화
+- Actions Annotations가 여러 줄로 중복 잡히지 않도록 v2 asset policy 실패 메시지를 한 줄 요약형으로 정리
+- `check-workflows` 실패 메시지도 한 줄 요약형으로 정리
+- 대형 v2 배경 3종 WebP 후보 생성
+  - `moon-library-v2.webp`
+  - `gothic-window-v2.webp`
+  - `bookshelf-v2.webp`
+- 배경 CSS 변수를 `image-set(WebP, PNG fallback)` 기반으로 변경해 지원 브라우저에서는 WebP를 우선 사용
+- service worker와 preload asset 목록에 WebP 배경 후보를 반영
+- 작은 화면 전투 HUD 밀도 추가 압축
+- 보스 정보/미터/전투 패널의 높이와 여백을 줄여 세로 화면에서 퍼즐판 가시성을 개선
+- `npm run check:background-optimization` 추가 및 Actions 검사에 반영
+- Texture Atlas manifest v1.0.22 갱신
+- service worker 캐시를 v1.0.22로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.21 - Lobby Motion, Button States, Ranking UX and Atlas Extension Patch
 
 - 로비 마스코트 분위기 시스템 추가

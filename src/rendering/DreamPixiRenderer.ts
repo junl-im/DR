@@ -274,18 +274,36 @@ export class DreamPixiRenderer {
   }
 
 
+  private resolveTileAtlasTexture(tile: BoardTile, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled' = 'normal') {
+    if (!tile.type.startsWith('v2-tile-')) return null;
+    const preferredFrame = `${tile.type}-${state}.png`;
+    const fallbackFrame = `${tile.type}-normal.png`;
+    try {
+      const atlasTexture = Assets.get(preferredFrame)
+        || Assets.get(`v2-tiles/${preferredFrame}`)
+        || Assets.get(fallbackFrame)
+        || Assets.get(`v2-tiles/${fallbackFrame}`);
+      if (atlasTexture instanceof Texture) return atlasTexture;
+    } catch {
+      // Packed atlas lookup is first priority, but individual PNG fallback must remain safe.
+    }
+    return null;
+  }
+
   private resolveTileTexture(tile: BoardTile, state: 'normal' | 'selected' | 'hint' | 'locked' | 'disabled' = 'normal') {
+    const atlasTexture = this.resolveTileAtlasTexture(tile, state);
+    if (atlasTexture) return atlasTexture;
     const asset = tile.stateAssets?.[state] || tile.stateAssets?.normal || tile.asset;
     const filename = asset.split('/').pop() || asset;
     try {
-      const atlasTexture = Assets.get(filename)
+      const cachedTexture = Assets.get(filename)
         || Assets.get(`v2-state/${filename}`)
         || Assets.get(`assets/objects/v2-state/${filename}`)
         || Assets.get(`assets/objects/${filename}`)
         || Assets.get(asset);
-      if (atlasTexture instanceof Texture) return atlasTexture;
+      if (cachedTexture instanceof Texture) return cachedTexture;
     } catch {
-      // Atlas lookup is an optimization only. Individual PNG remains the safe fallback.
+      // Individual PNG remains the safe fallback.
     }
     return Texture.from(asset);
   }

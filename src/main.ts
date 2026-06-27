@@ -15,7 +15,9 @@ import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
 import { detectDeviceProfile, nextQualityTier, saveQualityTier } from './systems/performance';
 import { HAPTIC } from './systems/haptics';
 
-document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png)`);
+const backgroundImageSet = (name: string) => `image-set(url(${import.meta.env.BASE_URL}assets/backgrounds/${name}.webp) type("image/webp"), url(${import.meta.env.BASE_URL}assets/backgrounds/${name}.png) type("image/png"))`;
+
+document.documentElement.style.setProperty('--library-background-url', backgroundImageSet('moon-library-v2'));
 document.documentElement.style.setProperty('--title-logo-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/logo-dream-library-v2.png)`);
 document.documentElement.style.setProperty('--start-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-start-v2.png)`);
 document.documentElement.style.setProperty('--google-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-google-v2.png)`);
@@ -900,7 +902,7 @@ function updateScreen(screen: ScreenName) {
   document.body.dataset.screen = screen;
   const bg = screen === 'login' ? 'moon-library-v2' : screen === 'lobby' ? 'gothic-window-v2' : 'library-hall';
   if (screen === 'lobby' || screen === 'game') requestKakaoPortraitLock(`screen-${screen}`);
-  document.documentElement.style.setProperty('--library-background-url', `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
+  document.documentElement.style.setProperty('--library-background-url', bg.endsWith('-v2') ? backgroundImageSet(bg) : `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
   el.backButton.classList.toggle('hidden', screen === 'login');
   if (screen === 'lobby') renderLobby();

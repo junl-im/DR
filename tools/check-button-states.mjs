@@ -12,4 +12,4 @@ if (missing.length) {
   console.error(missing.join('\n'));
   process.exit(1);
 }
-console.log('Button state PNG mapping policy passed for v1.0.21.');
+console.log('Button state PNG mapping policy passed for v1.0.22.');

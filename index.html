@@ -17,6 +17,7 @@
     <meta name="description" content="꿈의 서고 - 사천성 퍼즐과 마법 전투가 결합된 프리미엄 캐주얼 모바일 웹 게임" />
     <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
+    <link rel="preload" href="%BASE_URL%assets/backgrounds/moon-library-v2.webp" as="image" type="image/webp" />
     <link rel="preload" href="%BASE_URL%assets/backgrounds/moon-library-v2.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/mascot-scholar-v2.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/mascot-companions-v2.png" as="image" />
@@ -38,26 +39,26 @@
         <img class="handoff-icon" src="%BASE_URL%assets/meta/browser-handoff.png" alt="" aria-hidden="true" draggable="false" />
         <div class="handoff-copy">
           <p class="eyebrow">Display Assist</p>
-          <h2>화면을 맞췄습니다</h2>
-          <p>현재 기기에 맞춰 게임 화면을 정리했습니다.</p>
-          <p id="guard-status" class="guard-status">화면 조정이 끝났습니다.</p>
+          <h2>게임 화면을 준비했습니다</h2>
+          <p>화면 크기가 바뀌어도 게임 프레임을 같은 비율로 유지합니다.</p>
+          <p id="guard-status" class="guard-status">게임 화면을 맞출 준비가 끝났습니다.</p>
         </div>
         <div class="guard-actions compact-guard-actions">
-          <button id="kakao-fullscreen-button" type="button" class="primary-glow">화면 조정</button>
-          <button id="kakao-portrait-button" type="button" class="secondary">다시 조정</button>
+          <button id="kakao-fullscreen-button" type="button" class="primary-glow">화면 맞춤</button>
+          <button id="kakao-portrait-button" type="button" class="secondary">프레임 정리</button>
           <button id="continue-inapp-button" type="button" class="secondary">닫기</button>
         </div>
       </div>
     </aside>
 
-    <aside id="portrait-lock-overlay" class="portrait-lock-overlay hidden" aria-live="polite" aria-label="화면 상태">
+    <aside id="portrait-lock-overlay" class="portrait-lock-overlay hidden" aria-live="polite" aria-label="화면 프레임 상태">
       <div class="portrait-lock-card luxury-panel">
         <div class="portrait-device" aria-hidden="true"><span></span></div>
-        <p class="eyebrow">Display</p>
-        <h2>화면 조정 중</h2>
-        <p id="portrait-lock-status">게임 화면을 정리하고 있습니다.</p>
+        <p class="eyebrow">Frame Lock</p>
+        <h2>게임 프레임 유지 중</h2>
+        <p id="portrait-lock-status">게임 화면은 같은 비율의 프레임으로 유지됩니다.</p>
         <div class="portrait-lock-actions">
-          <button id="portrait-lock-action-button" type="button" class="primary-glow">다시 조정</button>
+          <button id="portrait-lock-action-button" type="button" class="primary-glow">화면 다시 맞춤</button>
           <button id="portrait-lock-continue-button" type="button" class="secondary">계속하기</button>
         </div>
       </div>
@@ -205,7 +206,7 @@
       <div class="options-card luxury-panel">
         <div class="options-head"><div><p class="eyebrow">Options</p><h2>옵션</h2></div><button id="close-options-button" type="button" class="icon-button" aria-label="옵션 닫기">×</button></div>
         <article class="option-row"><h3>계정</h3><p id="settings-account-text">로그인 전입니다.</p><div class="option-actions"><button id="settings-login-button" type="button" class="secondary">첫 화면</button><button id="settings-lobby-button" type="button" class="secondary">로비</button><button id="signout-button" type="button" class="secondary danger hidden">로그아웃</button></div></article>
-        <article class="option-row"><h3>화면</h3><p>모바일 화면 크기가 바뀌어도 게임 프레임을 안정적으로 유지합니다.</p><button id="settings-fullscreen-button" type="button">화면 조정</button></article>
+        <article class="option-row"><h3>화면</h3><p>모바일 화면 크기가 바뀌어도 게임 프레임을 안정적으로 유지합니다.</p><button id="settings-fullscreen-button" type="button">화면 맞춤</button></article>
         <article class="option-row"><h3>사운드</h3><p>터치, 연결, 폭발, 콤보 효과음을 켜고 끕니다.</p><button id="sound-toggle" type="button" aria-pressed="true">효과음 켜짐</button></article>
         <article class="option-row"><h3>렌더링 품질</h3><p id="quality-label">고품질 · 자동 감지</p><button id="quality-toggle" type="button">렌더링 고품질</button></article>
         <article class="option-row"><h3>진행 관리</h3><p>로컬 캠페인 진행과 해금 기록을 초기화합니다.</p><button id="reset-progress-button" type="button" class="secondary">로컬 진행 초기화</button></article>

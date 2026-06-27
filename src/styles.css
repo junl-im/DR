@@ -1687,7 +1687,7 @@ body[data-screen="lobby"] .collection-tile {
   html.source-landscape .app-shell { border-radius: 22px; }
 }
 
-/* v1.0.21 lobby motion, button states, ranking UX and scroll QA polish */
+/* v1.0.22 lobby motion, button states, ranking UX and scroll QA polish */
 :root {
   --rank-cloud: rgba(125, 220, 255, 0.94);
   --rank-local: rgba(54, 214, 164, 0.92);
@@ -1839,4 +1839,39 @@ body[data-screen="lobby"] .collection-panel {
   body[data-lobby-mood] .lobby-hero img,
   .mission-card,
   button { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+
+/* v1.0.22 background optimization, HUD density and CI atlas policy polish */
+:root { --hud-compact-scale: 1; }
+body[data-screen="game"] .game-hud,
+body[data-screen="game"] .battle-stage {
+  transition: padding 0.18s ease, gap 0.18s ease;
+}
+body[data-screen="game"] .hud-meters div {
+  min-width: 0;
+}
+body[data-screen="game"] .hud-meters span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-height: 720px), (max-width: 370px) {
+  :root { --hud-compact-scale: 0.92; }
+  body[data-screen="game"] .screen-inner { padding-top: 0.42rem; }
+  body[data-screen="game"] .game-hud { padding: 0.52rem 0.58rem; margin-bottom: 0.42rem; border-radius: 20px; }
+  body[data-screen="game"] .hud-topline h2 { font-size: clamp(1rem, 4vw, 1.26rem); }
+  body[data-screen="game"] .hud-meters { gap: 0.28rem; margin-top: 0.38rem; }
+  body[data-screen="game"] .hud-meters div { padding: 0.26rem 0.14rem; border-radius: 12px; }
+  body[data-screen="game"] .hud-meters span { font-size: 0.58rem; }
+  body[data-screen="game"] .hud-meters strong { font-size: 0.8rem; }
+  body[data-screen="game"] .battle-stage { padding: 0.46rem; border-radius: 20px; }
+  body[data-screen="game"] .boss-lane { min-height: 50px; margin-bottom: 0.28rem; }
+  body[data-screen="game"] .boss-core { width: 48px; height: 48px; }
+  body[data-screen="game"] .boss-core img { width: 68px; height: 68px; }
+  body[data-screen="game"] .boss-info strong { font-size: 0.82rem; }
+  body[data-screen="game"] .boss-info small { display: none; }
+}
+@supports (background-image: image-set(url('x.webp') type('image/webp'))) {
+  body::before { image-rendering: auto; }
 }

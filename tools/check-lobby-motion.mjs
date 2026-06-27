@@ -16,4 +16,4 @@ if (failed.length) {
   console.error(failed.join('\n'));
   process.exit(1);
 }
-console.log('Lobby motion policy passed for v1.0.21.');
+console.log('Lobby motion policy passed for v1.0.22.');

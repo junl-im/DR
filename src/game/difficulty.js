@@ -170,10 +170,12 @@ export const ATLAS_ASSETS = [
   ...TILE_ATLAS_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.21.json`
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.22.json`
 ];
 
 export const PRELOAD_ASSETS = [
+  // v1.0.22: keep packed tile atlas explicit so Actions policy checks never miss it.
+  ...TILE_ATLAS_ASSETS,
   ...ATLAS_ASSETS,
   `${import.meta.env.BASE_URL}assets/backgrounds/storybook-login.png`,
   `${import.meta.env.BASE_URL}assets/backgrounds/lobby-garden.png`,
@@ -209,11 +211,14 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/ui/icon-back.png`,
   `${import.meta.env.BASE_URL}assets/ui/icon-home.png`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.11.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.21.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.22.json`,
   `${import.meta.env.BASE_URL}assets/meta/asset-import-v1.0.17.json`,
   `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.png`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/moon-library-v2.webp`,
   `${import.meta.env.BASE_URL}assets/backgrounds/gothic-window-v2.png`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/gothic-window-v2.webp`,
   `${import.meta.env.BASE_URL}assets/backgrounds/bookshelf-v2.png`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/bookshelf-v2.webp`,
   `${import.meta.env.BASE_URL}assets/characters/mascot-scholar-v2.png`,
   `${import.meta.env.BASE_URL}assets/characters/mascot-companions-v2.png`,
   `${import.meta.env.BASE_URL}assets/characters/boss-motion-sheet-v2.png`,

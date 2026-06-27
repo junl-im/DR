@@ -14,4 +14,4 @@ if (failed.length) {
   console.error(failed.join('\n'));
   process.exit(1);
 }
-console.log('Ranking UX policy passed for v1.0.21.');
+console.log('Ranking UX policy passed for v1.0.22.');
