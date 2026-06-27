@@ -29,11 +29,11 @@ document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
-const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1050-finale-season-boss-polish';
+const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1051-shop-claim-mobile-design';
 const LEGACY_BOSS_VISUAL_STACK_TOKEN = 'stable-atlas-v1040';
-const STAGE_LADDER_EXPANSION_PATCH = 'v1050-summer-finale-90';
+const STAGE_LADDER_EXPANSION_PATCH = 'v1051-summer-shop-claim-90';
 const LEGACY_STAGE_MAP_COMFORT_TOKEN = 'v1046-stage-map-comfort-42';
-const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1050-summer-design-gesture-qa';
+const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1051-mobile-design-gesture-final';
 const LEGACY_LOBBY_DRAG_RESCUE_TOKEN = 'v1046-gesture-final-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
@@ -41,20 +41,20 @@ const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
 const AUTH_MODAL_BOSS_ROLE_PATCH = 'v1043-auth-modal-boss-role';
 const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
-const DIFFICULTY_TEMPO_PATCH = 'v1050-finale-difficulty-tempo';
+const DIFFICULTY_TEMPO_PATCH = 'v1051-finale-balance-tempo';
 const LEGACY_DIFFICULTY_TEMPO_TOKEN = 'v1046-difficulty-tempo-wide-ladder';
-const SUMMER_SEASON_PATCH = 'v1050-summer-finale-event-vfx';
-const SUMMER_REWARD_PASS_PATCH = 'v1050-summer-finale-pass-shop';
-const SUMMER_LIVE_BALANCE_PATCH = 'v1050-summer-finale-live-balance';
-const SUMMER_EVENT_VFX_PATCH = 'v1050-summer-finale-event-vfx';
-const SUMMER_PASS_MISSIONS_PATCH = 'v1050-summer-finale-pass-shop';
-const SUMMER_COMPACT_CAROUSEL_PATCH = 'v1050-finale-compact-carousel';
-const BOSS_SEASON_POLISH_PATCH = 'v1050-boss-finale-polish';
-const SUMMER_FINALE_SHOP_PATCH = 'v1050-summer-season-shop';
-const SUMMER_FINALE_MISSION_PATCH = 'v1050-summer-finale-missions';
-const SUMMER_DESIGN_QA_PATCH = 'v1050-design-density-check';
+const SUMMER_SEASON_PATCH = 'v1051-summer-shop-claim-vfx';
+const SUMMER_REWARD_PASS_PATCH = 'v1051-summer-shop-claim-pass';
+const SUMMER_LIVE_BALANCE_PATCH = 'v1051-finale-live-balance';
+const SUMMER_EVENT_VFX_PATCH = 'v1051-summer-shop-claim-vfx';
+const SUMMER_PASS_MISSIONS_PATCH = 'v1051-summer-shop-claim-pass';
+const SUMMER_COMPACT_CAROUSEL_PATCH = 'v1051-auto-focus-compact-carousel';
+const BOSS_SEASON_POLISH_PATCH = 'v1051-boss-season-icon-readability';
+const SUMMER_FINALE_SHOP_PATCH = 'v1051-summer-shop-claim-flow';
+const SUMMER_FINALE_MISSION_PATCH = 'v1051-finale-balance-missions';
+const SUMMER_DESIGN_QA_PATCH = 'v1051-mobile-design-density-qa';
 
-const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.49 texture-atlas-manifest-v1.0.49.json';
+const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
 
 const SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY: Record<string, number> = {
@@ -331,6 +331,7 @@ const state = {
   warnedLowTime: false,
   lastClearedStageId: '',
   lastSeasonPassReward: null as null | { label: string; amount: number; milestone: number },
+  seasonShopClaims: readJson<Record<string, boolean>>('dream-library-season-shop-claims', {}),
   stageModifiers: [] as string[],
   pressureTick: 0,
   timeSealBonusCount: 0,
@@ -491,6 +492,8 @@ function bindEvents() {
     writeJson('dream-library-local-ranking-daily', state.localDailyRanking);
     writeJson('dream-library-inventory', state.inventory);
     writeJson('dream-library-restoration-completed', state.restorationCompleted);
+    state.seasonShopClaims = {};
+    writeJson('dream-library-season-shop-claims', state.seasonShopClaims);
     renderLobby();
     renderStats();
     setStatus('로컬 진행을 초기화했습니다.');
@@ -581,6 +584,13 @@ function bindEvents() {
     writeText('dream-library-selected-chapter', stage.chapterId);
     renderLobby();
     setStatus('썸머 시즌 스테이지로 이동했습니다.');
+  });
+  document.addEventListener('click', (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>('.season-shop-claim');
+    if (!target) return;
+    event.preventDefault();
+    event.stopPropagation();
+    claimSummerShopItem(target.dataset.shopItem || '');
   });
   el.dailyRankTabs.addEventListener('click', (event) => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-daily-rank]');
@@ -1504,7 +1514,7 @@ function renderStageLadderSummary(clearCount: number, selectedStage: any) {
   const nextMeta = DIFFICULTIES[nextOpen.difficultyKey] || DIFFICULTIES.normal;
   const selectedMeta = DIFFICULTIES[selectedStage?.difficultyKey] || nextMeta;
   el.stageLadderSummary.dataset.stageLadder = STAGE_LADDER_EXPANSION_PATCH;
-  el.stageLadderSummary.dataset.stageMapComfort = 'next-goal-v1050-summer-finale';
+  el.stageLadderSummary.dataset.stageMapComfort = 'next-goal-v1051-shop-claim';
   el.stageLadderSummary.dataset.legacyStageMapComfort = LEGACY_STAGE_MAP_COMFORT_TOKEN;
   el.stageLadderSummary.innerHTML = `<div class="ladder-progress"><strong>${clearCount}/${STAGES.length}</strong><span>현재 ${selectedIndex + 1}번 · 다음 목표 ${nextOpen.number}번 ${escapeHtml(nextOpen.title)} · ${progressPercent}%</span></div><div class="ladder-path"><span>현재 ${escapeHtml(selectedMeta.label)}</span><i></i><span>다음 ${escapeHtml(nextMeta.label)}</span><em>시즌 ${getSummerSeasonClears()}/${SUMMER_SEASON_EVENT.totalStages}</em></div><div class="ladder-chips">${grouped}</div><p>${nextLocked ? `다음 해금: ${nextLocked.number}번은 이전 스테이지 클리어 후 열립니다.` : '모든 스테이지가 열렸습니다.'}</p>`;
 }
@@ -1549,7 +1559,7 @@ function renderSummerSeasonPanel(clearCount = Object.keys(state.campaignProgress
   panel.dataset.designQa = SUMMER_DESIGN_QA_PATCH;
   panel.dataset.passMissions = SUMMER_PASS_MISSIONS_PATCH;
   panel.dataset.seasonStageCount = String(seasonStages.length);
-  panel.querySelector<HTMLElement>('#summer-season-desc')?.replaceChildren(document.createTextNode('피날레 미션, 시즌 상점, 보스 이벤트 패턴을 강화했습니다.'));
+  panel.querySelector<HTMLElement>('#summer-season-desc')?.replaceChildren(document.createTextNode('시즌 상점 수령, 피날레 밸런스, 모바일 디자인 QA를 다듬었습니다.'));
   progress.innerHTML = `<div><strong>${cleared}/${seasonStages.length}</strong><span>${SUMMER_SEASON_EVENT.title} · 전체 ${clearCount}/${STAGES.length} 클리어 · ${percent}% · 패스 ${passLevel}/${SUMMER_SEASON_EVENT.passMilestones.length}단계</span></div><button type="button" class="season-jump-button" data-stage-id="${next?.id || DEFAULT_STAGE_ID}">다음 시즌 도전</button>`;
   const passTrack = SUMMER_SEASON_EVENT.passMilestones.map((milestone: number, index: number) => {
     const reached = cleared >= milestone;
@@ -1601,7 +1611,39 @@ function getSummerFinaleMissionCards(cleared: number) {
 
 function getSummerShopCards() {
   const items = SUMMER_SEASON_EVENT.shopItems || [];
-  return items.map((item: any) => `<span class="season-shop-card" data-shop-item="${escapeHtml(item.id)}"><b>${escapeHtml(item.title)}</b><em>${escapeHtml(item.costLabel)}</em><i>${escapeHtml(item.rewardLabel)}</i></span>`).join('');
+  return items.map((item: any) => {
+    const owned = Number(state.inventory[item.costType] || 0);
+    const claimed = Boolean(state.seasonShopClaims[item.id]);
+    const affordable = owned >= Number(item.cost || 0);
+    const stateLabel = claimed ? '완료' : affordable ? '수령 가능' : `${Math.max(0, Number(item.cost || 0) - owned)}개 부족`;
+    const disabled = claimed || !affordable;
+    return `<span class="season-shop-card ${claimed ? 'claimed' : affordable ? 'claimable' : 'locked'}" data-shop-item="${escapeHtml(item.id)}" data-shop-state="${claimed ? 'claimed' : affordable ? 'claimable' : 'locked'}"><b>${escapeHtml(item.title)}</b><em>${escapeHtml(item.costLabel)} · 보유 ${owned}</em><i>${escapeHtml(item.rewardLabel)}</i><button type="button" class="season-shop-claim" data-shop-item="${escapeHtml(item.id)}" ${disabled ? 'disabled' : ''}>${stateLabel}</button></span>`;
+  }).join('');
+}
+
+function claimSummerShopItem(itemId: string) {
+  const item = (SUMMER_SEASON_EVENT.shopItems || []).find((entry: any) => entry.id === itemId);
+  if (!item) return;
+  if (state.seasonShopClaims[item.id]) {
+    setStatus('이미 수령한 시즌 상점 보상입니다.');
+    return;
+  }
+  const owned = Number(state.inventory[item.costType] || 0);
+  const cost = Number(item.cost || 0);
+  if (owned < cost) {
+    setStatus(`${item.title} 수령까지 ${cost - owned}개 더 필요합니다.`);
+    return;
+  }
+  state.inventory[item.costType] = owned - cost;
+  state.inventory[item.rewardType] = Number(state.inventory[item.rewardType] || 0) + Number(item.rewardAmount || 1);
+  state.seasonShopClaims[item.id] = true;
+  writeJson('dream-library-inventory', state.inventory);
+  writeJson('dream-library-season-shop-claims', state.seasonShopClaims);
+  audio.play('clear');
+  HAPTIC.combo();
+  renderLobby();
+  renderStats();
+  setStatus(`${item.title} 수령 완료 · ${item.rewardLabel}`);
 }
 
 function getSummerModifierVfxLabels(modifiers: string[] = []) {
@@ -1797,6 +1839,14 @@ function renderChapterTabs() {
     const isSeason = chapter.season === SUMMER_SEASON_EVENT.id || stages.some((stage: any) => isSummerSeasonStage(stage));
     return `<button type="button" class="chapter-tab ${chapter.id === state.selectedChapterId ? 'selected' : ''} ${hasUnlocked ? 'unlocked' : 'locked'} ${isSeason ? 'season-tab' : ''}" data-chapter-id="${chapter.id}" data-season-tab="${isSeason ? 'summer' : 'base'}"><strong>${chapter.shortTitle}</strong><span>${cleared}/${stages.length}</span></button>`;
   }).join('');
+  requestAnimationFrame(() => focusSelectedChapterTab());
+}
+
+function focusSelectedChapterTab() {
+  const selected = el.chapterTabs.querySelector<HTMLElement>('.chapter-tab.selected');
+  if (!selected) return;
+  selected.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+  el.chapterTabs.dataset.autoFocus = 'current-chapter-v1051';
 }
 
 function renderBossPanel() {

@@ -1321,11 +1321,11 @@ GitHub Desktop 커밋 메시지:
 Apply 꿈의 서고 v1.0.49 summer event VFX reward pass missions and boss season polish patch
 ```
 
-다음 업데이트 예정: v1.0.50 - Summer Finale Expansion, Season Shop and Boss Pattern Event Patch
+다음 업데이트 예정: v1.0.51 - Summer Finale Expansion, Season Shop and Boss Pattern Event Patch
 
 ## Next Version Plan
 
-### v1.0.50 예정 - Summer Finale Expansion, Season Shop and Boss Pattern Event Patch
+### v1.0.51 예정 - Summer Finale Expansion, Season Shop and Boss Pattern Event Patch
 
 - 시즌 후반부를 위한 피날레 미션과 시즌 상점형 보상 교환 UI 추가 검토
 - 햇살 조개/태양 왕관을 썸머 전용 교환 보상으로 쓰는 흐름 polish
@@ -1447,15 +1447,70 @@ Apply 꿈의 서고 v1.0.50 summer finale expansion season shop and design QA po
 
 다음 업데이트 예정: v1.0.51 - Finale Balance, Season Shop Claim Flow and Mobile Design QA Patch
 
+## v1.0.51 Patch Notes - Finale Balance, Season Shop Claim Flow and Mobile Design QA Patch
+
+v1.0.51은 v1.0.50의 피날레/상점 구조를 실제 플레이에서 더 쓰기 좋게 다듬은 후속 패치입니다. 대규모 콘텐츠는 유지하면서, 시즌 상점 수령 흐름과 모바일 디자인 밀도를 중심으로 문제점을 정리했습니다.
+
+핵심 변경:
+
+- 시즌 상점 미리보기였던 구조를 실제 `수령 가능 / 부족 / 완료` 상태로 확장했습니다.
+- `seasonShopClaims` 저장값을 추가해 수령 완료 상태를 로컬 진행에 보존합니다.
+- 햇살 조개/태양 왕관 보유량을 상점 카드 안에 표시합니다.
+- 수령 가능한 보상은 버튼으로 바로 받을 수 있고, 비용이 부족하면 부족 수량을 표시합니다.
+- 상점 보상 수령 시 재화 차감, 보상 inventory 추가, 상태 저장, 로비/통계 갱신을 한 번에 처리합니다.
+- 90개 스테이지 compact carousel에서 현재 챕터가 자동으로 가운데 보이도록 `current-chapter-v1051` focus를 추가했습니다.
+- 시즌 VFX와 보스 경고가 선택 overlay를 덜 가리도록 alpha/z-order CSS를 추가 조정했습니다.
+- 보스 상태바 우측 아이콘은 더 작게 유지하면서 시즌 장식만 은은하게 보이도록 조정했습니다.
+- 작은 화면에서 시즌 패널, 시즌 상점, 피날레 미션, 패스 트랙이 과밀하지 않도록 mobile density CSS를 추가했습니다.
+- 로비 드래그 보정 범위를 시즌 상점 버튼/카드까지 확장했습니다.
+- service worker cache를 `dream-library-cache-v1.0.51`로 갱신했습니다.
+- `texture-atlas-manifest-v1.0.51.json`을 생성했습니다.
+- 신규 검사 `check:summer-shop-claim-design`을 추가하고 GitHub Pages/Quality Check workflow에 연결했습니다.
+
+유지 정책:
+
+- 미니맵은 재도입하지 않습니다.
+- 게임 내 `보기 / 중앙 / + / -` 라인은 재도입하지 않습니다.
+- 카메라 도움말은 재도입하지 않습니다.
+- 선택 패 크기 고정 구조는 유지합니다.
+- 보스 상태바 우측 아이콘 구조는 유지합니다.
+- SVG는 사용하지 않습니다.
+- ZIP에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않습니다.
+
+검사 결과:
+
+```text
+npm run typecheck
+npm run check:summer-shop-claim-design
+npm run check:summer-finale-shop-design
+npm run check:summer-live-balance
+npm run check:summer-event-vfx-pass
+npm run check:no-minimap-topbar
+npm run check:selection-stability
+npm run check:assets
+npm run check:workflows
+```
+
+현재 작업 환경에는 `vite` 실행 파일이 없어 `npm run build:github`는 실행하지 못했습니다. `node_modules`, `dist`, `package-lock.json`은 ZIP에 포함하지 않았습니다.
+
+GitHub Desktop 커밋 메시지:
+
+```text
+Apply 꿈의 서고 v1.0.51 finale balance season shop claim flow and mobile design QA patch
+```
+
+다음 업데이트 예정: v1.0.52 - Season Shop Reward Polish, Finale Boss Cut-in and Mobile Store UX Patch
+
 ## Next Version Plan
 
-### v1.0.51 예정 - Finale Balance, Season Shop Claim Flow and Mobile Design QA Patch
+### v1.0.52 예정 - Season Shop Reward Polish, Finale Boss Cut-in and Mobile Store UX Patch
 
-- 시즌 상점 보상 교환을 실제 수령/잠금/완료 상태로 더 명확하게 polish
-- 90개 스테이지 확장 후 챕터 carousel 현재 위치 자동 focus 개선
-- 피날레 스테이지 난이도별 시간 보너스와 지체 압박 템포 재점검
-- 축제 보스 전용 warning/cut-in 패턴을 더 직관적으로 강화
-- 시즌 VFX가 타일 선택 overlay와 겹칠 때 alpha/z-order 추가 정리
-- 작은 화면에서 시즌 패널, 보스 상태바, 이메일 팝업, 옵션 계정 전환이 겹치지 않도록 디자인 QA 강화
-- 로비 드래그가 시즌 상점/피날레 미션/챕터 carousel 위에서도 안정적인지 추가 QA
+- 시즌 상점 보상 수령 후 전용 burst/cut-in 연출 강화
+- 상점 재화 부족 시 어떤 스테이지에서 모을 수 있는지 바로 안내하는 shortcut 추가
+- 축제 보스 전용 warning/cut-in 패턴을 더 명확하게 분리
+- 피날레 난이도별 +시간 보너스와 지체 압박 사운드 피로도 추가 조정
+- 시즌 VFX가 타일 선택 overlay와 겹칠 때 시각 우선순위 추가 정리
+- 작은 화면에서 시즌 상점 버튼, 이메일 팝업, 옵션 계정 전환, 보스 상태바가 겹치지 않도록 추가 압축
+- 로비 드래그가 상점 수령 버튼 위에서도 클릭/스크롤 충돌 없이 동작하는지 추가 QA
 - 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
+
