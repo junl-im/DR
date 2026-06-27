@@ -56,7 +56,8 @@
     "check:objective-camera-boss": "node tools/check-objective-camera-boss.mjs",
     "check:tile-geometry-hud": "node tools/check-tile-geometry-hud.mjs",
     "check:real-device-selection": "node tools/check-real-device-selection-qa.mjs",
-    "check:space-reclaim-back-options": "node tools/check-space-reclaim-back-options.mjs"
+    "check:space-reclaim-back-options": "node tools/check-space-reclaim-back-options.mjs",
+    "check:boss-asset-visibility": "node tools/check-boss-asset-visibility.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -69,5 +70,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.36"
+  "version": "1.0.37"
 }

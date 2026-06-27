@@ -28,6 +28,15 @@ document.documentElement.style.setProperty('--boss-atlas-image-url', `url(${BOSS
 document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_ATLAS_SHEET.webp})`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
+const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
+let bossAtlasImageReady = false;
+function preloadBossAtlasImage() {
+  const image = new Image();
+  image.onload = () => { bossAtlasImageReady = true; document.body.dataset.bossAtlasReady = 'true'; };
+  image.onerror = () => { bossAtlasImageReady = false; document.body.dataset.bossAtlasReady = 'fallback'; };
+  image.src = BOSS_ATLAS_SHEET.webp || BOSS_ATLAS_SHEET.image;
+}
+preloadBossAtlasImage();
 const UI_STATE_ICONS = ['back', 'settings', 'hint', 'refresh', 'fullscreen', 'logout', 'home', 'play', 'collection', 'restore', 'ranking', 'close', 'confirm', 'gift', 'book', 'map', 'warning'] as const;
 for (const iconName of UI_STATE_ICONS) {
   for (const stateName of ['normal', 'hover', 'pressed', 'disabled'] as const) {
@@ -339,7 +348,7 @@ function bindEvents() {
     else if (state.screen === 'game') exitToLobby();
     else updateScreen('login');
   });
-  // v1.0.36: the visible top option line was removed. Options now open from the back/exit sheet gear.
+  // v1.0.37: the visible top option line was removed. Options now open from the back/exit sheet gear.
   el.openSettingsButton?.addEventListener('click', openOptions);
   el.closeOptionsButton.addEventListener('click', closeOptionsPanel);
   el.optionsModal.addEventListener('click', (event) => { if (event.target === el.optionsModal) closeOptionsPanel(); });
@@ -985,7 +994,7 @@ function updateScreen(screen: ScreenName) {
   }
   document.documentElement.style.setProperty('--library-background-url', bg.endsWith('-v2') ? backgroundImageSet(bg) : `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
-  // v1.0.36: no persistent top navigation line; browser back and in-screen actions handle flow.
+  // v1.0.37: no persistent top navigation line; browser back and in-screen actions handle flow.
   el.backButton.classList.add('hidden');
   if (screen === 'lobby') renderLobby();
   if (screen === 'settings') renderAuth();
@@ -1301,8 +1310,8 @@ function renderChapterTabs() {
 
 function renderBossPanel() {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
-  el.bossImage.src = boss.frames?.idle || boss.asset;
-  el.bossImage.alt = boss.name;
+  setBossStableImage(boss.asset, boss.name);
+  el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossName.textContent = boss.name;
   el.bossPattern.textContent = boss.patternLabel;
   el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
@@ -1316,11 +1325,26 @@ function renderBossPanel() {
 }
 
 
+function setBossStableImage(src = BOSS_IMAGE_FALLBACK_SRC, alt = '망각의 서고령') {
+  el.bossImage.alt = alt;
+  el.bossImage.dataset.bossImgGuard = 'stable';
+  el.bossImage.onerror = () => {
+    el.bossImage.onerror = null;
+    el.bossImage.src = BOSS_IMAGE_FALLBACK_SRC;
+    el.bossCore.classList.remove('boss-atlas-ready');
+    el.bossCore.dataset.bossAtlasReady = 'fallback';
+    el.bossCore.dataset.bossAssetGuard = 'fallback-image-visible';
+  };
+  if (!el.bossImage.src.endsWith(src)) el.bossImage.src = src;
+  el.bossCore.dataset.bossImageSrc = src;
+}
+
 function applyBossAtlasFrame(frameKey = '') {
   const frame = getBossAtlasFrame(frameKey);
-  if (!frame) {
+  if (!frame || !bossAtlasImageReady) {
     el.bossCore.classList.remove('boss-atlas-ready');
     el.bossAtlasSprite?.removeAttribute('style');
+    el.bossCore.dataset.bossAtlasReady = bossAtlasImageReady ? 'missing-frame' : 'fallback';
     return;
   }
   const coreSize = Math.max(44, el.bossCore.clientWidth || 64);
@@ -1336,22 +1360,22 @@ function applyBossAtlasFrame(frameKey = '') {
 
 function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
-  const src = boss.frames?.[stateName] || boss.frames?.idle || boss.asset;
+  const src = boss.asset || BOSS_IMAGE_FALLBACK_SRC;
   const atlasFrame = boss.atlasFrames?.[stateName] || boss.atlasFrames?.idle || '';
   el.bossCore.dataset.bossFrame = stateName;
   el.bossCore.dataset.bossAtlasFrame = atlasFrame;
   applyBossAtlasFrame(atlasFrame);
   renderer.syncPixiBossLayer(atlasFrame, stateName);
-  if (el.bossImage.src !== src) el.bossImage.src = src;
+  setBossStableImage(src, boss.name);
   if (stateName !== 'idle') {
     window.setTimeout(() => {
-      const idle = boss.frames?.idle || boss.asset;
+      const idle = boss.asset || BOSS_IMAGE_FALLBACK_SRC;
       const idleAtlasFrame = boss.atlasFrames?.idle || '';
       el.bossCore.dataset.bossFrame = 'idle';
       el.bossCore.dataset.bossAtlasFrame = idleAtlasFrame;
       applyBossAtlasFrame(idleAtlasFrame);
       renderer.syncPixiBossLayer(idleAtlasFrame, 'idle');
-      if (el.bossImage.src !== idle) el.bossImage.src = idle;
+      setBossStableImage(idle, boss.name);
     }, stateName === 'break' ? 680 : 420);
   }
 }
@@ -1396,6 +1420,7 @@ function renderBoardCameraGuide(difficultyOverride?: any) {
   const panZoom = difficulty?.cameraMode === 'panZoom' || Number(difficulty?.rows || 0) * Number(difficulty?.cols || 0) > 72;
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-camera', panZoom ? 'pan-zoom' : 'fit');
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-camera-ui', 'space-reclaimed');
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-space-polish', 'v1037');
   if (el.boardCameraGuide) {
     el.boardCameraGuide.textContent = '';
     el.boardCameraGuide.classList.add('hidden');

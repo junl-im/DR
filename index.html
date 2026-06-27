@@ -27,6 +27,8 @@
     <link rel="preload" href="%BASE_URL%assets/characters/forgotten-spirit.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/shadow-librarian.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/characters/sealed-page-golem.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/atlas/boss-frames-v2.png" as="image" />
+    <link rel="preload" href="%BASE_URL%assets/atlas/boss-frames-v2.webp" as="image" type="image/webp" />
     <link rel="preload" href="%BASE_URL%assets/effects/combo-flash.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/meta/restoration-shelf.png" as="image" />
     <link rel="preload" href="%BASE_URL%assets/meta/daily-badge.png" as="image" />
@@ -165,8 +167,8 @@
           </section>
 
           <section class="battle-stage luxury-panel" aria-label="마법 전투 퍼즐판">
-            <div class="boss-lane">
-              <div id="boss-core" class="boss-core" data-phase="stable" data-boss-id="forgotten-spirit"><img id="boss-image" src="%BASE_URL%assets/characters/forgotten-spirit.png" alt="망각의 서고령" draggable="false" /><span id="boss-atlas-sprite" class="boss-atlas-sprite" aria-hidden="true"></span><span></span></div>
+            <div class="boss-lane" data-boss-asset-guard="stable-fallback">
+              <div id="boss-core" class="boss-core" data-phase="stable" data-boss-id="forgotten-spirit" data-boss-asset-guard="stable-fallback"><img id="boss-image" src="%BASE_URL%assets/characters/forgotten-spirit.png" alt="망각의 서고령" draggable="false" data-boss-img-guard="stable" /><span id="boss-atlas-sprite" class="boss-atlas-sprite" aria-hidden="true"></span><span></span></div>
               <div class="boss-info"><strong id="boss-name">망각의 서고령</strong><small id="boss-pattern">잔상 압박</small><em id="boss-hp-label">HP 100%</em><div class="boss-hp-meter" aria-hidden="true"><i id="boss-hp-fill"></i></div><div id="boss-telegraph" class="boss-telegraph hidden" aria-live="polite">반격 예고</div></div>
             </div>
             <div id="combo-cutin" class="combo-cutin hidden" aria-live="polite">2 COMBO</div>

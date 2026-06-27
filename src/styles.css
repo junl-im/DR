@@ -1966,8 +1966,10 @@ body.is-lobby-dragging .collection-tile * { pointer-events: none; }
   z-index: 2;
   transition: opacity 0.16s ease, transform 0.18s ease, filter 0.18s ease;
 }
-.boss-core.boss-atlas-ready .boss-atlas-sprite { opacity: 1; }
-.boss-core.boss-atlas-ready img { opacity: 0; }
+.boss-core.boss-atlas-ready .boss-atlas-sprite { opacity: 0.72; }
+.boss-core.boss-atlas-ready img { opacity: 1; }
+.boss-core[data-boss-asset-guard="stable-fallback"] img { visibility: visible; opacity: 1; }
+.boss-lane[data-boss-asset-guard="stable-fallback"] { min-height: 58px; }
 .boss-core[data-boss-frame="warn"] .boss-atlas-sprite { transform: translate(-50%, -54%) scale(calc(var(--boss-frame-scale) * 1.08)) rotate(1deg); filter: drop-shadow(0 0 24px rgba(125, 220, 255, 0.48)) brightness(1.08); }
 .boss-core[data-boss-frame="hit"] .boss-atlas-sprite { transform: translate(-50%, -56%) scale(calc(var(--boss-frame-scale) * 1.16)) rotate(-1.2deg); filter: drop-shadow(0 0 26px rgba(245, 200, 107, 0.62)) brightness(1.2); }
 .boss-core[data-boss-frame="break"] .boss-atlas-sprite { transform: translate(-50%, -58%) scale(calc(var(--boss-frame-scale) * 1.22)) rotate(-2deg); filter: drop-shadow(0 0 32px rgba(143, 107, 255, 0.74)) brightness(1.28); }
@@ -2417,7 +2419,7 @@ body[data-screen="game"] .pixi-board-host {
   }
 }
 
-/* v1.0.36 Space reclaim, visible top options removal and back-sheet options entry */
+/* v1.0.37 Space reclaim, visible top options removal and back-sheet options entry */
 .retired-shell-actions,
 body .topbar,
 body .compact-topbar {
@@ -2477,4 +2479,57 @@ body[data-screen="game"] .screen-game {
   .app-shell { padding-inline: 10px; }
   .screen-stack { min-height: calc(100svh - 22px); }
   .exit-options-button { width: 36px; height: 36px; }
+}
+
+
+/* v1.0.37 lobby space polish, back-flow UX and boss asset visibility guard */
+body[data-screen="login"] .app-shell,
+body[data-screen="lobby"] .app-shell,
+body[data-screen="game"] .app-shell {
+  padding-top: max(8px, env(safe-area-inset-top));
+}
+body[data-screen="lobby"] .screen-stack {
+  min-height: calc(100svh - max(18px, env(safe-area-inset-top)) - env(safe-area-inset-bottom));
+}
+body[data-screen="game"] .screen-stack {
+  min-height: calc(100svh - max(16px, env(safe-area-inset-top)) - env(safe-area-inset-bottom));
+}
+.battle-stage[data-space-polish="v1037"] {
+  grid-template-rows: minmax(52px, auto) minmax(320px, 1fr) auto;
+}
+.battle-stage[data-space-polish="v1037"] .boss-lane {
+  min-height: 54px;
+  margin-bottom: 0;
+}
+.boss-core[data-boss-asset-guard="stable-fallback"] {
+  contain: layout paint;
+}
+.boss-core[data-boss-asset-guard="stable-fallback"] #boss-image,
+#boss-image[data-boss-img-guard="stable"] {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+.boss-core[data-boss-atlas-ready="fallback"] .boss-atlas-sprite,
+.boss-core[data-boss-atlas-ready="missing-frame"] .boss-atlas-sprite {
+  opacity: 0;
+}
+.exit-card-toolbar {
+  align-items: center;
+}
+.exit-options-button {
+  flex: 0 0 auto;
+}
+@media (max-height: 700px), (max-width: 390px) {
+  body[data-screen="lobby"] .lobby-hero,
+  body[data-screen="lobby"] .mission-deck-panel,
+  body[data-screen="lobby"] .campaign-panel,
+  body[data-screen="lobby"] .restoration-panel,
+  body[data-screen="lobby"] .daily-panel,
+  body[data-screen="lobby"] .collection-panel {
+    padding: 0.64rem;
+  }
+  .battle-stage[data-space-polish="v1037"] {
+    grid-template-rows: minmax(44px, auto) minmax(300px, 1fr) auto;
+  }
 }
