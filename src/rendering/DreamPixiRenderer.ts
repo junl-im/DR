@@ -128,6 +128,8 @@ export class DreamPixiRenderer {
   pendingBossFrame: { frameKey: string; mood: string } | null = null;
   routeAssistPreview: Graphics | null = null;
   selectionFocusOverlay: Graphics | null = null;
+  objectiveMarkerLayer: Container | null = null;
+  bossWarningIndex = 0;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
@@ -279,7 +281,8 @@ export class DreamPixiRenderer {
     this.selectedKey = null;
     this.tileViews.clear();
     Object.values(this.boardLayers).forEach((layer) => layer.removeChildren());
-    this.selectionFocusOverlay = null;
+    this.clearSelectionFocusOverlay();
+    this.clearObjectiveMarkers();
     this.routeAssistPreview = null;
     const rows = board.length;
     const cols = board[0]?.length ?? 0;
@@ -300,6 +303,7 @@ export class DreamPixiRenderer {
       }
     }
     this.configureBoardCamera(true);
+    this.refreshObjectiveMarkers();
   }
 
   setSelected(point: BoardPoint | null) {
@@ -390,16 +394,17 @@ export class DreamPixiRenderer {
     if (fill) fill.style.transform = `scaleX(${hp / 100})`;
   }
 
-  playBossWarning(power = 7) {
+  playBossWarning(power = 7, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column') {
     const core = document.querySelector<HTMLElement>('#boss-core');
     if (!core) return;
     core.classList.add('boss-warning');
+    core.dataset.warningPattern = pattern;
     window.setTimeout(() => core.classList.remove('boss-warning'), 760);
     this.cameraShake(power);
-    this.drawBossWarningLane(power);
+    this.drawBossWarningLane(power, pattern);
     if (this.boardApp) {
       const impact = this.screenToWorld(this.boardApp.renderer.width / 2, 42);
-      this.spawnVfxSprite(impact.x, impact.y, 'import-vfx-06');
+      this.spawnVfxSprite(impact.x, impact.y, pattern === 'diagonal' ? 'import-vfx-05' : 'import-vfx-06');
     }
   }
 
@@ -896,6 +901,40 @@ export class DreamPixiRenderer {
     this.selectionFocusOverlay = null;
   }
 
+  private clearObjectiveMarkers() {
+    if (!this.objectiveMarkerLayer) return;
+    gsap.killTweensOf(this.objectiveMarkerLayer.children);
+    this.objectiveMarkerLayer.destroy({ children: true });
+    this.objectiveMarkerLayer = null;
+  }
+
+  private refreshObjectiveMarkers() {
+    if (!this.boardLayers.paths) return;
+    this.clearObjectiveMarkers();
+    const layer = new Container();
+    layer.label = 'objective-marker-layer';
+    const hiddenSpecials = [...this.tileViews.values()].filter((view) => Boolean(view.tile.special && !view.tile.specialRevealed && !view.removing));
+    hiddenSpecials.slice(0, 12).forEach((view, index) => {
+      const color = view.tile.special === 'locked' ? PALETTE.gold : view.tile.special === 'timeSeal' ? PALETTE.violet : PALETTE.sky;
+      const marker = new Graphics();
+      const radius = Math.max(5, this.tileSize * 0.105);
+      const x = view.baseX + this.tileSize * 0.33;
+      const y = view.baseY - this.tileSize * 0.33;
+      marker.circle(x, y, radius).fill({ color, alpha: 0.2 });
+      marker.circle(x, y, radius * 0.58).fill({ color, alpha: 0.82 });
+      marker.circle(x, y, radius * 1.42).stroke({ color, width: Math.max(1.2, this.tileSize * 0.018), alpha: 0.58 });
+      marker.blendMode = 'add';
+      layer.addChild(marker);
+      gsap.fromTo(marker, { alpha: 0.52 }, { alpha: 1, delay: index * 0.035, duration: 0.52 * this.quality.motionScale, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    });
+    if (!layer.children.length) {
+      layer.destroy();
+      return;
+    }
+    this.boardLayers.paths.addChild(layer);
+    this.objectiveMarkerLayer = layer;
+  }
+
   private drawSelectionFocusOverlay(view: TileView) {
     if (!this.boardLayers.paths) return;
     this.clearSelectionFocusOverlay();
@@ -955,23 +994,36 @@ export class DreamPixiRenderer {
     gsap.to(beam, { alpha: 0, duration: 0.28 * this.quality.motionScale, ease: 'power2.out', onComplete: () => beam.destroy() });
   }
 
-  private drawBossWarningLane(power: number) {
+  private drawBossWarningLane(power: number, pattern: 'column' | 'row' | 'cross' | 'diagonal' = 'column') {
     if (!this.boardApp || !this.boardLayers.paths || !this.boardLayers.ui) return;
     const app = this.boardApp;
     const centerWorld = this.screenToWorld(app.renderer.width / 2, app.renderer.height / 2);
     const laneX = Math.max(0, Math.min(this.camera.worldWidth, centerWorld.x));
+    const laneY = Math.max(0, Math.min(this.camera.worldHeight, centerWorld.y));
     const lane = new Graphics();
+    lane.label = `boss-warning-${pattern}-${this.bossWarningIndex += 1}`;
     lane.blendMode = 'add';
-    lane.moveTo(laneX, 0).lineTo(laneX, this.camera.worldHeight);
-    lane.stroke({ color: PALETTE.violet, width: Math.max(14, power * 2.1), alpha: 0.16 });
-    lane.moveTo(laneX, 0).lineTo(laneX, this.camera.worldHeight);
-    lane.stroke({ color: PALETTE.goldLight, width: Math.max(3, power * 0.42), alpha: 0.58 });
+    const strongWidth = Math.max(13, power * 2);
+    const coreWidth = Math.max(3, power * 0.42);
+    const drawLine = (x1: number, y1: number, x2: number, y2: number, color = PALETTE.violet) => {
+      lane.moveTo(x1, y1).lineTo(x2, y2);
+      lane.stroke({ color, width: strongWidth, alpha: 0.15 });
+      lane.moveTo(x1, y1).lineTo(x2, y2);
+      lane.stroke({ color: PALETTE.goldLight, width: coreWidth, alpha: 0.58 });
+    };
+    if (pattern === 'row' || pattern === 'cross') drawLine(0, laneY, this.camera.worldWidth, laneY, PALETTE.sky);
+    if (pattern === 'column' || pattern === 'cross') drawLine(laneX, 0, laneX, this.camera.worldHeight, PALETTE.violet);
+    if (pattern === 'diagonal') {
+      drawLine(0, 0, this.camera.worldWidth, this.camera.worldHeight, PALETTE.violet);
+      drawLine(this.camera.worldWidth, 0, 0, this.camera.worldHeight, PALETTE.sky);
+    }
     this.boardLayers.paths.addChild(lane);
 
+    const flareThickness = Math.max(7, power * 1.45);
     const flare = new Graphics()
-      .rect(0, 0, app.renderer.width, Math.max(8, power * 1.8))
-      .fill({ color: PALETTE.violet, alpha: 0.18 })
-      .rect(0, app.renderer.height - Math.max(8, power * 1.8), app.renderer.width, Math.max(8, power * 1.8))
+      .rect(0, 0, app.renderer.width, flareThickness)
+      .fill({ color: pattern === 'row' ? PALETTE.sky : PALETTE.violet, alpha: 0.16 })
+      .rect(0, app.renderer.height - flareThickness, app.renderer.width, flareThickness)
       .fill({ color: PALETTE.gold, alpha: 0.12 });
     flare.blendMode = 'add';
     this.boardLayers.ui.addChild(flare);

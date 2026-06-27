@@ -30,9 +30,11 @@ if (!pagesWorkflow.includes('npm run check:no-minimap-topbar')) errors.push('git
 if (!qualityWorkflow.includes('npm run check:no-minimap-topbar')) errors.push('quality-check.yml: expected no-minimap topbar check.');
 if (!pagesWorkflow.includes('npm run check:mobile-playability')) errors.push('github-pages.yml: expected mobile playability check.');
 if (!pagesWorkflow.includes('npm run check:selection-stability')) errors.push('github-pages.yml: expected selection stability check.');
+if (!pagesWorkflow.includes('npm run check:objective-camera-boss')) errors.push('github-pages.yml: expected objective camera boss check.');
+if (!qualityWorkflow.includes('npm run check:objective-camera-boss')) errors.push('quality-check.yml: expected objective camera boss check.');
 
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.32 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.33 QA checks.');

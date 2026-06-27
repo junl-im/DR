@@ -827,8 +827,15 @@ function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch'
   el.bossTelegraph.classList.remove('hidden', 'telegraph-pop');
   void el.bossTelegraph.offsetWidth;
   el.bossTelegraph.classList.add('telegraph-pop');
-  renderer.playBossWarning(boss.shakePower || 7);
+  renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason));
   window.setTimeout(hideBossTelegraph, 1500);
+}
+
+function getBossWarningPattern(reason: 'combo' | 'time' | 'pressure' | 'mismatch'): 'column' | 'row' | 'cross' | 'diagonal' {
+  if (reason === 'combo') return 'cross';
+  if (reason === 'time') return 'row';
+  if (reason === 'mismatch') return 'diagonal';
+  return 'column';
 }
 
 function hideBossTelegraph() {
@@ -1385,7 +1392,21 @@ function renderBoardCameraGuide(difficultyOverride?: any) {
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-camera', panZoom ? 'pan-zoom' : 'fit');
   if (el.boardCameraGuide) {
     el.boardCameraGuide.classList.toggle('hidden', !panZoom || state.screen !== 'game');
-    if (panZoom) el.boardCameraGuide.textContent = '드래그 이동 · 두 손가락 확대/축소';
+    el.boardCameraGuide.classList.toggle('camera-tutorial', false);
+    if (panZoom) {
+      const seen = readText('dream-library-camera-guide-seen') === 'yes';
+      el.boardCameraGuide.textContent = seen ? '드래그 이동 · 두 손가락 확대/축소' : '드래그 이동 · +/− 확대 · 보기 맞춤';
+      if (!seen && state.screen === 'game') {
+        el.boardCameraGuide.classList.add('camera-tutorial');
+        writeText('dream-library-camera-guide-seen', 'yes');
+        window.setTimeout(() => {
+          if (state.screen === 'game' && el.boardCameraGuide) {
+            el.boardCameraGuide.textContent = '드래그 이동 · 두 손가락 확대/축소';
+            el.boardCameraGuide.classList.remove('camera-tutorial');
+          }
+        }, 5200);
+      }
+    }
   }
   if (el.boardCameraControls) {
     el.boardCameraControls.classList.toggle('hidden', !panZoom || state.screen !== 'game');

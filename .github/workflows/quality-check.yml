@@ -80,6 +80,7 @@ jobs:
           npm run check:mobile-playability
           npm run check:no-minimap-topbar
           npm run check:boot-screen
+          npm run check:objective-camera-boss
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
