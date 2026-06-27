@@ -8,6 +8,7 @@ const lockBlock = renderer.match(/private lockTileViewScale\([\s\S]*?\n  \}\n\n 
 const errors = [];
 
 if (!renderer.includes('private fitTileSprite(view: TileView)')) errors.push('Missing fitTileSprite helper for texture swap size normalization.');
+if (!renderer.includes('TILE_GEOMETRY_GUARD_LABEL') || !renderer.includes('enforceTileBodyGeometry') || !renderer.includes('assertTileBodyGeometry')) errors.push('Missing v1.0.34 hard tile geometry guard helpers.');
 if (!renderer.includes('const TILE_SPRITE_RATIO = 0.92')) errors.push('Tile sprite must use a fixed cell-bounded ratio.');
 if (!renderer.includes('selectionFocusOverlay') || !renderer.includes('drawSelectionFocusOverlay')) errors.push('Active selection must use a separate fixed-size overlay instead of scaling the tile body.');
 if (!selectionBlock.includes('this.lockTileViewScale(view)')) errors.push('Selected tile path must lock tile view size.');
@@ -20,7 +21,7 @@ if (selectionBlock.includes("this.applyTileStateTexture(view, 'selected')") || s
 }
 if (renderer.includes('view.sprite.scale.set(1)')) errors.push('Never set tile sprite scale to 1 after texture swaps; that can render source PNG/atlas size and make selected tiles huge.');
 if (!applyBlock.includes('this.fitTileSprite(view)')) errors.push('Texture state changes must refit sprite width/height immediately.');
-if (!lockBlock.includes('this.fitTileSprite(view)')) errors.push('Scale lock helper must normalize the tile sprite dimensions.');
+if (!lockBlock.includes('this.fitTileSprite(view)') && !lockBlock.includes('this.enforceTileBodyGeometry(view)')) errors.push('Scale lock helper must normalize the tile sprite dimensions through fitTileSprite or enforceTileBodyGeometry.');
 if (!renderer.includes("const textureState = state === 'selected' ? 'normal' : state")) errors.push('Selected state must keep the normal tile texture to prevent larger selected PNG frames.');
 if (!renderer.includes('SELECTION_INSET_RATIO') || !renderer.includes('SELECTION_RING_RATIO') || !renderer.includes('SELECTION_WAVE_RATIO') || !renderer.includes('SELECTION_OVERLAY_INSET_RATIO')) {
   errors.push('Selection effect must use bounded constants for ring, inset, wave and overlay sizing.');
@@ -32,10 +33,10 @@ if (renderer.includes('tl.to([a.root.scale, b.root.scale], { x: 1.06') || render
   errors.push('Match start must not grow selected tile roots above natural size.');
 }
 if (renderer.includes('circle(0, 0, 18).stroke') || renderer.includes('x: 2.6, y: 2.6')) errors.push('Old large selection wave is still present.');
-if (!addTileBlock.includes('root.scale.set(1)') || addTileBlock.includes('back.out') || addTileBlock.includes('root.scale, {')) {
+if (!(addTileBlock.includes('root.scale.set(1)') || addTileBlock.includes('this.enforceTileBodyGeometry(view)')) || addTileBlock.includes('back.out') || addTileBlock.includes('root.scale, {')) {
   errors.push('Tile spawn must stay at natural scale and avoid overshoot that can look like selection growth.');
 }
-if (!renderer.includes('if (!view.settling) view.root.scale.set(1)') || !renderer.includes('this.fitTileSprite(view);')) {
+if (!(renderer.includes('if (!view.settling) view.root.scale.set(1)') || renderer.includes('if (!view.settling) this.enforceTileBodyGeometry(view)')) || !(renderer.includes('this.fitTileSprite(view);') || renderer.includes('this.assertTileBodyGeometry(view);'))) {
   errors.push('Board ticker must continuously preserve tile body geometry after async texture updates.');
 }
 

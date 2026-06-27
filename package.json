@@ -53,7 +53,8 @@
     "check:mobile-playability": "node tools/check-mobile-playability.mjs",
     "check:no-minimap-topbar": "node tools/check-no-minimap-topbar.mjs",
     "check:boot-screen": "node tools/check-boot-screen-stability.mjs",
-    "check:objective-camera-boss": "node tools/check-objective-camera-boss.mjs"
+    "check:objective-camera-boss": "node tools/check-objective-camera-boss.mjs",
+    "check:tile-geometry-hud": "node tools/check-tile-geometry-hud.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -66,5 +67,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.33"
+  "version": "1.0.34"
 }

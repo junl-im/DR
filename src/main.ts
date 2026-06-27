@@ -252,7 +252,8 @@ const state = {
   timeSealBonusCount: 0,
   suppressHistorySync: false,
   browserBackReady: false,
-  recentScoreKey: ''
+  recentScoreKey: '',
+  hudDensity: 'normal' as 'normal' | 'compact' | 'micro'
 };
 
 init();
@@ -824,6 +825,8 @@ function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch'
   };
   el.bossTelegraph.textContent = `${boss.telegraphTitle || reasonText[reason]} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
   el.bossTelegraph.dataset.reason = reason;
+  el.bossTelegraph.dataset.pattern = getBossWarningPattern(reason);
+  el.bossCore.dataset.warningPattern = getBossWarningPattern(reason);
   el.bossTelegraph.classList.remove('hidden', 'telegraph-pop');
   void el.bossTelegraph.offsetWidth;
   el.bossTelegraph.classList.add('telegraph-pop');
@@ -1370,6 +1373,14 @@ function renderStats() {
   el.starCountLabel.textContent = formatNumber(stars);
 }
 
+function getHudDensity(): 'normal' | 'compact' | 'micro' {
+  const width = window.innerWidth || document.documentElement.clientWidth || 390;
+  const height = window.innerHeight || document.documentElement.clientHeight || 740;
+  if (height <= 660 || width <= 360) return 'micro';
+  if (height <= 760 || width <= 390) return 'compact';
+  return 'normal';
+}
+
 function renderGameHud() {
   const stage = getStageById(state.selectedStageId);
   const chapter = getChapterById(stage.chapterId);
@@ -1381,8 +1392,11 @@ function renderGameHud() {
   el.comboLabel.textContent = `${state.combo}`;
   el.movesLabel.textContent = `${state.moves}`;
   updateMissionLabel();
-  el.app.dataset.hudDensity = window.innerHeight <= 740 ? 'compact' : 'normal';
-  document.querySelector<HTMLElement>('.game-hud')?.setAttribute('data-hud-density', window.innerHeight <= 740 ? 'compact' : 'normal');
+  state.hudDensity = getHudDensity();
+  el.app.dataset.hudDensity = state.hudDensity;
+  document.querySelector<HTMLElement>('.screen-game')?.setAttribute('data-hud-density', state.hudDensity);
+  document.querySelector<HTMLElement>('.game-hud')?.setAttribute('data-hud-density', state.hudDensity);
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-hud-density', state.hudDensity);
   renderBoardCameraGuide(difficulty);
 }
 
@@ -1554,14 +1568,19 @@ function showComboCutin(combo: number) {
 
 
 function showBossHitCutin(combo: number) {
+  const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
   const broken = combo >= 5;
+  const finisher = combo >= 7;
   setBossFrame(broken ? 'break' : 'hit');
-  el.bossHitCutin.textContent = broken ? `BOSS BREAK · ${combo} COMBO` : `BOSS HIT · ${combo} COMBO`;
-  el.bossHitCutin.classList.remove('hidden', 'boss-hit-pop', 'boss-break-pop');
+  el.bossHitCutin.dataset.bossId = boss.id || 'boss';
+  el.bossHitCutin.dataset.comboTier = finisher ? 'finisher' : broken ? 'break' : 'hit';
+  el.bossHitCutin.textContent = finisher ? `${boss.name} 균열 · ${combo} COMBO` : broken ? `BOSS BREAK · ${combo} COMBO` : `BOSS HIT · ${combo} COMBO`;
+  el.bossHitCutin.classList.remove('hidden', 'boss-hit-pop', 'boss-break-pop', 'boss-finisher-pop');
   if (broken) el.bossHitCutin.classList.add('boss-break-pop');
+  if (finisher) el.bossHitCutin.classList.add('boss-finisher-pop');
   void el.bossHitCutin.offsetWidth;
   el.bossHitCutin.classList.add('boss-hit-pop');
-  window.setTimeout(() => el.bossHitCutin.classList.add('hidden'), broken ? 920 : 720);
+  window.setTimeout(() => el.bossHitCutin.classList.add('hidden'), finisher ? 1120 : broken ? 920 : 720);
 }
 
 function openReward(stars: number, score: number) {

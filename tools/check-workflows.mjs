@@ -32,9 +32,11 @@ if (!pagesWorkflow.includes('npm run check:mobile-playability')) errors.push('gi
 if (!pagesWorkflow.includes('npm run check:selection-stability')) errors.push('github-pages.yml: expected selection stability check.');
 if (!pagesWorkflow.includes('npm run check:objective-camera-boss')) errors.push('github-pages.yml: expected objective camera boss check.');
 if (!qualityWorkflow.includes('npm run check:objective-camera-boss')) errors.push('quality-check.yml: expected objective camera boss check.');
+if (!pagesWorkflow.includes('npm run check:tile-geometry-hud')) errors.push('github-pages.yml: expected tile geometry HUD check.');
+if (!qualityWorkflow.includes('npm run check:tile-geometry-hud')) errors.push('quality-check.yml: expected tile geometry HUD check.');
 
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.33 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.34 QA checks.');
