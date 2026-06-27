@@ -22,8 +22,11 @@ const TILE_SPRITE_RATIO = 0.92;
 const TILE_GEOMETRY_GUARD_LABEL = 'tile-body-geometry-locked';
 const TILE_GEOMETRY_EPSILON = 0.001;
 const SELECTION_OVERLAY_INSET_RATIO = 0.09;
-const createTileHitArea = (size: number) => ({
-  contains: (x: number, y: number) => Math.abs(x) <= size / 2 && Math.abs(y) <= size / 2
+const TOUCH_HIT_SLOP_RATIO = 0.075;
+const TOUCH_HIT_SLOP_MAX = 7;
+const REAL_DEVICE_SELECTION_QA_LABEL = 'real-device-selection-geometry-qa';
+const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
+  contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
 
 export type BoardTile = {
@@ -136,6 +139,8 @@ export class DreamPixiRenderer {
   objectiveMarkerLayer: Container | null = null;
   bossWarningIndex = 0;
   geometryGuardFrame = 0;
+  selectionGeometrySnapshots = new Map<string, { rootScaleX: number; rootScaleY: number; spriteWidth: number; spriteHeight: number }>();
+  lastSelectionFollowAt = 0;
 
   setQuality(profile: DeviceProfile) {
     this.quality = profile;
@@ -328,11 +333,15 @@ export class DreamPixiRenderer {
     const view = this.tileViews.get(keyOf(point));
     if (!view || view.removing) return;
     this.lockTileViewScale(view);
+    this.captureSelectionGeometry(view);
     // Selection must never swap to selected PNG or touch tile/sprite scale.
     // The tile body stays normal; a separate world-space overlay marks selection.
     this.applyTileStateTexture(view, view.tile.special && !view.tile.specialRevealed ? view.tile.special === 'locked' ? 'locked' : 'disabled' : 'normal');
     gsap.fromTo(view.glow, { alpha: 0.24 }, { alpha: 0.52, duration: 0.12 * this.quality.motionScale, ease: 'sine.out' });
     this.drawSelectionFocusOverlay(view);
+    this.keepSelectedTileComfortablyVisible(view);
+    this.verifySelectionGeometrySnapshot(view);
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-selection-qa', REAL_DEVICE_SELECTION_QA_LABEL);
   }
 
   hint(points: BoardPoint[], path?: PaddedPathPoint[] | null) {
@@ -340,15 +349,32 @@ export class DreamPixiRenderer {
       const view = this.tileViews.get(keyOf(point));
       if (!view || view.removing) return;
       this.lockTileViewScale(view);
+      this.captureSelectionGeometry(view);
       this.applyTileStateTexture(view, 'hint');
       window.setTimeout(() => {
         if (!view.removing && this.selectedKey !== keyOf(point)) this.applyTileStateTexture(view, 'normal');
       }, 820);
       this.drawHintFocusOverlay(view, index);
+      this.verifySelectionGeometrySnapshot(view);
       this.emitSelectionWave(view.root.x, view.root.y, PALETTE.emerald);
     });
     this.drawRouteAssist(path, points);
     this.focusBoardPoints(points);
+  }
+
+  private keepSelectedTileComfortablyVisible(view: TileView) {
+    if (!this.boardApp || this.layout.cameraMode !== 'panZoom') return;
+    const now = performance.now();
+    if (now - this.lastSelectionFollowAt < 220) return;
+    const margin = Math.max(44, this.tileSize * this.camera.scale * 0.78);
+    const screenX = view.baseX * this.camera.scale + this.camera.x;
+    const screenY = view.baseY * this.camera.scale + this.camera.y;
+    const outX = screenX < margin || screenX > this.camera.viewportWidth - margin;
+    const outY = screenY < margin || screenY > this.camera.viewportHeight - margin;
+    if (!outX && !outY) return;
+    this.lastSelectionFollowAt = now;
+    const targetScale = Math.max(this.camera.scale, Math.min(this.camera.maxScale, 0.92));
+    this.centerCameraOnWorld(view.baseX, view.baseY, targetScale, true);
   }
 
   async playMatchSequence(first: BoardPoint, second: BoardPoint, combo: number, onRemove: () => void, path?: PaddedPathPoint[] | null) {
@@ -363,6 +389,8 @@ export class DreamPixiRenderer {
     this.cameraShake(Math.min(15, 4 + combo));
     this.lockTileViewScale(a);
     this.lockTileViewScale(b);
+    this.captureSelectionGeometry(a);
+    this.captureSelectionGeometry(b);
     await new Promise<void>((resolve) => {
       const tl = gsap.timeline({ onComplete: resolve });
       tl.to([a.glow, b.glow], { alpha: 0.82, duration: 0.08 * this.quality.motionScale, ease: 'power2.out' })
@@ -370,6 +398,7 @@ export class DreamPixiRenderer {
         .add(() => this.emitBoardPulse(combo), '>-0.01')
         .add(() => this.emitTileFragments(a.root.x, a.root.y, combo), '>-0.02')
         .add(() => this.emitTileFragments(b.root.x, b.root.y, combo), '<')
+        .add(() => { this.verifySelectionGeometrySnapshot(a); this.verifySelectionGeometrySnapshot(b); }, '<')
         .to([a.root, b.root], { alpha: 0.28, y: (index: number, target: any) => target.y - this.tileSize * 0.08, duration: 0.12 * this.quality.motionScale, ease: 'power2.out' })
         .add(() => this.fireAtBoss((a.root.x + b.root.x) / 2, (a.root.y + b.root.y) / 2, combo))
         .to([a.root, b.root], { alpha: 0, duration: 0.12 * this.quality.motionScale, ease: 'sine.out' }, '<');
@@ -383,7 +412,8 @@ export class DreamPixiRenderer {
     const view = this.tileViews.get(keyOf(point));
     if (!view || view.removing) return;
     gsap.killTweensOf(view.root);
-    gsap.fromTo(view.root, { x: view.baseX - 5 }, { x: view.baseX + 5, duration: 0.055, repeat: 3, yoyo: true, ease: 'sine.inOut', onComplete: () => { view.root.x = view.baseX; } });
+    this.lockTileViewScale(view);
+    gsap.fromTo(view.root, { x: view.baseX - 5 }, { x: view.baseX + 5, duration: 0.055, repeat: 3, yoyo: true, ease: 'sine.inOut', onUpdate: () => this.enforceTileBodyGeometry(view), onComplete: () => { view.root.x = view.baseX; this.lockTileViewScale(view); } });
     this.emitSelectionWave(view.baseX, view.baseY, PALETTE.violet);
   }
 
@@ -456,6 +486,14 @@ export class DreamPixiRenderer {
     return { startX, startY, step: this.tileSize + this.gap, rows, cols, worldWidth: width, worldHeight: height, cameraMode: 'fit' };
   }
 
+  private updateBoardReadabilityTier() {
+    const host = this.host || document.querySelector<HTMLElement>('#pixi-board-host');
+    if (!host) return;
+    const scaledTile = this.tileSize * this.camera.scale;
+    host.dataset.zoomReadability = scaledTile < 34 ? 'far' : scaledTile > 56 ? 'close' : 'balanced';
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-zoom-readability', host.dataset.zoomReadability);
+  }
+
   private configureBoardCamera(reset = false) {
     if (!this.boardApp || !this.boardViewport) return;
     const app = this.boardApp;
@@ -484,7 +522,9 @@ export class DreamPixiRenderer {
       host.dataset.cameraMode = panZoom ? 'pan-zoom' : 'fit';
       host.dataset.boardRows = String(this.layout.rows);
       host.dataset.boardCols = String(this.layout.cols);
+      host.dataset.touchPrecision = 'cell-slope-guard';
     }
+    this.updateBoardReadabilityTier();
   }
 
   fitBoardView(animated = true) {
@@ -568,6 +608,7 @@ export class DreamPixiRenderer {
     this.boardViewport.scale.set(this.camera.scale);
     this.boardViewport.x = this.camera.x;
     this.boardViewport.y = this.camera.y;
+    this.updateBoardReadabilityTier();
   }
 
   private clampCamera() {
@@ -764,7 +805,7 @@ export class DreamPixiRenderer {
   }
 
   private enforceTileBodyGeometry(view: TileView) {
-    // v1.0.34 hard guard: effects may glow, but the tile body never grows.
+    // v1.0.35 hard guard: effects, touch hit slop and camera follow may change, but the tile body never grows.
     // Do not set sprite.scale to 1 here; width/height are the safe cell-bounded contract.
     view.root.scale.set(1);
     view.root.pivot.set(0, 0);
@@ -774,6 +815,31 @@ export class DreamPixiRenderer {
     view.selectionRing.scale.set(1);
     view.selectionCore.scale.set(1);
     view.root.label = `${TILE_GEOMETRY_GUARD_LABEL}:${view.row}:${view.col}`;
+    view.root.hitArea = createTileHitArea(this.tileSize);
+  }
+
+  private captureSelectionGeometry(view: TileView) {
+    const key = keyOf({ row: view.row, col: view.col });
+    this.selectionGeometrySnapshots.set(key, {
+      rootScaleX: view.root.scale.x,
+      rootScaleY: view.root.scale.y,
+      spriteWidth: view.sprite.width,
+      spriteHeight: view.sprite.height
+    });
+  }
+
+  private verifySelectionGeometrySnapshot(view: TileView) {
+    const key = keyOf({ row: view.row, col: view.col });
+    const snapshot = this.selectionGeometrySnapshots.get(key);
+    if (!snapshot || view.removing) return;
+    const drift = Math.abs(view.root.scale.x - snapshot.rootScaleX)
+      + Math.abs(view.root.scale.y - snapshot.rootScaleY)
+      + Math.abs(view.sprite.width - snapshot.spriteWidth) / Math.max(snapshot.spriteWidth, 1)
+      + Math.abs(view.sprite.height - snapshot.spriteHeight) / Math.max(snapshot.spriteHeight, 1);
+    if (drift > TILE_GEOMETRY_EPSILON) {
+      this.enforceTileBodyGeometry(view);
+      this.captureSelectionGeometry(view);
+    }
   }
 
   private assertTileBodyGeometry(view: TileView) {
@@ -965,14 +1031,15 @@ export class DreamPixiRenderer {
     this.clearSelectionFocusOverlay();
     const inset = Math.max(5, this.tileSize * SELECTION_OVERLAY_INSET_RATIO);
     const size = this.tileSize - inset * 2;
+    const stableStroke = Math.max(1.2, 1.9 / Math.max(this.camera.scale, 0.5));
     const x = view.baseX;
     const y = view.baseY;
     const overlay = new Graphics();
     overlay.blendMode = 'add';
     overlay.roundRect(x - size / 2, y - size / 2, size, size, this.tileSize * 0.18)
-      .stroke({ color: PALETTE.sky, width: Math.max(1.5, this.tileSize * 0.028), alpha: 0.96 });
+      .stroke({ color: PALETTE.sky, width: Math.max(stableStroke, this.tileSize * 0.022), alpha: 0.96 });
     overlay.roundRect(x - size / 2 + 3, y - size / 2 + 3, size - 6, size - 6, this.tileSize * 0.15)
-      .stroke({ color: PALETTE.gold, width: Math.max(1, this.tileSize * 0.018), alpha: 0.86 });
+      .stroke({ color: PALETTE.gold, width: Math.max(stableStroke * 0.72, this.tileSize * 0.014), alpha: 0.86 });
     const corner = Math.max(6, this.tileSize * 0.15);
     const left = x - size / 2;
     const right = x + size / 2;
@@ -982,7 +1049,7 @@ export class DreamPixiRenderer {
       .moveTo(right - corner, top).lineTo(right, top).lineTo(right, top + corner)
       .moveTo(right, bottom - corner).lineTo(right, bottom).lineTo(right - corner, bottom)
       .moveTo(left + corner, bottom).lineTo(left, bottom).lineTo(left, bottom - corner)
-      .stroke({ color: PALETTE.goldLight, width: Math.max(1.2, this.tileSize * 0.02), alpha: 0.92 });
+      .stroke({ color: PALETTE.goldLight, width: Math.max(stableStroke * 0.86, this.tileSize * 0.016), alpha: 0.92 });
     overlay.alpha = 0;
     this.boardLayers.paths.addChild(overlay);
     this.selectionFocusOverlay = overlay;
@@ -993,10 +1060,11 @@ export class DreamPixiRenderer {
     if (!this.boardLayers.paths) return;
     const inset = Math.max(6, this.tileSize * 0.12);
     const size = this.tileSize - inset * 2;
+    const stableStroke = Math.max(1.1, 1.7 / Math.max(this.camera.scale, 0.5));
     const hint = new Graphics();
     hint.blendMode = 'add';
     hint.roundRect(view.baseX - size / 2, view.baseY - size / 2, size, size, this.tileSize * 0.16)
-      .stroke({ color: PALETTE.emerald, width: Math.max(1.3, this.tileSize * 0.022), alpha: 0.8 });
+      .stroke({ color: PALETTE.emerald, width: Math.max(stableStroke, this.tileSize * 0.018), alpha: 0.8 });
     hint.alpha = 0;
     this.boardLayers.paths.addChild(hint);
     gsap.to(hint, { alpha: 0.9, delay: index * 0.04, duration: 0.12 * this.quality.motionScale, yoyo: true, repeat: 3, ease: 'sine.inOut', onComplete: () => hint.destroy() });
@@ -1190,6 +1258,7 @@ export class DreamPixiRenderer {
       if (view.removing) continue;
       this.assertTileBodyGeometry(view);
       if (!view.settling) this.enforceTileBodyGeometry(view);
+      if (this.selectedKey === keyOf({ row: view.row, col: view.col })) this.verifySelectionGeometrySnapshot(view);
       if (view.settling) continue;
       view.root.y = view.baseY + Math.sin(performance.now() / 850 + view.phase + view.row * 0.8 + view.col * 0.3) * 1.4 * this.quality.motionScale;
       view.sprite.rotation = Math.sin(performance.now() / 1300 + view.phase) * 0.018 * this.quality.motionScale;

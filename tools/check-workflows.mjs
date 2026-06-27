@@ -28,15 +28,19 @@ if (!pagesWorkflow.includes('npm run check:tile-readability')) errors.push('gith
 if (!pagesWorkflow.includes('npm run check:board-camera')) errors.push('github-pages.yml: expected board camera check.');
 if (!pagesWorkflow.includes('npm run check:no-minimap-topbar')) errors.push('github-pages.yml: expected no-minimap topbar check.');
 if (!qualityWorkflow.includes('npm run check:no-minimap-topbar')) errors.push('quality-check.yml: expected no-minimap topbar check.');
+if (!pagesWorkflow.includes('npm run check:space-reclaim-back-options')) errors.push('github-pages.yml: expected space reclaim back options check.');
+if (!qualityWorkflow.includes('npm run check:space-reclaim-back-options')) errors.push('quality-check.yml: expected space reclaim back options check.');
 if (!pagesWorkflow.includes('npm run check:mobile-playability')) errors.push('github-pages.yml: expected mobile playability check.');
 if (!pagesWorkflow.includes('npm run check:selection-stability')) errors.push('github-pages.yml: expected selection stability check.');
 if (!pagesWorkflow.includes('npm run check:objective-camera-boss')) errors.push('github-pages.yml: expected objective camera boss check.');
 if (!qualityWorkflow.includes('npm run check:objective-camera-boss')) errors.push('quality-check.yml: expected objective camera boss check.');
 if (!pagesWorkflow.includes('npm run check:tile-geometry-hud')) errors.push('github-pages.yml: expected tile geometry HUD check.');
 if (!qualityWorkflow.includes('npm run check:tile-geometry-hud')) errors.push('quality-check.yml: expected tile geometry HUD check.');
+if (!pagesWorkflow.includes('npm run check:real-device-selection')) errors.push('github-pages.yml: expected real device selection QA check.');
+if (!qualityWorkflow.includes('npm run check:real-device-selection')) errors.push('quality-check.yml: expected real device selection QA check.');
 
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.34 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.36 QA checks.');

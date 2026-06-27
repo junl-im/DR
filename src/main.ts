@@ -141,6 +141,7 @@ const el = {
   exitConfirmMessage: $('#exit-confirm-message'),
   exitCancelButton: $('#exit-cancel-button'),
   exitConfirmButton: $('#exit-confirm-button'),
+  exitOptionsButton: $('#exit-options-button'),
   exitSleepModal: $('#exit-sleep-modal'),
   exitSleepMessage: $('#exit-sleep-message'),
   exitWakeButton: $('#exit-wake-button')
@@ -154,7 +155,9 @@ function forceLoginBootScreen() {
   el.backButton.classList.add('hidden');
   [el.optionsModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal].forEach((modal) => modal.classList.add('hidden'));
   el.boardCameraGuide?.classList.add('hidden');
+  el.boardCameraGuide?.setAttribute('aria-hidden', 'true');
   el.boardCameraControls?.classList.add('hidden');
+  el.boardCameraControls?.setAttribute('aria-hidden', 'true');
 }
 
 forceLoginBootScreen();
@@ -336,7 +339,8 @@ function bindEvents() {
     else if (state.screen === 'game') exitToLobby();
     else updateScreen('login');
   });
-  el.openSettingsButton.addEventListener('click', openOptions);
+  // v1.0.36: the visible top option line was removed. Options now open from the back/exit sheet gear.
+  el.openSettingsButton?.addEventListener('click', openOptions);
   el.closeOptionsButton.addEventListener('click', closeOptionsPanel);
   el.optionsModal.addEventListener('click', (event) => { if (event.target === el.optionsModal) closeOptionsPanel(); });
   el.settingsLoginButton.addEventListener('click', () => { closeOptionsPanel(); updateScreen('login'); });
@@ -429,6 +433,7 @@ function bindEvents() {
   el.enterLobbyButton.addEventListener('click', enterLobbyFromStart);
   el.exitCancelButton.addEventListener('click', closeExitConfirm);
   el.exitConfirmButton.addEventListener('click', confirmExitApp);
+  el.exitOptionsButton.addEventListener('click', openOptionsFromExitSheet);
   el.exitWakeButton.addEventListener('click', wakeFromExitSleep);
   el.exitConfirmModal.addEventListener('click', (event) => { if (event.target === el.exitConfirmModal) closeExitConfirm(); });
 
@@ -488,7 +493,6 @@ function bindEvents() {
   el.exitToLobbyButton.addEventListener('click', () => exitToLobby());
   el.hintButton.addEventListener('click', showHint);
   el.shuffleButton.addEventListener('click', shuffleBoard);
-  el.boardCameraControls.addEventListener('click', handleBoardCameraControl);
   el.refreshLeaderboardButton.addEventListener('click', () => { loadLeaderboard(); loadDailyLeaderboard(); });
   el.nextStageButton.addEventListener('click', () => {
     closeReward();
@@ -733,26 +737,6 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
 
 
 
-function handleBoardCameraControl(event: Event) {
-  const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-camera-action]');
-  if (!button || state.screen !== 'game') return;
-  const action = button.dataset.cameraAction || '';
-  audio.play('tap');
-  HAPTIC.tap();
-  if (action === 'fit') {
-    renderer.fitBoardView();
-    setStatus('보드 전체가 보이도록 시야를 맞췄습니다.');
-  } else if (action === 'center') {
-    renderer.centerBoardView();
-    setStatus('보드 중앙으로 시야를 옮겼습니다.');
-  } else if (action === 'zoom-in') {
-    renderer.nudgeCameraZoom(1.16);
-    setStatus('보드를 조금 확대했습니다.');
-  } else if (action === 'zoom-out') {
-    renderer.nudgeCameraZoom(0.86);
-    setStatus('보드를 조금 축소했습니다.');
-  }
-}
 
 function handleSpecialTileGate(point: BoardPoint, tile: any) {
   if (!isSpecialTileBlocked(tile)) return false;
@@ -1001,7 +985,8 @@ function updateScreen(screen: ScreenName) {
   }
   document.documentElement.style.setProperty('--library-background-url', bg.endsWith('-v2') ? backgroundImageSet(bg) : `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
-  el.backButton.classList.toggle('hidden', screen === 'login');
+  // v1.0.36: no persistent top navigation line; browser back and in-screen actions handle flow.
+  el.backButton.classList.add('hidden');
   if (screen === 'lobby') renderLobby();
   if (screen === 'settings') renderAuth();
   if (state.browserBackReady) {
@@ -1013,6 +998,11 @@ function updateScreen(screen: ScreenName) {
 function openOptions() {
   renderAuth();
   el.optionsModal.classList.remove('hidden');
+}
+
+function openOptionsFromExitSheet() {
+  closeExitConfirm();
+  openOptions();
 }
 
 function closeOptionsPanel() {
@@ -1394,6 +1384,7 @@ function renderGameHud() {
   updateMissionLabel();
   state.hudDensity = getHudDensity();
   el.app.dataset.hudDensity = state.hudDensity;
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-real-device-qa', 'touch-precision-readability');
   document.querySelector<HTMLElement>('.screen-game')?.setAttribute('data-hud-density', state.hudDensity);
   document.querySelector<HTMLElement>('.game-hud')?.setAttribute('data-hud-density', state.hudDensity);
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-hud-density', state.hudDensity);
@@ -1404,26 +1395,17 @@ function renderBoardCameraGuide(difficultyOverride?: any) {
   const difficulty = difficultyOverride || DIFFICULTIES[getStageById(state.selectedStageId).difficultyKey];
   const panZoom = difficulty?.cameraMode === 'panZoom' || Number(difficulty?.rows || 0) * Number(difficulty?.cols || 0) > 72;
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-board-camera', panZoom ? 'pan-zoom' : 'fit');
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-camera-ui', 'space-reclaimed');
   if (el.boardCameraGuide) {
-    el.boardCameraGuide.classList.toggle('hidden', !panZoom || state.screen !== 'game');
-    el.boardCameraGuide.classList.toggle('camera-tutorial', false);
-    if (panZoom) {
-      const seen = readText('dream-library-camera-guide-seen') === 'yes';
-      el.boardCameraGuide.textContent = seen ? '드래그 이동 · 두 손가락 확대/축소' : '드래그 이동 · +/− 확대 · 보기 맞춤';
-      if (!seen && state.screen === 'game') {
-        el.boardCameraGuide.classList.add('camera-tutorial');
-        writeText('dream-library-camera-guide-seen', 'yes');
-        window.setTimeout(() => {
-          if (state.screen === 'game' && el.boardCameraGuide) {
-            el.boardCameraGuide.textContent = '드래그 이동 · 두 손가락 확대/축소';
-            el.boardCameraGuide.classList.remove('camera-tutorial');
-          }
-        }, 5200);
-      }
-    }
+    el.boardCameraGuide.textContent = '';
+    el.boardCameraGuide.classList.add('hidden');
+    el.boardCameraGuide.classList.remove('camera-tutorial');
+    el.boardCameraGuide.setAttribute('aria-hidden', 'true');
   }
   if (el.boardCameraControls) {
-    el.boardCameraControls.classList.toggle('hidden', !panZoom || state.screen !== 'game');
+    el.boardCameraControls.innerHTML = '';
+    el.boardCameraControls.classList.add('hidden');
+    el.boardCameraControls.setAttribute('aria-hidden', 'true');
   }
 }
 

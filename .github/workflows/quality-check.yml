@@ -82,6 +82,8 @@ jobs:
           npm run check:boot-screen
           npm run check:objective-camera-boss
           npm run check:tile-geometry-hud
+          npm run check:real-device-selection
+          npm run check:space-reclaim-back-options
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

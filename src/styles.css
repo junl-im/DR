@@ -116,8 +116,6 @@ input:focus { border-color: rgba(245, 200, 107, 0.8); box-shadow: 0 0 0 4px rgba
 }
 .alive-panel { animation: panelFloat 5.6s ease-in-out infinite; }
 .topbar { position: sticky; top: max(8px, env(safe-area-inset-top)); z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; min-height: 54px; margin-bottom: 0.7rem; padding: 0.45rem 0.52rem; border-radius: 999px; }
-.topbar-spacer { flex: 1 1 auto; min-width: 0; }
-.top-actions { display: flex; gap: 0.36rem; }
 .icon-button { display: inline-grid; place-items: center; width: 42px; height: 42px; padding: 0; font-size: 1.2rem; }
 .screen-stack { position: relative; min-height: calc(100svh - 76px); }
 .screen { display: none; animation: screenIn 0.34s ease both; }
@@ -2229,12 +2227,6 @@ body[data-screen="game"] .pixi-board-host {
   font-weight: 900;
   letter-spacing: -0.02em;
 }
-.board-camera-controls button[data-camera-action="zoom-in"],
-.board-camera-controls button[data-camera-action="zoom-out"] {
-  padding-inline: 0;
-  font-size: 1rem;
-  color: var(--gold-300);
-}
 .board-camera-controls button:active {
   transform: translateY(1px) scale(0.98);
 }
@@ -2388,4 +2380,101 @@ body[data-screen="game"] .pixi-board-host {
   .board-camera-guide { bottom: 0.46rem; font-size: 0.58rem; padding: 0.24rem 0.44rem; }
   .combo-cutin { top: 68px; font-size: 1rem; padding: 0.4rem 0.72rem; }
   .boss-hit-cutin { top: 76px; font-size: 0.78rem; padding: 0.38rem 0.64rem; }
+}
+
+/* v1.0.35 Real device selection QA, touch precision and board readability */
+.battle-stage[data-selection-qa="real-device-selection-geometry-qa"] .pixi-board-host {
+  outline: 1px solid rgba(125, 220, 255, 0.09);
+  outline-offset: -2px;
+}
+.pixi-board-host[data-touch-precision="cell-slope-guard"] canvas {
+  touch-action: none;
+}
+.pixi-board-host[data-zoom-readability="far"] {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(245, 200, 107, 0.12), transparent 45%),
+    radial-gradient(circle at 50% 42%, rgba(125, 220, 255, 0.18), transparent 58%),
+    linear-gradient(135deg, rgba(6, 21, 45, 0.5), rgba(12, 40, 82, 0.36));
+}
+.battle-stage[data-zoom-readability="far"] .board-camera-guide {
+  border-color: rgba(245, 200, 107, 0.28);
+  color: rgba(255, 247, 219, 0.95);
+}
+.battle-stage[data-zoom-readability="close"] .board-camera-controls {
+  opacity: 0.9;
+}
+.battle-stage[data-hud-density="micro"][data-zoom-readability="far"] .boss-hit-cutin {
+  top: 64px;
+  max-width: min(76vw, 240px);
+}
+@media (pointer: coarse) {
+  .board-camera-controls button {
+    min-width: 32px;
+    min-height: 32px;
+  }
+  .battle-stage[data-selection-qa="real-device-selection-geometry-qa"] .board-camera-guide {
+    letter-spacing: -0.025em;
+  }
+}
+
+/* v1.0.36 Space reclaim, visible top options removal and back-sheet options entry */
+.retired-shell-actions,
+body .topbar,
+body .compact-topbar {
+  display: none !important;
+}
+.app-shell {
+  padding-top: max(6px, env(safe-area-inset-top));
+}
+.screen-stack {
+  min-height: calc(100svh - max(6px, env(safe-area-inset-top)) - max(14px, env(safe-area-inset-bottom)));
+}
+.board-camera-shell[data-visible-controls="removed"] .board-camera-guide,
+.board-camera-shell[data-visible-controls="removed"] .board-camera-controls,
+.battle-stage[data-camera-ui="space-reclaimed"] .board-camera-guide,
+.battle-stage[data-camera-ui="space-reclaimed"] .board-camera-controls {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.exit-card-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  margin-bottom: 0.12rem;
+  position: relative;
+}
+.exit-card-toolbar .eyebrow {
+  margin: 0;
+}
+.exit-options-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 0;
+  background-position: center !important;
+  background-size: 58%, cover !important;
+}
+.exit-options-button::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: inherit;
+  background: var(--ui-settings-url) center / contain no-repeat;
+  pointer-events: none;
+}
+body[data-screen="login"] .screen-login,
+body[data-screen="lobby"] .screen-lobby,
+body[data-screen="game"] .screen-game {
+  margin-top: 0;
+}
+@media (max-height: 700px), (max-width: 390px) {
+  .app-shell { padding-inline: 10px; }
+  .screen-stack { min-height: calc(100svh - 22px); }
+  .exit-options-button { width: 36px; height: 36px; }
 }
