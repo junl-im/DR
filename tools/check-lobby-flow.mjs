@@ -4,7 +4,7 @@ const main = readFileSync('src/main.ts', 'utf8');
 const index = readFileSync('index.html', 'utf8');
 const packageJson = readFileSync('package.json', 'utf8');
 
-const required = ['enterLobbyFromStart', '진짜 게임 시작', '서고 입장', 'check:lobby-flow', 'lobby-mission-deck'];
+const required = ['enterLobbyFromAuth', '진짜 게임 시작', '게스트 로그인', '구글 로그인', '이메일 로그인', 'check:lobby-flow', 'lobby-mission-deck'];
 const missing = required.filter((token) => !main.includes(token) && !index.includes(token) && !packageJson.includes(token));
 if (missing.length) {
   console.error(`Lobby flow check failed. Missing: ${missing.join(', ')}`);
@@ -16,4 +16,4 @@ if (/startSelectedStage\s*\(/.test(authBlock)) {
   console.error('Login/start auth buttons must enter the lobby first, not start a board immediately.');
   process.exit(1);
 }
-console.log('Lobby-first flow policy passed with mission deck routing.');
+console.log('Lobby-first flow policy passed with simplified auth entry and mission deck routing.');

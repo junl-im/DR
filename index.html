@@ -75,17 +75,17 @@
               <img class="title-logo-v2" src="%BASE_URL%assets/ui/logo-dream-library-v2.png" alt="꿈의 서고" draggable="false" /><h1 class="sr-only-title">꿈의 서고</h1>
             </div>
 
-            <div class="login-card luxury-panel alive-panel compact-login-card">
+            <div class="login-card luxury-panel alive-panel compact-login-card" data-auth-flow="guest-google-email-v1041">
               <div class="auth-summary compact-auth-summary">
                 <strong id="auth-name">새로운 사서님</strong>
-                <span id="auth-provider">시작을 누르면 먼저 로비로 입장합니다.</span>
+                <span id="auth-provider">게스트는 바로 시작, 구글/이메일은 저장 플레이입니다.</span>
               </div>
 
               <div class="primary-actions compact-actions">
-                <button id="anonymous-button" type="button" class="xl-button primary-glow start-now-button asset-button-start">서고 입장</button>
+                <button id="anonymous-button" type="button" class="xl-button primary-glow start-now-button asset-button-start">게스트 로그인</button>
                 <div class="login-provider-row" aria-label="로그인 방식">
-                  <button id="google-button" type="button" class="sky-button asset-button-google">Google 저장</button>
-                  <button id="show-email-button" type="button" class="secondary asset-button-email">Email 저장</button>
+                  <button id="google-button" type="button" class="sky-button asset-button-google">구글 로그인</button>
+                  <button id="show-email-button" type="button" class="secondary asset-button-email">이메일 로그인</button>
                 </div>
               </div>
 
@@ -93,14 +93,13 @@
                 <label><span>이메일</span><input id="email-input" type="email" placeholder="email@example.com" autocomplete="email" inputmode="email" /></label>
                 <label><span>비밀번호</span><input id="password-input" type="password" placeholder="비밀번호 6자 이상" autocomplete="current-password" /></label>
                 <div class="email-buttons">
-                  <button id="email-login-button" type="submit">로그인 후 로비</button>
-                  <button id="email-signup-button" type="button" class="secondary">가입 후 로비</button>
+                  <button id="email-login-button" type="submit">이메일 로그인</button>
+                  <button id="email-signup-button" type="button" class="secondary">이메일 가입</button>
                 </div>
               </form>
 
-              <div class="login-footer-actions compact-footer-actions">
-                <button id="enter-lobby-button" type="button" class="text-button strong hidden">로비 입장</button>
-                
+              <div class="login-footer-actions compact-footer-actions retired-direct-lobby-entry" aria-hidden="true" inert>
+                <button id="enter-lobby-button" type="button" class="text-button strong hidden" tabindex="-1" aria-hidden="true"></button>
               </div>
             </div>
           </div>
@@ -110,7 +109,7 @@
 
         <section id="screen-lobby" class="screen screen-lobby" aria-label="게임 시작 화면">
           <div class="lobby-hero luxury-panel alive-panel">
-            <div><p class="eyebrow">Adventure Lobby</p><h2>로비에서 기억을 고르고 시작하세요</h2><p id="lobby-greeting">사서님, 서고의 문이 열렸습니다.</p><small class="lobby-flow-note">첫 화면은 입장, 로비는 준비, 선택한 스테이지 시작이 진짜 게임 시작입니다.</small></div>
+            <div><p class="eyebrow">Adventure Lobby</p><h2>기억을 고르고 시작하세요</h2><p id="lobby-greeting">사서님, 서고의 문이 열렸습니다.</p><small class="lobby-flow-note">로그인 후 바로 이곳에서 스테이지를 고르고 진짜 게임을 시작합니다.</small></div>
             <div class="lobby-quick-actions">
               <button id="daily-stage-button" type="button" class="daily-stage-button">오늘의 복원</button>
               <button id="restoration-focus-button" type="button" class="secondary">복원 작업대</button>

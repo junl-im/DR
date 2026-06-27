@@ -31,6 +31,7 @@ document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
 const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1040';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
+const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1041-auth-entry-simplified';
 let bossAtlasImageReady = false;
 function preloadBossAtlasImage() {
   const image = new Image();
@@ -161,7 +162,9 @@ const el = {
 
 function forceLoginBootScreen() {
   el.app.dataset.screen = 'login';
+  el.app.dataset.authEntry = AUTH_ENTRY_SIMPLIFICATION_PATCH;
   document.body.dataset.screen = 'login';
+  document.body.dataset.authEntry = AUTH_ENTRY_SIMPLIFICATION_PATCH;
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === 'screen-login'));
   el.backButton.classList.add('hidden');
   [el.optionsModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal].forEach((modal) => modal.classList.add('hidden'));
@@ -286,7 +289,7 @@ async function init() {
   if (browserRecovery.inApp) {
     browserRecovery.maybeShowSoftTip();
     syncGameViewport({ reason: 'init-inapp' });
-    setStatus('로비 준비가 끝났습니다.');
+    setStatus('로그인 선택을 준비했습니다.');
   }
 
   registerServiceWorker();
@@ -408,31 +411,31 @@ function bindEvents() {
       writeJson('dream-library-local-guest', state.localGuest);
       renderAuth();
     }
-    enterLobbyFromStart();
-  }, '로비로 입장했습니다.'));
+    enterLobbyFromAuth('guest');
+  }, '게스트 로그인으로 로비를 열었습니다.'));
   el.googleButton.addEventListener('click', () => runAuth(async () => {
     audio.play('tap');
     HAPTIC.tap();
     if (!firebaseReady) throw new Error('login-disabled');
     await handoffIfNeeded('auth');
     await loginWithGoogle();
-    enterLobbyFromStart();
-  }, 'Google 로그인 후 로비로 입장했습니다.'));
+    enterLobbyFromAuth('google');
+  }, '구글 로그인으로 저장 플레이를 시작했습니다.'));
   el.emailForm.addEventListener('submit', (event) => {
     event.preventDefault();
     runAuth(async () => {
       if (!firebaseReady) throw new Error('login-disabled');
       await handoffIfNeeded('auth');
       await loginWithEmail(el.emailInput.value, el.passwordInput.value);
-      enterLobbyFromStart();
-    }, '이메일 로그인 후 로비로 입장했습니다.');
+      enterLobbyFromAuth('email');
+    }, '이메일 로그인으로 저장 플레이를 시작했습니다.');
   });
   el.emailSignupButton.addEventListener('click', () => runAuth(async () => {
     if (!firebaseReady) throw new Error('login-disabled');
     await handoffIfNeeded('auth');
     await signupWithEmail(el.emailInput.value, el.passwordInput.value);
-    enterLobbyFromStart();
-  }, '새 계정을 만들고 로비로 입장했습니다.'));
+    enterLobbyFromAuth('email-signup');
+  }, '이메일 계정을 만들고 저장 플레이를 시작했습니다.'));
   el.signoutButton.addEventListener('click', () => runAuth(async () => {
     if (firebaseReady && state.user) await logout();
     state.localGuest = null;
@@ -441,7 +444,7 @@ function bindEvents() {
     closeOptionsPanel();
     updateScreen('login');
   }, '로그아웃했습니다.'));
-  el.enterLobbyButton.addEventListener('click', enterLobbyFromStart);
+  el.enterLobbyButton.addEventListener('click', () => enterLobbyFromAuth('resume')); // retired direct lobby button kept hidden for DOM compatibility
   el.exitCancelButton.addEventListener('click', closeExitConfirm);
   el.exitConfirmButton.addEventListener('click', confirmExitApp);
   el.exitOptionsButton.addEventListener('click', openOptionsFromExitSheet);
@@ -675,17 +678,29 @@ function initLobbyScrollGuard() {
   }, true);
 }
 
-function enterLobbyFromStart() {
+function enterLobbyFromAuth(mode: 'guest' | 'google' | 'email' | 'email-signup' | 'resume' = 'guest') {
   if (!hasSession()) {
     state.localGuest = makeLocalGuest();
     writeJson('dream-library-local-guest', state.localGuest);
     renderAuth();
   }
-  syncGameViewport({ reason: 'enter-lobby' });
+  syncGameViewport({ reason: `auth-entry-${mode}` });
   portraitRuntime?.syncViewport();
   renderLobby();
   updateScreen('lobby');
-  setStatus('로비에 입장했습니다. 스테이지를 고른 뒤 진짜 게임 시작을 누르세요.');
+  const message: Record<string, string> = {
+    guest: '게스트 로그인 완료. 스테이지를 고르고 진짜 게임을 시작하세요.',
+    google: '구글 로그인 저장이 연결되었습니다. 스테이지를 고르세요.',
+    email: '이메일 로그인 저장이 연결되었습니다. 스테이지를 고르세요.',
+    'email-signup': '이메일 저장 계정을 만들었습니다. 스테이지를 고르세요.',
+    resume: '저장된 세션으로 로비를 열었습니다.'
+  };
+  setStatus(message[mode] || message.guest);
+}
+
+function enterLobbyFromStart() {
+  syncGameViewport({ reason: 'enter-lobby' });
+  enterLobbyFromAuth('resume');
 }
 
 async function startDailyStage() {
@@ -1080,16 +1095,26 @@ function wakeFromExitSleep() {
   document.body.dataset.appState = 'active';
   el.exitSleepModal.classList.add('hidden');
   updateScreen('login');
-  setStatus('다시 열었습니다. 서고 입장으로 로비에 들어갈 수 있습니다.');
+  setStatus('다시 열었습니다. 게스트/구글/이메일 로그인 중 선택하세요.');
+}
+
+function getAuthProviderLabel(user: any) {
+  if (!user) return '';
+  const providerId = user.providerData?.[0]?.providerId || '';
+  if (providerId === 'google.com') return '구글 로그인 · 진행 저장 중';
+  if (user.email) return '이메일 로그인 · 진행 저장 중';
+  if (user.isAnonymous) return '게스트 로그인 · 익명 저장 중';
+  return '저장 세션 연결 중';
 }
 
 function renderAuth() {
   const name = state.user ? getDisplayName(state.user) : state.localGuest ? state.localGuest.name : '새로운 사서님';
-  const provider = state.user ? (state.user.email ? '이메일/Google 계정으로 저장 중' : '익명 계정으로 저장 중') : state.localGuest ? '게스트 플레이 중 · 로비 입장 가능' : '시작하면 로비로 입장합니다. 로그인하면 진행과 랭킹을 저장합니다.';
+  const provider = state.user ? getAuthProviderLabel(state.user) : state.localGuest ? '게스트 로그인 · 로컬 진행 중' : '게스트/구글/이메일 로그인 중 선택하세요.';
   el.authName.textContent = name;
   el.authProvider.textContent = provider;
   el.settingsAccountText.textContent = `${name} · ${provider}`;
-  el.enterLobbyButton.classList.toggle('hidden', !hasSession());
+  el.enterLobbyButton.classList.add('hidden');
+  el.enterLobbyButton.setAttribute('aria-hidden', 'true');
   el.signoutButton.classList.toggle('hidden', !hasSession());
   renderSoundButton();
 }
@@ -1829,7 +1854,7 @@ async function runAuth(action: () => Promise<void>, successMessage: string) {
     await action();
     setStatus(successMessage);
   } catch (error: any) {
-    if (error?.message === 'login-disabled' || error?.code === 'firebase/missing-config') setStatus('현재는 게스트 시작을 사용할 수 있습니다.');
+    if (error?.message === 'login-disabled' || error?.code === 'firebase/missing-config') setStatus('현재는 게스트 로그인을 사용할 수 있습니다.');
     else setStatus('로그인을 완료하지 못했습니다. 잠시 후 다시 시도하세요.');
   }
 }

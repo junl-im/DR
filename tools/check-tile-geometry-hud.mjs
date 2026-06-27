@@ -17,12 +17,12 @@ if (renderer.includes("this.applyTileStateTexture(view, 'selected')")) errors.pu
 if (!main.includes('getHudDensity') || !main.includes("'micro'") || !main.includes('data-hud-density')) errors.push('HUD density must include a micro mode for small screens.');
 if (!main.includes('dataset.comboTier') || !main.includes('boss-finisher-pop') || !main.includes('dataset.bossId')) errors.push('Boss cut-in must have boss-specific/tier-specific polish hooks.');
 for (const token of ['data-tile-geometry="locked"', 'data-combo-tier="finisher"', 'data-hud-density="micro"', 'bossFinisherHalo']) {
-  if (!css.includes(token)) errors.push(`Missing v1.0.40 CSS hook: ${token}`);
+  if (!css.includes(token)) errors.push(`Missing v1.0.41 CSS hook: ${token}`);
 }
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭']) {
   if (`${renderer}\n${main}\n${css}`.includes(banned)) errors.push(`Minimap must stay removed: ${banned}`);
 }
-if (!packageJson.includes('"version": "1.0.40"')) errors.push('package.json version must be 1.0.40.');
+if (!packageJson.includes('"version": "1.0.41"')) errors.push('package.json version must be 1.0.41.');
 if (!workflows.includes('npm run check:tile-geometry-hud')) errors.push('Workflow must run tile geometry HUD QA check.');
 
 if (errors.length) {

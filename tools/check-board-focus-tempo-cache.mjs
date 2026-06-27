@@ -37,17 +37,17 @@ for (const token of [
   'data-objective-marker-density="compressed-v1040"',
   'data-boss-flow-tempo="cooldown-softened"'
 ]) {
-  if (!runtime.includes(token)) errors.push(`Missing v1.0.40 visual priority token: ${token}`);
+  if (!runtime.includes(token)) errors.push(`Missing v1.0.41 visual priority token: ${token}`);
 }
 if (!main.includes('stable-atlas-v1040') || !css.includes('stable-atlas-v1040')) errors.push('Boss visual stack must be v1040.');
-if (!pkg.includes('"version": "1.0.40"')) errors.push('package.json version must be 1.0.40.');
+if (!pkg.includes('"version": "1.0.41"')) errors.push('package.json version must be 1.0.41.');
 if (!pkg.includes('check:board-focus-tempo-cache')) errors.push('package.json must expose check:board-focus-tempo-cache.');
-if (!sw.includes('dream-library-cache-v1.0.40') || !sw.includes('texture-atlas-manifest-v1.0.40.json')) errors.push('service worker cache/manifest must be v1.0.40.');
-if (!sw.includes('CACHE_SLIM_POLICY') || !sw.includes('v1040-cache-slim-core-first')) errors.push('service worker cache slim policy missing.');
+if (!sw.includes('dream-library-cache-v1.0.41') || !sw.includes('texture-atlas-manifest-v1.0.41.json')) errors.push('service worker cache/manifest must be v1.0.41.');
+if (!sw.includes('CACHE_SLIM_POLICY') || !sw.includes('v1041-cache-slim-auth-first')) errors.push('service worker cache slim policy missing.');
 for (const heavy of ['asset-import-v1.0.11.json', 'asset-import-v1.0.17.json', 'boss-motion-sheet-v2.png', 'v2-tile-01-selected.png']) {
   if (sw.includes(heavy)) errors.push(`Slim cache should not preload low-priority asset: ${heavy}`);
 }
-if (!pages.includes('npm run check:board-focus-tempo-cache') || !quality.includes('npm run check:board-focus-tempo-cache')) errors.push('workflows must run v1.0.40 board focus tempo cache check.');
+if (!pages.includes('npm run check:board-focus-tempo-cache') || !quality.includes('npm run check:board-focus-tempo-cache')) errors.push('workflows must run v1.0.41 board focus tempo cache check.');
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭', '보기 맞춤', '드래그 이동']) {
   if (runtime.includes(banned)) errors.push(`Removed UI/minimap token came back: ${banned}`);
 }
@@ -55,4 +55,4 @@ if (errors.length) {
   console.error(`Board focus tempo cache check failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Board focus tempo cache check passed: board focus, boss tempo and slim cache v1.0.40 are active without removed UI.');
+console.log('Board focus tempo cache check passed: board focus, boss tempo and slim cache v1.0.41 are active without removed UI.');

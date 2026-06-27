@@ -2738,3 +2738,17 @@ body[data-screen="game"] .screen-stack {
     opacity: 0.32;
   }
 }
+
+
+/* v1.0.41 Auth entry simplification and lobby shortcut removal */
+.screen-login[data-auth-entry="v1041-auth-entry-simplified"],
+body[data-auth-entry="v1041-auth-entry-simplified"] .screen-login { --auth-entry-flow: guest-google-email; }
+.retired-direct-lobby-entry { display: none !important; }
+.login-card[data-auth-flow="guest-google-email-v1041"] .primary-actions { gap: 0.66rem; }
+.login-card[data-auth-flow="guest-google-email-v1041"] .login-provider-row { grid-template-columns: 1fr 1fr; }
+.login-card[data-auth-flow="guest-google-email-v1041"] .email-form:not(.collapsed) { max-height: 270px; }
+.login-card[data-auth-flow="guest-google-email-v1041"] .email-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.52rem; }
+@media (max-width: 380px) {
+  .login-card[data-auth-flow="guest-google-email-v1041"] .login-provider-row,
+  .login-card[data-auth-flow="guest-google-email-v1041"] .email-buttons { grid-template-columns: 1fr; }
+}

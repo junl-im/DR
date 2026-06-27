@@ -1,5 +1,5 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.40';
-const CACHE_SLIM_POLICY = 'v1040-cache-slim-core-first';
+const CACHE_NAME = 'dream-library-cache-v1.0.41';
+const CACHE_SLIM_POLICY = 'v1041-cache-slim-auth-first';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -23,7 +23,7 @@ const CORE_ASSETS = [
   './assets/ui/keys-v2/hint-normal.png',
   './assets/effects/import-vfx-01.png',
   './assets/effects/import-vfx-06.png',
-  './assets/meta/texture-atlas-manifest-v1.0.40.json',
+  './assets/meta/texture-atlas-manifest-v1.0.41.json',
   './assets/ui/hp-frame.png',
   './assets/ui/icon-back.png',
   './assets/ui/icon-home.png',

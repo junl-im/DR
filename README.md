@@ -61,6 +61,33 @@ Atlas 생성
 ## Version History
 
 
+### v1.0.41 - Auth Entry Simplification and Direct Lobby Shortcut Cleanup Patch
+
+- v1.0.40 기준 통파일을 점검하고, 첫 시작 화면의 중복 진입 구조를 정리
+- 기존 `서고 입장` 버튼을 `게스트 로그인`으로 변경해 실제 동작과 문구를 일치시킴
+- `Google 저장`은 `구글 로그인`, `Email 저장`은 `이메일 로그인`으로 변경해 저장 계정의 의미를 더 명확하게 표시
+- 이메일 폼 버튼을 `이메일 로그인 / 이메일 가입`으로 정리하고 `로그인 후 로비 / 가입 후 로비` 같은 중복 표현 제거
+- 첫 화면 아래의 별도 `로비 입장` 버튼은 필요성이 낮아 retired direct lobby entry로 숨김 처리하고 화면에서는 제거
+- `enterLobbyFromAuth()`를 추가해 게스트/구글/이메일 로그인 모두 로비 선택 화면으로 들어가되, 퍼즐판을 바로 열지 않는 기존 안전 흐름은 유지
+- 로그인 상태 설명을 `게스트 로그인 · 로컬 진행 중`, `구글 로그인 · 진행 저장 중`, `이메일 로그인 · 진행 저장 중`으로 구분
+- 첫 화면 부트 안정화와 service worker network-first 정책 유지, cache/manifest를 v1.0.41로 갱신
+- `npm run check:auth-entry-flow` 신규 추가 및 GitHub Pages / Quality Check workflow에 연결
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
+- 선택 패 크기 고정과 tile body geometry guard 유지
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
+다음 업데이트 예정: v1.0.42 - Login Transition Polish, Saved Progress CTA and Restoration Shortcut Patch
+
+- 게스트/구글/이메일 로그인 후 로비로 넘어가는 전환 애니메이션을 더 자연스럽게 조정
+- 저장 계정으로 로그인했을 때 이전 진행 상태를 짧게 보여주는 CTA 추가
+- 보상 모달에서 복원 프로젝트 바로가기/집중 프로젝트 전환 흐름 개선
+- 클리어 연출에 사운드/haptic feedback 연결 강화
+- 초기 로딩/서비스워커 캐시 교체 중 첫 화면 잔상 방지 추가 점검
+- 작은 화면에서 보상 모달, 보스 패널, 하단 액션 버튼 겹침 추가 압축
+- 미니맵, 보기/중앙/+/- 라인, 카메라 도움말은 계속 재도입하지 않음
+
+
 
 ### v1.0.40 - Mobile Board Feel, Boss Asset Polish and Clear Flow Reward Patch
 
