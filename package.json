@@ -30,7 +30,11 @@
     "atlas:tiles": "node tools/check-real-atlas.mjs",
     "check:real-atlas": "node tools/check-real-atlas.mjs",
     "check:touch-qa": "node tools/check-touch-qa.mjs",
-    "check:boss-sheets": "node tools/check-boss-sheets.mjs"
+    "check:boss-sheets": "node tools/check-boss-sheets.mjs",
+    "check:lobby-motion": "node tools/check-lobby-motion.mjs",
+    "check:button-states": "node tools/check-button-states.mjs",
+    "check:ranking-ux": "node tools/check-ranking-ux.mjs",
+    "check:atlas-extended": "node tools/check-atlas-extended.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -43,5 +47,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.20"
+  "version": "1.0.21"
 }

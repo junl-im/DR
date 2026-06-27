@@ -1686,3 +1686,157 @@ body[data-screen="lobby"] .collection-tile {
   html.source-landscape .topbar { transform: scale(0.92); transform-origin: top center; }
   html.source-landscape .app-shell { border-radius: 22px; }
 }
+
+/* v1.0.21 lobby motion, button states, ranking UX and scroll QA polish */
+:root {
+  --rank-cloud: rgba(125, 220, 255, 0.94);
+  --rank-local: rgba(54, 214, 164, 0.92);
+}
+body[data-lobby-mood="welcome"] .lobby-hero img { animation: floatSlow 4.6s ease-in-out infinite; }
+body[data-lobby-mood="active"] .lobby-hero img { animation: mascotNod 3.2s ease-in-out infinite; }
+body[data-lobby-mood="radiant"] .lobby-hero img { animation: mascotRadiant 2.8s ease-in-out infinite; filter: drop-shadow(0 20px 28px rgba(6, 21, 45, 0.42)) drop-shadow(0 0 26px rgba(245, 200, 107, 0.28)); }
+.lobby-hero::after {
+  content: '';
+  position: absolute;
+  right: 2.2rem;
+  bottom: 1.2rem;
+  width: min(34vw, 150px);
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(125, 220, 255, 0.22), transparent 70%);
+  filter: blur(4px);
+  pointer-events: none;
+}
+.mission-card[data-ready="true"] {
+  box-shadow: 0 18px 42px rgba(6, 21, 45, 0.34), inset 0 0 0 1px rgba(245, 200, 107, 0.16), 0 0 24px rgba(54, 214, 164, 0.1);
+}
+.mission-card[data-ready="true"]::after {
+  content: 'READY';
+  position: absolute;
+  right: 0.72rem;
+  top: 0.68rem;
+  padding: 0.18rem 0.42rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--emerald-500), var(--sky-500));
+  font-size: 0.54rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+.icon-button:hover,
+.gear-button:hover,
+#back-button:hover,
+#hint-button:hover,
+#shuffle-button:hover,
+#refresh-leaderboard-button:hover,
+#settings-fullscreen-button:hover,
+#signout-button:hover { filter: brightness(1.08) saturate(1.08); }
+#back-button:hover { background-image: var(--ui-back-hover-url); }
+#back-button:active { background-image: var(--ui-back-pressed-url); }
+#back-button:disabled { background-image: var(--ui-back-disabled-url); }
+.gear-button:hover { background-image: var(--ui-settings-hover-url); }
+.gear-button:active { background-image: var(--ui-settings-pressed-url); }
+.gear-button:disabled { background-image: var(--ui-settings-disabled-url); }
+#hint-button:hover { background-image: var(--ui-hint-hover-url); }
+#hint-button:active { background-image: var(--ui-hint-pressed-url); }
+#hint-button:disabled { background-image: var(--ui-hint-disabled-url); }
+#shuffle-button { background-image: var(--ui-refresh-normal-url); padding-left: 2rem; }
+#shuffle-button:hover { background-image: var(--ui-refresh-hover-url); }
+#shuffle-button:active { background-image: var(--ui-refresh-pressed-url); }
+#shuffle-button:disabled { background-image: var(--ui-refresh-disabled-url); }
+#refresh-leaderboard-button:hover { background-image: var(--ui-refresh-hover-url); }
+#refresh-leaderboard-button:active { background-image: var(--ui-refresh-pressed-url); }
+#settings-fullscreen-button:hover { background-image: var(--ui-fullscreen-hover-url); }
+#settings-fullscreen-button:active { background-image: var(--ui-fullscreen-pressed-url); }
+#signout-button:hover { background-image: var(--ui-logout-hover-url); }
+#signout-button:active { background-image: var(--ui-logout-pressed-url); }
+.start-button:hover { background-image: var(--ui-play-hover-url); background-repeat: no-repeat; background-size: 1.2rem 1.2rem; background-position: 1rem center; }
+.start-button:active { background-image: var(--ui-play-pressed-url); }
+.leaderboard-list,
+.daily-leaderboard-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.46rem;
+}
+.rank-row {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 34px;
+  padding: 0.42rem 0.52rem;
+  border-radius: 16px;
+  border: 1px solid rgba(125, 220, 255, 0.13);
+  background: rgba(6, 21, 45, 0.34);
+}
+.rank-row b {
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--gold-500));
+  font-size: 0.74rem;
+}
+.rank-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 850; }
+.rank-row strong { color: var(--gold-300); font-size: 0.82rem; }
+.rank-row small { color: var(--sky-500); font-size: 0.65rem; }
+.rank-row em {
+  justify-self: end;
+  padding: 0.14rem 0.38rem;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: 0.05em;
+}
+.rank-cloud em { color: var(--navy-950); background: var(--rank-cloud); }
+.rank-local em { color: var(--navy-950); background: var(--rank-local); }
+.rank-gold { border-color: rgba(245, 200, 107, 0.34); box-shadow: 0 0 20px rgba(245, 200, 107, 0.12); }
+.rank-silver { border-color: rgba(125, 220, 255, 0.22); }
+.rank-bronze { border-color: rgba(143, 107, 255, 0.2); }
+.rank-empty { list-style: none; color: var(--muted); padding: 0.5rem; }
+body.is-lobby-dragging .mission-card,
+body.is-lobby-dragging .chapter-tab,
+body.is-lobby-dragging .stage-node,
+body.is-lobby-dragging .collection-tile {
+  pointer-events: none;
+}
+body[data-screen="lobby"] .app-shell {
+  scroll-snap-type: none;
+  scrollbar-gutter: stable both-edges;
+}
+body[data-screen="lobby"] .lobby-hero,
+body[data-screen="lobby"] .mission-deck-panel,
+body[data-screen="lobby"] .campaign-panel,
+body[data-screen="lobby"] .restoration-panel,
+body[data-screen="lobby"] .daily-panel,
+body[data-screen="lobby"] .collection-panel {
+  contain: layout paint;
+}
+.battle-stage[data-atlas="v2"]::before {
+  opacity: 0.9;
+  filter: saturate(1.04);
+}
+@keyframes mascotNod {
+  0%, 100% { transform: translateY(0) rotate(-0.8deg); }
+  48% { transform: translateY(-6px) rotate(1.2deg); }
+}
+@keyframes mascotRadiant {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-7px) scale(1.035); }
+}
+@media (max-width: 430px) {
+  .rank-row { grid-template-columns: 1.4rem minmax(0, 1fr) auto; gap: 0.34rem; }
+  .rank-row small { display: none; }
+  .rank-row em { font-size: 0.52rem; padding-inline: 0.28rem; }
+  .mission-card[data-ready="true"]::after { top: 0.48rem; right: 0.5rem; }
+  .lobby-hero::after { right: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-lobby-mood] .lobby-hero img,
+  .mission-card,
+  button { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}

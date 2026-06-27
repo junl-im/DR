@@ -58,6 +58,10 @@ jobs:
           npm run check:viewport-frame
           npm run check:gameplay-mapping
           npm run check:alpha-clean
+          npm run check:lobby-motion
+          npm run check:button-states
+          npm run check:ranking-ux
+          npm run check:atlas-extended
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

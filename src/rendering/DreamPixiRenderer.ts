@@ -150,6 +150,7 @@ export class DreamPixiRenderer {
     this.layout = this.calculateLayout(rows, cols);
     const uniqueAssets = [...new Set(board.flat().filter(Boolean).flatMap((tile: any) => tile.stateAssets ? Object.values(tile.stateAssets) : [tile.asset]))];
     await this.preloadAssets(uniqueAssets);
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-atlas', uniqueAssets.some((asset) => isV2StateAsset(String(asset))) ? 'v2' : 'fallback');
 
     for (let row = 0; row < rows; row += 1) {
       for (let col = 0; col < cols; col += 1) {
@@ -285,6 +286,22 @@ export class DreamPixiRenderer {
       if (atlasTexture instanceof Texture) return atlasTexture;
     } catch {
       // Atlas lookup is an optimization only. Individual PNG remains the safe fallback.
+    }
+    return Texture.from(asset);
+  }
+
+  private resolveAssetTexture(asset: string) {
+    const filename = asset.split('/').pop() || asset;
+    try {
+      const atlasTexture = Assets.get(filename)
+        || Assets.get(`effects/${filename}`)
+        || Assets.get(`assets/effects/${filename}`)
+        || Assets.get(`characters/${filename}`)
+        || Assets.get(`assets/characters/${filename}`)
+        || Assets.get(asset);
+      if (atlasTexture instanceof Texture) return atlasTexture;
+    } catch {
+      // Individual asset fallback is safe.
     }
     return Texture.from(asset);
   }
@@ -470,7 +487,7 @@ export class DreamPixiRenderer {
   }
 
   private spawnVfxSprite(x: number, y: number, name: string) {
-    const sprite = new Sprite(Texture.from(effectAsset(name)));
+    const sprite = new Sprite(this.resolveAssetTexture(effectAsset(name)));
     sprite.anchor.set(0.5);
     sprite.x = x;
     sprite.y = y;
@@ -487,7 +504,7 @@ export class DreamPixiRenderer {
     const count = Math.max(3, Math.min(9, Math.round((4 + combo) * this.quality.particleScale)));
     for (let i = 0; i < count; i += 1) {
       const index = ((i + combo * 3) % 24) + 1;
-      const sprite = new Sprite(Texture.from(effectAsset(`v2-fragments/v2-fragment-${String(index).padStart(2, '0')}`)));
+      const sprite = new Sprite(this.resolveAssetTexture(effectAsset(`v2-fragments/v2-fragment-${String(index).padStart(2, '0')}`)));
       sprite.anchor.set(0.5);
       sprite.x = x;
       sprite.y = y;

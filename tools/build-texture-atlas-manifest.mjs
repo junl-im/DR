@@ -7,7 +7,7 @@ const entries = [];
 const allowed = new Set(['.png', '.jpg', '.jpeg', '.webp', '.json']);
 walk(assetRoot);
 const manifest = {
-  version: '1.0.20',
+  version: '1.0.21',
   policy: 'PNG/WebP/JPG only. SVG is forbidden.',
   atlasStrategy: 'v2 state tiles are packed into public/assets/atlas/v2-tiles.png and looked up before individual authoring PNGs.',
   total: entries.length,
@@ -15,7 +15,7 @@ const manifest = {
   entries
 };
 mkdirSync(join(assetRoot, 'meta'), { recursive: true });
-writeFileSync(join(assetRoot, 'meta', 'texture-atlas-manifest-v1.0.20.json'), JSON.stringify(manifest, null, 2));
+writeFileSync(join(assetRoot, 'meta', 'texture-atlas-manifest-v1.0.21.json'), JSON.stringify(manifest, null, 2));
 console.log(`Texture atlas manifest written with ${entries.length} entries.`);
 
 function walk(dir) {

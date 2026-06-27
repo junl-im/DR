@@ -60,6 +60,27 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.21 - Lobby Motion, Button States, Ranking UX and Atlas Extension Patch
+
+- 로비 마스코트 분위기 시스템 추가
+- 진행도에 따라 로비 마스코트가 `welcome`, `active`, `radiant` 상태로 바뀌고, 호흡/고개 끄덕임/빛나는 대기 애니메이션을 적용
+- 로비 추천 미션 카드에 `READY` 표시와 보상 가능 시각 강조 추가
+- 버튼 상태 PNG 매핑 강화
+- `normal`, `hover`, `pressed`, `disabled` 키 이미지를 CSS 변수로 모두 등록
+- 뒤로가기, 설정, 힌트, 섞기, 랭킹 새로고침, 화면 맞춤, 로그아웃, 진짜 게임 시작 버튼이 pointer 상태별 PNG를 사용하도록 확장
+- Firebase 랭킹과 로컬 fallback 랭킹을 같은 리스트에서 자연스럽게 섞어 보여주는 Ranking UX 추가
+- Cloud/Local 배지, 1~3위 강조, daily 날짜 태그 표시 추가
+- 로비 스크롤 QA 추가 개선
+- 세로 드래그 중 미션/스테이지/도감 카드 클릭이 오동작하지 않도록 drag guard 추가
+- 로비 패널에 layout/paint contain을 적용해 긴 스크롤 중 리페인트 부담 완화
+- `DreamPixiRenderer`에 일반 asset texture resolver를 추가해 VFX/타일 파편도 atlas/Assets 캐시를 먼저 확인하도록 확장
+- 보드에 v2 atlas 사용 여부를 `data-atlas`로 표시해 렌더링 상태를 확인 가능하게 정리
+- `npm run check:lobby-motion`, `check:button-states`, `check:ranking-ux`, `check:atlas-extended` 추가 및 Actions 검사에 반영
+- Texture Atlas manifest v1.0.21 갱신
+- service worker 캐시를 v1.0.21로 갱신
+- SVG 금지 유지
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md에만 누적
+
 ### v1.0.20 - Real Atlas Packing, Touch QA and Boss Sheet Slicing Patch
 
 - v1.0.19 GitHub Actions 실패 원인을 우선 수정

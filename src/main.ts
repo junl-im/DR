@@ -21,8 +21,12 @@ document.documentElement.style.setProperty('--start-button-v2-url', `url(${impor
 document.documentElement.style.setProperty('--google-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-google-v2.png)`);
 document.documentElement.style.setProperty('--email-button-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/button-email-v2.png)`);
 document.documentElement.style.setProperty('--frame-v2-url', `url(${import.meta.env.BASE_URL}assets/ui/frames-v2/frame-04.png)`);
-for (const iconName of ['back', 'settings', 'hint', 'refresh', 'fullscreen', 'logout', 'home', 'play', 'collection', 'restore', 'ranking', 'close']) {
-  document.documentElement.style.setProperty(`--ui-${iconName}-url`, `url(${import.meta.env.BASE_URL}assets/ui/keys-v2/${iconName}-normal.png)`);
+const UI_STATE_ICONS = ['back', 'settings', 'hint', 'refresh', 'fullscreen', 'logout', 'home', 'play', 'collection', 'restore', 'ranking', 'close', 'confirm', 'gift', 'book', 'map', 'warning'] as const;
+for (const iconName of UI_STATE_ICONS) {
+  for (const stateName of ['normal', 'hover', 'pressed', 'disabled'] as const) {
+    document.documentElement.style.setProperty(`--ui-${iconName}-${stateName}-url`, `url(${import.meta.env.BASE_URL}assets/ui/keys-v2/${iconName}-${stateName}.png)`);
+  }
+  document.documentElement.style.setProperty(`--ui-${iconName}-url`, `var(--ui-${iconName}-normal-url)`);
 }
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector(selector) as T;
@@ -60,6 +64,7 @@ const el = {
   fullscreenButton: $('#settings-fullscreen-button'),
   installButton: $('#install-button'),
   lobbyGreeting: $('#lobby-greeting'),
+  lobbyHeroImage: document.querySelector('.lobby-hero img') as HTMLImageElement | null,
   chapterTabs: $('#chapter-tabs'),
   worldMap: $('#world-map'),
   selectedChapterName: $('#selected-chapter-name'),
@@ -248,6 +253,7 @@ async function init() {
   initFullscreenControls(el.fullscreenButton, setStatus);
   initInstallPrompt(el.installButton, setStatus);
   bindEvents();
+  initLobbyScrollGuard();
   initBackNavigation();
   renderAuth();
   renderLobby();
@@ -553,6 +559,46 @@ async function handoffIfNeeded(mode: 'assist' | 'auth' = 'assist') {
   }
   await requestKakaoPortraitLock(mode);
   return false;
+}
+
+
+function initLobbyScrollGuard() {
+  const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
+  if (!shell) return;
+  let startX = 0;
+  let startY = 0;
+  let startTime = 0;
+  let dragging = false;
+
+  shell.addEventListener('pointerdown', (event) => {
+    if (state.screen !== 'lobby') return;
+    startX = event.clientX;
+    startY = event.clientY;
+    startTime = performance.now();
+    dragging = false;
+    document.body.classList.remove('is-lobby-dragging');
+  }, { passive: true });
+
+  shell.addEventListener('pointermove', (event) => {
+    if (state.screen !== 'lobby') return;
+    const dx = Math.abs(event.clientX - startX);
+    const dy = Math.abs(event.clientY - startY);
+    if (dy > 10 && dy > dx * 1.2) {
+      dragging = true;
+      document.body.classList.add('is-lobby-dragging');
+    }
+  }, { passive: true });
+
+  shell.addEventListener('click', (event) => {
+    if (state.screen !== 'lobby') return;
+    const elapsed = performance.now() - startTime;
+    if (dragging && elapsed < 900) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    dragging = false;
+    window.setTimeout(() => document.body.classList.remove('is-lobby-dragging'), 60);
+  }, true);
 }
 
 function enterLobbyFromStart() {
@@ -971,15 +1017,16 @@ function renderLobby() {
   const chapter = getChapterById(state.selectedChapterId);
   const difficulty = DIFFICULTIES[stage.difficultyKey];
   const boss = getBossForStage(stage);
+  const clearCount = Object.keys(state.campaignProgress.cleared).length;
   const name = state.user ? getDisplayName(state.user) : state.localGuest ? state.localGuest.name : '사서님';
   el.lobbyGreeting.textContent = `${name}, 서고의 마법진이 준비되었습니다.`;
+  syncLobbyMotion(clearCount, stage.id);
   el.selectedChapterName.textContent = chapter.title;
   el.chapterStoryText.textContent = chapter.story;
   el.selectedStageTitle.textContent = `${stage.number}. ${stage.title}`;
   el.selectedStageSubtitle.textContent = stage.subtitle;
   el.selectedStageMeta.textContent = `${difficulty.label} · ${difficulty.rows}×${difficulty.cols} · ${boss.name}`;
   el.selectedStageReward.textContent = `${stage.reward.label} ×${stage.reward.amount}`;
-  const clearCount = Object.keys(state.campaignProgress.cleared).length;
   el.stageProgressLabel.textContent = `${clearCount}/${STAGES.length} 클리어`;
   renderChapterTabs();
   const chapterStages = getChapterStages(state.selectedChapterId);
@@ -997,6 +1044,17 @@ function renderLobby() {
   renderCollection();
   renderDailyPanel();
   renderLobbyPanelState();
+}
+
+
+function syncLobbyMotion(clearCount: number, stageId: string) {
+  const mood = clearCount >= 8 ? 'radiant' : clearCount >= 3 ? 'active' : 'welcome';
+  document.body.dataset.lobbyMood = mood;
+  if (el.lobbyHeroImage) {
+    const useCompanion = mood !== 'welcome' || stageId.includes('cloud') || stageId.includes('star');
+    el.lobbyHeroImage.src = `${import.meta.env.BASE_URL}assets/characters/${useCompanion ? 'mascot-companions-v2' : 'mascot-scholar-v2'}.png`;
+    el.lobbyHeroImage.dataset.mood = mood;
+  }
 }
 
 
@@ -1363,36 +1421,76 @@ function closeReward() {
 }
 
 async function loadLeaderboard() {
+  const localRows = getLocalRankRows(state.localRanking, 'global');
   if (!db) {
-    renderLocalLeaderboard('Firebase 연결 전 로컬 기록');
+    el.leaderboardList.innerHTML = renderRankRows(localRows, '로컬 복원 기록 준비 완료', 'local');
     return;
   }
   try {
     const snapshot = await getDocs(query(collection(db, 'leaderboards/global/scores'), orderBy('score', 'desc'), limit(5)));
-    const rows = snapshot.docs.map((docSnap, index) => {
+    const cloudRows = snapshot.docs.map((docSnap) => {
       const data = docSnap.data() as any;
-      return `<li>${index + 1}. ${escapeHtml(data.displayName || '사서')} · ${formatNumber(data.score || 0)}</li>`;
+      return {
+        displayName: data.displayName || '사서',
+        score: Number(data.score || 0),
+        stageId: String(data.stageId || ''),
+        source: 'cloud' as const,
+        tag: '저장'
+      };
     });
-    el.leaderboardList.innerHTML = rows.length ? rows.join('') : renderLocalLeaderboard('첫 복원 기록을 남겨보세요.', true);
+    el.leaderboardList.innerHTML = renderRankRows(mergeRankRows(cloudRows, localRows), '첫 복원 기록을 남겨보세요.', cloudRows.length ? 'mixed' : 'local');
   } catch {
-    renderLocalLeaderboard('Firebase 랭킹 실패 · 로컬 기록 표시');
+    el.leaderboardList.innerHTML = renderRankRows(localRows, 'Firebase 랭킹 실패 · 로컬 기록 표시', 'local');
   }
 }
 
-function renderLocalLeaderboard(emptyLabel = '로컬 플레이 준비 완료', returnOnly = false) {
-  const rows = [...state.localRanking]
+function getLocalRankRows(list: LocalRankEntry[], scope: 'global' | 'daily') {
+  return [...list]
     .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
-    .map((entry, index) => `<li>${index + 1}. ${escapeHtml(entry.displayName)} · ${formatNumber(entry.score)} · 로컬</li>`);
-  const markup = rows.length ? rows.join('') : `<li>${escapeHtml(emptyLabel)}</li>`;
-  if (!returnOnly) el.leaderboardList.innerHTML = markup;
-  return markup;
+    .slice(0, 8)
+    .map((entry) => ({
+      displayName: entry.displayName,
+      score: entry.score,
+      stageId: entry.stageId,
+      dailyKey: entry.dailyKey,
+      source: 'local' as const,
+      tag: scope === 'daily' ? '로컬 daily' : '로컬'
+    }));
+}
+
+function mergeRankRows(cloudRows: any[], localRows: any[]) {
+  const seen = new Set<string>();
+  const merged = [...cloudRows, ...localRows]
+    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
+    .filter((entry) => {
+      const key = `${entry.source}:${entry.displayName}:${entry.stageId || ''}:${entry.dailyKey || ''}:${entry.score}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 5);
+  return merged;
+}
+
+function renderRankRows(rows: any[], emptyLabel = '로컬 플레이 준비 완료', mode: 'cloud' | 'local' | 'mixed' = 'mixed') {
+  if (!rows.length) return `<li class="rank-empty">${escapeHtml(emptyLabel)}</li>`;
+  return rows.map((entry, index) => {
+    const rankClass = index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '';
+    const sourceClass = entry.source === 'cloud' ? 'rank-cloud' : 'rank-local';
+    const sourceLabel = entry.source === 'cloud' ? 'Cloud' : 'Local';
+    const dailyTag = entry.dailyKey ? `<small>${escapeHtml(String(entry.dailyKey).slice(5))}</small>` : '';
+    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}<em>${sourceLabel}</em></li>`;
+  }).join('');
 }
 
 async function loadDailyLeaderboard() {
   const scopeLabel = state.dailyRankScope === 'all' ? '전체 일일' : '오늘';
+  const localRows = getLocalRankRows(
+    state.localDailyRanking.filter((entry) => state.dailyRankScope === 'all' || entry.dailyKey === state.dailyChallenge.dateKey),
+    'daily'
+  );
   if (!db) {
-    renderLocalDailyLeaderboard(`로컬 ${scopeLabel} 기록 준비 완료`);
+    el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `로컬 ${scopeLabel} 기록 준비 완료`, 'local');
     return;
   }
   try {
@@ -1401,28 +1499,36 @@ async function loadDailyLeaderboard() {
       ? collection(db, 'leaderboards/daily/scores')
       : collection(db, 'leaderboards', 'daily', 'days', daily.dateKey, 'scores');
     const snapshot = await getDocs(query(ref, orderBy('score', 'desc'), limit(5)));
-    const rows = snapshot.docs.map((docSnap, index) => {
+    const cloudRows = snapshot.docs.map((docSnap) => {
       const data = docSnap.data() as any;
-      const dailyTag = state.dailyRankScope === 'all' && data.dailyKey ? ` · ${escapeHtml(String(data.dailyKey).slice(5))}` : '';
-      return `<li>${index + 1}. ${escapeHtml(data.displayName || '사서')} · ${formatNumber(data.score || 0)}${dailyTag}</li>`;
+      return {
+        displayName: data.displayName || '사서',
+        score: Number(data.score || 0),
+        stageId: String(data.stageId || ''),
+        dailyKey: data.dailyKey || daily.dateKey,
+        source: 'cloud' as const,
+        tag: '저장'
+      };
     });
-    el.dailyLeaderboardList.innerHTML = rows.length ? rows.join('') : renderLocalDailyLeaderboard(`${scopeLabel} 첫 기록을 노려보세요.`, true);
+    el.dailyLeaderboardList.innerHTML = renderRankRows(mergeRankRows(cloudRows, localRows), `${scopeLabel} 첫 기록을 노려보세요.`, cloudRows.length ? 'mixed' : 'local');
   } catch {
-    renderLocalDailyLeaderboard(`${scopeLabel} Firebase 실패 · 로컬 기록 표시`);
+    el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `${scopeLabel} Firebase 실패 · 로컬 기록 표시`, 'local');
   }
+}
+
+function renderLocalLeaderboard(emptyLabel = '로컬 플레이 준비 완료', returnOnly = false) {
+  const markup = renderRankRows(getLocalRankRows(state.localRanking, 'global'), emptyLabel, 'local');
+  if (!returnOnly) el.leaderboardList.innerHTML = markup;
+  return markup;
 }
 
 function renderLocalDailyLeaderboard(emptyLabel = '로컬 일일 기록 준비 완료', returnOnly = false) {
   const dailyKey = state.dailyChallenge.dateKey;
-  const rows = state.localDailyRanking
-    .filter((entry) => state.dailyRankScope === 'all' || entry.dailyKey === dailyKey)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
-    .map((entry, index) => {
-      const dailyTag = state.dailyRankScope === 'all' && entry.dailyKey ? ` · ${escapeHtml(String(entry.dailyKey).slice(5))}` : '';
-      return `<li>${index + 1}. ${escapeHtml(entry.displayName)} · ${formatNumber(entry.score)}${dailyTag} · 로컬</li>`;
-    });
-  const markup = rows.length ? rows.join('') : `<li>${escapeHtml(emptyLabel)}</li>`;
+  const rows = getLocalRankRows(
+    state.localDailyRanking.filter((entry) => state.dailyRankScope === 'all' || entry.dailyKey === dailyKey),
+    'daily'
+  );
+  const markup = renderRankRows(rows, emptyLabel, 'local');
   if (!returnOnly) el.dailyLeaderboardList.innerHTML = markup;
   return markup;
 }

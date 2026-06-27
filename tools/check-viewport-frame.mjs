@@ -21,7 +21,8 @@ if (missing.length) {
   console.error(`Viewport frame check failed:\n${missing.join('\n')}`);
   process.exit(1);
 }
-if (/html\.landscape-locked \.app-shell \{\n\s*pointer-events: none|html\.landscape-locked \.app-shell \{[\s\S]*?filter: blur/.test(css)) {
+const landscapeShellBlock = css.match(/html\.landscape-locked \.app-shell \{([^}]*)\}/)?.[1] || '';
+if (/pointer-events:\s*none/.test(landscapeShellBlock) || /filter:\s*blur/.test(landscapeShellBlock)) {
   console.error('Landscape fallback must not blur or disable the game shell.');
   process.exit(1);
 }
