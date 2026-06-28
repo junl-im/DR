@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (pkg.version !== '1.0.59') errors.push(`package version must be 1.0.59, got ${pkg.version}`);
+if (!['1.0.59', '1.0.60'].includes(pkg.version)) errors.push(`package version must be 1.0.59, got ${pkg.version}`);
 if (!pkg.scripts['check:start-coach-overlap']) errors.push('missing package script check:start-coach-overlap');
 
 for (const token of ['v1059-smart-start-coach-overlap-qa', 'v1059-back-sheet-clarity-touch-qa', 'v1059-lobby-polish-layering']) {

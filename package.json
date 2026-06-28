@@ -79,7 +79,8 @@
     "check:reward-detail-touch-qa": "node tools/check-reward-detail-touch-qa.mjs",
     "check:start-signal-back-exit": "node tools/check-start-signal-back-exit.mjs",
     "check:daily-route-assist": "node tools/check-daily-route-assist.mjs",
-    "check:start-coach-overlap": "node tools/check-start-coach-overlap.mjs"
+    "check:start-coach-overlap": "node tools/check-start-coach-overlap.mjs",
+    "check:daily-start-pointer": "node tools/check-daily-start-pointer.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -92,5 +93,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.59"
+  "version": "1.0.60"
 }

@@ -107,6 +107,7 @@ jobs:
           npm run check:start-signal-back-exit
           npm run check:daily-route-assist
           npm run check:start-coach-overlap
+          npm run check:daily-start-pointer
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

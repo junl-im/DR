@@ -1963,3 +1963,58 @@ Apply 꿈의 서고 v1.0.59 smart start coach overlap guard back sheet clarity a
 ```
 
 다음 업데이트 예정: v1.0.60 - First Session Tutorial, Daily Reward Drama, Boss Intro Polish and Lobby Content Guide Patch
+
+## v1.0.60 Patch Notes - Daily Restore Target Pointer and Start CTA Precision Patch
+
+v1.0.60은 `게임 시작` 위젯이 단순 알림처럼 보이던 문제를 고쳐, 말풍선과 손가락, 화살표, 빛줄기의 끝점이 로비 핵심 CTA인 `오늘의 복원` 버튼을 정확히 가리키도록 만든 시작 유도 디자인 패치입니다.
+
+### 변경점
+
+- `v1060-daily-start-target-pointer` 훅을 추가해 `오늘의 복원` 버튼, 시작 말풍선, route ribbon, 런타임 sync 모두에 동일한 시작 타깃 포인터 상태를 연결했습니다.
+- `daily-start-target-ring`을 추가해 `오늘의 복원` 버튼 자체를 금빛 조준 링과 스캔 glow로 감싸도록 했습니다.
+- `게임 시작` 말풍선 문구를 `오늘의 복원을 눌러요`로 바꿔, 시작 위젯이 무엇을 가리키는지 텍스트로도 즉시 이해되도록 했습니다.
+- 말풍선에서 `오늘의 복원` 버튼 링으로 이어지는 빛줄기/화살촉 애니메이션을 추가했습니다.
+- 손가락 애니메이션을 단순 둥둥 떠 있는 모션이 아니라 버튼 방향으로 짚는 `dailyFingerToTarget` 모션으로 교체했습니다.
+- 작은 화면의 `daily-start-overlap-safe` 상태에서도 말풍선 아래에서 버튼을 향해 내려찍는 형태로 방향성이 유지되도록 compact CSS를 추가했습니다.
+- 시작 코치 겹침 계산에 `daily-start-target-ring` 영역을 포함해, 조준 링과 말풍선이 서로 겹칠 때 자동 안전 배치가 동작하도록 했습니다.
+- service worker cache를 `dream-library-cache-v1.0.60`으로 갱신하고, `texture-atlas-manifest-v1.0.60.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:daily-start-pointer`를 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 67개 check:* QA suite 통과
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.60 daily restore target pointer and start CTA precision patch
+```
+
+다음 업데이트 예정: v1.0.61 - First Session Tutorial, Daily Reward Drama, Boss Intro Polish and Lobby Content Guide Patch
