@@ -1857,3 +1857,56 @@ Apply 꿈의 서고 v1.0.57 daily start signal and mobile back action sheet patc
 ```
 
 다음 업데이트 예정: v1.0.58 - First Session Tutorial, Daily Restore Reward Drama and Lobby Hero Motion Patch
+
+## v1.0.58 Patch Notes - Daily Route Assist, Clickable Start Signal and Back Sheet Option Row Patch
+
+v1.0.58은 v1.0.57에서 추가한 `오늘의 복원` 시작 유도 장치를 더 실제 게임 시작 버튼처럼 다듬고, 뒤로가기 액션 시트에서 옵션 설정을 더 명확한 선택지로 보이게 만든 UX/디자인 패치입니다.
+
+### 변경점
+
+- `v1058-daily-start-route-assist` 훅을 추가해 로비의 `오늘의 복원` 시작 유도 말풍선을 장식이 아니라 실제 클릭 가능한 시작 위젯으로 확장했습니다.
+- 떠 있는 손가락/화살표/`게임 시작` 말풍선을 누르면 바로 오늘의 복원 스테이지가 시작되도록 연결했습니다.
+- 로비 히어로에 `오늘의 복원 → 보스 퍼즐 시작` 흐름을 보여주는 얇은 route ribbon을 추가해 핵심 시작점이 더 명확하게 보이도록 했습니다.
+- 일정 시간 동안 로비에서 입력이 없으면 `daily-start-nudge-ready` 상태로 부드럽게 다시 흔들리며 시작 지점을 알려주는 idle nudge를 추가했습니다.
+- `v1058-lobby-hero-safe-motion` 훅으로 히어로 패널의 glow와 마스코트 그림자를 조정해 시작 신호가 배경/캐릭터와 묻히지 않게 했습니다.
+- `v1058-back-sheet-option-row-qa` 훅으로 뒤로가기 팝업의 선택지를 `첫 화면`, `⚙ 옵션`, `계속하기`, `나가기`로 명확히 분리했습니다.
+- 기존 톱니바퀴 아이콘은 유지하면서, 액션 버튼 줄에도 `⚙ 옵션` 버튼을 추가해 폰 화면에서 옵션 설정이 사라진 것처럼 느껴지지 않게 했습니다.
+- service worker cache를 `dream-library-cache-v1.0.58`로 갱신하고, `texture-atlas-manifest-v1.0.58.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:daily-route-assist`를 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 65개 check:* QA suite 통과
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.58 daily route assist clickable start cue and back sheet option row patch
+```
+
+다음 업데이트 예정: v1.0.59 - First Session Tutorial, Daily Restore Reward Drama and Lobby Hero Motion Patch

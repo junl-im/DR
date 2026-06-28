@@ -34,6 +34,8 @@ if (!pagesWorkflow.includes('npm run check:mobile-playability')) errors.push('gi
 if (!pagesWorkflow.includes('npm run check:selection-stability')) errors.push('github-pages.yml: expected selection stability check.');
 if (!pagesWorkflow.includes('npm run check:objective-camera-boss')) errors.push('github-pages.yml: expected objective camera boss check.');
 if (!qualityWorkflow.includes('npm run check:objective-camera-boss')) errors.push('quality-check.yml: expected objective camera boss check.');
+if (!pagesWorkflow.includes('npm run check:daily-route-assist')) errors.push('github-pages.yml: expected daily route assist check.');
+if (!qualityWorkflow.includes('npm run check:daily-route-assist')) errors.push('quality-check.yml: expected daily route assist check.');
 if (!pagesWorkflow.includes('npm run check:tile-geometry-hud')) errors.push('github-pages.yml: expected tile geometry HUD check.');
 if (!qualityWorkflow.includes('npm run check:tile-geometry-hud')) errors.push('quality-check.yml: expected tile geometry HUD check.');
 if (!pagesWorkflow.includes('npm run check:real-device-selection')) errors.push('github-pages.yml: expected real device selection QA check.');

@@ -22,7 +22,7 @@ for (const token of ['data-tile-geometry="locked"', 'data-combo-tier="finisher"'
 for (const banned of ['board-minimap', '보드 레이더', '레이더 탭']) {
   if (`${renderer}\n${main}\n${css}`.includes(banned)) errors.push(`Minimap must stay removed: ${banned}`);
 }
-if (!packageJson.includes('"version": "1.0.47"') && !packageJson.includes('"version": "1.0.48"') && (!packageJson.includes('"version": "1.0.49"') && !packageJson.includes('"version": "1.0.51"') && !packageJson.includes('"version": "1.0.52"') && (!packageJson.includes('"version": "1.0.53"') && (!packageJson.includes('"version": "1.0.54"') && (!packageJson.includes('"version": "1.0.55"') && (!packageJson.includes('"version": "1.0.56"') && !packageJson.includes('"version": "1.0.57"'))))))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
+if (!packageJson.includes('"version": "1.0.47"') && !packageJson.includes('"version": "1.0.48"') && (!packageJson.includes('"version": "1.0.49"') && !packageJson.includes('"version": "1.0.51"') && !packageJson.includes('"version": "1.0.52"') && (!packageJson.includes('"version": "1.0.53"') && (!packageJson.includes('"version": "1.0.54"') && (!packageJson.includes('"version": "1.0.55"') && (!packageJson.includes('"version": "1.0.56"') && (!packageJson.includes('"version": "1.0.57"') && !packageJson.includes('"version": "1.0.58"')))))))) errors.push('package.json version must be 1.0.47, 1.0.48, 1.0.49 or 1.0.50.');
 if (!workflows.includes('npm run check:tile-geometry-hud')) errors.push('Workflow must run tile geometry HUD QA check.');
 
 if (errors.length) {

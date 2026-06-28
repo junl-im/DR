@@ -77,7 +77,8 @@
     "check:season-store-engine-design": "node tools/check-season-store-engine-design.mjs",
     "check:engine-render-budget": "node tools/check-engine-render-budget.mjs",
     "check:reward-detail-touch-qa": "node tools/check-reward-detail-touch-qa.mjs",
-    "check:start-signal-back-exit": "node tools/check-start-signal-back-exit.mjs"
+    "check:start-signal-back-exit": "node tools/check-start-signal-back-exit.mjs",
+    "check:daily-route-assist": "node tools/check-daily-route-assist.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -90,5 +91,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.57"
+  "version": "1.0.58"
 }

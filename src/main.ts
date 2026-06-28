@@ -76,6 +76,9 @@ const REAL_DEVICE_TOUCH_QA_PATCH = 'v1056-real-device-touch-qa';
 const DAILY_START_SIGNAL_PATCH = 'v1057-daily-start-signal-widget';
 const BACK_ACTION_SHEET_PATCH = 'v1057-back-action-sheet-restored';
 const MOBILE_EXIT_OPTIONS_QA_PATCH = 'v1057-mobile-exit-options-qa';
+const DAILY_START_ROUTE_ASSIST_PATCH = 'v1058-daily-start-route-assist';
+const BACK_SHEET_OPTION_ROW_PATCH = 'v1058-back-sheet-option-row-qa';
+const LOBBY_HERO_SAFE_MOTION_PATCH = 'v1058-lobby-hero-safe-motion';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
@@ -197,6 +200,7 @@ const el = {
   dailyLeaderboardList: $('#daily-leaderboard-list'),
   dailyRankTabs: $('#daily-rank-tabs'),
   dailyStartButton: $('#daily-start-button'),
+  dailyStartSignal: $('#daily-start-signal') as HTMLButtonElement,
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
   timeLabel: $('#time-label'),
@@ -238,6 +242,7 @@ const el = {
   exitConfirmButton: $('#exit-confirm-button'),
   exitHomeButton: $('#exit-home-button'),
   exitOptionsButton: $('#exit-options-button'),
+  exitOptionsRowButton: $('#exit-options-row-button'),
   exitSleepModal: $('#exit-sleep-modal'),
   exitSleepMessage: $('#exit-sleep-message'),
   exitWakeButton: $('#exit-wake-button')
@@ -371,7 +376,9 @@ const state = {
   browserBackReady: false,
   recentScoreKey: '',
   hudDensity: 'normal' as 'normal' | 'compact' | 'micro',
-  renderBudget: { name: 'balanced' as 'lite' | 'balanced' | 'rich', reason: 'initial', seasonLimit: 4, vfxAlpha: 1, motion: 'normal' }
+  renderBudget: { name: 'balanced' as 'lite' | 'balanced' | 'rich', reason: 'initial', seasonLimit: 4, vfxAlpha: 1, motion: 'normal' },
+  dailyStartNudgeTimer: 0,
+  dailyStartSignalTouched: false
 };
 
 init();
@@ -569,6 +576,7 @@ function bindEvents() {
   el.exitHomeButton.addEventListener('click', exitHomeFromBackSheet);
   el.exitConfirmButton.addEventListener('click', confirmExitApp);
   el.exitOptionsButton.addEventListener('click', openOptionsFromExitSheet);
+  el.exitOptionsRowButton.addEventListener('click', openOptionsFromExitSheet);
   el.exitWakeButton.addEventListener('click', wakeFromExitSleep);
   el.exitConfirmModal.addEventListener('click', (event) => { if (event.target === el.exitConfirmModal) closeExitConfirm(); });
 
@@ -600,6 +608,9 @@ function bindEvents() {
   el.startSelectedButton.addEventListener('click', () => startSelectedStage());
   el.dailyStageButton.addEventListener('click', startDailyStage);
   el.dailyStartButton.addEventListener('click', startDailyStage);
+  el.dailyStartSignal.addEventListener('click', startDailyStage);
+  el.dailyStartSignal.addEventListener('pointerenter', () => document.body.classList.add('daily-start-signal-hovered'));
+  el.dailyStartSignal.addEventListener('pointerleave', () => document.body.classList.remove('daily-start-signal-hovered'));
   el.lobbyDeckRefreshButton.addEventListener('click', () => {
     renderLobbyMissionDeck(true);
     setStatus('로비 추천 미션을 현재 진행 상황 기준으로 다시 배치했습니다.');
@@ -866,6 +877,7 @@ function enterLobbyFromStart() {
 }
 
 async function startDailyStage() {
+  markDailyStartSignalConsumed();
   const daily = state.dailyChallenge;
   document.body.dataset.dailyStartSignalActivated = DAILY_START_SIGNAL_PATCH;
   el.dailyStageButton?.classList.add('start-signal-activated');
@@ -1318,6 +1330,7 @@ function updateScreen(screen: ScreenName) {
   // v1.0.37: no persistent top navigation line; browser back and in-screen actions handle flow.
   el.backButton.classList.add('hidden');
   if (screen === 'lobby') renderLobby();
+  if (screen !== 'lobby') clearDailyStartNudge();
   if (screen === 'settings') renderAuth();
   if (state.browserBackReady) {
     try { window.history.replaceState({ dreamLibrary: true, screen }, '', window.location.href); } catch {}
@@ -1428,6 +1441,7 @@ function openOptions() {
 function openOptionsFromExitSheet() {
   closeExitConfirm();
   openOptions();
+  setStatus('옵션 설정을 열었습니다. 소리, 품질, 계정 상태를 확인하세요.');
 }
 
 function closeOptionsPanel() {
@@ -1456,6 +1470,7 @@ function stopCurrentBoard() {
 function openExitConfirm() {
   el.exitConfirmModal.dataset.backActionSheet = BACK_ACTION_SHEET_PATCH;
   el.exitConfirmModal.dataset.mobileExitOptions = MOBILE_EXIT_OPTIONS_QA_PATCH;
+  el.exitConfirmModal.dataset.backSheetOptionRow = BACK_SHEET_OPTION_ROW_PATCH;
   el.exitConfirmMessage.textContent = state.screen === 'game'
     ? '진행 중인 판을 멈추고 첫 화면으로 돌아가거나, 옵션을 확인하거나, 서고를 정리할 수 있습니다.'
     : state.screen === 'login'
@@ -1588,6 +1603,9 @@ function applyAdaptiveVisualBudget() {
   document.body.dataset.dailyStartSignal = DAILY_START_SIGNAL_PATCH;
   document.body.dataset.backActionSheet = BACK_ACTION_SHEET_PATCH;
   document.body.dataset.mobileExitOptions = MOBILE_EXIT_OPTIONS_QA_PATCH;
+  document.body.dataset.dailyRouteAssist = DAILY_START_ROUTE_ASSIST_PATCH;
+  document.body.dataset.backSheetOptionRow = BACK_SHEET_OPTION_ROW_PATCH;
+  document.body.dataset.lobbyHeroSafeMotion = LOBBY_HERO_SAFE_MOTION_PATCH;
   document.body.dataset.effectBudget = budget.name;
   document.body.dataset.renderBudgetReason = budget.reason;
   document.body.style.setProperty('--season-vfx-alpha', String(budget.vfxAlpha));
@@ -1600,16 +1618,29 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.app?.setAttribute('data-back-action-sheet', BACK_ACTION_SHEET_PATCH);
   el.app?.setAttribute('data-mobile-exit-options', MOBILE_EXIT_OPTIONS_QA_PATCH);
+  el.app?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  el.app?.setAttribute('data-back-sheet-option-row', BACK_SHEET_OPTION_ROW_PATCH);
+  el.app?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-reward-detail-showcase', REWARD_DETAIL_SHOWCASE_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
   document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
   el.dailyStageButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.dailyStageButton?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.dailyStartButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.dailyStartButton?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.daily-start-stack')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  el.dailyStartSignal?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.dailyStartSignal?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
 }
 
 function qualityText(tier: string) {
@@ -1620,14 +1651,50 @@ function syncDailyStartSignal() {
   document.body.dataset.dailyStartSignal = DAILY_START_SIGNAL_PATCH;
   el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
   document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelectorAll<HTMLElement>('[data-start-signal]').forEach((node) => {
     node.dataset.startSignal = DAILY_START_SIGNAL_PATCH;
   });
   el.dailyStageButton?.classList.toggle('start-signal-ready', state.screen === 'lobby');
   el.dailyStartButton?.classList.toggle('start-signal-ready', state.screen === 'lobby');
+  el.dailyStartSignal?.classList.toggle('start-signal-ready', state.screen === 'lobby');
+  document.body.dataset.dailyRouteAssist = DAILY_START_ROUTE_ASSIST_PATCH;
+  document.body.dataset.lobbyHeroSafeMotion = LOBBY_HERO_SAFE_MOTION_PATCH;
+  document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.daily-start-stack')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  scheduleDailyStartNudge();
 }
+
+function clearDailyStartNudge() {
+  if (state.dailyStartNudgeTimer) {
+    window.clearTimeout(state.dailyStartNudgeTimer);
+    state.dailyStartNudgeTimer = 0;
+  }
+  document.body.classList.remove('daily-start-nudge-ready');
+}
+
+function scheduleDailyStartNudge() {
+  clearDailyStartNudge();
+  if (state.screen !== 'lobby' || state.dailyStartSignalTouched) return;
+  state.dailyStartNudgeTimer = window.setTimeout(() => {
+    const overlaysClosed = el.exitConfirmModal.classList.contains('hidden') && el.optionsModal.classList.contains('hidden') && el.rewardModal.classList.contains('hidden');
+    if (state.screen !== 'lobby' || !overlaysClosed || document.body.classList.contains('is-lobby-dragging')) return;
+    document.body.classList.add('daily-start-nudge-ready');
+    el.dailyStartSignal?.setAttribute('aria-label', '오늘의 복원 게임 시작 - 지금 누르면 바로 시작합니다');
+  }, 5200);
+}
+
+function markDailyStartSignalConsumed() {
+  state.dailyStartSignalTouched = true;
+  clearDailyStartNudge();
+  document.body.classList.add('daily-start-signal-used');
+}
+
 
 function renderLobby() {
   let stage = getStageById(state.selectedStageId);
