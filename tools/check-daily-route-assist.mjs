@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (pkg.version !== '1.0.58') errors.push(`package version must be 1.0.58, got ${pkg.version}`);
+if (!['1.0.58', '1.0.59'].includes(pkg.version)) errors.push(`package version must be 1.0.58 or 1.0.59, got ${pkg.version}`);
 if (!pkg.scripts['check:daily-route-assist']) errors.push('missing package script check:daily-route-assist');
 
 for (const token of ['v1058-daily-start-route-assist', 'v1058-back-sheet-option-row-qa', 'v1058-lobby-hero-safe-motion']) {
@@ -34,7 +34,7 @@ has(css, '@keyframes startSignalNudge', 'start signal nudge animation');
 has(css, '.option-row-button', 'exit option row styling');
 has(sw, 'dream-library-cache-v1.0.58', 'service worker v1.0.58 cache');
 has(sw, 'texture-atlas-manifest-v1.0.58.json', 'service worker v1.0.58 atlas preload');
-has(difficulty, 'texture-atlas-manifest-v1.0.58.json', 'difficulty v1.0.58 atlas preload');
+has(difficulty, 'texture-atlas-manifest-v1.0.59.json', 'difficulty current atlas preload');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.58.json')) errors.push('missing v1.0.58 texture atlas manifest');
 has(pages, 'npm run check:daily-route-assist', 'GitHub Pages daily route QA hook');
 has(quality, 'npm run check:daily-route-assist', 'Quality daily route QA hook');

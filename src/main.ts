@@ -79,6 +79,10 @@ const MOBILE_EXIT_OPTIONS_QA_PATCH = 'v1057-mobile-exit-options-qa';
 const DAILY_START_ROUTE_ASSIST_PATCH = 'v1058-daily-start-route-assist';
 const BACK_SHEET_OPTION_ROW_PATCH = 'v1058-back-sheet-option-row-qa';
 const LOBBY_HERO_SAFE_MOTION_PATCH = 'v1058-lobby-hero-safe-motion';
+const START_COACH_SMART_OVERLAP_PATCH = 'v1059-smart-start-coach-overlap-qa';
+const BACK_SHEET_CLARITY_PATCH = 'v1059-back-sheet-clarity-touch-qa';
+const LOBBY_POLISH_LAYER_PATCH = 'v1059-lobby-polish-layering';
+const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
@@ -378,7 +382,9 @@ const state = {
   hudDensity: 'normal' as 'normal' | 'compact' | 'micro',
   renderBudget: { name: 'balanced' as 'lite' | 'balanced' | 'rich', reason: 'initial', seasonLimit: 4, vfxAlpha: 1, motion: 'normal' },
   dailyStartNudgeTimer: 0,
-  dailyStartSignalTouched: false
+  dailyStartSignalTouched: false,
+  dailyStartCoachSeen: readText(DAILY_START_COACH_SEEN_KEY) === START_COACH_SMART_OVERLAP_PATCH,
+  startCoachMeasureTimer: 0
 };
 
 init();
@@ -411,6 +417,7 @@ async function init() {
   initButtonStateFeedback();
   initLobbyScrollGuard();
   initBackNavigation();
+  initStartCoachOverlapWatcher();
   renderAuth();
   renderLobby();
   renderStats();
@@ -826,7 +833,7 @@ function initLobbyScrollGuard() {
       dragLocked = dy > 4;
       document.body.classList.add('is-lobby-dragging');
       const deltaY = event.clientY - lastY;
-      if (Math.abs(deltaY) > 0.55 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel, .stage-ladder-summary, .ladder-chip, .world-map, .lobby-grid, .summer-season-panel, .season-jump-button, .season-shop-card, .season-shop-claim, .season-shop-earn, .season-shop-detail, .season-shop-history-card, .season-shop-reward-preview, .season-design-audit, .season-finale-card, .season-pass-mission')) {
+      if (Math.abs(deltaY) > 0.55 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel, .stage-ladder-summary, .ladder-chip, .world-map, .lobby-grid, .summer-season-panel, .season-jump-button, .season-shop-card, .season-shop-claim, .season-shop-earn, .season-shop-detail, .season-shop-history-card, .season-shop-reward-preview, .season-design-audit, .season-finale-card, .season-pass-mission, .daily-start-signal, .daily-route-ribbon, .start-focus-rail')) {
         shell.scrollTop -= deltaY * 1.28;
         document.body.dataset.lobbyDragRescue = LOBBY_DRAG_DEEP_RESCUE_PATCH;
       }
@@ -1471,6 +1478,7 @@ function openExitConfirm() {
   el.exitConfirmModal.dataset.backActionSheet = BACK_ACTION_SHEET_PATCH;
   el.exitConfirmModal.dataset.mobileExitOptions = MOBILE_EXIT_OPTIONS_QA_PATCH;
   el.exitConfirmModal.dataset.backSheetOptionRow = BACK_SHEET_OPTION_ROW_PATCH;
+  el.exitConfirmModal.dataset.backSheetClarity = BACK_SHEET_CLARITY_PATCH;
   el.exitConfirmMessage.textContent = state.screen === 'game'
     ? '진행 중인 판을 멈추고 첫 화면으로 돌아가거나, 옵션을 확인하거나, 서고를 정리할 수 있습니다.'
     : state.screen === 'login'
@@ -1606,6 +1614,9 @@ function applyAdaptiveVisualBudget() {
   document.body.dataset.dailyRouteAssist = DAILY_START_ROUTE_ASSIST_PATCH;
   document.body.dataset.backSheetOptionRow = BACK_SHEET_OPTION_ROW_PATCH;
   document.body.dataset.lobbyHeroSafeMotion = LOBBY_HERO_SAFE_MOTION_PATCH;
+  document.body.dataset.startCoachOverlap = START_COACH_SMART_OVERLAP_PATCH;
+  document.body.dataset.backSheetClarity = BACK_SHEET_CLARITY_PATCH;
+  document.body.dataset.lobbyPolishLayer = LOBBY_POLISH_LAYER_PATCH;
   document.body.dataset.effectBudget = budget.name;
   document.body.dataset.renderBudgetReason = budget.reason;
   document.body.style.setProperty('--season-vfx-alpha', String(budget.vfxAlpha));
@@ -1621,11 +1632,16 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.app?.setAttribute('data-back-sheet-option-row', BACK_SHEET_OPTION_ROW_PATCH);
   el.app?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
+  el.app?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  el.app?.setAttribute('data-back-sheet-clarity', BACK_SHEET_CLARITY_PATCH);
+  el.app?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-reward-detail-showcase', REWARD_DETAIL_SHOWCASE_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
@@ -1633,6 +1649,8 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   el.dailyStageButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.dailyStartButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -1649,13 +1667,26 @@ function qualityText(tier: string) {
 
 function syncDailyStartSignal() {
   document.body.dataset.dailyStartSignal = DAILY_START_SIGNAL_PATCH;
+  document.body.dataset.dailyRouteAssist = DAILY_START_ROUTE_ASSIST_PATCH;
+  document.body.dataset.lobbyHeroSafeMotion = LOBBY_HERO_SAFE_MOTION_PATCH;
+  document.body.dataset.startCoachOverlap = START_COACH_SMART_OVERLAP_PATCH;
+  document.body.dataset.lobbyPolishLayer = LOBBY_POLISH_LAYER_PATCH;
+  document.body.classList.toggle('daily-start-coach-seen', state.dailyStartCoachSeen);
+  document.body.dataset.startCoachPhase = state.dailyStartCoachSeen ? 'returning' : 'fresh';
   el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.app?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  el.app?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  el.app?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-hero-safe-motion', LOBBY_HERO_SAFE_MOTION_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelectorAll<HTMLElement>('[data-start-signal]').forEach((node) => {
     node.dataset.startSignal = DAILY_START_SIGNAL_PATCH;
@@ -1663,11 +1694,55 @@ function syncDailyStartSignal() {
   el.dailyStageButton?.classList.toggle('start-signal-ready', state.screen === 'lobby');
   el.dailyStartButton?.classList.toggle('start-signal-ready', state.screen === 'lobby');
   el.dailyStartSignal?.classList.toggle('start-signal-ready', state.screen === 'lobby');
-  document.body.dataset.dailyRouteAssist = DAILY_START_ROUTE_ASSIST_PATCH;
-  document.body.dataset.lobbyHeroSafeMotion = LOBBY_HERO_SAFE_MOTION_PATCH;
   document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   document.querySelector<HTMLElement>('.daily-start-stack')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  el.dailyStageButton?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  el.dailyStartButton?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  el.dailyStartSignal?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
+  el.dailyStartSignal?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  el.dailyStartSignal?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
+  el.dailyStartSignal?.setAttribute('aria-label', state.dailyStartCoachSeen ? '오늘의 복원 게임 시작' : '오늘의 복원 게임 시작 - 처음에는 여기서 시작하세요');
+  scheduleStartCoachOverlapMeasure();
   scheduleDailyStartNudge();
+}
+
+function initStartCoachOverlapWatcher() {
+  window.addEventListener('resize', scheduleStartCoachOverlapMeasure, { passive: true });
+  window.addEventListener('orientationchange', scheduleStartCoachOverlapMeasure, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleStartCoachOverlapMeasure();
+  });
+}
+
+function scheduleStartCoachOverlapMeasure() {
+  if (state.startCoachMeasureTimer) window.clearTimeout(state.startCoachMeasureTimer);
+  state.startCoachMeasureTimer = window.setTimeout(measureStartCoachOverlap, 80);
+}
+
+function rectsOverlap(a: DOMRect, b: DOMRect, pad = 4) {
+  return a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
+}
+
+function measureStartCoachOverlap() {
+  state.startCoachMeasureTimer = 0;
+  if (state.screen !== 'lobby') {
+    document.body.classList.remove('daily-start-overlap-safe');
+    return;
+  }
+  const signal = el.dailyStartSignal;
+  const target = el.dailyStageButton;
+  const heroImage = el.lobbyHeroImage;
+  const ribbon = document.querySelector<HTMLElement>('.daily-route-ribbon');
+  if (!signal || !target || !ribbon) return;
+  const signalRect = signal.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const ribbonRect = ribbon.getBoundingClientRect();
+  const imageRect = heroImage?.getBoundingClientRect();
+  const viewportTight = window.innerWidth <= 430 || window.innerHeight <= 720;
+  const overlaps = rectsOverlap(signalRect, targetRect, 8) || rectsOverlap(signalRect, ribbonRect, 8) || (imageRect ? rectsOverlap(signalRect, imageRect, 2) : false);
+  document.body.classList.toggle('daily-start-overlap-safe', viewportTight || overlaps);
+  document.body.dataset.startCoachOverlapState = viewportTight || overlaps ? 'compact' : 'clear';
 }
 
 function clearDailyStartNudge() {
@@ -1691,8 +1766,11 @@ function scheduleDailyStartNudge() {
 
 function markDailyStartSignalConsumed() {
   state.dailyStartSignalTouched = true;
+  state.dailyStartCoachSeen = true;
+  writeText(DAILY_START_COACH_SEEN_KEY, START_COACH_SMART_OVERLAP_PATCH);
   clearDailyStartNudge();
-  document.body.classList.add('daily-start-signal-used');
+  document.body.classList.add('daily-start-signal-used', 'daily-start-coach-seen');
+  document.body.dataset.startCoachPhase = 'returning';
 }
 
 

@@ -4486,3 +4486,112 @@ body.daily-start-signal-used .start-signal-target[data-daily-route-assist="v1058
 }
 
 /* v1058 compatibility anchors: v1058-daily-start-route-assist v1058-back-sheet-option-row-qa v1058-lobby-hero-safe-motion */
+
+/* v1.0.59 smart start coach, lobby layering and back sheet clarity QA */
+body[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] .lobby-quick-actions {
+  align-content: center;
+  isolation: isolate;
+}
+.lobby-hero[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"]::before {
+  content: '';
+  position: absolute;
+  inset: 0.42rem 0.62rem;
+  border-radius: 24px;
+  background: linear-gradient(115deg, transparent 0 42%, rgba(255, 231, 164, 0.13) 46%, rgba(54, 214, 164, 0.1) 53%, transparent 58% 100%);
+  opacity: 0.82;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.screen-lobby[data-lobby-polish-layer="v1059-lobby-polish-layering"] .mission-deck-panel,
+.screen-lobby[data-lobby-polish-layer="v1059-lobby-polish-layering"] .daily-panel,
+.screen-lobby[data-lobby-polish-layer="v1059-lobby-polish-layering"] .summer-season-panel {
+  border-color: rgba(125, 220, 255, 0.18);
+  box-shadow: 0 18px 42px rgba(6, 21, 45, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+.daily-start-signal[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] {
+  max-width: min(38vw, 154px);
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+.daily-start-signal[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] strong::after {
+  content: ' 〉';
+  color: var(--sky-200);
+  text-shadow: 0 0 10px rgba(125, 220, 255, 0.35);
+}
+.daily-route-ribbon[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"]::after {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: -0.22rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 231, 164, 0.78), rgba(54, 214, 164, 0.6), transparent);
+  filter: blur(0.2px);
+  opacity: 0.78;
+}
+body.daily-start-coach-seen .daily-start-signal[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] {
+  opacity: 0.88;
+  transform: translateY(-2px) scale(0.96);
+  animation-duration: 3.2s;
+}
+body.daily-start-coach-seen .start-signal-target[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] {
+  animation-duration: 2.8s;
+  box-shadow: 0 10px 22px rgba(54, 214, 164, 0.15), 0 0 0 1px rgba(255, 231, 164, 0.18);
+}
+body.daily-start-overlap-safe .lobby-hero[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] {
+  grid-template-columns: minmax(0, 1fr) minmax(112px, auto);
+  row-gap: 0.32rem;
+}
+body.daily-start-overlap-safe .lobby-hero[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] img {
+  display: none;
+}
+body.daily-start-overlap-safe .daily-start-signal[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] {
+  position: relative;
+  inset: auto;
+  order: -1;
+  min-width: 100%;
+  max-width: 100%;
+  border-radius: 16px;
+  padding: 0.38rem 0.52rem;
+  transform: none;
+  text-align: center;
+}
+body.daily-start-overlap-safe .daily-start-signal[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"]::after {
+  display: none;
+}
+body.daily-start-overlap-safe .daily-route-ribbon[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] {
+  position: static;
+  grid-column: 1 / -1;
+  min-width: 100%;
+  margin-top: 0.18rem;
+}
+.reward-modal[data-back-sheet-clarity="v1059-back-sheet-clarity-touch-qa"] .exit-card {
+  width: min(94vw, 460px);
+}
+.reward-modal[data-back-sheet-clarity="v1059-back-sheet-clarity-touch-qa"] .exit-card-toolbar .eyebrow::after {
+  content: ' · 선택 후 바로 적용';
+  color: rgba(125, 220, 255, 0.72);
+}
+.reward-modal[data-back-sheet-clarity="v1059-back-sheet-clarity-touch-qa"] .exit-sheet-actions button {
+  min-height: 46px;
+  border-radius: 16px;
+  white-space: nowrap;
+}
+.reward-modal[data-back-sheet-clarity="v1059-back-sheet-clarity-touch-qa"] #exit-cancel-button {
+  border-color: rgba(54, 214, 164, 0.42);
+  box-shadow: 0 10px 24px rgba(54, 214, 164, 0.12);
+}
+@media (max-width: 430px) {
+  .screen-lobby[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] .lobby-hero { padding: 0.82rem; }
+  .daily-start-signal[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"] { max-width: none; }
+  .signal-arrow { margin-right: 0.12rem; }
+  .reward-modal[data-back-sheet-clarity="v1059-back-sheet-clarity-touch-qa"] .exit-card h2 { font-size: 1.28rem; }
+  .reward-modal[data-back-sheet-clarity="v1059-back-sheet-clarity-touch-qa"] .exit-card-toolbar .eyebrow::after { content: ''; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lobby-hero[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"]::before,
+  .daily-route-ribbon[data-start-coach-overlap="v1059-smart-start-coach-overlap-qa"]::after { animation: none !important; }
+}
+
+/* v1059 compatibility anchors: v1059-smart-start-coach-overlap-qa v1059-back-sheet-clarity-touch-qa v1059-lobby-polish-layering */

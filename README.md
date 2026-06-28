@@ -1910,3 +1910,56 @@ Apply 꿈의 서고 v1.0.58 daily route assist clickable start cue and back shee
 ```
 
 다음 업데이트 예정: v1.0.59 - First Session Tutorial, Daily Restore Reward Drama and Lobby Hero Motion Patch
+
+## v1.0.59 Patch Notes - Smart Start Coach, Lobby Overlap Guard and Back Sheet Clarity Patch
+
+v1.0.59는 v1.0.58에서 강화한 `오늘의 복원` 시작 위젯이 작은 폰 화면에서 말풍선, route ribbon, 마스코트와 겹치지 않도록 자동 배치 안전장치를 추가하고, 한 번 시작을 경험한 플레이어에게는 시작 코치가 덜 과하게 보이도록 다듬은 디자인/모바일 QA 패치입니다.
+
+### 변경점
+
+- `v1059-smart-start-coach-overlap-qa` 훅을 추가해 로비의 시작 말풍선과 `오늘의 복원` 버튼, route ribbon, 마스코트 영역의 겹침을 감지하는 시작 코치 레이아웃 가드를 추가했습니다.
+- 작은 화면이나 실제 겹침이 감지되면 `daily-start-overlap-safe` 상태로 전환되어 말풍선을 플로팅 절대 위치가 아니라 안전한 카드형 버튼으로 접어 보여줍니다.
+- `dream-library-daily-start-coach-seen` 저장 키를 추가해 오늘의 복원 시작을 한 번 경험한 플레이어에게는 말풍선과 버튼 glow가 더 잔잔한 재방문 상태로 바뀌도록 했습니다.
+- route ribbon에 `start-focus-rail` 스타일을 추가해 `오늘의 복원 → 보스 퍼즐 시작` 흐름을 더 고급스럽고 얇은 빛길처럼 보이게 조정했습니다.
+- `v1059-lobby-polish-layering` 훅으로 미션/일일/시즌 패널의 테두리와 그림자 레이어를 정리해 로비 카드들이 한 덩어리로 뭉쳐 보이지 않게 했습니다.
+- `v1059-back-sheet-clarity-touch-qa` 훅으로 뒤로가기 팝업 카드 폭, 버튼 높이, 계속하기 강조, 모바일 옵션 안내 문구를 정리했습니다.
+- service worker cache를 `dream-library-cache-v1.0.59`로 갱신하고, `texture-atlas-manifest-v1.0.59.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:start-coach-overlap`을 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 66개 check:* QA suite 통과
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.59 smart start coach overlap guard back sheet clarity and lobby polish patch
+```
+
+다음 업데이트 예정: v1.0.60 - First Session Tutorial, Daily Reward Drama, Boss Intro Polish and Lobby Content Guide Patch

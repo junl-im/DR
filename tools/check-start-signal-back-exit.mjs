@@ -12,7 +12,7 @@ const workflows = ['.github/workflows/github-pages.yml', '.github/workflows/qual
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.57', '1.0.58'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
+if (!['1.0.57', '1.0.58', '1.0.59'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
 for (const token of ['v1057-daily-start-signal-widget', 'v1057-back-action-sheet-restored', 'v1057-mobile-exit-options-qa']) {
   has(main, token, 'main v1.0.57 token');
   has(css, token, 'css v1.0.57 token');
@@ -32,7 +32,7 @@ has(css, '@keyframes signalFingerTap', 'tap finger animation');
 has(css, '.exit-sheet-actions', 'exit action sheet layout');
 has(sw, 'dream-library-cache-v1.0.57', 'service worker v1.0.57 cache');
 has(sw, 'texture-atlas-manifest-v1.0.57.json', 'service worker v1.0.57 atlas preload');
-has(difficulty, 'texture-atlas-manifest-v1.0.57.json', 'difficulty v1.0.57 atlas preload');
+has(difficulty, 'texture-atlas-manifest-v1.0.59.json', 'difficulty current atlas preload');
 has(workflows, 'check:start-signal-back-exit', 'workflow v1.0.57 check hook');
 if (!existsSync(join('public', 'assets', 'meta', 'texture-atlas-manifest-v1.0.57.json'))) errors.push('missing v1.0.57 texture atlas manifest');
 if (index.includes('<svg') || css.includes('<svg') || main.includes('<svg')) errors.push('SVG markup is forbidden');
