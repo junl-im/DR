@@ -2073,3 +2073,57 @@ Apply 꿈의 서고 v1.0.61 dynamic daily start precision rail lobby guide and b
 ```
 
 다음 업데이트 예정: v1.0.62 - First Session Tutorial, Daily Reward Drama, Boss Attack Readability and Lobby Content Progression Patch
+
+## v1.0.62 Patch Notes - Daily Start Focus Assist, Guide Comfort and Boss Intro Preload Patch
+
+v1.0.62는 v1.0.61의 `오늘의 복원` 시작 레일을 유지하면서, 로비 안내가 너무 빽빽하거나 반복적으로 느껴질 수 있는 문제를 줄인 디자인/UX 패치입니다. 첫 진입에는 `오늘의 복원`이 게임 시작임을 강하게 보여주고, 재방문자나 작은 화면에서는 안내 카드를 조용한 요약 모드로 전환해 시선 과밀을 줄였습니다.
+
+### 변경점
+
+- `v1062-daily-start-focus-assist` 훅을 추가해 `오늘의 복원` 버튼, 시작 말풍선, 빛줄기, 안내 카드, route ribbon을 하나의 시작 집중 시스템으로 연결했습니다.
+- `daily-start-focus-summary`를 추가해 오늘 보상과 복원 연결 목표를 안내 카드 안에서 한 줄로 보여줍니다.
+- `syncDailyStartFocusAssist()`를 추가해 로비 상태, 화면 높이/폭, 재방문 여부에 따라 안내 카드를 `full / quiet / micro` 모드로 자동 전환합니다.
+- 재방문자에게는 큰 설명 카드가 작게 접히고, 작은 화면에서는 핵심 문구와 오늘 목표만 남겨 로비 상단 겹침과 피로도를 줄였습니다.
+- 시작 빛줄기가 너무 길어지거나 action 영역 밖으로 벗어나는 경우 `rerouted` 모드로 자동 보정해 버튼 중심을 다시 향하도록 했습니다.
+- `dailyStartRailIntegrity` 상태를 추가해 정상/우회 레일 상태를 QA와 CSS에서 확인할 수 있게 했습니다.
+- 보스 인트로 영역에 `v1062-boss-intro-preload` 훅과 `보스 준비` 작은 상태 배지를 추가해 퍼즐 진입 전 보스 전환 체감을 부드럽게 했습니다.
+- service worker cache를 `dream-library-cache-v1.0.62`로 갱신하고, `texture-atlas-manifest-v1.0.62.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:daily-start-focus-assist`를 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 69개 check:* QA suite 통과
+npm run check:daily-start-focus-assist
+npm run check:daily-start-precision-rail
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.62 daily start focus assist guide comfort rail integrity and boss intro preload patch
+```
+
+다음 업데이트 예정: v1.0.63 - First Session Tutorial, Daily Quest Chain, Boss Attack Readability and Reward Flow Polish Patch

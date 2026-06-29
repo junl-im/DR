@@ -113,6 +113,7 @@ jobs:
           npm run check:start-coach-overlap
           npm run check:daily-start-pointer
           npm run check:daily-start-precision-rail
+          npm run check:daily-start-focus-assist
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

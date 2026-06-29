@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61'].includes(pkg.version)) errors.push(`package version must be 1.0.55, got ${pkg.version}`);
+if (!['1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62'].includes(pkg.version)) errors.push(`package version must be 1.0.55, got ${pkg.version}`);
 if (!pkg.scripts['check:engine-render-budget']) errors.push('missing package script check:engine-render-budget');
 
 for (const token of ['v1055-engine-render-budget-tuning', 'v1055-store-reward-collection-polish', 'v1055-lobby-density-final-qa', 'v1055-store-reward-preview-lens', 'v1055-lobby-touch-conflict-audit']) {

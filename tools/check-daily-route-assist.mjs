@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.58', '1.0.59', '1.0.60', '1.0.61'].includes(pkg.version)) errors.push(`package version must be 1.0.58 or 1.0.59, got ${pkg.version}`);
+if (!['1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62'].includes(pkg.version)) errors.push(`package version must be 1.0.58 or 1.0.59, got ${pkg.version}`);
 if (!pkg.scripts['check:daily-route-assist']) errors.push('missing package script check:daily-route-assist');
 
 for (const token of ['v1058-daily-start-route-assist', 'v1058-back-sheet-option-row-qa', 'v1058-lobby-hero-safe-motion']) {
