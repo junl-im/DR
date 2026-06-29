@@ -4257,7 +4257,7 @@ body.is-lobby-dragging[data-real-device-touch-qa="v1056-real-device-touch-qa"] .
 }
 .daily-start-signal strong { display: block; font-size: 0.66rem; line-height: 1; letter-spacing: -0.03em; }
 .daily-start-signal small { display: block; margin-top: 0.12rem; color: rgba(230, 238, 255, 0.82); font-size: 0.48rem; font-weight: 900; }
-.signal-finger { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; margin-right: 0.2rem; border-radius: 999px; background: rgba(255, 231, 164, 0.14); filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)); animation: signalFingerTap 0.9s ease-in-out infinite; }
+.signal-finger { display: none; place-items: center; width: 1.4rem; height: 1.4rem; margin-right: 0.2rem; border-radius: 999px; background: rgba(255, 231, 164, 0.14); filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)); animation: signalFingerTap 0.9s ease-in-out infinite; }
 .signal-arrow { display: inline-block; margin-right: 0.18rem; color: var(--sky-200); animation: signalArrowNudge 0.92s ease-in-out infinite; }
 .daily-panel[data-start-signal="v1057-daily-start-signal-widget"] {
   position: relative;
@@ -5194,3 +5194,107 @@ body[data-daily-start-guide-mode="micro"] .daily-quest-chain[data-daily-quest-ch
 }
 
 /* v1063 compatibility anchors: v1063-daily-quest-chain v1063-boss-attack-readability v1063-reward-flow-polish */
+
+
+/* v1.0.64 arrow-only daily start CTA and lobby UI polish */
+.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'arrow title' 'arrow sub';
+  align-items: center;
+  column-gap: 0.48rem;
+  min-width: 166px;
+  padding: 0.48rem 0.66rem 0.48rem 0.56rem;
+  border-radius: 20px 12px 20px 20px;
+  border-color: rgba(255, 231, 164, 0.66);
+  background:
+    radial-gradient(circle at 18% 24%, rgba(255, 231, 164, 0.22), transparent 30%),
+    linear-gradient(145deg, rgba(9, 24, 48, 0.99), rgba(38, 33, 83, 0.96));
+  box-shadow:
+    0 18px 38px rgba(6, 21, 45, 0.5),
+    0 0 0 1px rgba(125, 220, 255, 0.22),
+    0 0 30px rgba(255, 231, 164, 0.18);
+}
+.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow {
+  grid-area: arrow;
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  border-radius: 999px;
+  color: #061222;
+  background: linear-gradient(135deg, var(--gold-300), var(--sky-200));
+  font-size: 1.3rem;
+  line-height: 1;
+  box-shadow: 0 0 18px rgba(255, 231, 164, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.44);
+  animation: dailyArrowOnlyNudge 0.86s ease-in-out infinite;
+}
+.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] strong {
+  grid-area: title;
+  font-size: 0.72rem;
+  letter-spacing: -0.025em;
+}
+.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] small {
+  grid-area: sub;
+  margin-top: 0.08rem;
+  font-size: 0.5rem;
+}
+.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-finger { display: none !important; }
+.daily-stage-button[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"],
+.daily-stage-button[data-lobby-ui-polish="v1064-lobby-ui-polish-pass"] {
+  letter-spacing: -0.035em;
+  transform: translateZ(0);
+}
+.daily-start-beam[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+  height: 5px;
+  background: linear-gradient(90deg, rgba(255, 231, 164, 0.03), rgba(255, 231, 164, 0.96) 36%, rgba(125, 220, 255, 1));
+  box-shadow: 0 0 20px rgba(255, 231, 164, 0.58), 0 0 32px rgba(125, 220, 255, 0.32);
+}
+.screen-lobby[data-lobby-ui-polish="v1064-lobby-ui-polish-pass"] .lobby-hero {
+  border-color: rgba(255, 231, 164, 0.32);
+  background:
+    radial-gradient(circle at 8% 10%, rgba(125, 220, 255, 0.16), transparent 32%),
+    radial-gradient(circle at 88% 12%, rgba(255, 231, 164, 0.13), transparent 28%),
+    linear-gradient(145deg, rgba(11, 29, 55, 0.72), rgba(26, 25, 62, 0.68));
+}
+.daily-start-guide[data-lobby-ui-polish="v1064-lobby-ui-polish-pass"] {
+  border-color: rgba(125, 220, 255, 0.22);
+  box-shadow: 0 14px 36px rgba(6, 21, 45, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] span {
+  backdrop-filter: blur(6px);
+}
+.reward-modal[data-back-sheet-clarity="v1059-back-sheet-clarity-touch-qa"] .exit-sheet-actions button,
+.reward-modal[data-reward-flow-polish="v1063-reward-flow-polish"] .reward-actions button {
+  box-shadow: 0 10px 24px rgba(6, 21, 45, 0.2);
+}
+body[data-daily-start-guide-mode="micro"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+  min-width: 134px;
+  grid-template-columns: auto 1fr;
+  padding: 0.38rem 0.5rem;
+}
+body.daily-start-overlap-safe .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+  grid-template-columns: auto 1fr;
+  text-align: left;
+}
+@keyframes dailyArrowOnlyNudge {
+  0%, 100% { transform: translateX(0) scale(1); }
+  50% { transform: translateX(6px) scale(1.04); }
+}
+@media (max-width: 430px) {
+  .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+    min-width: 136px;
+    column-gap: 0.36rem;
+  }
+  .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow {
+    width: 1.72rem;
+    height: 1.72rem;
+    font-size: 1.12rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow { animation: none !important; }
+}
+
+/* v1064 compatibility anchors: v1064-daily-start-arrow-only-cta v1064-lobby-ui-polish-pass */

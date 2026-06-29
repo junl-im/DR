@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (pkg.version !== '1.0.63') errors.push(`package version must be 1.0.63, got ${pkg.version}`);
+if (!['1.0.63', '1.0.64'].includes(pkg.version)) errors.push(`package version must be 1.0.63, got ${pkg.version}`);
 if (!pkg.scripts['check:daily-quest-chain']) errors.push('missing package script check:daily-quest-chain');
 for (const token of ['v1063-daily-quest-chain', 'v1063-boss-attack-readability', 'v1063-reward-flow-polish']) {
   has(index, token, 'index v1.0.63 token');
@@ -32,7 +32,7 @@ has(css, '.boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-r
 has(css, '.reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"]', 'reward flow next CSS');
 has(sw, 'dream-library-cache-v1.0.63', 'service worker v1.0.63 cache');
 has(sw, 'texture-atlas-manifest-v1.0.63.json', 'service worker v1.0.63 atlas preload');
-has(difficulty, 'texture-atlas-manifest-v1.0.63.json', 'difficulty v1.0.63 atlas preload');
+if (!difficulty.includes('texture-atlas-manifest-v1.0.63.json') && !difficulty.includes('texture-atlas-manifest-v1.0.64.json')) errors.push('Missing difficulty v1.0.63+ atlas preload');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.63.json')) errors.push('missing v1.0.63 texture atlas manifest');
 has(pages, 'npm run check:daily-quest-chain', 'GitHub Pages v1.0.63 QA hook');
 has(quality, 'npm run check:daily-quest-chain', 'Quality v1.0.63 QA hook');

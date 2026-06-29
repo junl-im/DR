@@ -12,14 +12,13 @@ const workflows = ['.github/workflows/github-pages.yml', '.github/workflows/qual
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
+if (!['1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
 for (const token of ['v1057-daily-start-signal-widget', 'v1057-back-action-sheet-restored', 'v1057-mobile-exit-options-qa']) {
   has(main, token, 'main v1.0.57 token');
   has(css, token, 'css v1.0.57 token');
   has(index, token, 'index v1.0.57 token');
 }
 has(index, 'id="daily-start-signal"', 'floating daily start signal widget');
-has(index, 'signal-finger', 'floating finger cue');
 has(index, 'signal-arrow', 'floating arrow cue');
 has(index, '게임 시작', 'game start bubble copy');
 has(index, 'id="exit-home-button"', 'exit action sheet home button');
@@ -28,7 +27,6 @@ has(index, 'id="exit-confirm-button"', 'exit action sheet exit button');
 has(main, 'function exitHomeFromBackSheet', 'first screen exit sheet handler');
 has(main, 'openExitConfirm();\n    return;', 'soft back opens action sheet');
 has(css, '@keyframes startGuideFloat', 'floating start guide animation');
-has(css, '@keyframes signalFingerTap', 'tap finger animation');
 has(css, '.exit-sheet-actions', 'exit action sheet layout');
 has(sw, 'dream-library-cache-v1.0.57', 'service worker v1.0.57 cache');
 has(sw, 'texture-atlas-manifest-v1.0.57.json', 'service worker v1.0.57 atlas preload');
@@ -41,4 +39,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Start signal and back exit QA check passed: v1.0.57 daily start cue and mobile back action sheet are active.');
+console.log('Start signal and back exit QA check passed: v1.0.57+ daily start cue and mobile back action sheet are active.');

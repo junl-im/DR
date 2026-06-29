@@ -2184,3 +2184,61 @@ Apply 꿈의 서고 v1.0.63 daily quest chain boss attack readability and reward
 ```
 
 다음 업데이트 예정: v1.0.64 - Daily Quest Tutorial Timing, Boss Telegraph VFX Trim and Restoration Reward Theater Patch
+
+## v1.0.64 Patch Notes - Arrow-only Daily Start CTA and Lobby UI Polish Patch
+
+v1.0.64는 v1.0.63의 `오늘의 복원` 퀘스트 체인 위에 시작 CTA의 시선 방향을 더 명확하게 정리한 패치입니다. 사용자 피드백에 맞춰 `게임 시작` 위젯의 손가락 모양을 제거하고, 현재 배치에 더 잘 맞는 우측 화살표 중심의 CTA로 바꿨습니다. 동시에 로비 히어로, 시작 안내 카드, 뒤로가기/보상 팝업 버튼 그림자와 밀도를 다시 다듬어 전체 UI가 더 고급스럽고 덜 복잡해 보이도록 정리했습니다.
+
+### 변경점
+
+- `daily-start-signal` 안의 손가락 `☝` 요소를 HTML에서 제거하고 `signal-arrow`만 남겨 우측 방향성이 더 명확하게 보이도록 변경했습니다.
+- 신규 훅 `v1064-daily-start-arrow-only-cta`를 추가해 `게임 시작` 말풍선을 화살표 전용 2열 카드 구조로 재정리했습니다.
+- 말풍선 문구를 `오늘의 복원을 눌러요`에서 `오늘의 복원 버튼입니다`로 변경해, 알림이 아니라 특정 버튼을 가리키는 CTA처럼 읽히게 했습니다.
+- 런타임에서 화살표 텍스트를 `➜`로 고정하는 안전 장치를 추가했습니다.
+- `v1064-lobby-ui-polish-pass` 훅을 추가해 로비 히어로 배경, 시작 안내 카드, 퀘스트 체인, 뒤로가기/보상 버튼의 그림자와 밀도를 재정리했습니다.
+- 기존 QA에서 손가락 위젯을 요구하던 조건을 제거하고, 신규 검사 `check:daily-start-arrow-cta`로 손가락 HTML 제거와 우측 화살표 CTA 연결을 검증하도록 바꿨습니다.
+- service worker cache를 `dream-library-cache-v1.0.64`로 갱신하고, `texture-atlas-manifest-v1.0.64.json`을 생성/선로드에 추가했습니다.
+- GitHub Pages / Quality Check workflow에 `check:daily-start-arrow-cta`를 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 71개 check:* QA suite 통과
+npm run check:daily-start-arrow-cta
+npm run check:daily-quest-chain
+npm run check:daily-start-focus-assist
+npm run check:daily-start-precision-rail
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.64 arrow-only daily start CTA and lobby UI polish patch
+```
+
+다음 업데이트 예정: v1.0.65 - Daily Start First-touch Tutorial, Lobby Visual Hierarchy, Boss Telegraph VFX Trim and Restoration Reward Theater Patch

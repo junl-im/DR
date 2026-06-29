@@ -83,7 +83,8 @@
     "check:daily-start-pointer": "node tools/check-daily-start-pointer.mjs",
     "check:daily-start-precision-rail": "node tools/check-daily-start-precision-rail.mjs",
     "check:daily-start-focus-assist": "node tools/check-daily-start-focus-assist.mjs",
-    "check:daily-quest-chain": "node tools/check-daily-quest-chain.mjs"
+    "check:daily-quest-chain": "node tools/check-daily-quest-chain.mjs",
+    "check:daily-start-arrow-cta": "node tools/check-daily-start-arrow-cta.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -97,5 +98,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.63"
+  "version": "1.0.64"
 }
