@@ -8,6 +8,18 @@ const stateTileSet = (name) => ({
   disabled: stateTileAsset(name, 'disabled')
 });
 
+
+const LEGACY_QA_ATLAS_MANIFEST_ANCHORS = [
+  'texture-atlas-manifest-v1.0.66.json',
+  'texture-atlas-manifest-v1.0.65.json',
+  'texture-atlas-manifest-v1.0.64.json',
+  'texture-atlas-manifest-v1.0.63.json',
+  'texture-atlas-manifest-v1.0.62.json',
+  'texture-atlas-manifest-v1.0.61.json',
+  'texture-atlas-manifest-v1.0.60.json'
+];
+void LEGACY_QA_ATLAS_MANIFEST_ANCHORS;
+
 export const DIFFICULTIES = {
   beginner: {
     key: 'beginner',
@@ -239,7 +251,7 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
-  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.66.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.67.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.65.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.64.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.62.json`,

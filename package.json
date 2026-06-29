@@ -86,7 +86,8 @@
     "check:daily-quest-chain": "node tools/check-daily-quest-chain.mjs",
     "check:daily-start-arrow-cta": "node tools/check-daily-start-arrow-cta.mjs",
     "check:ui-ux-stability": "node tools/check-ui-ux-stability.mjs",
-    "check:first-touch-ux": "node tools/check-first-touch-ux.mjs"
+    "check:first-touch-ux": "node tools/check-first-touch-ux.mjs",
+    "check:reward-restoration-bridge": "node tools/check-reward-restoration-bridge.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -100,5 +101,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.66"
+  "version": "1.0.67"
 }

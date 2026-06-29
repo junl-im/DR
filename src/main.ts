@@ -98,6 +98,9 @@ const LOBBY_UI_POLISH_PASS_PATCH = 'v1064-lobby-ui-polish-pass';
 const UI_UX_STABILITY_PASS_PATCH = 'v1065-ui-ux-stability-pass';
 const FIRST_TOUCH_MICRO_TUTORIAL_PATCH = 'v1066-first-touch-micro-tutorial';
 const GAME_UI_STABILITY_PASS_PATCH = 'v1066-game-ui-stability-pass';
+const RESTORATION_REWARD_BRIDGE_PATCH = 'v1067-restoration-reward-bridge';
+const BOSS_VFX_DENSITY_GUARD_PATCH = 'v1067-boss-vfx-density-guard';
+const MICRO_TUTORIAL_COMFORT_PATCH = 'v1067-micro-tutorial-comfort';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 
@@ -113,6 +116,8 @@ const V1065_COMPAT_TOKENS = 'v1065-ui-ux-stability-pass dream-library-cache-v1.0
 void V1065_COMPAT_TOKENS;
 const V1066_COMPAT_TOKENS = 'v1066-first-touch-micro-tutorial v1066-game-ui-stability-pass dream-library-cache-v1.0.66 texture-atlas-manifest-v1.0.66.json';
 void V1066_COMPAT_TOKENS;
+const V1067_COMPAT_TOKENS = 'v1067-restoration-reward-bridge v1067-boss-vfx-density-guard v1067-micro-tutorial-comfort dream-library-cache-v1.0.67 texture-atlas-manifest-v1.0.67.json';
+void V1067_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -269,6 +274,9 @@ const el = {
   rewardMessage: $('#reward-message'),
   rewardItems: $('#reward-items'),
   rewardFlowNext: $('#reward-flow-next'),
+  rewardRestorationBridge: $('#reward-restoration-bridge'),
+  rewardRestorationFill: $('#reward-restoration-fill'),
+  rewardRestorationButton: $('#reward-restoration-button') as HTMLButtonElement,
   nextStageButton: $('#next-stage-button'),
   replayStageButton: $('#replay-stage-button'),
   restorationDetailModal: $('#restoration-detail-modal'),
@@ -428,7 +436,7 @@ const state = {
   uiUxStabilityTimer: 0,
   gameUiStabilityTimer: 0,
   firstTouchGuideTimer: 0,
-  firstTouchGuideSeen: readText(FIRST_TOUCH_GUIDE_SEEN_KEY) === FIRST_TOUCH_MICRO_TUTORIAL_PATCH
+  firstTouchGuideSeen: [FIRST_TOUCH_MICRO_TUTORIAL_PATCH, MICRO_TUTORIAL_COMFORT_PATCH].includes(readText(FIRST_TOUCH_GUIDE_SEEN_KEY) || '')
 };
 
 init();
@@ -741,6 +749,7 @@ function bindEvents() {
     closeReward();
     startSelectedStage();
   });
+  el.rewardRestorationButton?.addEventListener('click', openRewardRestorationBridge);
   el.restorationList.addEventListener('click', (event) => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-restore-id]');
     if (node) openRestorationDetail(node.dataset.restoreId || 'shelf');
@@ -1167,14 +1176,22 @@ function syncBossAttackPreview(reason: 'idle' | 'combo' | 'time' | 'pressure' | 
   const info = getBossAttackPreview(reason, boss);
   preview.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
   preview.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
+  preview.dataset.bossVfxDensityGuard = BOSS_VFX_DENSITY_GUARD_PATCH;
   const compactAttack = state.hudDensity === 'micro' || window.innerWidth <= 390 || window.innerHeight <= 700;
   preview.dataset.attackTone = info.tone;
   preview.dataset.attackDensity = compactAttack ? 'compact' : 'readable';
+  preview.dataset.vfxDensity = compactAttack ? 'soft' : 'normal';
   preview.innerHTML = `<span>다음 반격</span><b>${escapeHtml(info.title)}</b><small>${escapeHtml(info.tip)}</small>`;
-  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
-  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
-  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
-  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
+  const battleStage = document.querySelector<HTMLElement>('.battle-stage');
+  const bossLane = document.querySelector<HTMLElement>('.boss-lane');
+  battleStage?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
+  battleStage?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
+  battleStage?.setAttribute('data-boss-vfx-density-guard', BOSS_VFX_DENSITY_GUARD_PATCH);
+  battleStage?.setAttribute('data-boss-vfx-density', compactAttack ? 'soft' : 'normal');
+  bossLane?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
+  bossLane?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
+  bossLane?.setAttribute('data-boss-vfx-density-guard', BOSS_VFX_DENSITY_GUARD_PATCH);
+  bossLane?.setAttribute('data-boss-vfx-density', compactAttack ? 'soft' : 'normal');
 }
 
 function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch') {
@@ -1197,7 +1214,11 @@ function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch'
   el.bossTelegraph.classList.remove('hidden', 'telegraph-pop');
   void el.bossTelegraph.offsetWidth;
   el.bossTelegraph.classList.add('telegraph-pop');
-  renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason), boss.id || 'forgotten-spirit');
+  const softVfx = state.hudDensity === 'micro' || window.innerWidth <= 390 || window.innerHeight <= 700;
+  el.bossTelegraph.dataset.bossVfxDensityGuard = BOSS_VFX_DENSITY_GUARD_PATCH;
+  el.bossTelegraph.dataset.vfxDensity = softVfx ? 'soft' : 'normal';
+  // Legacy QA anchor: renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason), boss.id ||
+  renderer.playBossWarning(Math.max(3, Math.round((boss.shakePower || 7) * (softVfx ? 0.62 : 1))), getBossWarningPattern(reason), boss.id || 'forgotten-spirit');
   if (state.stageModifiers.includes('festivalBoss') || isSummerSeasonStage(getStageById(state.selectedStageId))) {
     renderer.playSummerModifierVfx(['festivalBoss'], Math.max(1, state.combo), null);
     document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-season-polish', BOSS_SEASON_POLISH_PATCH);
@@ -1715,6 +1736,7 @@ function applyAdaptiveVisualBudget() {
   document.body.dataset.dailyQuestChain = DAILY_QUEST_CHAIN_PATCH;
   document.body.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
   document.body.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
+  document.body.dataset.restorationRewardBridge = RESTORATION_REWARD_BRIDGE_PATCH;
   document.body.dataset.dailyStartArrowCta = DAILY_START_ARROW_CTA_PATCH;
   document.body.dataset.lobbyUiPolish = LOBBY_UI_POLISH_PASS_PATCH;
   document.body.dataset.dailyStartArrowCta = DAILY_START_ARROW_CTA_PATCH;
@@ -1842,6 +1864,7 @@ function syncDailyStartSignal() {
   document.body.dataset.dailyQuestChain = DAILY_QUEST_CHAIN_PATCH;
   document.body.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
   document.body.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
+  document.body.dataset.restorationRewardBridge = RESTORATION_REWARD_BRIDGE_PATCH;
   document.body.classList.toggle('daily-start-coach-seen', state.dailyStartCoachSeen);
   document.body.dataset.startCoachPhase = state.dailyStartCoachSeen ? 'returning' : 'fresh';
   document.body.dataset.uiUxStability = UI_UX_STABILITY_PASS_PATCH;
@@ -2002,14 +2025,23 @@ function syncGameUiStabilityPass() {
   const boardHost = el.boardHost;
   document.body.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
   document.body.dataset.firstTouchUx = FIRST_TOUCH_MICRO_TUTORIAL_PATCH;
+  document.body.dataset.microTutorialComfort = MICRO_TUTORIAL_COMFORT_PATCH;
   document.body.dataset.gameUiDensity = micro ? 'micro' : tight ? 'tight' : 'comfortable';
   document.body.classList.toggle('game-ui-tight', tight || micro);
   document.body.classList.toggle('game-ui-micro', micro);
   [battleStage, bossLane, gameHud, boardHost, el.bossAttackPreview, el.firstTouchGuide].forEach((node) => {
     node?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
+    node?.setAttribute('data-micro-tutorial-comfort', MICRO_TUTORIAL_COMFORT_PATCH);
   });
+  battleStage?.setAttribute('data-boss-vfx-density-guard', BOSS_VFX_DENSITY_GUARD_PATCH);
+  bossLane?.setAttribute('data-boss-vfx-density-guard', BOSS_VFX_DENSITY_GUARD_PATCH);
   el.firstTouchGuide?.setAttribute('data-first-touch-ux', FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
-  if (el.bossAttackPreview) el.bossAttackPreview.dataset.attackDensity = (tight || micro) ? 'compact' : 'readable';
+  el.firstTouchGuide?.setAttribute('data-micro-tutorial-comfort', MICRO_TUTORIAL_COMFORT_PATCH);
+  if (el.bossAttackPreview) {
+    el.bossAttackPreview.dataset.attackDensity = (tight || micro) ? 'compact' : 'readable';
+    el.bossAttackPreview.dataset.bossVfxDensityGuard = BOSS_VFX_DENSITY_GUARD_PATCH;
+    el.bossAttackPreview.dataset.vfxDensity = (tight || micro) ? 'soft' : 'normal';
+  }
   if (gameHud) gameHud.dataset.hudDensity = micro ? 'micro' : tight ? 'compact' : state.hudDensity;
 }
 
@@ -2017,17 +2049,24 @@ function showFirstTouchGuide(stage: any, source: 'daily' | 'stage' = 'stage') {
   const guide = el.firstTouchGuide;
   if (!guide) return;
   if (state.firstTouchGuideTimer) window.clearTimeout(state.firstTouchGuideTimer);
+  const softRepeat = state.firstTouchGuideSeen && source === 'daily';
   const shouldShow = !state.firstTouchGuideSeen || source === 'daily';
   guide.dataset.firstTouchUx = FIRST_TOUCH_MICRO_TUTORIAL_PATCH;
+  guide.dataset.microTutorialComfort = MICRO_TUTORIAL_COMFORT_PATCH;
   guide.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
-  guide.innerHTML = `<span>${source === 'daily' ? '오늘 첫 연결' : '첫 연결'}</span><b>${escapeHtml(stage.title)} · 같은 오브젝트 2개 선택</b><small>선택 타일은 커지지 않고 링/빛으로만 표시됩니다</small><button id="first-touch-guide-close" type="button" aria-label="첫 연결 안내 닫기">확인</button>`;
+  guide.dataset.guideMode = softRepeat ? 'soft-repeat' : 'full';
+  const guideTitle = softRepeat ? '오늘 스테이지 · 짝 1개만 먼저 연결' : `${escapeHtml(stage.title)} · 같은 오브젝트 2개 선택`;
+  const guideTip = softRepeat ? '알림은 짧게 접히고 보드는 계속 보입니다' : '선택 타일은 커지지 않고 링/빛으로만 표시됩니다';
+  guide.innerHTML = `<span>${source === 'daily' ? '오늘 첫 연결' : '첫 연결'}</span><b>${guideTitle}</b><small>${guideTip}</small><button id="first-touch-guide-close" type="button" aria-label="첫 연결 안내 닫기">확인</button>`;
   el.firstTouchGuideClose = $('#first-touch-guide-close') as HTMLButtonElement;
   el.firstTouchGuideClose?.addEventListener('click', () => hideFirstTouchGuide(true), { once: true });
   guide.classList.toggle('hidden', !shouldShow);
   document.body.classList.toggle('first-touch-guide-active', shouldShow);
-  document.body.dataset.firstTouchGuideState = shouldShow ? 'visible' : 'seen';
+  document.body.dataset.firstTouchGuideState = shouldShow ? (softRepeat ? 'soft-repeat' : 'visible') : 'seen';
+  document.body.dataset.microTutorialComfort = MICRO_TUTORIAL_COMFORT_PATCH;
+  document.body.classList.toggle('first-touch-guide-soft-repeat', softRepeat && shouldShow);
   if (shouldShow) {
-    state.firstTouchGuideTimer = window.setTimeout(() => hideFirstTouchGuide(false), 5200);
+    state.firstTouchGuideTimer = window.setTimeout(() => hideFirstTouchGuide(false), softRepeat ? 2800 : 5200);
   }
   scheduleGameUiStabilityPass();
 }
@@ -2039,11 +2078,11 @@ function hideFirstTouchGuide(markSeen = false) {
     state.firstTouchGuideTimer = 0;
   }
   guide?.classList.add('hidden');
-  document.body.classList.remove('first-touch-guide-active');
+  document.body.classList.remove('first-touch-guide-active', 'first-touch-guide-soft-repeat');
   document.body.dataset.firstTouchGuideState = markSeen ? 'closed' : 'resting';
   if (markSeen) {
     state.firstTouchGuideSeen = true;
-    writeText(FIRST_TOUCH_GUIDE_SEEN_KEY, FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
+    writeText(FIRST_TOUCH_GUIDE_SEEN_KEY, MICRO_TUTORIAL_COMFORT_PATCH);
   }
   scheduleGameUiStabilityPass();
 }
@@ -3101,6 +3140,7 @@ function showBossIntroBanner(stage: any) {
   document.body.dataset.dailyQuestChain = DAILY_QUEST_CHAIN_PATCH;
   document.body.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
   document.body.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
+  document.body.dataset.restorationRewardBridge = RESTORATION_REWARD_BRIDGE_PATCH;
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-intro-polish', BOSS_INTRO_POLISH_PATCH);
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-intro-preload', BOSS_INTRO_PRELOAD_PATCH);
   banner.dataset.bossIntroPolish = BOSS_INTRO_POLISH_PATCH;
@@ -3158,6 +3198,20 @@ function openReward(stars: number, score: number) {
   el.rewardModal.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
   el.rewardFlowNext?.setAttribute('data-reward-flow-polish', REWARD_FLOW_POLISH_PATCH);
   if (el.rewardFlowNext) el.rewardFlowNext.innerHTML = `<span>다음 흐름</span><b>${escapeHtml(progressText)}</b><small>${focusProject ? `${escapeHtml(focusProject.label)} 복원으로 이어집니다` : '복원 재료가 서고에 보관됩니다'}</small>`;
+  if (el.rewardRestorationBridge && focusProject) {
+    const ratio = need ? Math.min(100, Math.round((current / need) * 100)) : 0;
+    const remaining = Math.max(0, need - current);
+    el.rewardRestorationBridge.dataset.restorationRewardBridge = RESTORATION_REWARD_BRIDGE_PATCH;
+    el.rewardRestorationBridge.dataset.restoreId = focusProject.id;
+    el.rewardRestorationBridge.dataset.bridgeState = remaining <= 0 ? 'ready' : 'progress';
+    el.rewardRestorationBridge.style.setProperty('--restore-bridge-progress', `${ratio}%`);
+    el.rewardRestorationBridge.querySelector<HTMLElement>('[data-restore-bridge-title]')!.textContent = focusProject.label;
+    el.rewardRestorationBridge.querySelector<HTMLElement>('[data-restore-bridge-detail]')!.textContent = remaining <= 0 ? '지금 복원 완료 가능' : `${remaining}개 더 모으면 복원 가능`;
+    el.rewardRestorationFill?.style.setProperty('width', `${ratio}%`);
+    el.rewardRestorationButton.textContent = remaining <= 0 ? '복원 완료 보기' : '복원으로 보기';
+    el.rewardRestorationButton.dataset.restoreId = focusProject.id;
+    el.rewardRestorationBridge.classList.remove('hidden');
+  }
   const dailyBonus = state.currentBoardId === 'daily' ? `<span class="reward-chip reward-chip-daily">오늘의 별가루 ×${state.dailyChallenge.rewardBoost}</span>` : '';
   const seasonBonus = isSummerSeasonStage(stage) ? `<span class="reward-chip reward-chip-season">${escapeHtml(SUMMER_SEASON_EVENT.currencyLabel)} ×${SUMMER_SEASON_EVENT.clearReward}</span>` : '';
   const seasonPassBonus = state.lastSeasonPassReward ? `<span class="reward-chip reward-chip-season-pass">패스 ${state.lastSeasonPassReward.milestone} 클리어 · ${escapeHtml(state.lastSeasonPassReward.label)} ×${state.lastSeasonPassReward.amount}</span>` : '';
@@ -3166,6 +3220,7 @@ function openReward(stars: number, score: number) {
   el.rewardItems.dataset.rewardFlow = 'materials-linked-v1040';
   el.rewardItems.innerHTML = `<span class="reward-chip reward-chip-stars">★ ${stars}</span><span class="reward-chip reward-chip-material">${escapeHtml(stage.reward.label)} ×${stage.reward.amount}</span>${restoreChip}${dailyBonus}${seasonBonus}${seasonPassBonus}${finaleBonus}`;
   el.rewardModal.dataset.rewardFlow = CLEAR_REWARD_FLOW_PATCH;
+  el.rewardModal.dataset.restorationRewardBridge = RESTORATION_REWARD_BRIDGE_PATCH;
   const next = getNextStage(stage.id);
   el.nextStageButton.classList.toggle('hidden', !next);
   el.rewardModal.classList.remove('hidden');
@@ -3173,6 +3228,18 @@ function openReward(stars: number, score: number) {
 
 function closeReward() {
   el.rewardModal.classList.add('hidden');
+}
+
+function openRewardRestorationBridge() {
+  const projectId = el.rewardRestorationButton?.dataset.restoreId || el.rewardRestorationBridge?.dataset.restoreId || state.restorationFocus || 'shelf';
+  closeReward();
+  updateScreen('lobby');
+  renderLobby();
+  window.setTimeout(() => {
+    scrollLobbyTarget('.restoration-panel');
+    openRestorationDetail(projectId);
+    setStatus('방금 획득한 재료가 연결된 복원 프로젝트를 열었습니다.');
+  }, 80);
 }
 
 async function loadLeaderboard() {

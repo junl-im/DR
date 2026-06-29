@@ -46,3 +46,10 @@
 - 첫 매칭 마이크로 튜토리얼은 PNG/WebP 기반 기존 UI 시스템만 사용하며 SVG를 추가하지 않습니다.
 - 보스 반격 미리보기와 HUD 밀도는 런타임 `v1066-game-ui-stability-pass` 훅으로 작은 화면에서 자동 압축됩니다.
 - `check:first-touch-ux`가 첫 연결 안내, 보스 반격 compact 모드, cache/atlas, workflow 연결을 함께 확인합니다.
+
+## v1.0.67 Reward Restoration Bridge / Boss VFX Density Guard 파이프라인 메모
+
+- `texture-atlas-manifest-v1.0.67.json`을 생성해 최신 캐시/프리로드 기준에 포함했습니다.
+- 보상 팝업은 `v1067-restoration-reward-bridge` 훅으로 클리어 재료가 어느 복원 프로젝트에 반영되는지 progress bridge와 액션 버튼으로 연결합니다.
+- 보스 경고/반격 미리보기는 `v1067-boss-vfx-density-guard` 훅으로 작은 화면에서 흔들림과 광량을 낮춰 보드 가림을 줄입니다.
+- 첫 터치 안내는 `v1067-micro-tutorial-comfort` 훅으로 재방문/오늘 스테이지 반복 안내를 짧고 조용하게 접습니다.

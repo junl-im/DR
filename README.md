@@ -2363,3 +2363,66 @@ Apply 꿈의 서고 v1.0.66 first touch tutorial boss density and game UI stabil
 ```
 
 다음 업데이트 예정: v1.0.67 - Restoration Reward Theater, Boss Warning VFX Trim, Small-screen Lobby Rhythm and Daily Quest Readability Patch
+
+## v1.0.67 Patch Notes - Restoration Reward Bridge, Boss VFX Density Guard and UX Comfort Patch
+
+v1.0.67은 v1.0.66의 첫 터치 안내와 게임 UI 안정화 위에 클리어 후 보상 흐름, 보스 경고 과밀도, 반복 안내 피로도를 다시 다듬은 패치입니다. 특히 스테이지 클리어 후 획득 재료가 어떤 복원 프로젝트로 이어지는지 버튼과 진행 바로 보여주고, 작은 화면에서는 보스 경고 VFX가 퍼즐판을 덜 가리도록 낮은 밀도 모드를 추가했습니다.
+
+### 변경점
+
+- `v1067-restoration-reward-bridge` 훅을 추가해 보상 팝업에 복원 연결 카드, 진행 바, `복원으로 보기` 액션을 추가했습니다.
+- `복원으로 보기`를 누르면 보상 팝업을 닫고 로비의 복원 작업대로 이동한 뒤 연결된 복원 프로젝트 상세를 바로 엽니다.
+- 복원 프로젝트가 완료 가능한 상태이면 버튼 문구가 `복원 완료 보기`로 바뀌고 ready 상태 스타일을 적용합니다.
+- `v1067-boss-vfx-density-guard` 훅을 추가해 작은 화면/마이크로 HUD에서 보스 경고 흔들림과 경고 카드 광량을 줄입니다.
+- 보스 반격 미리보기에는 `data-vfx-density="soft"` 상태를 추가해 compact 상태에서 정보와 VFX가 보드 위로 과하게 튀지 않게 했습니다.
+- `v1067-micro-tutorial-comfort` 훅을 추가해 오늘 스테이지 반복 진입 시 첫 터치 안내가 짧은 soft-repeat 모드로 표시됩니다.
+- 신규 검사 `check:reward-restoration-bridge`를 추가해 보상-복원 브리지, 보스 VFX density guard, 반복 튜토리얼 comfort, cache/atlas, workflow 연결, SVG 금지를 자동 확인합니다.
+- service worker cache를 `dream-library-cache-v1.0.67`로 갱신하고, `texture-atlas-manifest-v1.0.67.json`을 생성/선로드에 추가했습니다.
+- GitHub Pages / Quality Check workflow에 `check:reward-restoration-bridge`를 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- 손가락 시작 위젯 재도입 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 74개 check:* QA suite 통과
+npm run check:reward-restoration-bridge
+npm run check:first-touch-ux
+npm run check:ui-ux-stability
+npm run check:daily-start-arrow-cta
+npm run check:daily-quest-chain
+npm run check:daily-start-focus-assist
+npm run check:daily-start-precision-rail
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.67 reward restoration bridge boss VFX density guard and UX comfort patch
+```
+
+다음 업데이트 예정: v1.0.68 - Restoration Completion Theater, Reward Claim Motion, Boss Warning Readability Polish and Lobby Rhythm Patch
