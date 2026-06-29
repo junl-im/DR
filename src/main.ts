@@ -96,6 +96,9 @@ const REWARD_FLOW_POLISH_PATCH = 'v1063-reward-flow-polish';
 const DAILY_START_ARROW_CTA_PATCH = 'v1064-daily-start-arrow-only-cta';
 const LOBBY_UI_POLISH_PASS_PATCH = 'v1064-lobby-ui-polish-pass';
 const UI_UX_STABILITY_PASS_PATCH = 'v1065-ui-ux-stability-pass';
+const FIRST_TOUCH_MICRO_TUTORIAL_PATCH = 'v1066-first-touch-micro-tutorial';
+const GAME_UI_STABILITY_PASS_PATCH = 'v1066-game-ui-stability-pass';
+const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
@@ -108,6 +111,8 @@ const V1064_COMPAT_TOKENS = 'v1064-daily-start-arrow-only-cta v1064-lobby-ui-pol
 void V1064_COMPAT_TOKENS;
 const V1065_COMPAT_TOKENS = 'v1065-ui-ux-stability-pass dream-library-cache-v1.0.65 texture-atlas-manifest-v1.0.65.json';
 void V1065_COMPAT_TOKENS;
+const V1066_COMPAT_TOKENS = 'v1066-first-touch-micro-tutorial v1066-game-ui-stability-pass dream-library-cache-v1.0.66 texture-atlas-manifest-v1.0.66.json';
+void V1066_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -244,6 +249,8 @@ const el = {
   bossPattern: $('#boss-pattern'),
   bossTelegraph: $('#boss-telegraph'),
   bossAttackPreview: $('#boss-attack-preview'),
+  firstTouchGuide: $('#first-touch-guide'),
+  firstTouchGuideClose: $('#first-touch-guide-close') as HTMLButtonElement,
   bossIntroBanner: $('#boss-intro-banner'),
   bossCore: $('#boss-core'),
   bossAtlasSprite: $('#boss-atlas-sprite'),
@@ -418,7 +425,10 @@ const state = {
   dailyStartRailMeasureTimer: 0,
   bossIntroTimer: 0,
   dailyFocusAssistTimer: 0,
-  uiUxStabilityTimer: 0
+  uiUxStabilityTimer: 0,
+  gameUiStabilityTimer: 0,
+  firstTouchGuideTimer: 0,
+  firstTouchGuideSeen: readText(FIRST_TOUCH_GUIDE_SEEN_KEY) === FIRST_TOUCH_MICRO_TUTORIAL_PATCH
 };
 
 init();
@@ -455,6 +465,7 @@ async function init() {
   initDailyStartPrecisionRailWatcher();
   initDailyStartFocusAssistWatcher();
   initUiUxStabilityWatcher();
+  initGameUiStabilityWatcher();
   renderAuth();
   renderLobby();
   renderStats();
@@ -655,6 +666,7 @@ function bindEvents() {
   el.dailyStartSignal.addEventListener('click', startDailyStage);
   el.dailyStartSignal.addEventListener('pointerenter', () => document.body.classList.add('daily-start-signal-hovered'));
   el.dailyStartSignal.addEventListener('pointerleave', () => document.body.classList.remove('daily-start-signal-hovered'));
+  el.firstTouchGuideClose?.addEventListener('click', () => hideFirstTouchGuide(true));
   el.lobbyDeckRefreshButton.addEventListener('click', () => {
     renderLobbyMissionDeck(true);
     setStatus('로비 추천 미션을 현재 진행 상황 기준으로 다시 배치했습니다.');
@@ -984,6 +996,8 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   setBossFrame('idle');
   renderer.setBossHp(100, getBossPhase(100));
   renderGameHud();
+  showFirstTouchGuide(stage, options.daily ? 'daily' : 'stage');
+  scheduleGameUiStabilityPass();
   setStatus('같은 마법 오브젝트를 연결하세요.');
   updateMissionLabel();
   renderModifierStrip(stage.modifiers || []);
@@ -1152,10 +1166,15 @@ function syncBossAttackPreview(reason: 'idle' | 'combo' | 'time' | 'pressure' | 
   const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
   const info = getBossAttackPreview(reason, boss);
   preview.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
+  preview.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
+  const compactAttack = state.hudDensity === 'micro' || window.innerWidth <= 390 || window.innerHeight <= 700;
   preview.dataset.attackTone = info.tone;
+  preview.dataset.attackDensity = compactAttack ? 'compact' : 'readable';
   preview.innerHTML = `<span>다음 반격</span><b>${escapeHtml(info.title)}</b><small>${escapeHtml(info.tip)}</small>`;
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
+  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
 }
 
 function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch') {
@@ -1244,6 +1263,7 @@ function handleTileTap(point: BoardPoint) {
   const firstTile = getTileAt(state.board, first);
   const secondTile = getTileAt(state.board, point);
   if (connectionPath) {
+    hideFirstTouchGuide(true);
     state.locked = true;
     state.moves += 1;
     state.combo += 1;
@@ -1401,6 +1421,7 @@ function updateScreen(screen: ScreenName) {
   if (screen === 'lobby') renderLobby();
   if (screen !== 'lobby') clearDailyStartNudge();
   if (screen === 'settings') renderAuth();
+  scheduleGameUiStabilityPass();
   if (state.browserBackReady) {
     try { window.history.replaceState({ dreamLibrary: true, screen }, '', window.location.href); } catch {}
   }
@@ -1730,6 +1751,8 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-reward-flow-polish', REWARD_FLOW_POLISH_PATCH);
   el.app?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
   el.app?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
+  el.app?.setAttribute('data-first-touch-ux', FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
+  el.app?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
   el.app?.setAttribute('data-lobby-ui-polish', LOBBY_UI_POLISH_PASS_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
@@ -1741,6 +1764,8 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-first-touch-ux', FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
+  document.querySelector<HTMLElement>('.screen-game')?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-ui-polish', LOBBY_UI_POLISH_PASS_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
@@ -1785,6 +1810,7 @@ function applyAdaptiveVisualBudget() {
   el.dailyStartSignal?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartSignal?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
   el.dailyStartSignal?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
+  el.dailyStartSignal?.setAttribute('data-first-touch-ux', FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
   el.dailyStartBeam?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStartBeam?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartBeam?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
@@ -1819,6 +1845,8 @@ function syncDailyStartSignal() {
   document.body.classList.toggle('daily-start-coach-seen', state.dailyStartCoachSeen);
   document.body.dataset.startCoachPhase = state.dailyStartCoachSeen ? 'returning' : 'fresh';
   document.body.dataset.uiUxStability = UI_UX_STABILITY_PASS_PATCH;
+  document.body.dataset.firstTouchUx = FIRST_TOUCH_MICRO_TUTORIAL_PATCH;
+  document.body.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
   el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.app?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.app?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
@@ -1936,6 +1964,8 @@ function syncUiUxStabilityPass() {
   const quickActions = document.querySelector<HTMLElement>('.lobby-quick-actions');
   const selectedCard = document.querySelector<HTMLElement>('.selected-stage-card');
   document.body.dataset.uiUxStability = UI_UX_STABILITY_PASS_PATCH;
+  document.body.dataset.firstTouchUx = FIRST_TOUCH_MICRO_TUTORIAL_PATCH;
+  document.body.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
   document.body.dataset.uiUxDensity = tight ? 'tight' : 'comfortable';
   document.body.dataset.uiUxRailMode = railMode;
   document.body.classList.toggle('ui-ux-tight', tight);
@@ -1947,6 +1977,75 @@ function syncUiUxStabilityPass() {
     dailySignal.dataset.uiUxRailMode = railMode;
     dailySignal.dataset.uiUxDensity = tight ? 'tight' : 'comfortable';
   }
+}
+
+function initGameUiStabilityWatcher() {
+  window.addEventListener('resize', scheduleGameUiStabilityPass, { passive: true });
+  window.addEventListener('orientationchange', scheduleGameUiStabilityPass, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleGameUiStabilityPass();
+  });
+}
+
+function scheduleGameUiStabilityPass() {
+  if (state.gameUiStabilityTimer) window.clearTimeout(state.gameUiStabilityTimer);
+  state.gameUiStabilityTimer = window.setTimeout(syncGameUiStabilityPass, 100);
+}
+
+function syncGameUiStabilityPass() {
+  state.gameUiStabilityTimer = 0;
+  const tight = window.innerWidth <= 430 || window.innerHeight <= 700;
+  const micro = window.innerWidth <= 370 || window.innerHeight <= 640 || state.hudDensity === 'micro';
+  const battleStage = document.querySelector<HTMLElement>('.battle-stage');
+  const bossLane = document.querySelector<HTMLElement>('.boss-lane');
+  const gameHud = document.querySelector<HTMLElement>('.game-hud');
+  const boardHost = el.boardHost;
+  document.body.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
+  document.body.dataset.firstTouchUx = FIRST_TOUCH_MICRO_TUTORIAL_PATCH;
+  document.body.dataset.gameUiDensity = micro ? 'micro' : tight ? 'tight' : 'comfortable';
+  document.body.classList.toggle('game-ui-tight', tight || micro);
+  document.body.classList.toggle('game-ui-micro', micro);
+  [battleStage, bossLane, gameHud, boardHost, el.bossAttackPreview, el.firstTouchGuide].forEach((node) => {
+    node?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
+  });
+  el.firstTouchGuide?.setAttribute('data-first-touch-ux', FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
+  if (el.bossAttackPreview) el.bossAttackPreview.dataset.attackDensity = (tight || micro) ? 'compact' : 'readable';
+  if (gameHud) gameHud.dataset.hudDensity = micro ? 'micro' : tight ? 'compact' : state.hudDensity;
+}
+
+function showFirstTouchGuide(stage: any, source: 'daily' | 'stage' = 'stage') {
+  const guide = el.firstTouchGuide;
+  if (!guide) return;
+  if (state.firstTouchGuideTimer) window.clearTimeout(state.firstTouchGuideTimer);
+  const shouldShow = !state.firstTouchGuideSeen || source === 'daily';
+  guide.dataset.firstTouchUx = FIRST_TOUCH_MICRO_TUTORIAL_PATCH;
+  guide.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
+  guide.innerHTML = `<span>${source === 'daily' ? '오늘 첫 연결' : '첫 연결'}</span><b>${escapeHtml(stage.title)} · 같은 오브젝트 2개 선택</b><small>선택 타일은 커지지 않고 링/빛으로만 표시됩니다</small><button id="first-touch-guide-close" type="button" aria-label="첫 연결 안내 닫기">확인</button>`;
+  el.firstTouchGuideClose = $('#first-touch-guide-close') as HTMLButtonElement;
+  el.firstTouchGuideClose?.addEventListener('click', () => hideFirstTouchGuide(true), { once: true });
+  guide.classList.toggle('hidden', !shouldShow);
+  document.body.classList.toggle('first-touch-guide-active', shouldShow);
+  document.body.dataset.firstTouchGuideState = shouldShow ? 'visible' : 'seen';
+  if (shouldShow) {
+    state.firstTouchGuideTimer = window.setTimeout(() => hideFirstTouchGuide(false), 5200);
+  }
+  scheduleGameUiStabilityPass();
+}
+
+function hideFirstTouchGuide(markSeen = false) {
+  const guide = el.firstTouchGuide;
+  if (state.firstTouchGuideTimer) {
+    window.clearTimeout(state.firstTouchGuideTimer);
+    state.firstTouchGuideTimer = 0;
+  }
+  guide?.classList.add('hidden');
+  document.body.classList.remove('first-touch-guide-active');
+  document.body.dataset.firstTouchGuideState = markSeen ? 'closed' : 'resting';
+  if (markSeen) {
+    state.firstTouchGuideSeen = true;
+    writeText(FIRST_TOUCH_GUIDE_SEEN_KEY, FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
+  }
+  scheduleGameUiStabilityPass();
 }
 
 function scheduleDailyStartFocusAssist() {

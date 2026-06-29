@@ -39,3 +39,10 @@
 - `texture-atlas-manifest-v1.0.65.json`을 생성해 최신 캐시/프리로드 기준에 포함했습니다.
 - `v1065-ui-ux-stability-pass` 훅으로 시작 CTA, 로비 선택 카드, 뒤로가기 팝업의 터치 안정성과 작은 화면 밀도를 점검합니다.
 - 중복 ID 검사를 자동 QA에 포함해 스테이지 선택 카드와 접근성 참조가 흔들리지 않도록 했습니다.
+
+## v1.0.66 First-touch UX / Game UI Stability 파이프라인 메모
+
+- `texture-atlas-manifest-v1.0.66.json`을 생성해 최신 캐시/프리로드 기준에 포함했습니다.
+- 첫 매칭 마이크로 튜토리얼은 PNG/WebP 기반 기존 UI 시스템만 사용하며 SVG를 추가하지 않습니다.
+- 보스 반격 미리보기와 HUD 밀도는 런타임 `v1066-game-ui-stability-pass` 훅으로 작은 화면에서 자동 압축됩니다.
+- `check:first-touch-ux`가 첫 연결 안내, 보스 반격 compact 모드, cache/atlas, workflow 연결을 함께 확인합니다.

@@ -2301,3 +2301,65 @@ Apply 꿈의 서고 v1.0.65 UI UX stability duplicate ID guard touch safe start 
 ```
 
 다음 업데이트 예정: v1.0.66 - First-touch Micro Tutorial, Boss Telegraph VFX Trim, Restoration Reward Theater and Small-screen Lobby Rhythm Patch
+
+## v1.0.66 Patch Notes - First-touch Micro Tutorial, Boss Telegraph Density and Game UI Stability Patch
+
+v1.0.66은 v1.0.65의 UI/UX 안정화 위에 게임 진입 직후의 첫 플레이 경험과 전투 화면 밀도를 다시 다듬은 패치입니다. 특히 처음 퍼즐판에 들어온 플레이어가 무엇을 눌러야 하는지 알 수 있도록 짧은 첫 연결 안내를 넣고, 작은 화면에서는 HUD/보스 반격/보드 안내가 서로 밀리지 않도록 자동 압축합니다.
+
+### 변경점
+
+- `v1066-first-touch-micro-tutorial` 훅을 추가해 스테이지 시작 직후 `첫 연결` 안내 카드를 표시합니다.
+- 첫 연결 안내는 `같은 오브젝트 2개 선택`, `선택 타일은 링/빛으로 표시`처럼 실제 플레이 동작만 짧게 안내하며, 일정 시간 후 또는 확인/첫 매칭 시 자동으로 사라집니다.
+- `v1066-game-ui-stability-pass` 훅을 추가해 게임 HUD, 보스 라인, 보스 반격 미리보기, 퍼즐판, 첫 연결 안내의 밀도를 런타임으로 동기화합니다.
+- 작은 화면/낮은 높이에서는 보스 반격 미리보기가 compact 모드로 바뀌어 보드 영역을 덜 가립니다.
+- `game-ui-tight`, `game-ui-micro`, `first-touch-guide-active` 상태를 추가해 화면 크기와 안내 표시 여부에 따라 카드/보드 그림자/간격을 안정화했습니다.
+- 손가락 시작 위젯은 계속 제거 상태를 유지하고, 오늘의 복원 시작 CTA는 우측 화살표 중심으로 유지합니다.
+- 신규 검사 `check:first-touch-ux`를 추가해 첫 연결 안내, 게임 UI 안정화 훅, 보스 반격 compact 모드, cache/atlas, workflow 연결, SVG 금지를 자동 확인합니다.
+- service worker cache를 `dream-library-cache-v1.0.66`으로 갱신하고, `texture-atlas-manifest-v1.0.66.json`을 생성/선로드에 추가했습니다.
+- GitHub Pages / Quality Check workflow에 `check:first-touch-ux`를 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- 손가락 시작 위젯 재도입 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 73개 check:* QA suite 통과
+npm run check:first-touch-ux
+npm run check:ui-ux-stability
+npm run check:daily-start-arrow-cta
+npm run check:daily-quest-chain
+npm run check:daily-start-focus-assist
+npm run check:daily-start-precision-rail
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.66 first touch tutorial boss density and game UI stability patch
+```
+
+다음 업데이트 예정: v1.0.67 - Restoration Reward Theater, Boss Warning VFX Trim, Small-screen Lobby Rhythm and Daily Quest Readability Patch

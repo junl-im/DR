@@ -5375,3 +5375,124 @@ body.ui-ux-modal-open .daily-start-target-ring[data-daily-start-pointer="v1060-d
     transition: none !important;
   }
 }
+
+/* v1.0.66 first-touch micro tutorial and game UI stability pass */
+body[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  --game-ui-gap: clamp(0.42rem, 1.6vw, 0.72rem);
+  --first-touch-card-bg: linear-gradient(135deg, rgba(9, 24, 48, 0.95), rgba(31, 30, 75, 0.9));
+}
+.screen-game[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  gap: var(--game-ui-gap);
+}
+.game-hud[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  border-color: rgba(125, 220, 255, 0.22);
+  box-shadow: 0 16px 36px rgba(6, 21, 45, 0.34), inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+.battle-stage[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  display: grid;
+  gap: clamp(0.48rem, 1.5vw, 0.72rem);
+}
+.boss-lane[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  align-items: center;
+  gap: clamp(0.5rem, 1.8vw, 0.86rem);
+}
+.boss-attack-preview[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  min-width: 0;
+  transition: transform 160ms ease, opacity 160ms ease, max-height 160ms ease;
+}
+.boss-attack-preview[data-game-ui-stability="v1066-game-ui-stability-pass"][data-attack-density="compact"] {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'label title';
+  padding: 0.22rem 0.42rem;
+  max-height: 34px;
+}
+.boss-attack-preview[data-game-ui-stability="v1066-game-ui-stability-pass"][data-attack-density="compact"] small { display: none; }
+.first-touch-guide[data-first-touch-ux="v1066-first-touch-micro-tutorial"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'label title action' 'label tip action';
+  align-items: center;
+  gap: 0.06rem 0.52rem;
+  padding: 0.48rem 0.56rem;
+  border: 1px solid rgba(255, 231, 164, 0.28);
+  border-radius: 18px;
+  background: var(--first-touch-card-bg);
+  box-shadow: 0 12px 30px rgba(6, 21, 45, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  position: relative;
+  z-index: 5;
+}
+.first-touch-guide[data-first-touch-ux="v1066-first-touch-micro-tutorial"]::before {
+  content: '';
+  position: absolute;
+  inset: -40% auto -40% -18%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(125, 220, 255, 0.16), transparent);
+  transform: rotate(12deg);
+  animation: firstTouchSweep 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.first-touch-guide.hidden { display: none !important; }
+.first-touch-guide span {
+  grid-area: label;
+  align-self: stretch;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 0.46rem;
+  border-radius: 999px;
+  color: #061222;
+  background: linear-gradient(135deg, var(--gold-300), var(--emerald-500));
+  font-size: 0.56rem;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+.first-touch-guide b,
+.first-touch-guide small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.first-touch-guide b { grid-area: title; color: var(--gold-300); font-size: 0.68rem; letter-spacing: -0.025em; }
+.first-touch-guide small { grid-area: tip; color: rgba(230, 238, 255, 0.72); font-size: 0.55rem; }
+.first-touch-guide button {
+  grid-area: action;
+  min-height: 34px;
+  padding: 0.34rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  touch-action: manipulation;
+}
+body.first-touch-guide-active .pixi-board-host[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  box-shadow: inset 0 0 46px rgba(125, 220, 255, 0.12), 0 0 0 1px rgba(255, 231, 164, 0.16);
+}
+body.game-ui-tight .game-hud[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  padding: 0.5rem 0.58rem;
+  border-radius: 20px;
+}
+body.game-ui-tight .first-touch-guide[data-first-touch-ux="v1066-first-touch-micro-tutorial"] {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'label title action';
+  padding: 0.38rem 0.44rem;
+}
+body.game-ui-tight .first-touch-guide small { display: none; }
+body.game-ui-micro .boss-role-help,
+body.game-ui-micro .boss-role-stack span:not(.boss-state-icon) { display: none; }
+body.game-ui-micro .boss-lane[data-game-ui-stability="v1066-game-ui-stability-pass"] {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+@keyframes firstTouchSweep {
+  0%, 100% { transform: translateX(-20%) rotate(12deg); opacity: 0; }
+  45% { opacity: 1; }
+  70% { transform: translateX(320%) rotate(12deg); opacity: 0; }
+}
+@media (max-width: 380px), (max-height: 660px) {
+  .first-touch-guide[data-first-touch-ux="v1066-first-touch-micro-tutorial"] span { display: none; }
+  .first-touch-guide[data-first-touch-ux="v1066-first-touch-micro-tutorial"] { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'title action'; }
+  .first-touch-guide b { font-size: 0.62rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .first-touch-guide[data-first-touch-ux="v1066-first-touch-micro-tutorial"]::before { animation: none !important; }
+}
+
+/* v1066 compatibility anchors: v1066-first-touch-micro-tutorial v1066-game-ui-stability-pass */
