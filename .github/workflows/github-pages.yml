@@ -116,6 +116,7 @@ jobs:
           npm run check:daily-start-focus-assist
           npm run check:daily-quest-chain
           npm run check:daily-start-arrow-cta
+          npm run check:ui-ux-stability
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

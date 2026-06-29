@@ -95,6 +95,7 @@ const BOSS_ATTACK_READABILITY_PATCH = 'v1063-boss-attack-readability';
 const REWARD_FLOW_POLISH_PATCH = 'v1063-reward-flow-polish';
 const DAILY_START_ARROW_CTA_PATCH = 'v1064-daily-start-arrow-only-cta';
 const LOBBY_UI_POLISH_PASS_PATCH = 'v1064-lobby-ui-polish-pass';
+const UI_UX_STABILITY_PASS_PATCH = 'v1065-ui-ux-stability-pass';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
@@ -105,6 +106,8 @@ const LEGACY_V1063_COMPAT_TOKENS = 'v1063-daily-quest-chain v1063-boss-attack-re
 void LEGACY_V1063_COMPAT_TOKENS;
 const V1064_COMPAT_TOKENS = 'v1064-daily-start-arrow-only-cta v1064-lobby-ui-polish-pass dream-library-cache-v1.0.64 texture-atlas-manifest-v1.0.64.json';
 void V1064_COMPAT_TOKENS;
+const V1065_COMPAT_TOKENS = 'v1065-ui-ux-stability-pass dream-library-cache-v1.0.65 texture-atlas-manifest-v1.0.65.json';
+void V1065_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -414,7 +417,8 @@ const state = {
   startCoachMeasureTimer: 0,
   dailyStartRailMeasureTimer: 0,
   bossIntroTimer: 0,
-  dailyFocusAssistTimer: 0
+  dailyFocusAssistTimer: 0,
+  uiUxStabilityTimer: 0
 };
 
 init();
@@ -450,6 +454,7 @@ async function init() {
   initStartCoachOverlapWatcher();
   initDailyStartPrecisionRailWatcher();
   initDailyStartFocusAssistWatcher();
+  initUiUxStabilityWatcher();
   renderAuth();
   renderLobby();
   renderStats();
@@ -1541,7 +1546,9 @@ function openExitConfirm() {
     : state.screen === 'login'
       ? '첫 화면입니다. 옵션을 확인하거나 서고를 정리하고 나갈 수 있습니다.'
       : '첫 화면으로 돌아가거나, 옵션을 확인하거나, 서고를 정리하고 나갈 수 있습니다.';
+  el.exitConfirmModal.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   el.exitConfirmModal.classList.remove('hidden');
+  scheduleUiUxStabilityPass();
   setStatus('뒤로가기 선택지를 열었습니다.');
   HAPTIC.warning();
 }
@@ -1554,6 +1561,7 @@ function exitHomeFromBackSheet() {
 
 function closeExitConfirm() {
   el.exitConfirmModal.classList.add('hidden');
+  scheduleUiUxStabilityPass();
 }
 
 function confirmExitApp() {
@@ -1721,6 +1729,7 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
   el.app?.setAttribute('data-reward-flow-polish', REWARD_FLOW_POLISH_PATCH);
   el.app?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
+  el.app?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   el.app?.setAttribute('data-lobby-ui-polish', LOBBY_UI_POLISH_PASS_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
@@ -1731,6 +1740,7 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-ui-polish', LOBBY_UI_POLISH_PASS_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
@@ -1738,6 +1748,7 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-reward-detail-showcase', REWARD_DETAIL_SHOWCASE_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
@@ -1750,6 +1761,7 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
@@ -1759,6 +1771,7 @@ function applyAdaptiveVisualBudget() {
   el.dailyStageButton?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
+  el.dailyStageButton?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStartButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -1771,16 +1784,16 @@ function applyAdaptiveVisualBudget() {
   el.dailyStartSignal?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStartSignal?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartSignal?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
-  el.dailyStartSignal?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
+  el.dailyStartSignal?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   el.dailyStartBeam?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStartBeam?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartBeam?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
-  el.dailyStartBeam?.setAttribute('data-daily-start-arrow-cta', DAILY_START_ARROW_CTA_PATCH);
+  el.dailyStartBeam?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   el.dailyStartGuide?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   el.dailyStartGuide?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartGuide?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   el.dailyStartGuide?.setAttribute('data-lobby-ui-polish', LOBBY_UI_POLISH_PASS_PATCH);
-  el.dailyStartGuide?.setAttribute('data-lobby-ui-polish', LOBBY_UI_POLISH_PASS_PATCH);
+  el.dailyStartGuide?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   el.dailyStartFocusSummary?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyQuestChain?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   el.dailyRewardPromise?.setAttribute('data-daily-reward-drama', DAILY_REWARD_DRAMA_PATCH);
@@ -1805,6 +1818,7 @@ function syncDailyStartSignal() {
   document.body.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
   document.body.classList.toggle('daily-start-coach-seen', state.dailyStartCoachSeen);
   document.body.dataset.startCoachPhase = state.dailyStartCoachSeen ? 'returning' : 'fresh';
+  document.body.dataset.uiUxStability = UI_UX_STABILITY_PASS_PATCH;
   el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.app?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.app?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
@@ -1828,6 +1842,7 @@ function syncDailyStartSignal() {
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelectorAll<HTMLElement>('[data-start-signal]').forEach((node) => {
     node.dataset.startSignal = DAILY_START_SIGNAL_PATCH;
@@ -1859,14 +1874,16 @@ function syncDailyStartSignal() {
   el.dailyStageButton?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
+  el.dailyStageButton?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
   document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
-  el.dailyStartSignal?.setAttribute('aria-label', state.dailyStartCoachSeen ? '오른쪽 화살표가 가리키는 오늘의 복원으로 게임 시작' : '오른쪽 화살표가 오늘의 복원 버튼을 정확히 가리킵니다');
+  el.dailyStartSignal?.setAttribute('aria-label', state.dailyStartCoachSeen ? '오른쪽 화살표가 오늘의 복원을 가리킵니다. 누르면 바로 게임 시작' : '오른쪽 화살표가 오늘의 복원 버튼을 정확히 가리킵니다');
   const arrow = el.dailyStartSignal?.querySelector<HTMLElement>('.signal-arrow');
   if (arrow) arrow.textContent = '➜';
   scheduleStartCoachOverlapMeasure();
   scheduleDailyStartPrecisionRailMeasure();
   scheduleDailyStartFocusAssist();
+  scheduleUiUxStabilityPass();
   scheduleDailyStartNudge();
 }
 
@@ -1892,6 +1909,44 @@ function initDailyStartFocusAssistWatcher() {
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) scheduleDailyStartFocusAssist();
   });
+}
+
+function initUiUxStabilityWatcher() {
+  window.addEventListener('resize', scheduleUiUxStabilityPass, { passive: true });
+  window.addEventListener('orientationchange', scheduleUiUxStabilityPass, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleUiUxStabilityPass();
+  });
+}
+
+function scheduleUiUxStabilityPass() {
+  if (state.uiUxStabilityTimer) window.clearTimeout(state.uiUxStabilityTimer);
+  state.uiUxStabilityTimer = window.setTimeout(syncUiUxStabilityPass, 120);
+}
+
+function syncUiUxStabilityPass() {
+  state.uiUxStabilityTimer = 0;
+  const tight = window.innerWidth <= 430 || window.innerHeight <= 700;
+  const modalOpen = !el.exitConfirmModal.classList.contains('hidden') || !el.optionsModal.classList.contains('hidden') || !el.rewardModal.classList.contains('hidden');
+  const railMode = document.body.dataset.dailyStartRailMode || 'inactive';
+  const dailySignal = el.dailyStartSignal;
+  const stageButton = el.dailyStageButton;
+  const selectedCopy = document.querySelector<HTMLElement>('.selected-stage-copy');
+  const lobbyHero = document.querySelector<HTMLElement>('.lobby-hero');
+  const quickActions = document.querySelector<HTMLElement>('.lobby-quick-actions');
+  const selectedCard = document.querySelector<HTMLElement>('.selected-stage-card');
+  document.body.dataset.uiUxStability = UI_UX_STABILITY_PASS_PATCH;
+  document.body.dataset.uiUxDensity = tight ? 'tight' : 'comfortable';
+  document.body.dataset.uiUxRailMode = railMode;
+  document.body.classList.toggle('ui-ux-tight', tight);
+  document.body.classList.toggle('ui-ux-modal-open', modalOpen);
+  [el.app, dailySignal, stageButton, el.dailyStartGuide, el.dailyStartBeam, selectedCopy, selectedCard, quickActions, lobbyHero, el.exitConfirmModal].forEach((node) => {
+    node?.setAttribute('data-ui-ux-stability', UI_UX_STABILITY_PASS_PATCH);
+  });
+  if (dailySignal) {
+    dailySignal.dataset.uiUxRailMode = railMode;
+    dailySignal.dataset.uiUxDensity = tight ? 'tight' : 'comfortable';
+  }
 }
 
 function scheduleDailyStartFocusAssist() {
@@ -2927,6 +2982,7 @@ function renderDailyPanel() {
     el.dailyStartFocusSummary = $('#daily-start-focus-summary');
     el.dailyQuestChain = $('#daily-quest-chain');
     scheduleDailyStartFocusAssist();
+    scheduleUiUxStabilityPass();
   }
   el.dailyRankTabs.querySelectorAll('[data-daily-rank]').forEach((button: Element) => {
     button.classList.toggle('selected', (button as HTMLElement).dataset.dailyRank === state.dailyRankScope);

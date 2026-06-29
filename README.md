@@ -2242,3 +2242,62 @@ Apply 꿈의 서고 v1.0.64 arrow-only daily start CTA and lobby UI polish patch
 ```
 
 다음 업데이트 예정: v1.0.65 - Daily Start First-touch Tutorial, Lobby Visual Hierarchy, Boss Telegraph VFX Trim and Restoration Reward Theater Patch
+
+## v1.0.65 Patch Notes - UI/UX Stability, Duplicate ID Guard and Touch-safe Start CTA Patch
+
+v1.0.65는 v1.0.64의 우측 화살표 시작 CTA를 유지하면서, 로비 UI/UX 안정성과 작은 화면 배치를 다시 점검한 패치입니다. 특히 중복 ID/DOM 흔들림, 시작 CTA 터치 영역, 뒤로가기 팝업 밀도, 스테이지 선택 카드의 줄바꿈 안정성을 QA 기준으로 묶어 불안정 요소를 줄였습니다.
+
+### 변경점
+
+- `v1065-ui-ux-stability-pass` 훅을 추가해 시작 CTA, 오늘의 복원 버튼, 빛줄기, 시작 안내 카드, 선택 스테이지 카드, 뒤로가기 팝업을 한 번에 점검합니다.
+- `selected-stage-copy` 구조를 명시해 스테이지 제목/설명 영역이 작은 화면에서 안전하게 줄바꿈되도록 정리했습니다.
+- 시작 CTA는 손가락 없이 우측 화살표 전용 구조를 유지하면서, 최소 터치 높이와 `touch-action: manipulation`을 보강했습니다.
+- 뒤로가기 팝업에 safe-area padding과 최소 버튼 높이를 적용해 모바일 하단 영역에서 버튼이 눌리기 쉽게 조정했습니다.
+- 런타임 `syncUiUxStabilityPass()`를 추가해 작은 화면/모달 오픈/시작 빛줄기 상태에 따라 `ui-ux-tight`, `ui-ux-modal-open`, `uiUxRailMode` 상태를 동기화합니다.
+- 신규 검사 `check:ui-ux-stability`를 추가해 중복 ID, 손가락 위젯 재등장, 최신 cache/atlas, workflow 연결, 금지 문구를 자동 확인합니다.
+- service worker cache를 `dream-library-cache-v1.0.65`로 갱신하고, `texture-atlas-manifest-v1.0.65.json`을 생성/선로드에 추가했습니다.
+- GitHub Pages / Quality Check workflow에 `check:ui-ux-stability`를 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 72개 check:* QA suite 통과
+npm run check:ui-ux-stability
+npm run check:daily-start-arrow-cta
+npm run check:daily-quest-chain
+npm run check:daily-start-focus-assist
+npm run check:daily-start-precision-rail
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.65 UI UX stability duplicate ID guard touch safe start CTA and modal density patch
+```
+
+다음 업데이트 예정: v1.0.66 - First-touch Micro Tutorial, Boss Telegraph VFX Trim, Restoration Reward Theater and Small-screen Lobby Rhythm Patch
