@@ -90,12 +90,17 @@ const BOSS_INTRO_POLISH_PATCH = 'v1061-boss-intro-polish';
 const DAILY_START_FOCUS_ASSIST_PATCH = 'v1062-daily-start-focus-assist';
 const LOBBY_GUIDE_COMFORT_PATCH = 'v1062-lobby-guide-comfort';
 const BOSS_INTRO_PRELOAD_PATCH = 'v1062-boss-intro-preload';
+const DAILY_QUEST_CHAIN_PATCH = 'v1063-daily-quest-chain';
+const BOSS_ATTACK_READABILITY_PATCH = 'v1063-boss-attack-readability';
+const REWARD_FLOW_POLISH_PATCH = 'v1063-reward-flow-polish';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
 const LEGACY_V1062_COMPAT_TOKENS = 'v1062-daily-start-focus-assist v1062-lobby-guide-comfort v1062-boss-intro-preload dream-library-cache-v1.0.62 texture-atlas-manifest-v1.0.62.json';
 void LEGACY_V1062_COMPAT_TOKENS;
+const LEGACY_V1063_COMPAT_TOKENS = 'v1063-daily-quest-chain v1063-boss-attack-readability v1063-reward-flow-polish dream-library-cache-v1.0.63 texture-atlas-manifest-v1.0.63.json';
+void LEGACY_V1063_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -218,6 +223,7 @@ const el = {
   dailyStartBeam: $('#daily-start-beam'),
   dailyStartGuide: $('#daily-start-guide'),
   dailyStartFocusSummary: $('#daily-start-focus-summary'),
+  dailyQuestChain: $('#daily-quest-chain'),
   dailyRewardPromise: $('#daily-reward-promise'),
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
@@ -230,6 +236,7 @@ const el = {
   bossName: $('#boss-name'),
   bossPattern: $('#boss-pattern'),
   bossTelegraph: $('#boss-telegraph'),
+  bossAttackPreview: $('#boss-attack-preview'),
   bossIntroBanner: $('#boss-intro-banner'),
   bossCore: $('#boss-core'),
   bossAtlasSprite: $('#boss-atlas-sprite'),
@@ -247,6 +254,7 @@ const el = {
   rewardTitle: $('#reward-title'),
   rewardMessage: $('#reward-message'),
   rewardItems: $('#reward-items'),
+  rewardFlowNext: $('#reward-flow-next'),
   nextStageButton: $('#next-stage-button'),
   replayStageButton: $('#replay-stage-button'),
   restorationDetailModal: $('#restoration-detail-modal'),
@@ -1118,9 +1126,33 @@ function applyBossWarningReadability(reason: 'combo' | 'time' | 'pressure' | 'mi
   }
 }
 
+function getBossAttackPreview(reason: 'idle' | 'combo' | 'time' | 'pressure' | 'mismatch' = 'idle', boss: any = state.activeBoss || {}) {
+  const warningEvery = Number(boss.comboWarningEvery || 6);
+  const warningSeconds = Number(boss.warningSeconds || 15);
+  const baseTip = boss.attackLine || '짝을 맞춰 반격을 끊으세요.';
+  if (reason === 'combo') return { tone: 'combo', title: `${warningEvery}콤보 반격`, tip: '연속 매칭 후 예고가 켜지면 바로 다음 짝을 찾으세요.' };
+  if (reason === 'time') return { tone: 'time', title: `${warningSeconds}초 이하 시간 압박`, tip: '힌트/섞기를 아끼지 말고 흐름을 회복하세요.' };
+  if (reason === 'pressure') return { tone: 'pressure', title: '주기 압박', tip: '멈추면 점수와 시간이 흔들립니다.' };
+  if (reason === 'mismatch') return { tone: 'mistake', title: '실수 반격', tip: '잘못 고른 타일은 다시 확인하고 연결선을 짧게 보세요.' };
+  return { tone: 'ready', title: `${warningEvery}콤보 또는 ${warningSeconds}초 경고`, tip: baseTip };
+}
+
+function syncBossAttackPreview(reason: 'idle' | 'combo' | 'time' | 'pressure' | 'mismatch' = 'idle') {
+  const preview = el.bossAttackPreview;
+  if (!preview) return;
+  const boss = state.activeBoss || getBossForStage(getStageById(state.selectedStageId));
+  const info = getBossAttackPreview(reason, boss);
+  preview.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
+  preview.dataset.attackTone = info.tone;
+  preview.innerHTML = `<span>다음 반격</span><b>${escapeHtml(info.title)}</b><small>${escapeHtml(info.tip)}</small>`;
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
+  document.querySelector<HTMLElement>('.boss-lane')?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
+}
+
 function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch') {
   setBossFrame('warn');
   const boss = state.activeBoss || {};
+  syncBossAttackPreview(reason);
   const reasonText: Record<string, string> = {
     combo: '콤보 반격',
     time: '시간 압박',
@@ -1647,6 +1679,9 @@ function applyAdaptiveVisualBudget() {
   document.body.dataset.dailyStartFocusAssist = DAILY_START_FOCUS_ASSIST_PATCH;
   document.body.dataset.lobbyGuideComfort = LOBBY_GUIDE_COMFORT_PATCH;
   document.body.dataset.bossIntroPreload = BOSS_INTRO_PRELOAD_PATCH;
+  document.body.dataset.dailyQuestChain = DAILY_QUEST_CHAIN_PATCH;
+  document.body.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
+  document.body.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
   document.body.dataset.effectBudget = budget.name;
   document.body.dataset.renderBudgetReason = budget.reason;
   document.body.style.setProperty('--season-vfx-alpha', String(budget.vfxAlpha));
@@ -1666,6 +1701,7 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-back-sheet-clarity', BACK_SHEET_CLARITY_PATCH);
   el.app?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   el.app?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  el.app?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   el.app?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.app?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   el.app?.setAttribute('data-daily-reward-drama', DAILY_REWARD_DRAMA_PATCH);
@@ -1673,6 +1709,9 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   el.app?.setAttribute('data-boss-intro-preload', BOSS_INTRO_PRELOAD_PATCH);
   el.app?.setAttribute('data-boss-intro-polish', BOSS_INTRO_POLISH_PATCH);
+  el.app?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
+  el.app?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
+  el.app?.setAttribute('data-reward-flow-polish', REWARD_FLOW_POLISH_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -1681,11 +1720,13 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-reward-detail-showcase', REWARD_DETAIL_SHOWCASE_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
@@ -1700,6 +1741,7 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   el.dailyStageButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
@@ -1722,6 +1764,7 @@ function applyAdaptiveVisualBudget() {
   el.dailyStartGuide?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartGuide?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   el.dailyStartFocusSummary?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
+  el.dailyQuestChain?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   el.dailyRewardPromise?.setAttribute('data-daily-reward-drama', DAILY_REWARD_DRAMA_PATCH);
 }
 
@@ -1739,6 +1782,9 @@ function syncDailyStartSignal() {
   document.body.dataset.dailyStartPrecision = DAILY_START_PRECISION_RAIL_PATCH;
   document.body.dataset.lobbyContentGuide = LOBBY_CONTENT_GUIDE_PATCH;
   document.body.dataset.dailyRewardDrama = DAILY_REWARD_DRAMA_PATCH;
+  document.body.dataset.dailyQuestChain = DAILY_QUEST_CHAIN_PATCH;
+  document.body.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
+  document.body.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
   document.body.classList.toggle('daily-start-coach-seen', state.dailyStartCoachSeen);
   document.body.dataset.startCoachPhase = state.dailyStartCoachSeen ? 'returning' : 'fresh';
   el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -1763,6 +1809,7 @@ function syncDailyStartSignal() {
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelectorAll<HTMLElement>('[data-start-signal]').forEach((node) => {
     node.dataset.startSignal = DAILY_START_SIGNAL_PATCH;
@@ -1789,6 +1836,7 @@ function syncDailyStartSignal() {
   el.dailyStartGuide?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartGuide?.setAttribute('data-lobby-guide-comfort', LOBBY_GUIDE_COMFORT_PATCH);
   el.dailyStartFocusSummary?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
+  el.dailyQuestChain?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
   el.dailyRewardPromise?.setAttribute('data-daily-reward-drama', DAILY_REWARD_DRAMA_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
@@ -1845,6 +1893,8 @@ function syncDailyStartFocusAssist() {
   el.dailyStartGuide?.setAttribute('data-guide-mode', guideMode);
   el.dailyStartFocusSummary?.setAttribute('data-daily-start-focus', DAILY_START_FOCUS_ASSIST_PATCH);
   el.dailyStartFocusSummary?.setAttribute('data-guide-mode', guideMode);
+  el.dailyQuestChain?.setAttribute('data-daily-quest-chain', DAILY_QUEST_CHAIN_PATCH);
+  el.dailyQuestChain?.setAttribute('data-guide-mode', guideMode);
   el.dailyStartSignal?.setAttribute('data-guide-mode', guideMode);
 }
 
@@ -2537,6 +2587,7 @@ function renderBossPanel() {
   bossLane?.setAttribute('data-boss-season-polish', BOSS_SEASON_POLISH_PATCH);
   bossLane?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   bossLane?.setAttribute('data-boss-warning-readability', BOSS_WARNING_READABILITY_PATCH);
+  bossLane?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
   bossLane?.setAttribute('data-season-claim-visual', getSeasonClaimVisualState());
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
   el.bossName.textContent = boss.name;
@@ -2546,6 +2597,7 @@ function renderBossPanel() {
   el.bossRoleHelp.textContent = role.help;
   el.bossTelegraph.textContent = `${boss.telegraphTitle || '반격 예고'} · ${boss.telegraphLine || boss.attackLine || '연결을 이어가세요.'}`;
   el.bossTelegraph.classList.add('hidden');
+  syncBossAttackPreview('idle');
   el.bossCore.dataset.bossId = boss.id;
   el.bossCore.dataset.phase = 'stable';
   el.bossCore.dataset.bossFrame = 'idle';
@@ -2824,6 +2876,21 @@ function closeRestorationDetail() {
   delete el.restorationDetailModal.dataset.detailMode;
 }
 
+function renderDailyQuestChain(stage: any, boss: any, focusProject: any) {
+  const daily = state.dailyChallenge;
+  const rewardTotal = Number(stage.reward.amount || 0) + Number(daily.rewardBoost || 0);
+  const projectCurrent = focusProject ? getRestorationCurrent(focusProject) : 0;
+  const projectNeed = Number(focusProject?.need || 0);
+  const projectReady = focusProject ? projectCurrent >= projectNeed : false;
+  const comboNeed = Number(boss?.comboWarningEvery || 6);
+  const warningSeconds = Number(boss?.warningSeconds || 15);
+  return `<div id="daily-quest-chain" class="daily-quest-chain" data-daily-quest-chain="${DAILY_QUEST_CHAIN_PATCH}" aria-label="오늘의 복원 퀘스트 체인">` +
+    `<span class="chain-reward"><b>보상</b><strong>${escapeHtml(stage.reward.label)} ×${rewardTotal}</strong><small>오늘 추가 보상 포함</small></span>` +
+    `<span class="chain-boss"><b>보스</b><strong>${escapeHtml(boss.name)}</strong><small>${comboNeed}콤보/잔여 ${warningSeconds}초 주의</small></span>` +
+    `<span class="chain-restore ${projectReady ? 'ready' : ''}"><b>복원</b><strong>${escapeHtml(focusProject?.label || '서고')}</strong><small>${projectNeed ? `${Math.min(projectCurrent, projectNeed)}/${projectNeed}` : '보상 연결'} ${projectReady ? '완료 가능' : '진행'}</small></span>` +
+    `</div>`;
+}
+
 function renderDailyPanel() {
   const daily = state.dailyChallenge;
   const stage = getStageById(daily.stageId);
@@ -2836,8 +2903,9 @@ function renderDailyPanel() {
     el.dailyRewardPromise.innerHTML = `<span>오늘 보상</span><b>${escapeHtml(stage.reward.label)} ×${stage.reward.amount + daily.rewardBoost}</b><small>${escapeHtml(boss.name)} 보스 퍼즐 후 ${escapeHtml(focusProject?.label || '서고')} 복원에 연결</small>`;
   }
   if (el.dailyStartGuide) {
-    el.dailyStartGuide.innerHTML = `<div><p class="eyebrow">Start Route</p><strong>오늘의 복원이 게임 시작입니다</strong><small>${escapeHtml(stage.title)} · ${escapeHtml(boss.name)} · ${escapeHtml(stage.reward.label)} 보상</small><p id="daily-start-focus-summary" class="daily-start-focus-summary" data-daily-start-focus="${DAILY_START_FOCUS_ASSIST_PATCH}"><span>오늘 목표</span><b>${escapeHtml(stage.reward.label)} ×${stage.reward.amount + daily.rewardBoost}</b><small>${escapeHtml(focusProject?.label || '서고 복원')}으로 연결</small></p></div><ol><li><b>1</b><span>오늘의 복원</span></li><li><b>2</b><span>보스 퍼즐</span></li><li><b>3</b><span>${escapeHtml(focusProject?.label || '서고 복원')}</span></li></ol>`;
+    el.dailyStartGuide.innerHTML = `<div><p class="eyebrow">Start Route</p><strong>오늘의 복원이 게임 시작입니다</strong><small>${escapeHtml(stage.title)} · ${escapeHtml(boss.name)} · ${escapeHtml(stage.reward.label)} 보상</small><p id="daily-start-focus-summary" class="daily-start-focus-summary" data-daily-start-focus="${DAILY_START_FOCUS_ASSIST_PATCH}"><span>오늘 목표</span><b>${escapeHtml(stage.reward.label)} ×${stage.reward.amount + daily.rewardBoost}</b><small>${escapeHtml(focusProject?.label || '서고 복원')}으로 연결</small></p>${renderDailyQuestChain(stage, boss, focusProject)}</div><ol><li><b>1</b><span>오늘의 복원</span></li><li><b>2</b><span>보스 퍼즐</span></li><li><b>3</b><span>${escapeHtml(focusProject?.label || '서고 복원')}</span></li></ol>`;
     el.dailyStartFocusSummary = $('#daily-start-focus-summary');
+    el.dailyQuestChain = $('#daily-quest-chain');
     scheduleDailyStartFocusAssist();
   }
   el.dailyRankTabs.querySelectorAll('[data-daily-rank]').forEach((button: Element) => {
@@ -2855,6 +2923,9 @@ function showBossIntroBanner(stage: any) {
   document.body.dataset.dailyStartFocusAssist = DAILY_START_FOCUS_ASSIST_PATCH;
   document.body.dataset.lobbyGuideComfort = LOBBY_GUIDE_COMFORT_PATCH;
   document.body.dataset.bossIntroPreload = BOSS_INTRO_PRELOAD_PATCH;
+  document.body.dataset.dailyQuestChain = DAILY_QUEST_CHAIN_PATCH;
+  document.body.dataset.bossAttackReadability = BOSS_ATTACK_READABILITY_PATCH;
+  document.body.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-intro-polish', BOSS_INTRO_POLISH_PATCH);
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-intro-preload', BOSS_INTRO_PRELOAD_PATCH);
   banner.dataset.bossIntroPolish = BOSS_INTRO_POLISH_PATCH;
@@ -2909,6 +2980,9 @@ function openReward(stars: number, score: number) {
   const progressText = focusProject ? `${focusProject.label} ${Math.min(current, need)}/${need}` : '복원 재료 보관';
   el.rewardTitle.textContent = `${stage.title} 복원 완료`;
   el.rewardMessage.textContent = `별 ${stars}개 · ${formatNumber(score)}점 · 획득 재료가 ${progressText}에 반영되었습니다.`;
+  el.rewardModal.dataset.rewardFlowPolish = REWARD_FLOW_POLISH_PATCH;
+  el.rewardFlowNext?.setAttribute('data-reward-flow-polish', REWARD_FLOW_POLISH_PATCH);
+  if (el.rewardFlowNext) el.rewardFlowNext.innerHTML = `<span>다음 흐름</span><b>${escapeHtml(progressText)}</b><small>${focusProject ? `${escapeHtml(focusProject.label)} 복원으로 이어집니다` : '복원 재료가 서고에 보관됩니다'}</small>`;
   const dailyBonus = state.currentBoardId === 'daily' ? `<span class="reward-chip reward-chip-daily">오늘의 별가루 ×${state.dailyChallenge.rewardBoost}</span>` : '';
   const seasonBonus = isSummerSeasonStage(stage) ? `<span class="reward-chip reward-chip-season">${escapeHtml(SUMMER_SEASON_EVENT.currencyLabel)} ×${SUMMER_SEASON_EVENT.clearReward}</span>` : '';
   const seasonPassBonus = state.lastSeasonPassReward ? `<span class="reward-chip reward-chip-season-pass">패스 ${state.lastSeasonPassReward.milestone} 클리어 · ${escapeHtml(state.lastSeasonPassReward.label)} ×${state.lastSeasonPassReward.amount}</span>` : '';

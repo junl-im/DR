@@ -2127,3 +2127,60 @@ Apply 꿈의 서고 v1.0.62 daily start focus assist guide comfort rail integrit
 ```
 
 다음 업데이트 예정: v1.0.63 - First Session Tutorial, Daily Quest Chain, Boss Attack Readability and Reward Flow Polish Patch
+
+## v1.0.63 Patch Notes - Daily Quest Chain, Boss Attack Readability and Reward Flow Polish Patch
+
+v1.0.63은 v1.0.62의 `오늘의 복원` 시작 안내를 다음 단계로 확장한 패치입니다. 시작 버튼을 명확히 가리키는 것에 더해, 누르면 어떤 보상을 얻고 어떤 보스 퍼즐을 거쳐 어느 복원 목표로 이어지는지 한눈에 보이도록 `오늘의 복원`을 퀘스트 체인 형태로 정리했습니다. 게임 진입 후에는 보스 반격 정보를 작게 상시 요약하고, 클리어 보상 팝업에서도 다음 복원 흐름을 바로 보여주도록 다듬었습니다.
+
+### 변경점
+
+- `v1063-daily-quest-chain` 훅을 추가해 `오늘의 복원` 안내 카드 안에 `보상 → 보스 → 복원` 3단계 퀘스트 체인을 표시합니다.
+- 일일 보상 총량, 오늘 보스 이름, 보스 반격 조건, 연결되는 복원 프로젝트 진행도를 한 번에 보여주도록 `renderDailyQuestChain()`을 추가했습니다.
+- `full / quiet / micro` 안내 모드에 맞춰 퀘스트 체인도 자동 압축되도록 모바일 밀도 CSS를 보강했습니다.
+- `v1063-boss-attack-readability` 훅과 `boss-attack-preview`를 추가해 보스 반격 조건을 상시 미리보기로 보여줍니다.
+- 콤보 반격, 시간 압박, 주기 압박, 실수 반격 상태에 따라 보스 반격 프리뷰 문구와 톤이 자동으로 바뀌도록 `syncBossAttackPreview()`를 추가했습니다.
+- `v1063-reward-flow-polish` 훅과 `reward-flow-next`를 추가해 스테이지 클리어 후 획득 재료가 어느 복원 목표로 이어지는지 보상 팝업 안에서 바로 안내합니다.
+- service worker cache를 `dream-library-cache-v1.0.63`으로 갱신하고, `texture-atlas-manifest-v1.0.63.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:daily-quest-chain`을 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 70개 check:* QA suite 통과
+npm run check:daily-quest-chain
+npm run check:daily-start-focus-assist
+npm run check:daily-start-precision-rail
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.63 daily quest chain boss attack readability and reward flow polish patch
+```
+
+다음 업데이트 예정: v1.0.64 - Daily Quest Tutorial Timing, Boss Telegraph VFX Trim and Restoration Reward Theater Patch

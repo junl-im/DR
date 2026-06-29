@@ -5043,3 +5043,154 @@ body[data-daily-start-rail-integrity="rerouted"] .daily-start-target-ring[data-d
 }
 
 /* v1062 compatibility anchors: v1062-daily-start-focus-assist v1062-lobby-guide-comfort v1062-boss-intro-preload */
+
+/* v1.0.63 daily quest chain, boss attack readability and reward flow polish */
+.daily-start-guide[data-daily-quest-chain="v1063-daily-quest-chain"] {
+  position: relative;
+  overflow: hidden;
+}
+.daily-start-guide[data-daily-quest-chain="v1063-daily-quest-chain"]::after {
+  content: '';
+  position: absolute;
+  left: 0.86rem;
+  right: 0.86rem;
+  bottom: 0.36rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 231, 164, 0.36), rgba(125, 220, 255, 0.26), transparent);
+  pointer-events: none;
+}
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.34rem;
+  margin-top: 0.48rem;
+}
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] span {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  min-height: 56px;
+  padding: 0.42rem 0.48rem;
+  border-radius: 18px;
+  border: 1px solid rgba(125, 220, 255, 0.18);
+  background: linear-gradient(135deg, rgba(6, 21, 45, 0.4), rgba(16, 43, 87, 0.24));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] b {
+  width: fit-content;
+  padding: 0.12rem 0.34rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--emerald-500));
+  font-size: 0.5rem;
+  font-weight: 1000;
+}
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] strong,
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] strong { color: var(--gold-300); font-size: 0.64rem; }
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] small { color: rgba(230, 238, 255, 0.68); font-size: 0.52rem; }
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] .chain-boss { border-color: rgba(143, 107, 255, 0.26); }
+.daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] .chain-restore.ready { border-color: rgba(54, 214, 164, 0.42); box-shadow: 0 0 22px rgba(54, 214, 164, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+body[data-daily-start-guide-mode="quiet"] .daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.24rem;
+  margin-top: 0.34rem;
+}
+body[data-daily-start-guide-mode="quiet"] .daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] span {
+  min-height: 38px;
+  padding: 0.26rem 0.34rem;
+  border-radius: 14px;
+}
+body[data-daily-start-guide-mode="quiet"] .daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] small { display: none; }
+body[data-daily-start-guide-mode="micro"] .daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] {
+  grid-template-columns: 1fr;
+  margin-top: 0.32rem;
+}
+body[data-daily-start-guide-mode="micro"] .daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] span {
+  min-height: 34px;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+body[data-daily-start-guide-mode="micro"] .daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] small { display: none; }
+.boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.04rem 0.34rem;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0.14rem 0 0.1rem;
+  padding: 0.28rem 0.46rem;
+  border-radius: 15px;
+  border: 1px solid rgba(125, 220, 255, 0.2);
+  background: linear-gradient(135deg, rgba(125, 220, 255, 0.1), rgba(143, 107, 255, 0.1));
+}
+.boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] span {
+  grid-row: span 2;
+  padding: 0.12rem 0.32rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--sky-200), var(--gold-300));
+  font-size: 0.48rem;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+.boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] b,
+.boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] b { color: var(--gold-300); font-size: 0.58rem; }
+.boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] small { color: rgba(230, 238, 255, 0.68); font-size: 0.5rem; }
+.boss-attack-preview[data-attack-tone="time"] { border-color: rgba(255, 231, 164, 0.34); }
+.boss-attack-preview[data-attack-tone="mistake"] { border-color: rgba(143, 107, 255, 0.38); }
+.boss-attack-preview[data-attack-tone="pressure"] { border-color: rgba(125, 220, 255, 0.34); }
+.reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.06rem 0.42rem;
+  align-items: center;
+  margin: -0.2rem 0 0.62rem;
+  padding: 0.5rem 0.62rem;
+  border-radius: 18px;
+  border: 1px solid rgba(54, 214, 164, 0.24);
+  background: linear-gradient(135deg, rgba(54, 214, 164, 0.12), rgba(255, 231, 164, 0.1));
+  text-align: left;
+}
+.reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] span {
+  grid-row: span 2;
+  padding: 0.16rem 0.38rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--emerald-500), var(--gold-300));
+  font-size: 0.54rem;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+.reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] b,
+.reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] b { color: var(--gold-300); font-size: 0.7rem; }
+.reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] small { color: rgba(230, 238, 255, 0.7); font-size: 0.58rem; }
+@media (max-width: 430px), (max-height: 700px) {
+  .boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] small { display: none; }
+  .boss-attack-preview[data-boss-attack-readability="v1063-boss-attack-readability"] { padding: 0.24rem 0.38rem; }
+  .reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] { grid-template-columns: 1fr; text-align: center; }
+  .reward-flow-next[data-reward-flow-polish="v1063-reward-flow-polish"] span { grid-row: auto; justify-self: center; }
+}
+@media (max-height: 700px) {
+  .daily-quest-chain[data-daily-quest-chain="v1063-daily-quest-chain"] small { display: none; }
+}
+
+/* v1063 compatibility anchors: v1063-daily-quest-chain v1063-boss-attack-readability v1063-reward-flow-polish */
