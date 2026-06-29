@@ -12,7 +12,7 @@ const workflows = ['.github/workflows/github-pages.yml', '.github/workflows/qual
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.57', '1.0.58', '1.0.59', '1.0.60'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
+if (!['1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
 for (const token of ['v1057-daily-start-signal-widget', 'v1057-back-action-sheet-restored', 'v1057-mobile-exit-options-qa']) {
   has(main, token, 'main v1.0.57 token');
   has(css, token, 'css v1.0.57 token');

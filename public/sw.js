@@ -1,7 +1,7 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.60';
+const CACHE_NAME = 'dream-library-cache-v1.0.61';
 const CACHE_SLIM_POLICY = 'v1052-cache-shop-reward-mobile-store';
 const PREVIOUS_CACHE_SLIM_POLICY = 'v1042-cache-slim-account-time-pressure';
-const LEGACY_QA_CACHE_ANCHORS = ['dream-library-cache-v1.0.60', 'dream-library-cache-v1.0.59', 'dream-library-cache-v1.0.58', 'dream-library-cache-v1.0.57', 'dream-library-cache-v1.0.56', 'dream-library-cache-v1.0.55', 'dream-library-cache-v1.0.54', 'dream-library-cache-v1.0.53', 'dream-library-cache-v1.0.52', 'dream-library-cache-v1.0.51', 'dream-library-cache-v1.0.50', 'dream-library-cache-v1.0.49', 'dream-library-cache-v1.0.48', 'dream-library-cache-v1.0.47', 'texture-atlas-manifest-v1.0.60.json', 'texture-atlas-manifest-v1.0.59.json', 'texture-atlas-manifest-v1.0.58.json', 'texture-atlas-manifest-v1.0.57.json', 'texture-atlas-manifest-v1.0.56.json', 'texture-atlas-manifest-v1.0.55.json', 'texture-atlas-manifest-v1.0.54.json', 'texture-atlas-manifest-v1.0.53.json', 'texture-atlas-manifest-v1.0.52.json', 'texture-atlas-manifest-v1.0.51.json', 'texture-atlas-manifest-v1.0.50.json', 'texture-atlas-manifest-v1.0.49.json', 'texture-atlas-manifest-v1.0.48.json', 'texture-atlas-manifest-v1.0.47.json'];
+const LEGACY_QA_CACHE_ANCHORS = ['dream-library-cache-v1.0.61', 'dream-library-cache-v1.0.60', 'dream-library-cache-v1.0.59', 'dream-library-cache-v1.0.58', 'dream-library-cache-v1.0.57', 'dream-library-cache-v1.0.56', 'dream-library-cache-v1.0.55', 'dream-library-cache-v1.0.54', 'dream-library-cache-v1.0.53', 'dream-library-cache-v1.0.52', 'dream-library-cache-v1.0.51', 'dream-library-cache-v1.0.50', 'dream-library-cache-v1.0.49', 'dream-library-cache-v1.0.48', 'dream-library-cache-v1.0.47', 'texture-atlas-manifest-v1.0.61.json', 'texture-atlas-manifest-v1.0.60.json', 'texture-atlas-manifest-v1.0.59.json', 'texture-atlas-manifest-v1.0.58.json', 'texture-atlas-manifest-v1.0.57.json', 'texture-atlas-manifest-v1.0.56.json', 'texture-atlas-manifest-v1.0.55.json', 'texture-atlas-manifest-v1.0.54.json', 'texture-atlas-manifest-v1.0.53.json', 'texture-atlas-manifest-v1.0.52.json', 'texture-atlas-manifest-v1.0.51.json', 'texture-atlas-manifest-v1.0.50.json', 'texture-atlas-manifest-v1.0.49.json', 'texture-atlas-manifest-v1.0.48.json', 'texture-atlas-manifest-v1.0.47.json'];
 const LEGACY_AUTH_MODAL_CACHE_SLIM_POLICY = 'v1043-cache-slim-auth-modal-boss-role';
 const CORE_ASSETS = [
   './',
@@ -28,6 +28,7 @@ const CORE_ASSETS = [
   './assets/effects/import-vfx-02.png',
   './assets/effects/import-vfx-04.png',
   './assets/effects/import-vfx-06.png',
+  './assets/meta/texture-atlas-manifest-v1.0.61.json',
   './assets/meta/texture-atlas-manifest-v1.0.60.json',
   './assets/meta/texture-atlas-manifest-v1.0.59.json',
   './assets/meta/texture-atlas-manifest-v1.0.57.json',

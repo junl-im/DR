@@ -11,7 +11,7 @@ const pages = read('.github/workflows/github-pages.yml');
 const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
-if (!['1.0.52', '1.0.53', '1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60'].includes(pkg.version)) errors.push(`package version must be 1.0.52 or 1.0.53, got ${pkg.version}`);
+if (!['1.0.52', '1.0.53', '1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61'].includes(pkg.version)) errors.push(`package version must be 1.0.52 or 1.0.53, got ${pkg.version}`);
 if (!pkg.scripts['check:summer-shop-reward-polish']) errors.push('missing package script check:summer-shop-reward-polish');
 has(stages, 'finale-cutin-script', 'new finale cut-in shop item');
 has(stages, 'sourceHint', 'shop item source hints');

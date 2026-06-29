@@ -2018,3 +2018,58 @@ Apply 꿈의 서고 v1.0.60 daily restore target pointer and start CTA precision
 ```
 
 다음 업데이트 예정: v1.0.61 - First Session Tutorial, Daily Reward Drama, Boss Intro Polish and Lobby Content Guide Patch
+
+## v1.0.61 Patch Notes - Dynamic Daily Start Precision Rail, Lobby Guide and Boss Intro Polish Patch
+
+v1.0.61은 v1.0.60의 `오늘의 복원` 타깃 포인터를 한 단계 더 안정화한 패치입니다. 고정형 말풍선/빛줄기가 화면 폭과 compact 상태에 따라 버튼 중심에서 어긋날 수 있는 문제를 줄이기 위해, 로비 런타임에서 말풍선과 `오늘의 복원` 버튼의 실제 위치를 측정해 빛줄기 길이와 각도를 자동 보정하도록 개선했습니다.
+
+### 변경점
+
+- `v1061-daily-start-precision-rail` 훅을 추가해 `오늘의 복원` 버튼, 타깃 링, 시작 말풍선, 빛줄기를 하나의 정밀 시작 유도 레일로 연결했습니다.
+- `daily-start-beam`을 추가해 말풍선에서 버튼 중심까지 이어지는 빛줄기의 시작점, 길이, 각도를 런타임 CSS 변수로 보정하도록 했습니다.
+- 화면 resize, orientationchange, visibility 복귀, 시작 코치 compact 전환 시 `syncDailyStartPrecisionRail()`을 다시 실행해 작은 폰/세로 화면/복귀 상황에서도 포인터 방향성이 유지되도록 했습니다.
+- 로비 히어로 아래에 `오늘의 복원이 게임 시작입니다` 안내 카드를 추가해 `오늘의 복원 → 보스 퍼즐 → 서고 복원` 흐름을 명확히 보여줍니다.
+- 오늘의 복원 패널에 `오늘 보상` 프리뷰를 추가해 보상, 보스, 복원 프로젝트 연결을 한 줄로 이해할 수 있게 했습니다.
+- 스테이지 진입 시 `보스 등장` 인트로 배너를 짧게 보여줘 로비에서 퍼즐/보스 전투로 전환되는 체감을 강화했습니다.
+- service worker cache를 `dream-library-cache-v1.0.61`로 갱신하고, `texture-atlas-manifest-v1.0.61.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:daily-start-precision-rail`을 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### 검사
+
+```text
+npm run typecheck
+전체 68개 check:* QA suite 통과
+npm run check:daily-start-precision-rail
+npm run check:daily-start-pointer
+npm run check:start-coach-overlap
+npm run check:daily-route-assist
+npm run check:start-signal-back-exit
+npm run check:reward-detail-touch-qa
+npm run check:engine-render-budget
+npm run check:mobile-playability
+npm run check:no-minimap-topbar
+npm run check:assets
+npm run check:health
+npm run check:workflows
+npm run build:github
+```
+
+`npm run build:github`는 성공했습니다. Vite의 일부 chunk 크기 경고는 있었지만 빌드 실패는 아닙니다.
+
+### GitHub Desktop 커밋 메시지
+
+```text
+Apply 꿈의 서고 v1.0.61 dynamic daily start precision rail lobby guide and boss intro polish patch
+```
+
+다음 업데이트 예정: v1.0.62 - First Session Tutorial, Daily Reward Drama, Boss Attack Readability and Lobby Content Progression Patch

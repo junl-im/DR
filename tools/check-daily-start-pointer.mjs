@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (pkg.version !== '1.0.60') errors.push(`package version must be 1.0.60, got ${pkg.version}`);
+if (!['1.0.60', '1.0.61'].includes(pkg.version)) errors.push(`package version must be 1.0.60, got ${pkg.version}`);
 if (!pkg.scripts['check:daily-start-pointer']) errors.push('missing package script check:daily-start-pointer');
 
 for (const token of ['v1060-daily-start-target-pointer']) {
@@ -23,7 +23,7 @@ for (const token of ['v1060-daily-start-target-pointer']) {
 
 has(index, 'id="daily-start-target-ring"', 'daily start target ring element');
 has(index, '<em>오늘의 복원</em>을 눌러요', 'bubble explicitly names the target button');
-has(index, 'data-daily-start-pointer="v1060-daily-start-target-pointer" aria-describedby="daily-start-signal daily-route-ribbon">오늘의 복원</button>', 'daily restore button carries precise pointer hook');
+if (!index.includes('data-daily-start-pointer="v1060-daily-start-target-pointer"') || !index.includes('aria-describedby="daily-start-signal daily-route-ribbon')) errors.push('daily restore button carries precise pointer hook');
 has(main, 'const DAILY_START_TARGET_POINTER_PATCH', 'daily pointer patch constant');
 has(main, "document.body.dataset.dailyStartPointer", 'daily pointer body dataset');
 has(main, "'.daily-start-target-ring'", 'daily target ring runtime sync');

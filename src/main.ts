@@ -83,6 +83,10 @@ const START_COACH_SMART_OVERLAP_PATCH = 'v1059-smart-start-coach-overlap-qa';
 const BACK_SHEET_CLARITY_PATCH = 'v1059-back-sheet-clarity-touch-qa';
 const LOBBY_POLISH_LAYER_PATCH = 'v1059-lobby-polish-layering';
 const DAILY_START_TARGET_POINTER_PATCH = 'v1060-daily-start-target-pointer';
+const DAILY_START_PRECISION_RAIL_PATCH = 'v1061-daily-start-precision-rail';
+const LOBBY_CONTENT_GUIDE_PATCH = 'v1061-lobby-content-guide';
+const DAILY_REWARD_DRAMA_PATCH = 'v1061-daily-reward-drama';
+const BOSS_INTRO_POLISH_PATCH = 'v1061-boss-intro-polish';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
@@ -206,6 +210,9 @@ const el = {
   dailyRankTabs: $('#daily-rank-tabs'),
   dailyStartButton: $('#daily-start-button'),
   dailyStartSignal: $('#daily-start-signal') as HTMLButtonElement,
+  dailyStartBeam: $('#daily-start-beam'),
+  dailyStartGuide: $('#daily-start-guide'),
+  dailyRewardPromise: $('#daily-reward-promise'),
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
   timeLabel: $('#time-label'),
@@ -217,6 +224,7 @@ const el = {
   bossName: $('#boss-name'),
   bossPattern: $('#boss-pattern'),
   bossTelegraph: $('#boss-telegraph'),
+  bossIntroBanner: $('#boss-intro-banner'),
   bossCore: $('#boss-core'),
   bossAtlasSprite: $('#boss-atlas-sprite'),
   bossHpLabel: $('#boss-hp-label'),
@@ -385,7 +393,9 @@ const state = {
   dailyStartNudgeTimer: 0,
   dailyStartSignalTouched: false,
   dailyStartCoachSeen: readText(DAILY_START_COACH_SEEN_KEY) === START_COACH_SMART_OVERLAP_PATCH,
-  startCoachMeasureTimer: 0
+  startCoachMeasureTimer: 0,
+  dailyStartRailMeasureTimer: 0,
+  bossIntroTimer: 0
 };
 
 init();
@@ -419,6 +429,7 @@ async function init() {
   initLobbyScrollGuard();
   initBackNavigation();
   initStartCoachOverlapWatcher();
+  initDailyStartPrecisionRailWatcher();
   renderAuth();
   renderLobby();
   renderStats();
@@ -941,6 +952,7 @@ async function startSelectedStage(options: { daily?: boolean } = {}) {
   clearInterval(state.timerId);
   state.timerId = window.setInterval(tickTimer, 1000);
   updateScreen('game');
+  showBossIntroBanner(stage);
   if (!renderer.boardApp) await renderer.initBoard(el.boardHost, handleTileTap);
   await renderer.renderBoard(state.board);
   renderBoardCameraGuide(difficulty);
@@ -1619,6 +1631,10 @@ function applyAdaptiveVisualBudget() {
   document.body.dataset.backSheetClarity = BACK_SHEET_CLARITY_PATCH;
   document.body.dataset.lobbyPolishLayer = LOBBY_POLISH_LAYER_PATCH;
   document.body.dataset.dailyStartPointer = DAILY_START_TARGET_POINTER_PATCH;
+  document.body.dataset.dailyStartPrecision = DAILY_START_PRECISION_RAIL_PATCH;
+  document.body.dataset.lobbyContentGuide = LOBBY_CONTENT_GUIDE_PATCH;
+  document.body.dataset.dailyRewardDrama = DAILY_REWARD_DRAMA_PATCH;
+  document.body.dataset.bossIntroPolish = BOSS_INTRO_POLISH_PATCH;
   document.body.dataset.effectBudget = budget.name;
   document.body.dataset.renderBudgetReason = budget.reason;
   document.body.style.setProperty('--season-vfx-alpha', String(budget.vfxAlpha));
@@ -1638,7 +1654,10 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-back-sheet-clarity', BACK_SHEET_CLARITY_PATCH);
   el.app?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   el.app?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
-  el.app?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  el.app?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  el.app?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
+  el.app?.setAttribute('data-daily-reward-drama', DAILY_REWARD_DRAMA_PATCH);
+  el.app?.setAttribute('data-boss-intro-polish', BOSS_INTRO_POLISH_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -1647,7 +1666,9 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
-  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-reward-detail-showcase', REWARD_DETAIL_SHOWCASE_PATCH);
   document.querySelector<HTMLElement>('.summer-season-panel')?.setAttribute('data-real-device-touch-qa', REAL_DEVICE_TOUCH_QA_PATCH);
@@ -1658,17 +1679,26 @@ function applyAdaptiveVisualBudget() {
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
-  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   el.dailyStageButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  el.dailyStageButton?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStartButton?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.dailyStartButton?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.daily-start-stack')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.dailyStartSignal?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   el.dailyStartSignal?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
+  el.dailyStartSignal?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  el.dailyStartBeam?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  el.dailyStartGuide?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
+  el.dailyRewardPromise?.setAttribute('data-daily-reward-drama', DAILY_REWARD_DRAMA_PATCH);
 }
 
 function qualityText(tier: string) {
@@ -1682,6 +1712,9 @@ function syncDailyStartSignal() {
   document.body.dataset.startCoachOverlap = START_COACH_SMART_OVERLAP_PATCH;
   document.body.dataset.lobbyPolishLayer = LOBBY_POLISH_LAYER_PATCH;
   document.body.dataset.dailyStartPointer = DAILY_START_TARGET_POINTER_PATCH;
+  document.body.dataset.dailyStartPrecision = DAILY_START_PRECISION_RAIL_PATCH;
+  document.body.dataset.lobbyContentGuide = LOBBY_CONTENT_GUIDE_PATCH;
+  document.body.dataset.dailyRewardDrama = DAILY_REWARD_DRAMA_PATCH;
   document.body.classList.toggle('daily-start-coach-seen', state.dailyStartCoachSeen);
   document.body.dataset.startCoachPhase = state.dailyStartCoachSeen ? 'returning' : 'fresh';
   el.app?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -1701,6 +1734,9 @@ function syncDailyStartSignal() {
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-lobby-polish-layer', LOBBY_POLISH_LAYER_PATCH);
   document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  document.querySelector<HTMLElement>('.lobby-hero')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
   document.querySelector<HTMLElement>('.daily-panel')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
   document.querySelectorAll<HTMLElement>('[data-start-signal]').forEach((node) => {
     node.dataset.startSignal = DAILY_START_SIGNAL_PATCH;
@@ -1711,6 +1747,7 @@ function syncDailyStartSignal() {
   document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  document.querySelector<HTMLElement>('.daily-route-ribbon')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.daily-start-stack')?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.dailyStageButton?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   el.dailyStartButton?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
@@ -1718,10 +1755,17 @@ function syncDailyStartSignal() {
   el.dailyStartSignal?.setAttribute('data-daily-route-assist', DAILY_START_ROUTE_ASSIST_PATCH);
   el.dailyStartSignal?.setAttribute('data-start-coach-overlap', START_COACH_SMART_OVERLAP_PATCH);
   el.dailyStartSignal?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  el.dailyStartSignal?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  el.dailyStartBeam?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
+  el.dailyStartGuide?.setAttribute('data-lobby-content-guide', LOBBY_CONTENT_GUIDE_PATCH);
+  el.dailyRewardPromise?.setAttribute('data-daily-reward-drama', DAILY_REWARD_DRAMA_PATCH);
   el.dailyStageButton?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  el.dailyStageButton?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-pointer', DAILY_START_TARGET_POINTER_PATCH);
+  document.querySelector<HTMLElement>('.daily-start-target-ring')?.setAttribute('data-daily-start-precision', DAILY_START_PRECISION_RAIL_PATCH);
   el.dailyStartSignal?.setAttribute('aria-label', state.dailyStartCoachSeen ? '오늘의 복원 버튼으로 게임 시작' : '오늘의 복원 버튼을 눌러 게임 시작 - 화살표가 가리키는 버튼입니다');
   scheduleStartCoachOverlapMeasure();
+  scheduleDailyStartPrecisionRailMeasure();
   scheduleDailyStartNudge();
 }
 
@@ -1731,6 +1775,54 @@ function initStartCoachOverlapWatcher() {
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) scheduleStartCoachOverlapMeasure();
   });
+}
+
+function initDailyStartPrecisionRailWatcher() {
+  window.addEventListener('resize', scheduleDailyStartPrecisionRailMeasure, { passive: true });
+  window.addEventListener('orientationchange', scheduleDailyStartPrecisionRailMeasure, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleDailyStartPrecisionRailMeasure();
+  });
+}
+
+function scheduleDailyStartPrecisionRailMeasure() {
+  if (state.dailyStartRailMeasureTimer) window.clearTimeout(state.dailyStartRailMeasureTimer);
+  state.dailyStartRailMeasureTimer = window.setTimeout(syncDailyStartPrecisionRail, 96);
+}
+
+function syncDailyStartPrecisionRail() {
+  state.dailyStartRailMeasureTimer = 0;
+  const root = document.querySelector<HTMLElement>('.lobby-quick-actions');
+  const signal = el.dailyStartSignal;
+  const target = el.dailyStageButton;
+  const beam = el.dailyStartBeam;
+  if (!root || !signal || !target || !beam || state.screen !== 'lobby') {
+    beam?.classList.add('hidden');
+    document.body.dataset.dailyStartRailMode = 'inactive';
+    return;
+  }
+  const rootRect = root.getBoundingClientRect();
+  const signalRect = signal.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  if (!rootRect.width || !targetRect.width || !signalRect.width) return;
+  const compact = document.body.classList.contains('daily-start-overlap-safe') || window.innerWidth <= 430;
+  const from = compact
+    ? { x: signalRect.left + signalRect.width / 2, y: signalRect.bottom + 4 }
+    : { x: signalRect.right + 4, y: signalRect.top + signalRect.height / 2 };
+  const to = compact
+    ? { x: targetRect.left + targetRect.width / 2, y: targetRect.top - 4 }
+    : { x: targetRect.left - 5, y: targetRect.top + targetRect.height / 2 };
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.max(18, Math.sqrt(dx * dx + dy * dy));
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  root.style.setProperty('--daily-rail-x', `${from.x - rootRect.left}px`);
+  root.style.setProperty('--daily-rail-y', `${from.y - rootRect.top}px`);
+  root.style.setProperty('--daily-rail-length', `${length}px`);
+  root.style.setProperty('--daily-rail-angle', `${angle}deg`);
+  beam.classList.remove('hidden');
+  beam.dataset.railMode = compact ? 'compact' : 'direct';
+  document.body.dataset.dailyStartRailMode = compact ? 'compact' : 'direct';
 }
 
 function scheduleStartCoachOverlapMeasure() {
@@ -1763,6 +1855,7 @@ function measureStartCoachOverlap() {
   const overlaps = rectsOverlap(signalRect, targetRect, 8) || rectsOverlap(signalRect, ribbonRect, 8) || (ringRect ? rectsOverlap(signalRect, ringRect, 6) : false) || (imageRect ? rectsOverlap(signalRect, imageRect, 2) : false);
   document.body.classList.toggle('daily-start-overlap-safe', viewportTight || overlaps);
   document.body.dataset.startCoachOverlapState = viewportTight || overlaps ? 'compact' : 'clear';
+  scheduleDailyStartPrecisionRailMeasure();
 }
 
 function clearDailyStartNudge() {
@@ -2659,9 +2752,33 @@ function renderDailyPanel() {
   const modifierText = daily.modifiers.length ? daily.modifiers.map((item: string) => ({ fog: '안개', locked: '잠금', timeSeal: '시간 봉인', bossPressure: '보스 압박', sunTide: '햇살 파도', pearlChain: '진주 연쇄', festivalBoss: '축제 보스' } as Record<string, string>)[item] || item).join(' · ') : '기본 규칙';
   el.dailyTitle.textContent = `오늘의 복원 · ${stage.title}`;
   el.dailyDesc.textContent = `${daily.label} · ${modifierText} · ${daily.rewardLabel}`;
+  const boss = getBossForStage(stage);
+  const focusProject = RESTORATION_PROJECTS.find((project) => project.types.includes(stage.reward.type)) || RESTORATION_PROJECTS.find((project) => !state.restorationCompleted[project.id]) || RESTORATION_PROJECTS[0];
+  if (el.dailyRewardPromise) {
+    el.dailyRewardPromise.innerHTML = `<span>오늘 보상</span><b>${escapeHtml(stage.reward.label)} ×${stage.reward.amount + daily.rewardBoost}</b><small>${escapeHtml(boss.name)} 보스 퍼즐 후 ${escapeHtml(focusProject?.label || '서고')} 복원에 연결</small>`;
+  }
+  if (el.dailyStartGuide) {
+    el.dailyStartGuide.innerHTML = `<div><p class="eyebrow">Start Route</p><strong>오늘의 복원이 게임 시작입니다</strong><small>${escapeHtml(stage.title)} · ${escapeHtml(boss.name)} · ${escapeHtml(stage.reward.label)} 보상</small></div><ol><li><b>1</b><span>오늘의 복원</span></li><li><b>2</b><span>보스 퍼즐</span></li><li><b>3</b><span>${escapeHtml(focusProject?.label || '서고 복원')}</span></li></ol>`;
+  }
   el.dailyRankTabs.querySelectorAll('[data-daily-rank]').forEach((button: Element) => {
     button.classList.toggle('selected', (button as HTMLElement).dataset.dailyRank === state.dailyRankScope);
   });
+}
+
+
+function showBossIntroBanner(stage: any) {
+  const boss = getBossForStage(stage);
+  const banner = el.bossIntroBanner;
+  if (!banner) return;
+  if (state.bossIntroTimer) window.clearTimeout(state.bossIntroTimer);
+  document.body.dataset.bossIntroPolish = BOSS_INTRO_POLISH_PATCH;
+  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-boss-intro-polish', BOSS_INTRO_POLISH_PATCH);
+  banner.dataset.bossIntroPolish = BOSS_INTRO_POLISH_PATCH;
+  banner.innerHTML = `<span>보스 등장</span><strong>${escapeHtml(boss.name)}</strong><small>${escapeHtml(stage.title)} · 짝을 맞춰 반격을 끊으세요</small>`;
+  banner.classList.remove('hidden', 'boss-intro-pop');
+  void banner.offsetWidth;
+  banner.classList.add('boss-intro-pop');
+  state.bossIntroTimer = window.setTimeout(() => banner.classList.add('hidden'), 1900);
 }
 
 function showComboCutin(combo: number) {
