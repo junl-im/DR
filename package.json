@@ -90,7 +90,8 @@
     "check:reward-restoration-bridge": "node tools/check-reward-restoration-bridge.mjs",
     "check:restoration-theater-next-goal": "node tools/check-restoration-theater-next-goal.mjs",
     "check:restoration-detail-ceremony": "node tools/check-restoration-detail-ceremony.mjs",
-    "check:modal-action-safe-area": "node tools/check-modal-action-safe-area.mjs"
+    "check:modal-action-safe-area": "node tools/check-modal-action-safe-area.mjs",
+    "check:reward-modal-flow-polish": "node tools/check-reward-modal-flow-polish.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -104,5 +105,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.70"
+  "version": "1.0.71"
 }

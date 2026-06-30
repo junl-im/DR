@@ -6054,3 +6054,71 @@ button[data-compact-modal-action-flow="v1070-compact-modal-action-flow"] {
 }
 
 /* v1070 compatibility anchors: v1070-reward-action-accessibility-flow v1070-restoration-ceremony-feedback-cue v1070-boss-counter-line-polish v1070-mobile-safe-area-modal-qa v1070-compact-modal-action-flow */
+
+
+/* v1.0.71 modal button microcopy, restoration feedback cue, boss contrast and small reward modal QA */
+.reward-flow-next[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] .reward-action-summary {
+  display: inline-flex;
+  justify-self: start;
+  margin-top: 0.2rem;
+  padding: 0.14rem 0.48rem;
+  border-radius: 999px;
+  background: rgba(125, 220, 255, 0.1);
+  color: rgba(230, 238, 255, 0.78);
+  font-size: 0.52rem;
+  font-style: normal;
+  font-weight: 900;
+}
+.reward-modal[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] button[data-primary-reward-action="restore-first"],
+.reward-modal[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] .reward-next-goal button[data-primary-reward-action="restore-first"] {
+  background: linear-gradient(135deg, var(--gold-300), var(--emerald-500));
+  color: var(--navy-950);
+  box-shadow: 0 0 26px rgba(255, 231, 164, 0.26), 0 14px 26px rgba(6,21,45,0.24);
+}
+.reward-modal[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] button[data-primary-reward-action="stage-next"] {
+  border-color: rgba(125, 220, 255, 0.46);
+  box-shadow: 0 0 22px rgba(125, 220, 255, 0.16);
+}
+.reward-modal[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] button[data-secondary-reward-action="later"] {
+  opacity: 0.86;
+}
+.reward-next-goal[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] .reward-action-hint {
+  color: rgba(255, 231, 164, 0.9);
+}
+.restoration-ceremony-strip[data-restoration-completion-cue="v1071-restoration-completion-feedback-cue"] .ceremony-feedback-cue {
+  border: 1px solid rgba(255, 231, 164, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.restoration-ceremony-strip[data-restoration-completion-cue="v1071-restoration-completion-feedback-cue"][data-ceremony-state="ready"] .ceremony-feedback-cue {
+  background: linear-gradient(135deg, rgba(255,231,164,0.2), rgba(125,220,255,0.12));
+}
+.boss-telegraph[data-boss-telegraph-contrast="v1071-boss-telegraph-contrast-safe"] {
+  border-width: 1.5px;
+  background: linear-gradient(90deg, rgba(9,20,43,0.82), rgba(143,107,255,0.28));
+  text-shadow: 0 1px 0 rgba(0,0,0,0.38);
+}
+.boss-attack-preview[data-boss-telegraph-contrast="v1071-boss-telegraph-contrast-safe"] b {
+  color: rgba(255, 242, 196, 0.96);
+}
+body.small-reward-modal-tight .reward-modal[data-small-reward-modal-qa="v1071-small-reward-modal-qa"] .reward-card {
+  gap: 0.42rem;
+  padding: 0.78rem;
+}
+body.small-reward-modal-tight .reward-modal[data-small-reward-modal-qa="v1071-small-reward-modal-qa"] .reward-items {
+  max-height: 108px;
+  overflow: auto;
+}
+body.small-reward-modal-tight .reward-modal[data-small-reward-modal-qa="v1071-small-reward-modal-qa"] .reward-next-goal,
+body.small-reward-modal-tight .reward-modal[data-small-reward-modal-qa="v1071-small-reward-modal-qa"] .reward-restoration-bridge {
+  padding: 0.52rem;
+}
+@media (max-width: 390px), (max-height: 650px) {
+  .reward-flow-next[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] .reward-action-summary {
+    display: none;
+  }
+  .boss-telegraph[data-boss-telegraph-contrast="v1071-boss-telegraph-contrast-safe"] {
+    font-size: 0.62rem;
+    padding: 0.32rem 0.48rem;
+  }
+}
+/* v1071 compatibility anchors: v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix */

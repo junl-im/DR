@@ -115,6 +115,11 @@ const RESTORATION_CEREMONY_FEEDBACK_PATCH = 'v1070-restoration-ceremony-feedback
 const BOSS_COUNTER_LINE_POLISH_PATCH = 'v1070-boss-counter-line-polish';
 const MOBILE_SAFE_AREA_QA_PATCH = 'v1070-mobile-safe-area-modal-qa';
 const COMPACT_MODAL_ACTION_FLOW_PATCH = 'v1070-compact-modal-action-flow';
+const MODAL_BUTTON_MICROCOPY_PATCH = 'v1071-modal-button-microcopy-priority';
+const RESTORATION_COMPLETION_CUE_PATCH = 'v1071-restoration-completion-feedback-cue';
+const BOSS_TELEGRAPH_CONTRAST_PATCH = 'v1071-boss-telegraph-contrast-safe';
+const SMALL_REWARD_MODAL_QA_PATCH = 'v1071-small-reward-modal-qa';
+const LEADERBOARD_DUPLICATE_TAG_FIX_PATCH = 'v1071-leaderboard-duplicate-tag-fix';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 
@@ -138,6 +143,8 @@ const V1069_COMPAT_TOKENS = 'v1069-lobby-rhythm-cleanup v1069-restoration-detail
 void V1069_COMPAT_TOKENS;
 const V1070_COMPAT_TOKENS = 'v1070-reward-action-accessibility-flow v1070-restoration-ceremony-feedback-cue v1070-boss-counter-line-polish v1070-mobile-safe-area-modal-qa v1070-compact-modal-action-flow dream-library-cache-v1.0.70 texture-atlas-manifest-v1.0.70.json';
 void V1070_COMPAT_TOKENS;
+const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
+void V1071_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -458,6 +465,7 @@ const state = {
   startCoachMeasureTimer: 0,
   dailyStartRailMeasureTimer: 0,
   bossIntroTimer: 0,
+  modalActionPriorityTimer: 0,
   dailyFocusAssistTimer: 0,
   uiUxStabilityTimer: 0,
   gameUiStabilityTimer: 0,
@@ -1274,6 +1282,8 @@ function triggerBossTelegraph(reason: 'combo' | 'time' | 'pressure' | 'mismatch'
   const softVfx = state.hudDensity === 'micro' || window.innerWidth <= 390 || window.innerHeight <= 700;
   el.bossTelegraph.dataset.bossVfxDensityGuard = BOSS_VFX_DENSITY_GUARD_PATCH;
   el.bossTelegraph.dataset.vfxDensity = softVfx ? 'soft' : 'normal';
+  el.bossTelegraph.dataset.bossTelegraphContrast = BOSS_TELEGRAPH_CONTRAST_PATCH;
+  el.bossAttackPreview?.setAttribute('data-boss-telegraph-contrast', BOSS_TELEGRAPH_CONTRAST_PATCH);
   // Legacy QA anchor: renderer.playBossWarning(boss.shakePower || 7, getBossWarningPattern(reason), boss.id ||
   renderer.playBossWarning(Math.max(3, Math.round((boss.shakePower || 7) * (softVfx ? 0.62 : 1))), getBossWarningPattern(reason), boss.id || 'forgotten-spirit');
   if (state.stageModifiers.includes('festivalBoss') || isSummerSeasonStage(getStageById(state.selectedStageId))) {
@@ -2100,6 +2110,8 @@ function syncGameUiStabilityPass() {
   document.body.dataset.bossCounterLinePolish = BOSS_COUNTER_LINE_POLISH_PATCH;
   document.body.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
   document.body.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
+  document.body.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
+  document.body.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
   document.body.dataset.gameUiDensity = micro ? 'micro' : tight ? 'tight' : 'comfortable';
   document.body.classList.toggle('game-ui-tight', tight || micro);
   document.body.classList.toggle('game-ui-micro', micro);
@@ -2123,6 +2135,7 @@ function syncGameUiStabilityPass() {
     el.bossAttackPreview.dataset.bossWarningIconSet = BOSS_WARNING_ICON_SET_PATCH;
     el.bossAttackPreview.dataset.bossCounterLinePolish = BOSS_COUNTER_LINE_POLISH_PATCH;
     el.bossAttackPreview.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
+    el.bossAttackPreview.dataset.bossTelegraphContrast = BOSS_TELEGRAPH_CONTRAST_PATCH;
     el.bossAttackPreview.dataset.iconTrim = micro ? 'icon-only' : tight ? 'compact' : 'readable';
     if (!el.bossAttackPreview.dataset.warningIcon) el.bossAttackPreview.dataset.warningIcon = 'ready';
   }
@@ -3196,7 +3209,7 @@ function openRestorationDetail(projectId: string) {
   el.restorationDetailModal.dataset.ceremonyState = completed ? 'completed' : ready ? 'ready' : 'progress';
   el.restorationDetailItems.setAttribute('data-restoration-detail-ceremony', RESTORATION_DETAIL_CEREMONY_PATCH);
   el.restorationDetailItems.setAttribute('data-restoration-ceremony-feedback', RESTORATION_CEREMONY_FEEDBACK_PATCH);
-  const ceremony = `<div class="restoration-ceremony-strip" data-restoration-detail-ceremony="${RESTORATION_DETAIL_CEREMONY_PATCH}" data-restoration-ceremony-feedback="${RESTORATION_CEREMONY_FEEDBACK_PATCH}" data-compact-modal-action-flow="${COMPACT_MODAL_ACTION_FLOW_PATCH}" data-ceremony-state="${completed ? 'completed' : ready ? 'ready' : 'progress'}"><span>${completed ? '완료식' : ready ? '완료 준비' : '복원 진행'}</span><b>${escapeHtml(project.label)}</b><small>${ratio}% · ${escapeHtml(project.reward)}</small><i aria-hidden="true"><em style="width:${ratio}%"></em></i><em class="ceremony-feedback-cue" aria-hidden="true">${ready ? '완료 가능' : completed ? '완료됨' : '진행 중'}</em></div>`;
+  const ceremony = `<div class="restoration-ceremony-strip" data-restoration-detail-ceremony="${RESTORATION_DETAIL_CEREMONY_PATCH}" data-restoration-ceremony-feedback="${RESTORATION_CEREMONY_FEEDBACK_PATCH}" data-restoration-completion-cue="${RESTORATION_COMPLETION_CUE_PATCH}" data-compact-modal-action-flow="${COMPACT_MODAL_ACTION_FLOW_PATCH}" data-ceremony-state="${completed ? 'completed' : ready ? 'ready' : 'progress'}"><span>${completed ? '완료식' : ready ? '완료 준비' : '복원 진행'}</span><b>${escapeHtml(project.label)}</b><small>${ratio}% · ${escapeHtml(project.reward)}</small><i aria-hidden="true"><em style="width:${ratio}%"></em></i><em class="ceremony-feedback-cue" aria-hidden="true">${ready ? '완료 가능' : completed ? '완료됨' : '진행 중'}</em></div>`;
   const items = project.types.map((type) => {
     const tile = TILE_SET.find((item: any) => item.type === type);
     const count = Number(state.inventory[type] || 0);
@@ -3211,6 +3224,7 @@ function openRestorationDetail(projectId: string) {
   el.restorationDetailFocusButton.textContent = completed ? '완료됨' : canCompleteRestoration(project) ? '복원 완료' : project.id === state.restorationFocus ? '집중 중' : '집중 프로젝트';
   el.restorationDetailModal.classList.remove('hidden');
   scheduleModalSafeAreaAudit();
+  scheduleRewardActionFocus();
 }
 
 
@@ -3344,10 +3358,13 @@ function openReward(stars: number, score: number) {
   el.rewardModal.dataset.rewardActionAccessibility = REWARD_ACTION_ACCESSIBILITY_PATCH;
   el.rewardModal.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
   el.rewardModal.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
+  el.rewardModal.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
+  el.rewardModal.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
   el.rewardModal.dataset.rewardDensity = rewardTight ? 'compact' : 'comfortable';
   el.rewardFlowNext?.setAttribute('data-reward-flow-polish', REWARD_FLOW_POLISH_PATCH);
   el.rewardFlowNext?.setAttribute('data-reward-action-accessibility', REWARD_ACTION_ACCESSIBILITY_PATCH);
-  if (el.rewardFlowNext) el.rewardFlowNext.innerHTML = `<span>다음 흐름</span><b>${escapeHtml(progressText)}</b><small>${focusProject ? `${escapeHtml(focusProject.label)} 복원으로 이어집니다` : '복원 재료가 서고에 보관됩니다'}</small>`;
+  el.rewardFlowNext?.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
+  if (el.rewardFlowNext) el.rewardFlowNext.innerHTML = `<span>다음 흐름</span><b>${escapeHtml(progressText)}</b><small>${focusProject ? `${escapeHtml(focusProject.label)} 복원으로 이어집니다` : '복원 재료가 서고에 보관됩니다'}</small><em class="reward-action-summary">${focusProject && canCompleteRestoration(focusProject) ? '복원 완료 버튼을 먼저 누르는 흐름입니다' : next ? '다음 목표 버튼을 먼저 누르면 바로 이어집니다' : '로비에서 다음 목표를 확인하세요'}</em>`;
   if (el.rewardRestorationBridge && focusProject) {
     const ratio = need ? Math.min(100, Math.round((current / need) * 100)) : 0;
     const remaining = Math.max(0, need - current);
@@ -3364,7 +3381,9 @@ function openReward(stars: number, score: number) {
     el.rewardRestorationBridge.dataset.rewardClaimMotion = REWARD_CLAIM_MOTION_PATCH;
     el.rewardRestorationBridge.dataset.rewardActionAccessibility = REWARD_ACTION_ACCESSIBILITY_PATCH;
     el.rewardRestorationBridge.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
+    el.rewardRestorationBridge.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
     el.rewardRestorationButton.setAttribute('data-reward-action-accessibility', REWARD_ACTION_ACCESSIBILITY_PATCH);
+    el.rewardRestorationButton.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
     el.rewardRestorationButton.setAttribute('aria-label', remaining <= 0 ? `${focusProject.label} 복원 완료 보기` : `${focusProject.label} 복원 진행 보기`);
     if (remaining <= 0) triggerRestorationCompletionTheater(focusProject);
   }
@@ -3385,15 +3404,21 @@ function openReward(stars: number, score: number) {
   el.rewardModal.dataset.rewardActionAccessibility = REWARD_ACTION_ACCESSIBILITY_PATCH;
   el.rewardModal.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
   el.rewardModal.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
+  el.rewardModal.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
+  el.rewardModal.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
   el.nextStageButton.setAttribute('data-compact-modal-action-flow', COMPACT_MODAL_ACTION_FLOW_PATCH);
+  el.nextStageButton.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
   el.replayStageButton.setAttribute('data-compact-modal-action-flow', COMPACT_MODAL_ACTION_FLOW_PATCH);
+  el.replayStageButton.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
   renderRewardNextGoalAdvisor(stage, next, focusProject);
+  syncRewardActionPriority(focusProject, next);
   el.nextStageButton.classList.toggle('hidden', !next);
   el.rewardModal.classList.remove('hidden');
   el.rewardModal.classList.remove('reward-claim-pop');
   void el.rewardModal.offsetWidth;
   el.rewardModal.classList.add('reward-claim-pop');
   scheduleModalSafeAreaAudit();
+  scheduleRewardActionFocus();
 }
 
 
@@ -3417,11 +3442,39 @@ function renderRewardNextGoalAdvisor(stage: any, next: any, focusProject: any) {
   el.rewardNextGoal.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
   el.rewardNextGoal.dataset.goalState = projectReady ? 'restore-ready' : next ? 'next-stage' : 'lobby-review';
   el.rewardNextGoal.dataset.goalPriority = priority;
-  el.rewardNextGoal.innerHTML = `<span>${projectReady ? '복원 우선' : '다음 목표'}</span><b>${escapeHtml(nextLabel)}</b><small>${body}</small><em class="reward-next-route" aria-hidden="true">${projectReady ? '보상 → 복원 완료' : next ? '보상 → 다음 스테이지' : '보상 → 로비 점검'}</em><i class="reward-action-hint" aria-hidden="true">추천 버튼을 먼저 누르면 흐름이 이어집니다</i><button id="reward-next-goal-button" type="button" class="secondary" data-reward-action-accessibility="${REWARD_ACTION_ACCESSIBILITY_PATCH}" data-compact-modal-action-flow="${COMPACT_MODAL_ACTION_FLOW_PATCH}">${actionLabel}</button>`;
+  el.rewardNextGoal.innerHTML = `<span>${projectReady ? '복원 우선' : '다음 목표'}</span><b>${escapeHtml(nextLabel)}</b><small>${body}</small><em class="reward-next-route" aria-hidden="true">${projectReady ? '보상 → 복원 완료' : next ? '보상 → 다음 스테이지' : '보상 → 로비 점검'}</em><i class="reward-action-hint" aria-hidden="true">${projectReady ? '복원 완료를 먼저 보면 가장 빠릅니다' : next ? '다음 목표로 이어가면 흐름이 끊기지 않습니다' : '로비에서 복원과 랭킹을 점검하세요'}</i><button id="reward-next-goal-button" type="button" class="secondary" data-reward-action-accessibility="${REWARD_ACTION_ACCESSIBILITY_PATCH}" data-compact-modal-action-flow="${COMPACT_MODAL_ACTION_FLOW_PATCH}" data-modal-button-microcopy="${MODAL_BUTTON_MICROCOPY_PATCH}">${actionLabel}</button>`;
   el.rewardNextGoalButton = $('#reward-next-goal-button') as HTMLButtonElement;
   el.rewardNextGoalButton?.setAttribute('aria-label', `${actionLabel}: ${nextLabel}`);
+  el.rewardNextGoalButton?.setAttribute('data-primary-reward-action', priority);
   el.rewardNextGoalButton?.addEventListener('click', openRewardNextGoalAdvisor, { once: true });
   el.rewardNextGoal.classList.remove('hidden');
+}
+
+function syncRewardActionPriority(focusProject: any, next: any) {
+  const projectReady = Boolean(focusProject && canCompleteRestoration(focusProject) && !state.restorationCompleted[focusProject.id]);
+  const priority = projectReady ? 'restore-first' : next ? 'stage-next' : 'lobby-review';
+  el.rewardModal.dataset.rewardActionPriority = priority;
+  el.rewardModal.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
+  el.rewardModal.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
+  el.rewardNextGoal?.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
+  el.rewardNextGoalButton?.setAttribute('data-primary-reward-action', priority);
+  el.rewardRestorationButton?.setAttribute('data-primary-reward-action', projectReady ? 'restore-first' : 'support');
+  el.nextStageButton?.setAttribute('data-secondary-reward-action', projectReady ? 'later' : next ? 'direct-next' : 'hidden');
+  el.replayStageButton?.setAttribute('data-secondary-reward-action', 'replay');
+  if (next) el.nextStageButton.textContent = projectReady ? '다음 스테이지 나중에' : '바로 다음 스테이지';
+  el.replayStageButton.textContent = '다시 플레이';
+}
+
+function scheduleRewardActionFocus() {
+  if (state.modalActionPriorityTimer) window.clearTimeout(state.modalActionPriorityTimer);
+  state.modalActionPriorityTimer = window.setTimeout(focusRewardPrimaryAction, 80);
+}
+
+function focusRewardPrimaryAction() {
+  state.modalActionPriorityTimer = 0;
+  if (el.rewardModal.classList.contains('hidden')) return;
+  const primary = el.rewardModal.querySelector<HTMLButtonElement>('[data-primary-reward-action="restore-first"], #reward-next-goal-button, #next-stage-button');
+  if (primary && window.innerWidth >= 360) primary.focus({ preventScroll: true });
 }
 
 function openRewardNextGoalAdvisor() {
@@ -3459,7 +3512,7 @@ function closeReward() {
     window.clearTimeout(state.restorationTheaterTimer);
     state.restorationTheaterTimer = 0;
   }
-  document.body.classList.remove('restoration-completion-theater-active', 'restoration-detail-ceremony-active', 'reward-popup-density-tight', 'modal-safe-area-tight');
+  document.body.classList.remove('restoration-completion-theater-active', 'restoration-detail-ceremony-active', 'reward-popup-density-tight', 'modal-safe-area-tight', 'small-reward-modal-tight');
   el.rewardCompletionTheater?.classList.add('hidden');
 }
 
@@ -3484,18 +3537,26 @@ function syncModalSafeAreaAudit() {
   const rewardOpen = !el.rewardModal?.classList.contains('hidden');
   const detailOpen = !el.restorationDetailModal?.classList.contains('hidden');
   const tight = window.innerWidth <= 430 || window.innerHeight <= 700;
+  const tiny = window.innerWidth <= 370 || window.innerHeight <= 620;
   document.body.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
   document.body.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
+  document.body.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
+  document.body.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
   document.body.classList.toggle('modal-safe-area-tight', Boolean((rewardOpen || detailOpen) && tight));
+  document.body.classList.toggle('small-reward-modal-tight', Boolean((rewardOpen || detailOpen) && tiny));
   [el.rewardModal, el.restorationDetailModal].forEach((modal) => {
     modal?.setAttribute('data-mobile-safe-area-qa', MOBILE_SAFE_AREA_QA_PATCH);
     modal?.setAttribute('data-compact-modal-action-flow', COMPACT_MODAL_ACTION_FLOW_PATCH);
+    modal?.setAttribute('data-small-reward-modal-qa', SMALL_REWARD_MODAL_QA_PATCH);
+    modal?.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
   });
   document.querySelectorAll<HTMLElement>('.reward-actions').forEach((actions) => {
     actions.setAttribute('data-compact-modal-action-flow', COMPACT_MODAL_ACTION_FLOW_PATCH);
     actions.setAttribute('data-reward-action-accessibility', REWARD_ACTION_ACCESSIBILITY_PATCH);
+    actions.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
   });
 }
+
 
 async function loadLeaderboard() {
   const localRows = getLocalRankRows(state.localRanking, 'global');

@@ -2555,3 +2555,55 @@ v1.0.70은 v1.0.69의 복원 상세 완료식과 보상 팝업 밀도 개선 위
 Apply 꿈의 서고 v1.0.70 reward action accessibility safe-area modal flow and boss counter line polish patch
 
 다음 업데이트 예정: v1.0.71 - Modal Button Microcopy, Restoration Completion Sound Cue, Boss Telegraph Contrast, Small Screen Reward QA Patch
+
+## v1.0.71 Patch Notes - Modal Button Microcopy, Restoration Feedback Cue, Boss Telegraph Contrast and Small Reward QA Patch
+
+v1.0.71은 v1.0.70의 보상/복원 팝업 안정화 위에, 실제 사용자가 다음에 무엇을 눌러야 하는지 더 명확히 보이도록 버튼 우선순위, 마이크로카피, 작은 화면 보상 팝업 밀도, 보스 반격 대비, 랭킹 코드 안정성을 보강한 UI/UX polish 패치입니다.
+
+### 주요 변경
+
+- `v1071-modal-button-microcopy-priority`를 추가해 보상 팝업의 추천 액션 문구와 버튼 우선순위를 더 명확히 표시했습니다.
+- 복원 완료 가능 상태에서는 `복원 완료 먼저 보기` 흐름을 시각적으로 더 강하게 보여주고, 다음 스테이지는 보조 액션으로 낮췄습니다.
+- `v1071-small-reward-modal-qa`를 추가해 작은 화면에서 보상 칩, 복원 연결 카드, 다음 목표 카드가 화면 밖으로 밀리지 않도록 추가 압축했습니다.
+- `v1071-restoration-completion-feedback-cue`를 추가해 복원 상세 완료식의 완료 가능/완료됨/진행 중 피드백 큐를 더 선명하게 다듬었습니다.
+- `v1071-boss-telegraph-contrast-safe`를 추가해 보스 반격 경고가 배경/VFX 위에서도 더 잘 읽히도록 대비와 텍스트 그림자를 보강했습니다.
+- 실제 코드 안정성 점검 중 발견한 리더보드 cloud row의 중복 `tag` 속성을 제거했습니다.
+- service worker cache를 `dream-library-cache-v1.0.71`로 갱신하고, `texture-atlas-manifest-v1.0.71.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:reward-modal-flow-polish`를 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 검사 결과
+
+- `npm run typecheck`
+- 전체 78개 `check:*` QA suite 통과
+- `npm run check:reward-modal-flow-polish`
+- `npm run check:modal-action-safe-area`
+- `npm run check:restoration-detail-ceremony`
+- `npm run check:restoration-theater-next-goal`
+- `npm run check:reward-restoration-bridge`
+- `npm run check:first-touch-ux`
+- `npm run check:ui-ux-stability`
+- `npm run check:daily-start-arrow-cta`
+- `npm run check:engine-render-budget`
+- `npm run check:mobile-playability`
+- `npm run check:no-minimap-topbar`
+- `npm run check:assets`
+- `npm run check:health`
+- `npm run check:workflows`
+- `npm run build:github`
+
+### 유지 정책
+
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- 손가락 시작 위젯 재도입 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.71 modal button microcopy reward flow priority boss contrast and small reward QA patch
+
+다음 업데이트 예정: v1.0.72 - Reward Flow A/B Clarity, Boss Warning Symbol Polish, Restoration Completion Ceremony Motion, Mobile Modal Scroll QA Patch

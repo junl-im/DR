@@ -75,3 +75,11 @@
 - Generated `texture-atlas-manifest-v1.0.70.json` for the v1.0.70 cache cycle.
 - No SVG assets were added.
 - UI polish is CSS/runtime based: reward action accessibility, safe-area modal flow, restoration ceremony feedback cue, and boss counter line polish.
+
+
+## v1.0.71 Modal Microcopy / Reward QA Pipeline Note
+
+- Generated `texture-atlas-manifest-v1.0.71.json` for the v1.0.71 cache cycle.
+- No SVG assets were added.
+- Reward modal polish remains DOM/CSS/runtime based: modal button priority, restoration feedback cue, boss telegraph contrast and small reward modal density QA.
+- `v1071-leaderboard-duplicate-tag-fix` removes a duplicated leaderboard row property that could make future rank code harder to audit.

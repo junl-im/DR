@@ -13,7 +13,7 @@ const files = {
 const errors = [];
 const has = (body, needle, label) => { if (!body.includes(needle)) errors.push(`missing ${label}: ${needle}`); };
 
-if (files.pkg.version !== '1.0.70') errors.push(`package version must be 1.0.70, got ${files.pkg.version}`);
+if (!['1.0.70', '1.0.71'].includes(files.pkg.version)) errors.push(`package version must be 1.0.70 or 1.0.71, got ${files.pkg.version}`);
 if (!files.pkg.scripts['check:modal-action-safe-area']) errors.push('missing package script check:modal-action-safe-area');
 [
   'v1070-reward-action-accessibility-flow',

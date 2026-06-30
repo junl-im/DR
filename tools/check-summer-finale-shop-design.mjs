@@ -11,7 +11,7 @@ const pages = read('.github/workflows/github-pages.yml');
 const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
-if (!['1.0.50', '1.0.51', '1.0.52', '1.0.53', '1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70'].includes(pkg.version)) errors.push(`package version must be 1.0.50-1.0.53, got ${pkg.version}`);
+if (!['1.0.50', '1.0.51', '1.0.52', '1.0.53', '1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71'].includes(pkg.version)) errors.push(`package version must be 1.0.50-1.0.53, got ${pkg.version}`);
 if (!pkg.scripts['check:summer-finale-shop-design']) errors.push('missing package script check:summer-finale-shop-design');
 has(stages, 'chapter-15', '15 chapter summer finale expansion');
 has(stages, ' 90, ', '90 stage finale campaign');
