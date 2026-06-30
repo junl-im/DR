@@ -61,3 +61,11 @@
 - 보상 칩 등장 모션은 CSS 기반으로 처리해 이미지/SVG 추가 없이 고급스러운 수령감을 강화했습니다.
 - 보스 경고 카드는 작은 화면에서 `icon-only` 또는 `compact` 상태로 접히도록 `v1068-boss-warning-icon-trim` 토큰을 추가했습니다.
 - QA는 `check:restoration-theater-next-goal`에서 복원 완료 연출, 다음 목표 카드, 보스 경고 아이콘 밀도, 중복 HTML 속성, 손가락 위젯 미복귀를 같이 확인합니다.
+
+## v1.0.69 Lobby Rhythm / Restoration Detail Ceremony 파이프라인 메모
+
+- `texture-atlas-manifest-v1.0.69.json`을 생성해 최신 캐시/프리로드 기준에 포함했습니다.
+- 신규 UI는 SVG 없이 기존 raster asset, CSS gradient, DOM 상태 토큰만 사용합니다.
+- `v1069-restoration-detail-ceremony`는 복원 상세 완료식/진행 바를 DOM 카드로 처리해 추가 이미지 로딩 없이 동작합니다.
+- `v1069-reward-popup-density-guard`는 작은 화면 보상 팝업을 compact density로 접어 보상 카드와 다음 목표 CTA가 화면 밖으로 밀리지 않게 합니다.
+- `v1069-boss-warning-icon-set-polish`는 보스 반격 카드의 아이콘/문구 상태를 텍스트 기반 토큰으로 분리해 low-memory 환경에서도 안정적으로 표시합니다.

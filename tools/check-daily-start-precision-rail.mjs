@@ -11,7 +11,7 @@ const workflows = ['.github/workflows/github-pages.yml', '.github/workflows/qual
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68'].includes(pkg.version)) errors.push(`package version must be 1.0.61, got ${pkg.version}`);
+if (!['1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69'].includes(pkg.version)) errors.push(`package version must be 1.0.61, got ${pkg.version}`);
 for (const token of ['v1061-daily-start-precision-rail', 'v1061-lobby-content-guide', 'v1061-daily-reward-drama', 'v1061-boss-intro-polish']) {
   has(index, token, 'index v1.0.61 token');
   has(main, token, 'main v1.0.61 token');

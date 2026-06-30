@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68'].includes(pkg.version)) errors.push(`package version must be 1.0.62 or 1.0.63, got ${pkg.version}`);
+if (!['1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69'].includes(pkg.version)) errors.push(`package version must be 1.0.62 or 1.0.63, got ${pkg.version}`);
 if (!pkg.scripts['check:daily-start-focus-assist']) errors.push('missing package script check:daily-start-focus-assist');
 for (const token of ['v1062-daily-start-focus-assist', 'v1062-lobby-guide-comfort', 'v1062-boss-intro-preload']) {
   has(index, token, 'index v1.0.62 token');
