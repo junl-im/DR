@@ -93,7 +93,9 @@
     "check:modal-action-safe-area": "node tools/check-modal-action-safe-area.mjs",
     "check:reward-modal-flow-polish": "node tools/check-reward-modal-flow-polish.mjs",
     "check:lobby-menu-portal": "node tools/check-lobby-menu-portal.mjs",
-    "check:lobby-menu-motion-state": "node tools/check-lobby-menu-motion-state.mjs"
+    "check:lobby-menu-motion-state": "node tools/check-lobby-menu-motion-state.mjs",
+    "check:lobby-menu-focus-density": "node tools/check-lobby-menu-focus-density.mjs",
+    "check:lobby-shortcut-scroll": "node tools/check-lobby-shortcut-scroll.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -107,5 +109,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.73"
+  "version": "1.0.75"
 }

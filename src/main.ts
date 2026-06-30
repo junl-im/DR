@@ -127,6 +127,12 @@ const LOBBY_MENU_MOTION_STATE_PATCH = 'v1073-lobby-menu-motion-state';
 const LOBBY_MENU_BACK_CLOSE_PATCH = 'v1073-lobby-menu-back-close';
 const LOBBY_MENU_TAB_SWITCH_PATCH = 'v1073-lobby-menu-tab-switch';
 const LOBBY_PANEL_STATE_RETENTION_PATCH = 'v1073-lobby-panel-state-retention';
+const LOBBY_MENU_FOCUS_TRAP_PATCH = 'v1074-lobby-menu-focus-trap';
+const LOBBY_PANEL_CONTENT_DENSITY_PATCH = 'v1074-lobby-panel-content-density';
+const LOBBY_MENU_TAP_TARGET_QA_PATCH = 'v1074-lobby-menu-tap-target-qa';
+const LOBBY_SHORTCUT_MENU_BAR_PATCH = 'v1075-lobby-shortcut-menu-bar';
+const LOBBY_COPY_CLEANUP_PATCH = 'v1075-lobby-copy-cleanup';
+const LOBBY_SCROLL_STABILITY_PATCH = 'v1075-lobby-scroll-stability';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
@@ -153,9 +159,14 @@ const V1070_COMPAT_TOKENS = 'v1070-reward-action-accessibility-flow v1070-restor
 void V1070_COMPAT_TOKENS;
 const V1072_COMPAT_TOKENS = 'v1072-lobby-menu-portal v1072-section-popup-restructure v1072-rounded-card-content-readability dream-library-cache-v1.0.72 texture-atlas-manifest-v1.0.72.json';
 const V1073_COMPAT_TOKENS = 'v1073-lobby-menu-motion-state v1073-lobby-menu-back-close v1073-lobby-menu-tab-switch v1073-lobby-panel-state-retention dream-library-cache-v1.0.73 texture-atlas-manifest-v1.0.73.json';
+const V1074_COMPAT_TOKENS = 'v1074-lobby-menu-focus-trap v1074-lobby-panel-content-density v1074-lobby-menu-tap-target-qa dream-library-cache-v1.0.74 texture-atlas-manifest-v1.0.74.json';
+const V1075_COMPAT_TOKENS = 'v1075-lobby-shortcut-menu-bar v1075-lobby-copy-cleanup v1075-lobby-scroll-stability dream-library-cache-v1.0.75 texture-atlas-manifest-v1.0.75.json';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
+void V1073_COMPAT_TOKENS;
+void V1074_COMPAT_TOKENS;
+void V1075_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -287,6 +298,7 @@ const el = {
   lobbyMenuTabs: $('#lobby-menu-tabs'),
   lobbyMenuTitle: $('#lobby-menu-title'),
   lobbyMenuSubtitle: $('#lobby-menu-subtitle'),
+  lobbyPanelRouteHint: $('#lobby-panel-route-hint'),
   lobbyPanelDock: $('#lobby-panel-dock'),
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
@@ -454,6 +466,9 @@ const state = {
   collapsedPanels: readJson<Record<string, boolean>>('dream-library-lobby-collapsed-panels', {}),
   activeLobbyPanel: readText(ACTIVE_LOBBY_PANEL_KEY) || 'campaign',
   lastLobbyMenuTrigger: null as HTMLElement | null,
+  lobbyMenuPreviousFocus: null as HTMLElement | null,
+  lobbyPanelScrollTop: readJson<Record<string, number>>('dream-library-lobby-panel-scroll-top', {}),
+  lobbyPageScrollTopBeforeMenu: 0,
   lobbyMenuOpenCount: 0,
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
@@ -853,7 +868,14 @@ function bindEvents() {
   });
 
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && document.body.classList.contains('lobby-menu-open')) closeLobbyMenuPanel({ returnFocus: true });
+    if (!document.body.classList.contains('lobby-menu-open')) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeLobbyMenuPanel({ returnFocus: true });
+      return;
+    }
+    if (event.key === 'Tab') trapLobbyMenuFocus(event);
   });
 
   window.addEventListener('resize', () => {
@@ -1897,6 +1919,9 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-lobby-menu-back-close', LOBBY_MENU_BACK_CLOSE_PATCH);
   el.app?.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
   el.app?.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
+  el.app?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+  el.app?.setAttribute('data-lobby-copy-cleanup', LOBBY_COPY_CLEANUP_PATCH);
+  el.app?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -2874,14 +2899,14 @@ function handleLobbyMissionClick(event: Event) {
 }
 
 
-const LOBBY_MENU_TITLES: Record<string, { title: string; subtitle: string }> = {
-  campaign: { title: '스테이지 월드맵', subtitle: '챕터와 스테이지를 크게 열어 고르고 바로 시작합니다.' },
-  mission: { title: '오늘 먼저 할 일', subtitle: '추천 미션과 다음 행동을 한눈에 확인합니다.' },
-  restoration: { title: '서고 복원 작업대', subtitle: '보상 재료와 완료 가능한 복원 프로젝트를 확인합니다.' },
-  daily: { title: '오늘의 복원', subtitle: '일일 보상, 랭킹, 오늘 스테이지를 확인합니다.' },
-  collection: { title: '기억 오브젝트 도감', subtitle: '보유/미수집/프리미엄 수집품을 분리해서 봅니다.' },
-  summer: { title: '시즌 상점 보상', subtitle: '시즌 보상 상세와 재화 목표를 확인합니다.' },
-  progress: { title: '내 진행과 복원 기록', subtitle: '최고 점수, 별 조각, 복원 기록을 확인합니다.' }
+const LOBBY_MENU_TITLES: Record<string, { title: string; subtitle: string; hint: string }> = {
+  campaign: { title: '스테이지 월드맵', subtitle: '챕터와 스테이지를 고르고 바로 시작합니다.', hint: '스테이지를 고른 뒤 시작 버튼을 누르세요.' },
+  mission: { title: '오늘 먼저 할 일', subtitle: '추천 목표와 다음 행동을 한눈에 확인합니다.', hint: '카드를 누르면 연결된 메뉴로 이동합니다.' },
+  restoration: { title: '서고 복원 작업대', subtitle: '보상 재료와 완료 가능한 복원을 확인합니다.', hint: '완료 가능한 복원은 카드 상태로 표시됩니다.' },
+  daily: { title: '오늘의 복원', subtitle: '일일 보상, 랭킹, 오늘 스테이지를 확인합니다.', hint: '오늘 스테이지와 일일 랭킹을 한 패널에서 확인합니다.' },
+  collection: { title: '기억 오브젝트 도감', subtitle: '보유/미수집 수집품을 분리해서 봅니다.', hint: '필터로 필요한 수집품만 확인하세요.' },
+  summer: { title: '시즌 상점 보상', subtitle: '시즌 보상 상세와 재화 목표를 확인합니다.', hint: '보상 상세와 필요 재화를 보고 부족한 재료를 모으세요.' },
+  progress: { title: '내 진행과 복원 기록', subtitle: '최고 점수, 별 조각, 복원 기록을 확인합니다.', hint: '랭킹과 복원 기록을 한곳에서 봅니다.' }
 };
 
 function normalizeLobbyPanelKey(key: string) {
@@ -2898,15 +2923,32 @@ function syncLobbyMenuPortal() {
   document.body.dataset.roundedContentReadable = ROUNDED_CARD_CONTENT_READABILITY_PATCH;
   document.body.dataset.lobbyMenuMotionState = LOBBY_MENU_MOTION_STATE_PATCH;
   document.body.dataset.lobbyPanelStateRetention = LOBBY_PANEL_STATE_RETENTION_PATCH;
+  document.body.dataset.lobbyMenuFocusTrap = LOBBY_MENU_FOCUS_TRAP_PATCH;
+  document.body.dataset.lobbyPanelContentDensity = LOBBY_PANEL_CONTENT_DENSITY_PATCH;
+  document.body.dataset.lobbyMenuTapTargetQa = LOBBY_MENU_TAP_TARGET_QA_PATCH;
+  document.body.dataset.lobbyShortcutBar = LOBBY_SHORTCUT_MENU_BAR_PATCH;
+  document.body.dataset.lobbyCopyCleanup = LOBBY_COPY_CLEANUP_PATCH;
+  document.body.dataset.lobbyScrollStability = LOBBY_SCROLL_STABILITY_PATCH;
   document.body.classList.toggle('lobby-menu-tight', tight);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-copy-cleanup', LOBBY_COPY_CLEANUP_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-back-close', LOBBY_MENU_BACK_CLOSE_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-focus-trap', LOBBY_MENU_FOCUS_TRAP_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-tap-target-qa', LOBBY_MENU_TAP_TARGET_QA_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-panel-content-density', LOBBY_PANEL_CONTENT_DENSITY_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
+  el.lobbyMenuTabs?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   document.querySelectorAll<HTMLElement>('[data-lobby-menu-open]').forEach((button) => {
     const key = normalizeLobbyPanelKey(button.dataset.lobbyMenuOpen || 'campaign');
     const selected = key === state.activeLobbyPanel && document.body.classList.contains('lobby-menu-open');
@@ -2914,6 +2956,8 @@ function syncLobbyMenuPortal() {
     button.setAttribute('aria-pressed', selected ? 'true' : 'false');
     button.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
     button.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
+    button.setAttribute('data-lobby-menu-tap-target-qa', LOBBY_MENU_TAP_TARGET_QA_PATCH);
+    button.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   });
   document.querySelectorAll<HTMLElement>('[data-lobby-menu-tab]').forEach((button) => {
     const key = normalizeLobbyPanelKey(button.dataset.lobbyMenuTab || 'campaign');
@@ -2921,12 +2965,17 @@ function syncLobbyMenuPortal() {
     button.classList.toggle('selected', selected);
     button.setAttribute('aria-current', selected ? 'page' : 'false');
     button.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
+    button.setAttribute('data-lobby-menu-tap-target-qa', LOBBY_MENU_TAP_TARGET_QA_PATCH);
+    button.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   });
   document.querySelectorAll<HTMLElement>('[data-lobby-panel]').forEach((panel) => {
     const key = normalizeLobbyPanelKey(panel.dataset.lobbyPanel || 'campaign');
     const active = key === state.activeLobbyPanel;
     panel.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
     panel.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
+    panel.setAttribute('data-lobby-panel-content-density', LOBBY_PANEL_CONTENT_DENSITY_PATCH);
+    panel.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+    panel.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
     panel.classList.toggle('lobby-menu-panel-active', active);
     if (document.body.classList.contains('lobby-menu-open')) panel.classList.remove('collapsed');
     panel.setAttribute('aria-hidden', document.body.classList.contains('lobby-menu-open') && active ? 'false' : 'true');
@@ -2936,36 +2985,64 @@ function syncLobbyMenuPortal() {
   });
 }
 
+
+function getAppShellScroller() {
+  return el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
+}
+
 function openLobbyMenuPanel(panelKey = 'campaign', trigger?: HTMLElement | null, options: { keepFocus?: boolean } = {}) {
   const key = normalizeLobbyPanelKey(panelKey);
+  const previousPanel = state.activeLobbyPanel;
+  if (previousPanel && previousPanel !== key && el.lobbyPanelDock) {
+    state.lobbyPanelScrollTop[previousPanel] = el.lobbyPanelDock.scrollTop;
+    writeJson('dream-library-lobby-panel-scroll-top', state.lobbyPanelScrollTop);
+  }
   state.activeLobbyPanel = key;
   state.lobbyMenuOpenCount += 1;
+  if (!document.body.classList.contains('lobby-menu-open')) {
+    state.lobbyMenuPreviousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const appShell = getAppShellScroller();
+    state.lobbyPageScrollTopBeforeMenu = appShell?.scrollTop || window.scrollY || 0;
+  }
   if (trigger && !trigger.closest('#lobby-menu-tabs')) state.lastLobbyMenuTrigger = trigger;
   writeText(ACTIVE_LOBBY_PANEL_KEY, key);
   const meta = LOBBY_MENU_TITLES[key];
   el.lobbyMenuTitle.textContent = meta.title;
   el.lobbyMenuSubtitle.textContent = meta.subtitle;
+  if (el.lobbyPanelRouteHint) {
+    el.lobbyPanelRouteHint.textContent = meta.hint;
+    el.lobbyPanelRouteHint.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+  }
   el.lobbyMenuOverlay.classList.remove('hidden', 'closing');
   el.lobbyMenuOverlay.classList.add('opening');
   el.lobbyMenuOverlay.dataset.lobbyMenuMotionState = LOBBY_MENU_MOTION_STATE_PATCH;
   el.lobbyMenuOverlay.dataset.lobbyMenuBackClose = LOBBY_MENU_BACK_CLOSE_PATCH;
   el.lobbyMenuOverlay.dataset.lobbyPanelStateRetention = LOBBY_PANEL_STATE_RETENTION_PATCH;
-  document.body.classList.add('lobby-menu-open');
+  el.lobbyMenuOverlay.dataset.lobbyMenuFocusTrap = LOBBY_MENU_FOCUS_TRAP_PATCH;
+  el.lobbyMenuOverlay.dataset.lobbyMenuTapTargetQa = LOBBY_MENU_TAP_TARGET_QA_PATCH;
+  el.lobbyMenuOverlay.dataset.lobbyShortcutBar = LOBBY_SHORTCUT_MENU_BAR_PATCH;
+  el.lobbyMenuOverlay.dataset.lobbyScrollStability = LOBBY_SCROLL_STABILITY_PATCH;
+  document.body.classList.add('lobby-menu-open', 'lobby-scroll-locked');
   document.body.dataset.activeLobbyPanel = key;
   syncLobbyMenuPortal();
   window.setTimeout(() => {
     el.lobbyMenuOverlay.classList.remove('opening');
     const panel = document.querySelector<HTMLElement>(`[data-lobby-panel="${key}"]`);
-    panel?.scrollIntoView({ block: 'start', behavior: 'auto' });
-    if (!options.keepFocus) el.lobbyMenuCloseButton?.focus({ preventScroll: true });
+    if (el.lobbyPanelDock) el.lobbyPanelDock.scrollTop = Math.max(0, state.lobbyPanelScrollTop[key] || 0);
+    const firstAction = panel?.querySelector<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (!options.keepFocus) (firstAction || el.lobbyMenuCloseButton)?.focus({ preventScroll: true });
   }, 20);
 }
 
 function closeLobbyMenuPanel(options: { returnFocus?: boolean; silent?: boolean } = {}) {
   if (!el.lobbyMenuOverlay || el.lobbyMenuOverlay.classList.contains('hidden')) {
-    document.body.classList.remove('lobby-menu-open');
+    document.body.classList.remove('lobby-menu-open', 'lobby-scroll-locked');
     syncLobbyMenuPortal();
     return;
+  }
+  if (el.lobbyPanelDock) {
+    state.lobbyPanelScrollTop[state.activeLobbyPanel] = el.lobbyPanelDock.scrollTop;
+    writeJson('dream-library-lobby-panel-scroll-top', state.lobbyPanelScrollTop);
   }
   el.lobbyMenuOverlay.dataset.lobbyMenuBackClose = LOBBY_MENU_BACK_CLOSE_PATCH;
   el.lobbyMenuOverlay.classList.remove('opening');
@@ -2975,10 +3052,38 @@ function closeLobbyMenuPanel(options: { returnFocus?: boolean; silent?: boolean 
   const finish = () => {
     el.lobbyMenuOverlay?.classList.add('hidden');
     el.lobbyMenuOverlay?.classList.remove('closing');
-    if (options.returnFocus && state.lastLobbyMenuTrigger) state.lastLobbyMenuTrigger.focus({ preventScroll: true });
+    document.body.classList.remove('lobby-scroll-locked');
+    const appShell = getAppShellScroller();
+    if (appShell && state.screen === 'lobby') appShell.scrollTop = state.lobbyPageScrollTopBeforeMenu || appShell.scrollTop;
+    if (options.returnFocus) {
+      const focusTarget = state.lastLobbyMenuTrigger || state.lobbyMenuPreviousFocus;
+      focusTarget?.focus({ preventScroll: true });
+    }
   };
   if (options.silent || window.matchMedia('(prefers-reduced-motion: reduce)').matches) finish();
   else window.setTimeout(finish, 150);
+}
+
+
+function getLobbyMenuFocusableNodes() {
+  if (!el.lobbyMenuOverlay || el.lobbyMenuOverlay.classList.contains('hidden')) return [] as HTMLElement[];
+  return Array.from(el.lobbyMenuOverlay.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    .filter((node) => !node.hasAttribute('disabled') && node.offsetParent !== null);
+}
+
+function trapLobbyMenuFocus(event: KeyboardEvent) {
+  const nodes = getLobbyMenuFocusableNodes();
+  if (!nodes.length) return;
+  const first = nodes[0];
+  const last = nodes[nodes.length - 1];
+  const active = document.activeElement as HTMLElement | null;
+  if (event.shiftKey && active === first) {
+    event.preventDefault();
+    last.focus({ preventScroll: true });
+  } else if (!event.shiftKey && active === last) {
+    event.preventDefault();
+    first.focus({ preventScroll: true });
+  }
 }
 
 function getLobbyPanelKeyForSelector(selector: string) {
@@ -3435,7 +3540,7 @@ function renderDailyPanel() {
     el.dailyRewardPromise.innerHTML = `<span>오늘 보상</span><b>${escapeHtml(stage.reward.label)} ×${stage.reward.amount + daily.rewardBoost}</b><small>${escapeHtml(boss.name)} 보스 퍼즐 후 ${escapeHtml(focusProject?.label || '서고')} 복원에 연결</small>`;
   }
   if (el.dailyStartGuide) {
-    el.dailyStartGuide.innerHTML = `<div><p class="eyebrow">Start Route</p><strong>오늘의 복원이 게임 시작입니다</strong><small>${escapeHtml(stage.title)} · ${escapeHtml(boss.name)} · ${escapeHtml(stage.reward.label)} 보상</small><p id="daily-start-focus-summary" class="daily-start-focus-summary" data-daily-start-focus="${DAILY_START_FOCUS_ASSIST_PATCH}"><span>오늘 목표</span><b>${escapeHtml(stage.reward.label)} ×${stage.reward.amount + daily.rewardBoost}</b><small>${escapeHtml(focusProject?.label || '서고 복원')}으로 연결</small></p>${renderDailyQuestChain(stage, boss, focusProject)}</div><ol><li><b>1</b><span>오늘의 복원</span></li><li><b>2</b><span>보스 퍼즐</span></li><li><b>3</b><span>${escapeHtml(focusProject?.label || '서고 복원')}</span></li></ol>`;
+    el.dailyStartGuide.innerHTML = `<div><p class="eyebrow">오늘 시작</p><strong>오늘의 복원이 게임 시작입니다</strong><small>${escapeHtml(stage.title)} · ${escapeHtml(boss.name)} · ${escapeHtml(stage.reward.label)} 보상</small><p id="daily-start-focus-summary" class="daily-start-focus-summary" data-daily-start-focus="${DAILY_START_FOCUS_ASSIST_PATCH}"><span>오늘 목표</span><b>${escapeHtml(stage.reward.label)} ×${stage.reward.amount + daily.rewardBoost}</b><small>${escapeHtml(focusProject?.label || '서고 복원')}으로 연결</small></p>${renderDailyQuestChain(stage, boss, focusProject)}</div><ol><li><b>1</b><span>오늘의 복원</span></li><li><b>2</b><span>보스 퍼즐</span></li><li><b>3</b><span>${escapeHtml(focusProject?.label || '서고 복원')}</span></li></ol>`;
     el.dailyStartFocusSummary = $('#daily-start-focus-summary');
     el.dailyQuestChain = $('#daily-quest-chain');
     scheduleDailyStartFocusAssist();

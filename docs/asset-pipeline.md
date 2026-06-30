@@ -98,3 +98,11 @@
 - Kept SVG-free policy and reused CSS/text-symbol UI accents for the lobby menu icon polish.
 - Added `dream-library-cache-v1.0.73` to service worker cache anchors.
 - Added `check:lobby-menu-motion-state` to verify menu motion tokens, menu tabs, back-close flow, focus return, state retention, and the removed duplicate collapsed panel write.
+
+## v1.0.74 Lobby Menu Focus / Density Pipeline Note
+
+- Generated `texture-atlas-manifest-v1.0.74.json` for the v1.0.74 cache cycle.
+- No SVG assets were added.
+- Lobby menu stability remains DOM/CSS/runtime based: `v1074-lobby-menu-focus-trap`, `v1074-lobby-panel-content-density`, and `v1074-lobby-menu-tap-target-qa`.
+- The top daily start CTA remains outside the popup menu, while lower sections keep opening inside the modal dock.
+- `check:lobby-menu-focus-density` validates focus trap tokens, section density styles, tap target QA, Escape isolation, cache, manifest and workflow hooks.
