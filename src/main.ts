@@ -120,8 +120,12 @@ const RESTORATION_COMPLETION_CUE_PATCH = 'v1071-restoration-completion-feedback-
 const BOSS_TELEGRAPH_CONTRAST_PATCH = 'v1071-boss-telegraph-contrast-safe';
 const SMALL_REWARD_MODAL_QA_PATCH = 'v1071-small-reward-modal-qa';
 const LEADERBOARD_DUPLICATE_TAG_FIX_PATCH = 'v1071-leaderboard-duplicate-tag-fix';
+const LOBBY_MENU_PORTAL_PATCH = 'v1072-lobby-menu-portal';
+const SECTION_POPUP_RESTRUCTURE_PATCH = 'v1072-section-popup-restructure';
+const ROUNDED_CARD_CONTENT_READABILITY_PATCH = 'v1072-rounded-card-content-readability';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
+const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
 
 const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
 void LEGACY_SUMMER_QA_TOKENS;
@@ -143,6 +147,8 @@ const V1069_COMPAT_TOKENS = 'v1069-lobby-rhythm-cleanup v1069-restoration-detail
 void V1069_COMPAT_TOKENS;
 const V1070_COMPAT_TOKENS = 'v1070-reward-action-accessibility-flow v1070-restoration-ceremony-feedback-cue v1070-boss-counter-line-polish v1070-mobile-safe-area-modal-qa v1070-compact-modal-action-flow dream-library-cache-v1.0.70 texture-atlas-manifest-v1.0.70.json';
 void V1070_COMPAT_TOKENS;
+const V1072_COMPAT_TOKENS = 'v1072-lobby-menu-portal v1072-section-popup-restructure v1072-rounded-card-content-readability dream-library-cache-v1.0.72 texture-atlas-manifest-v1.0.72.json';
+void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
@@ -269,6 +275,12 @@ const el = {
   dailyStartFocusSummary: $('#daily-start-focus-summary'),
   dailyQuestChain: $('#daily-quest-chain'),
   dailyRewardPromise: $('#daily-reward-promise'),
+  lobbyMenuHub: $('#lobby-menu-hub'),
+  lobbyMenuOverlay: $('#lobby-menu-overlay'),
+  lobbyMenuCloseButton: $('#lobby-menu-close-button'),
+  lobbyMenuTitle: $('#lobby-menu-title'),
+  lobbyMenuSubtitle: $('#lobby-menu-subtitle'),
+  lobbyPanelDock: $('#lobby-panel-dock'),
   stageLabel: $('#stage-label'),
   difficultyTitle: $('#difficulty-title'),
   timeLabel: $('#time-label'),
@@ -335,7 +347,7 @@ function forceLoginBootScreen() {
   document.body.dataset.authEntry = AUTH_ENTRY_SIMPLIFICATION_PATCH;
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === 'screen-login'));
   el.backButton.classList.add('hidden');
-  [el.optionsModal, el.emailAuthModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal].forEach((modal) => modal.classList.add('hidden'));
+  [el.optionsModal, el.emailAuthModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal, el.lobbyMenuOverlay].forEach((modal) => modal.classList.add('hidden'));
   el.boardCameraGuide?.classList.add('hidden');
   el.boardCameraGuide?.setAttribute('aria-hidden', 'true');
   el.boardCameraControls?.classList.add('hidden');
@@ -433,6 +445,7 @@ const state = {
   dailyRankScope: readText('dream-library-daily-rank-scope') || 'today',
   restorationFocus: readText('dream-library-restoration-focus') || 'shelf',
   collapsedPanels: readJson<Record<string, boolean>>('dream-library-lobby-collapsed-panels', {}),
+  activeLobbyPanel: readText(ACTIVE_LOBBY_PANEL_KEY) || 'campaign',
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
   activeBoss: getBossForStage(getStageById(readText('dream-library-selected-stage') || DEFAULT_STAGE_ID)) as any,
@@ -706,6 +719,13 @@ function bindEvents() {
   el.dailyStageButton.addEventListener('click', startDailyStage);
   el.dailyStartButton.addEventListener('click', startDailyStage);
   el.dailyStartSignal.addEventListener('click', startDailyStage);
+  el.lobbyMenuHub?.addEventListener('click', (event) => {
+    const trigger = (event.target as HTMLElement).closest<HTMLElement>('[data-lobby-menu-open]');
+    if (!trigger) return;
+    openLobbyMenuPanel(trigger.dataset.lobbyMenuOpen || 'campaign');
+  });
+  el.lobbyMenuCloseButton?.addEventListener('click', closeLobbyMenuPanel);
+  el.lobbyMenuOverlay?.addEventListener('click', (event) => { if (event.target === el.lobbyMenuOverlay) closeLobbyMenuPanel(); });
   el.dailyStartSignal.addEventListener('pointerenter', () => document.body.classList.add('daily-start-signal-hovered'));
   el.dailyStartSignal.addEventListener('pointerleave', () => document.body.classList.remove('daily-start-signal-hovered'));
   el.firstTouchGuideClose?.addEventListener('click', () => hideFirstTouchGuide(true));
@@ -792,6 +812,11 @@ function bindEvents() {
   el.restorationDetailCloseButton.addEventListener('click', closeRestorationDetail);
   el.restorationDetailModal.addEventListener('click', (event) => { if (event.target === el.restorationDetailModal) closeRestorationDetail(); });
   document.addEventListener('click', (event) => {
+    const closeNode = (event.target as HTMLElement).closest<HTMLElement>('[data-lobby-menu-close]');
+    if (closeNode) {
+      closeLobbyMenuPanel();
+      return;
+    }
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-collapse-target]');
     if (!node) return;
     toggleLobbyPanel(node.dataset.collapseTarget || '');
@@ -810,6 +835,10 @@ function bindEvents() {
     renderRestoration();
     scrollLobbyTarget('.restoration-panel');
     setStatus('집중 복원 프로젝트를 변경하고 복원 패널로 이동했습니다.');
+  });
+
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.body.classList.contains('lobby-menu-open')) closeLobbyMenuPanel();
   });
 
   window.addEventListener('resize', () => {
@@ -1507,7 +1536,7 @@ function updateScreen(screen: ScreenName) {
   // v1.0.37: no persistent top navigation line; browser back and in-screen actions handle flow.
   el.backButton.classList.add('hidden');
   if (screen === 'lobby') renderLobby();
-  if (screen !== 'lobby') clearDailyStartNudge();
+  if (screen !== 'lobby') { closeLobbyMenuPanel(); clearDailyStartNudge(); }
   if (screen === 'settings') renderAuth();
   scheduleGameUiStabilityPass();
   if (state.browserBackReady) {
@@ -2368,6 +2397,7 @@ function renderLobby() {
   renderCollection();
   renderDailyPanel();
   renderLobbyPanelState();
+  syncLobbyMenuPortal();
   syncDailyStartSignal();
   applyAdaptiveVisualBudget();
 }
@@ -2823,9 +2853,93 @@ function handleLobbyMissionClick(event: Event) {
   }
 }
 
+
+const LOBBY_MENU_TITLES: Record<string, { title: string; subtitle: string }> = {
+  campaign: { title: '스테이지 월드맵', subtitle: '챕터와 스테이지를 크게 열어 고르고 바로 시작합니다.' },
+  mission: { title: '오늘 먼저 할 일', subtitle: '추천 미션과 다음 행동을 한눈에 확인합니다.' },
+  restoration: { title: '서고 복원 작업대', subtitle: '보상 재료와 완료 가능한 복원 프로젝트를 확인합니다.' },
+  daily: { title: '오늘의 복원', subtitle: '일일 보상, 랭킹, 오늘 스테이지를 확인합니다.' },
+  collection: { title: '기억 오브젝트 도감', subtitle: '보유/미수집/프리미엄 수집품을 분리해서 봅니다.' },
+  summer: { title: '시즌 상점 보상', subtitle: '시즌 보상 상세와 재화 목표를 확인합니다.' },
+  progress: { title: '내 진행과 복원 기록', subtitle: '최고 점수, 별 조각, 복원 기록을 확인합니다.' }
+};
+
+function normalizeLobbyPanelKey(key: string) {
+  if (key === 'stage' || key === 'selected') return 'campaign';
+  if (key === 'shop' || key === 'season') return 'summer';
+  if (key === 'rank' || key === 'leaderboard') return 'progress';
+  return LOBBY_MENU_TITLES[key] ? key : 'campaign';
+}
+
+function syncLobbyMenuPortal() {
+  const tight = window.innerWidth <= 430 || window.innerHeight <= 720;
+  document.body.dataset.lobbyMenuPortal = LOBBY_MENU_PORTAL_PATCH;
+  document.body.dataset.lobbyScrollRestructure = SECTION_POPUP_RESTRUCTURE_PATCH;
+  document.body.dataset.roundedContentReadable = ROUNDED_CARD_CONTENT_READABILITY_PATCH;
+  document.body.classList.toggle('lobby-menu-tight', tight);
+  el.lobbyMenuHub?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+  document.querySelectorAll<HTMLElement>('[data-lobby-menu-open]').forEach((button) => {
+    const key = normalizeLobbyPanelKey(button.dataset.lobbyMenuOpen || 'campaign');
+    const selected = key === state.activeLobbyPanel && document.body.classList.contains('lobby-menu-open');
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    button.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+  });
+  document.querySelectorAll<HTMLElement>('[data-lobby-panel]').forEach((panel) => {
+    const key = normalizeLobbyPanelKey(panel.dataset.lobbyPanel || 'campaign');
+    const active = key === state.activeLobbyPanel;
+    panel.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+    panel.classList.toggle('lobby-menu-panel-active', active);
+    if (document.body.classList.contains('lobby-menu-open')) panel.classList.remove('collapsed');
+    panel.setAttribute('aria-hidden', document.body.classList.contains('lobby-menu-open') && active ? 'false' : 'true');
+  });
+  document.querySelectorAll<HTMLElement>('.reward-restoration-bridge, .restoration-detail-card, .reward-card').forEach((node) => {
+    node.setAttribute('data-rounded-content-readable', ROUNDED_CARD_CONTENT_READABILITY_PATCH);
+  });
+}
+
+function openLobbyMenuPanel(panelKey = 'campaign') {
+  const key = normalizeLobbyPanelKey(panelKey);
+  state.activeLobbyPanel = key;
+  writeText(ACTIVE_LOBBY_PANEL_KEY, key);
+  const meta = LOBBY_MENU_TITLES[key];
+  el.lobbyMenuTitle.textContent = meta.title;
+  el.lobbyMenuSubtitle.textContent = meta.subtitle;
+  el.lobbyMenuOverlay.classList.remove('hidden');
+  document.body.classList.add('lobby-menu-open');
+  syncLobbyMenuPortal();
+  window.setTimeout(() => {
+    const panel = document.querySelector<HTMLElement>(`[data-lobby-panel="${key}"]`);
+    panel?.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }, 20);
+}
+
+function closeLobbyMenuPanel() {
+  el.lobbyMenuOverlay?.classList.add('hidden');
+  document.body.classList.remove('lobby-menu-open');
+  syncLobbyMenuPortal();
+}
+
+function getLobbyPanelKeyForSelector(selector: string) {
+  if (selector.includes('restoration')) return 'restoration';
+  if (selector.includes('collection')) return 'collection';
+  if (selector.includes('daily')) return 'daily';
+  if (selector.includes('summer') || selector.includes('season')) return 'summer';
+  if (selector.includes('mission')) return 'mission';
+  if (selector.includes('leaderboard') || selector.includes('lobby-grid') || selector.includes('progress')) return 'progress';
+  if (selector.includes('selected-stage') || selector.includes('chapter') || selector.includes('world-map')) return 'campaign';
+  return '';
+}
+
 function scrollLobbyTarget(selector: string) {
+  const panelKey = getLobbyPanelKeyForSelector(selector);
+  if (panelKey && state.screen === 'lobby') openLobbyMenuPanel(panelKey);
   const target = document.querySelector<HTMLElement>(selector);
-  const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
+  const shell = document.body.classList.contains('lobby-menu-open')
+    ? el.lobbyPanelDock
+    : (el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell'));
   if (!target || !shell) return;
   const shellRect = shell.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
@@ -2836,6 +2950,7 @@ function scrollLobbyTarget(selector: string) {
 
 function toggleLobbyPanel(panelKey: string) {
   if (!panelKey) return;
+  if (document.body.classList.contains('lobby-menu-open')) { closeLobbyMenuPanel(); return; }
   state.collapsedPanels[panelKey] = !state.collapsedPanels[panelKey];
   writeJson('dream-library-lobby-collapsed-panels', state.collapsedPanels);
   renderLobbyPanelState();
@@ -2847,7 +2962,7 @@ function renderLobbyPanelState() {
     const collapsed = Boolean(state.collapsedPanels[key]);
     panel.classList.toggle('collapsed', collapsed);
     panel.querySelectorAll<HTMLElement>('[data-collapse-target]').forEach((button) => {
-      if (button.dataset.collapseTarget === key) button.textContent = collapsed ? '펼치기' : '접기';
+      if (button.dataset.collapseTarget === key) button.textContent = document.body.classList.contains('lobby-menu-open') ? '닫기' : (collapsed ? '펼치기' : '접기');
     });
   });
 }

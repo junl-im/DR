@@ -2607,3 +2607,59 @@ v1.0.71은 v1.0.70의 보상/복원 팝업 안정화 위에, 실제 사용자가
 Apply 꿈의 서고 v1.0.71 modal button microcopy reward flow priority boss contrast and small reward QA patch
 
 다음 업데이트 예정: v1.0.72 - Reward Flow A/B Clarity, Boss Warning Symbol Polish, Restoration Completion Ceremony Motion, Mobile Modal Scroll QA Patch
+
+## v1.0.72 Patch Notes - Lobby Menu Portal, Section Popup Restructure and Rounded Content Readability Patch
+
+v1.0.72는 v1.0.71까지 누적된 보상/복원/시작 CTA 안정화 위에, 로비의 가장 큰 구조 문제였던 긴 세로 스크롤 피로를 줄이기 위한 구조 개선 패치입니다. 상단 `오늘의 복원` 게임 시작 구간은 그대로 유지하고, 아래쪽 스테이지/미션/복원/오늘/도감/상점/기록 구간은 메뉴 버튼을 눌러 팝업식 패널로 열리도록 재배치했습니다.
+
+### 주요 변경
+
+- `v1072-lobby-menu-portal`을 추가해 상단 게임 시작 구간 아래에 `Library Menu` 허브를 배치했습니다.
+- `스테이지 / 미션 / 복원 / 오늘 / 도감 / 상점 / 기록` 메뉴 버튼을 추가했습니다.
+- 각 메뉴는 `lobby-menu-overlay` 안에서 하나의 큰 패널로 열리며, 기존처럼 긴 페이지를 계속 내려보지 않아도 됩니다.
+- `v1072-section-popup-restructure`를 추가해 기존 로비 콘텐츠를 유지하면서 표시 방식만 팝업식으로 전환했습니다.
+- 메뉴 내부 스크롤은 패널 안에서만 동작하도록 분리해 로비 전체 스크롤 피로를 줄였습니다.
+- 기존 미션 카드, 보상 브리지, 복원 연결 버튼이 특정 구간으로 이동할 때도 해당 메뉴 패널이 자동으로 열리도록 `scrollLobbyTarget()` 흐름을 보강했습니다.
+- 둥근 테두리 때문에 안쪽 내용이 눌려 보이던 `복원으로 보기` 연결 카드에 `v1072-rounded-card-content-readability`를 적용했습니다.
+- 보상/복원 카드의 과한 pill/rounded 배치를 완화하고, 제목/상세 문구가 잘리지 않도록 줄바꿈과 여백을 조정했습니다.
+- service worker cache를 `dream-library-cache-v1.0.72`로 갱신하고, `texture-atlas-manifest-v1.0.72.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:lobby-menu-portal`을 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 검사 결과
+
+- `npm run typecheck`
+- 전체 79개 `check:*` QA suite 통과
+- `npm run check:lobby-menu-portal`
+- `npm run check:reward-modal-flow-polish`
+- `npm run check:modal-action-safe-area`
+- `npm run check:restoration-detail-ceremony`
+- `npm run check:restoration-theater-next-goal`
+- `npm run check:reward-restoration-bridge`
+- `npm run check:first-touch-ux`
+- `npm run check:ui-ux-stability`
+- `npm run check:daily-start-arrow-cta`
+- `npm run check:engine-render-budget`
+- `npm run check:mobile-playability`
+- `npm run check:no-minimap-topbar`
+- `npm run check:assets`
+- `npm run check:health`
+- `npm run check:workflows`
+- `npm run build:github`
+
+### 유지 정책
+
+- 상단 `오늘의 복원 / 게임 시작` 구간 유지
+- 자동 fullscreen/orientation API 추가 없음
+- 미니맵 재도입 없음
+- 게임 내 `보기 / 중앙 / + / -` 라인 재도입 없음
+- 카메라 도움말 재도입 없음
+- 선택 타일 크기 확대 없음
+- 손가락 시작 위젯 재도입 없음
+- SVG 없음
+- `node_modules`, `dist`, `package-lock.json`, `DELETE_REMOVED` 파일 ZIP 제외
+
+### GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.72 lobby menu portal section popup restructure and rounded content readability patch
+
+다음 업데이트 예정: v1.0.73 - Lobby Menu Animation, Panel Entry Motion, Section Icon Polish, Popup Navigation QA Patch

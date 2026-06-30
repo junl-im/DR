@@ -10,7 +10,7 @@ const stateTileSet = (name) => ({
 
 
 const LEGACY_QA_ATLAS_MANIFEST_ANCHORS = [
-  'texture-atlas-manifest-v1.0.71.json',
+  'texture-atlas-manifest-v1.0.72.json',
   'texture-atlas-manifest-v1.0.70.json',
   'texture-atlas-manifest-v1.0.69.json',
   'texture-atlas-manifest-v1.0.66.json',

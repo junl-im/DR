@@ -13,7 +13,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71'].includes(pkg.version)) errors.push(`package version must be 1.0.66 or 1.0.67, got ${pkg.version}`);
+if (!['1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72'].includes(pkg.version)) errors.push(`package version must be 1.0.66 or 1.0.67, got ${pkg.version}`);
 if (!pkg.scripts['check:first-touch-ux']) errors.push('missing package script check:first-touch-ux');
 for (const token of ['v1066-first-touch-micro-tutorial', 'v1066-game-ui-stability-pass', 'dream-library-cache-v1.0.66', 'texture-atlas-manifest-v1.0.66.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.66 UX token');

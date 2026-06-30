@@ -13,7 +13,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71'].includes(pkg.version)) errors.push(`package version must be 1.0.67, got ${pkg.version}`);
+if (!['1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72'].includes(pkg.version)) errors.push(`package version must be 1.0.67, got ${pkg.version}`);
 if (!pkg.scripts['check:reward-restoration-bridge']) errors.push('missing package script check:reward-restoration-bridge');
 for (const token of ['v1067-restoration-reward-bridge', 'v1067-boss-vfx-density-guard', 'v1067-micro-tutorial-comfort', 'dream-library-cache-v1.0.67', 'texture-atlas-manifest-v1.0.67.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.67 token');

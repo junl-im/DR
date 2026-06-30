@@ -83,3 +83,11 @@
 - No SVG assets were added.
 - Reward modal polish remains DOM/CSS/runtime based: modal button priority, restoration feedback cue, boss telegraph contrast and small reward modal density QA.
 - `v1071-leaderboard-duplicate-tag-fix` removes a duplicated leaderboard row property that could make future rank code harder to audit.
+
+## v1.0.72 Lobby Menu Portal / Section Popup Pipeline Note
+
+- Generated `texture-atlas-manifest-v1.0.72.json` for the v1.0.72 cache cycle.
+- No SVG assets were added.
+- Lobby restructure is DOM/CSS/runtime based: `v1072-lobby-menu-portal`, `v1072-section-popup-restructure`, and `v1072-rounded-card-content-readability`.
+- The top daily start CTA remains in the lobby root, while lower sections now open inside a menu overlay to reduce scroll fatigue.
+- `check:lobby-menu-portal` validates the menu hub, popup dock, rounded content readability token, workflow hook, cache and atlas manifest.
