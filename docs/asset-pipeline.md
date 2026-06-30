@@ -69,3 +69,9 @@
 - `v1069-restoration-detail-ceremony`는 복원 상세 완료식/진행 바를 DOM 카드로 처리해 추가 이미지 로딩 없이 동작합니다.
 - `v1069-reward-popup-density-guard`는 작은 화면 보상 팝업을 compact density로 접어 보상 카드와 다음 목표 CTA가 화면 밖으로 밀리지 않게 합니다.
 - `v1069-boss-warning-icon-set-polish`는 보스 반격 카드의 아이콘/문구 상태를 텍스트 기반 토큰으로 분리해 low-memory 환경에서도 안정적으로 표시합니다.
+
+## v1.0.70 Asset / UI Pipeline Note
+
+- Generated `texture-atlas-manifest-v1.0.70.json` for the v1.0.70 cache cycle.
+- No SVG assets were added.
+- UI polish is CSS/runtime based: reward action accessibility, safe-area modal flow, restoration ceremony feedback cue, and boss counter line polish.

@@ -5919,3 +5919,138 @@ body.reward-popup-density-tight .reward-modal[data-reward-popup-density-guard="v
 }
 
 /* v1069 compatibility anchors: v1069-lobby-rhythm-cleanup v1069-restoration-detail-ceremony v1069-reward-popup-density-guard v1069-boss-warning-icon-set-polish v1069-clear-flow-recommendation-qa */
+
+
+/* v1.0.70 reward action accessibility, restoration feedback cue, boss counter line polish and mobile safe-area modal flow */
+body[data-mobile-safe-area-qa="v1070-mobile-safe-area-modal-qa"] .reward-modal,
+.reward-modal[data-mobile-safe-area-qa="v1070-mobile-safe-area-modal-qa"] {
+  padding: max(0.72rem, env(safe-area-inset-top)) max(0.68rem, env(safe-area-inset-right)) max(0.82rem, env(safe-area-inset-bottom)) max(0.68rem, env(safe-area-inset-left));
+}
+body.modal-safe-area-tight .reward-modal[data-mobile-safe-area-qa="v1070-mobile-safe-area-modal-qa"] .reward-card {
+  max-height: calc(100dvh - max(1.1rem, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 0.92rem));
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.reward-modal[data-compact-modal-action-flow="v1070-compact-modal-action-flow"] .reward-card {
+  grid-template-rows: auto auto auto minmax(0, auto) auto;
+}
+.reward-actions[data-compact-modal-action-flow="v1070-compact-modal-action-flow"] {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  padding-top: 0.24rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(9,20,43,0), rgba(9,20,43,0.82) 36%, rgba(9,20,43,0.96));
+}
+.reward-actions[data-reward-action-accessibility="v1070-reward-action-accessibility-flow"] button,
+button[data-reward-action-accessibility="v1070-reward-action-accessibility-flow"],
+button[data-compact-modal-action-flow="v1070-compact-modal-action-flow"] {
+  min-height: 42px;
+  touch-action: manipulation;
+  border-radius: 16px;
+}
+.reward-next-goal[data-reward-action-accessibility="v1070-reward-action-accessibility-flow"] {
+  border-color: rgba(125, 220, 255, 0.34);
+  box-shadow: 0 12px 26px rgba(6, 21, 45, 0.26), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.reward-next-goal[data-reward-action-accessibility="v1070-reward-action-accessibility-flow"] .reward-action-hint {
+  grid-area: route;
+  align-self: end;
+  justify-self: end;
+  max-width: 100%;
+  color: rgba(255, 231, 164, 0.82);
+  font-size: 0.52rem;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform: translateY(0.62rem);
+}
+.reward-next-goal[data-goal-priority="restore-first"][data-reward-action-accessibility="v1070-reward-action-accessibility-flow"] button {
+  background: linear-gradient(135deg, var(--gold-300), var(--emerald-500));
+  color: var(--navy-950);
+  box-shadow: 0 0 22px rgba(255, 231, 164, 0.2);
+}
+.reward-restoration-bridge[data-reward-action-accessibility="v1070-reward-action-accessibility-flow"] button {
+  border-color: rgba(255, 231, 164, 0.34);
+}
+.restoration-ceremony-strip[data-restoration-ceremony-feedback="v1070-restoration-ceremony-feedback-cue"] {
+  position: relative;
+  padding-right: 0.76rem;
+}
+.restoration-ceremony-strip[data-restoration-ceremony-feedback="v1070-restoration-ceremony-feedback-cue"] .ceremony-feedback-cue {
+  grid-area: bar;
+  justify-self: end;
+  align-self: center;
+  margin-top: 0.42rem;
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 231, 164, 0.13);
+  color: var(--gold-300);
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 1000;
+  letter-spacing: -0.02em;
+}
+.restoration-ceremony-strip[data-restoration-ceremony-feedback="v1070-restoration-ceremony-feedback-cue"][data-ceremony-state="ready"]::after {
+  content: '';
+  position: absolute;
+  right: 0.34rem;
+  top: 0.34rem;
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: var(--gold-300);
+  box-shadow: 0 0 18px rgba(255, 231, 164, 0.52);
+  animation: rewardClaimGlow 1.35s ease-in-out infinite;
+}
+.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"] {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'label title' 'label desc' 'line line';
+  row-gap: 0.08rem;
+}
+.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"] span { grid-area: label; }
+.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"] b { grid-area: title; }
+.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"] small { grid-area: desc; }
+.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"] .boss-counter-route {
+  grid-area: line;
+  display: inline-flex;
+  justify-content: center;
+  min-width: 0;
+  padding-top: 0.08rem;
+  color: rgba(125, 220, 255, 0.78);
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 1000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"][data-icon-trim="icon-only"] .boss-counter-route,
+.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"][data-attack-density="compact"] .boss-counter-route {
+  display: none;
+}
+@media (max-width: 430px), (max-height: 700px) {
+  .reward-next-goal[data-reward-action-accessibility="v1070-reward-action-accessibility-flow"] .reward-action-hint {
+    grid-area: desc;
+    justify-self: center;
+    transform: none;
+    white-space: normal;
+    text-align: center;
+  }
+  .reward-actions[data-compact-modal-action-flow="v1070-compact-modal-action-flow"] {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.42rem;
+  }
+  .restoration-ceremony-strip[data-restoration-ceremony-feedback="v1070-restoration-ceremony-feedback-cue"] .ceremony-feedback-cue {
+    justify-self: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .restoration-ceremony-strip[data-restoration-ceremony-feedback="v1070-restoration-ceremony-feedback-cue"][data-ceremony-state="ready"]::after { animation: none !important; }
+}
+
+/* v1070 compatibility anchors: v1070-reward-action-accessibility-flow v1070-restoration-ceremony-feedback-cue v1070-boss-counter-line-polish v1070-mobile-safe-area-modal-qa v1070-compact-modal-action-flow */

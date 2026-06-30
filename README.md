@@ -2515,3 +2515,43 @@ Apply 꿈의 서고 v1.0.69 lobby rhythm restoration detail ceremony reward dens
 ```
 
 다음 업데이트 예정: v1.0.70 - Reward Modal Accessibility, Restoration Ceremony Sound Cue, Boss Telegraph Line Polish, Mobile Safe-area QA Patch
+
+## v1.0.70 Patch Notes - Reward Action Accessibility, Safe-Area Modal Flow and Boss Counter Line Polish Patch
+
+v1.0.70은 v1.0.69의 복원 상세 완료식과 보상 팝업 밀도 개선 위에, 실제 모바일 사용 중 눌러야 할 버튼 흐름이 더 명확하게 보이도록 보상 액션 접근성, safe-area 팝업 압축, 복원 완료식 피드백 큐, 보스 반격 라인 가독성을 보강한 UI/UX 안정화 패치입니다.
+
+### 주요 변경
+
+- `v1070-reward-action-accessibility-flow`를 추가해 보상 팝업의 추천 액션, 복원 연결 버튼, 다음 목표 버튼의 터치 높이와 안내 문구를 보강했습니다.
+- `v1070-mobile-safe-area-modal-qa`를 추가해 작은 폰과 하단 제스처 영역에서 보상/복원 상세 팝업이 안전 영역 안에 머물도록 조정했습니다.
+- `v1070-compact-modal-action-flow`를 추가해 보상/복원 상세 팝업 하단 버튼 줄을 sticky 형태로 안정화하고, 작은 화면에서는 1열로 접히게 했습니다.
+- `v1070-restoration-ceremony-feedback-cue`를 추가해 복원 상세 완료식 카드에 `완료 가능 / 완료됨 / 진행 중` 피드백 큐와 완료 가능 glow를 더했습니다.
+- `v1070-boss-counter-line-polish`를 추가해 보스 반격 미리보기 안에 `반격 예고 → 매칭으로 차단` 흐름 라인을 표시하고, 작은 화면에서는 자동으로 숨겨 과밀도를 줄였습니다.
+- 실제 코드 안정성 점검 중 발견한 `closeReward()`의 중복 `hidden` 클래스 추가를 제거했습니다.
+- service worker cache를 `dream-library-cache-v1.0.70`으로 갱신하고, `texture-atlas-manifest-v1.0.70.json`을 생성/선로드에 추가했습니다.
+- 신규 검사 `check:modal-action-safe-area`를 추가하고 GitHub Pages / Quality Check workflow에 연결했습니다.
+
+### 검사 결과
+
+- `npm run typecheck`
+- 전체 77개 `check:*` QA suite 통과
+- `npm run check:modal-action-safe-area`
+- `npm run check:restoration-detail-ceremony`
+- `npm run check:restoration-theater-next-goal`
+- `npm run check:reward-restoration-bridge`
+- `npm run check:first-touch-ux`
+- `npm run check:ui-ux-stability`
+- `npm run check:daily-start-arrow-cta`
+- `npm run check:engine-render-budget`
+- `npm run check:mobile-playability`
+- `npm run check:no-minimap-topbar`
+- `npm run check:assets`
+- `npm run check:health`
+- `npm run check:workflows`
+- `npm run build:github`
+
+### GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.70 reward action accessibility safe-area modal flow and boss counter line polish patch
+
+다음 업데이트 예정: v1.0.71 - Modal Button Microcopy, Restoration Completion Sound Cue, Boss Telegraph Contrast, Small Screen Reward QA Patch

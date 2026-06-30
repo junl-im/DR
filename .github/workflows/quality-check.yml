@@ -117,6 +117,7 @@ jobs:
           npm run check:reward-restoration-bridge
           npm run check:restoration-theater-next-goal
           npm run check:restoration-detail-ceremony
+          npm run check:modal-action-safe-area
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
