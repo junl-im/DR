@@ -115,6 +115,7 @@ jobs:
           npm run check:ui-ux-stability
           npm run check:first-touch-ux
           npm run check:reward-restoration-bridge
+          npm run check:restoration-theater-next-goal
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

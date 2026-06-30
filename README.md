@@ -2426,3 +2426,40 @@ Apply 꿈의 서고 v1.0.67 reward restoration bridge boss VFX density guard and
 ```
 
 다음 업데이트 예정: v1.0.68 - Restoration Completion Theater, Reward Claim Motion, Boss Warning Readability Polish and Lobby Rhythm Patch
+
+## v1.0.68 Patch Notes - Restoration Completion Theater, Reward Motion and Next Goal Advisor Patch
+
+v1.0.68은 v1.0.67의 보상→복원 연결 위에 복원 완료 순간의 연출감, 보상 수령 모션, 클리어 후 다음 목표 추천, 보스 경고 아이콘 정리를 더한 UI/UX 안정화 패치입니다. 특히 클리어 팝업이 단순 결과창으로 끝나지 않고 “무엇이 완료 가능해졌고, 다음에 어디로 가야 하는지”를 바로 안내하도록 다듬었습니다.
+
+### 핵심 개선
+
+- `reward-completion-theater`를 추가해 복원 완료 가능 상태에서 짧은 완료 연출 카드가 표시됩니다.
+- 보상 팝업에 `reward-claim-pop` 모션을 추가해 별/재료/복원 칩이 더 자연스럽게 들어옵니다.
+- `reward-next-goal` 카드를 추가해 클리어 후 다음 스테이지, 복원 완료, 로비 목표 확인 중 가장 적절한 다음 행동을 추천합니다.
+- `reward-next-goal-button`을 누르면 복원 완료 가능한 경우 복원 작업대로, 그렇지 않으면 다음 스테이지가 선택된 로비 카드로 이동합니다.
+- 첫 터치 안내의 중복 `innerHTML` 렌더링을 제거해 이벤트 재바인딩과 UI 안정성을 개선했습니다.
+- 보스 반격 미리보기에 `v1068-boss-warning-icon-trim`을 추가해 작은 화면에서는 경고 설명이 아이콘/핵심명 중심으로 접힙니다.
+- service worker cache를 `dream-library-cache-v1.0.68`로 갱신하고, `texture-atlas-manifest-v1.0.68.json`을 생성/선로드에 추가했습니다.
+
+### QA 결과
+
+- `npm run typecheck`
+- `npm run check:restoration-theater-next-goal`
+- `npm run check:reward-restoration-bridge`
+- `npm run check:first-touch-ux`
+- `npm run check:ui-ux-stability`
+- `npm run check:daily-start-arrow-cta`
+- `npm run check:daily-quest-chain`
+- `npm run check:engine-render-budget`
+- `npm run check:mobile-playability`
+- `npm run check:no-minimap-topbar`
+- `npm run check:assets`
+- `npm run check:health`
+- `npm run check:workflows`
+- `npm run build:github`
+
+### GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.68 restoration completion theater reward motion next goal and boss warning icon trim patch
+
+다음 업데이트 예정: v1.0.69 - Lobby Rhythm Cleanup, Restoration Detail Ceremony, Boss Warning Icon Set Polish, Clear Flow Recommendation QA Patch

@@ -5633,3 +5633,147 @@ body.first-touch-guide-soft-repeat .pixi-board-host[data-game-ui-stability="v106
 }
 
 /* v1067 compatibility anchors: v1067-restoration-reward-bridge v1067-boss-vfx-density-guard v1067-micro-tutorial-comfort */
+
+/* v1.0.68 restoration completion theater, reward motion, next goal advisor and boss warning icon trim */
+.reward-modal[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-card {
+  position: relative;
+  overflow: hidden;
+}
+.reward-modal[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-card::before {
+  content: '';
+  position: absolute;
+  inset: -22% -35% auto;
+  height: 42%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255, 231, 164, 0.18), transparent 68%);
+  opacity: 0.88;
+  transform: translateY(-18%);
+}
+.reward-modal.reward-claim-pop[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-card {
+  animation: rewardClaimRise 420ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+.reward-modal.reward-claim-pop[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-chip {
+  animation: rewardChipPop 520ms cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+.reward-modal.reward-claim-pop[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-chip:nth-child(2) { animation-delay: 40ms; }
+.reward-modal.reward-claim-pop[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-chip:nth-child(3) { animation-delay: 80ms; }
+.reward-completion-theater[data-restoration-completion-theater="v1068-restoration-completion-theater"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'label title' 'label desc';
+  gap: 0.08rem 0.58rem;
+  align-items: center;
+  margin: -0.08rem 0 0.38rem;
+  padding: 0.56rem 0.64rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 231, 164, 0.46);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 231, 164, 0.25), transparent 38%),
+    linear-gradient(135deg, rgba(54, 214, 164, 0.16), rgba(143, 107, 255, 0.12));
+  box-shadow: 0 0 30px rgba(255, 231, 164, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.reward-completion-theater.hidden { display: none !important; }
+.reward-completion-theater span {
+  grid-area: label;
+  align-self: stretch;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 0.48rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--emerald-500));
+  font-size: 0.55rem;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+.reward-completion-theater b { grid-area: title; color: var(--gold-300); font-size: 0.76rem; letter-spacing: -0.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reward-completion-theater small { grid-area: desc; color: rgba(230, 238, 255, 0.74); font-size: 0.58rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.restoration-completion-theater-active .reward-completion-theater[data-restoration-completion-theater="v1068-restoration-completion-theater"] {
+  animation: restorationTheaterGlow 900ms ease both;
+}
+.reward-next-goal[data-next-goal-advisor="v1068-next-goal-advisor"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'label title action' 'label desc action';
+  align-items: center;
+  gap: 0.08rem 0.56rem;
+  padding: 0.54rem 0.62rem;
+  border-radius: 20px;
+  border: 1px solid rgba(125, 220, 255, 0.22);
+  background: linear-gradient(135deg, rgba(125, 220, 255, 0.11), rgba(9, 24, 48, 0.78));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035), 0 12px 28px rgba(6, 21, 45, 0.22);
+}
+.reward-next-goal[data-next-goal-advisor="v1068-next-goal-advisor"] span {
+  grid-area: label;
+  align-self: stretch;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 0.46rem;
+  border-radius: 999px;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--sky-500), var(--gold-300));
+  font-size: 0.55rem;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+.reward-next-goal b { grid-area: title; color: var(--gold-300); font-size: 0.74rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reward-next-goal small { grid-area: desc; color: rgba(230, 238, 255, 0.72); font-size: 0.58rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reward-next-goal button { grid-area: action; min-height: 38px; padding: 0.42rem 0.72rem; white-space: nowrap; }
+.reward-next-goal[data-goal-state="restore-ready"] {
+  border-color: rgba(255, 231, 164, 0.42);
+  background: linear-gradient(135deg, rgba(255, 231, 164, 0.14), rgba(54, 214, 164, 0.12));
+}
+.boss-attack-preview[data-boss-warning-icon-trim="v1068-boss-warning-icon-trim"] span::before {
+  content: '⚠';
+  margin-right: 0.24rem;
+  filter: drop-shadow(0 0 8px rgba(255, 231, 164, 0.24));
+}
+.boss-attack-preview[data-boss-warning-icon-trim="v1068-boss-warning-icon-trim"][data-icon-trim="compact"] {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'label title';
+  padding-inline: 0.42rem;
+}
+.boss-attack-preview[data-boss-warning-icon-trim="v1068-boss-warning-icon-trim"][data-icon-trim="compact"] small,
+.boss-attack-preview[data-boss-warning-icon-trim="v1068-boss-warning-icon-trim"][data-icon-trim="icon-only"] small { display: none; }
+.boss-attack-preview[data-boss-warning-icon-trim="v1068-boss-warning-icon-trim"][data-icon-trim="icon-only"] span {
+  font-size: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+}
+.boss-attack-preview[data-boss-warning-icon-trim="v1068-boss-warning-icon-trim"][data-icon-trim="icon-only"] span::before { margin: 0; font-size: 0.76rem; }
+@keyframes rewardClaimRise {
+  0% { transform: translateY(12px) scale(0.985); opacity: 0.78; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes rewardChipPop {
+  0% { transform: translateY(6px) scale(0.94); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes restorationTheaterGlow {
+  0% { transform: scale(0.98); filter: brightness(0.96); }
+  42% { transform: scale(1.012); filter: brightness(1.14); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+@media (max-width: 430px), (max-height: 700px) {
+  .reward-completion-theater[data-restoration-completion-theater="v1068-restoration-completion-theater"],
+  .reward-next-goal[data-next-goal-advisor="v1068-next-goal-advisor"] {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'label' 'title' 'desc' 'action';
+    justify-items: stretch;
+    text-align: center;
+    gap: 0.2rem;
+  }
+  .reward-completion-theater span,
+  .reward-next-goal span,
+  .reward-next-goal button { justify-self: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reward-modal.reward-claim-pop[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-card,
+  .reward-modal.reward-claim-pop[data-reward-claim-motion="v1068-reward-claim-motion"] .reward-chip,
+  body.restoration-completion-theater-active .reward-completion-theater[data-restoration-completion-theater="v1068-restoration-completion-theater"] { animation: none !important; }
+}
+
+/* v1068 compatibility anchors: v1068-restoration-completion-theater v1068-reward-claim-motion v1068-next-goal-advisor v1068-boss-warning-icon-trim */

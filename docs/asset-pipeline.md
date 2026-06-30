@@ -53,3 +53,11 @@
 - 보상 팝업은 `v1067-restoration-reward-bridge` 훅으로 클리어 재료가 어느 복원 프로젝트에 반영되는지 progress bridge와 액션 버튼으로 연결합니다.
 - 보스 경고/반격 미리보기는 `v1067-boss-vfx-density-guard` 훅으로 작은 화면에서 흔들림과 광량을 낮춰 보드 가림을 줄입니다.
 - 첫 터치 안내는 `v1067-micro-tutorial-comfort` 훅으로 재방문/오늘 스테이지 반복 안내를 짧고 조용하게 접습니다.
+
+## v1.0.68 Restoration Completion Theater / Next Goal Advisor 파이프라인 메모
+
+- `texture-atlas-manifest-v1.0.68.json`을 생성해 최신 캐시/프리로드 기준에 포함했습니다.
+- 스테이지 클리어 후 보상 팝업에 `reward-completion-theater`, `reward-next-goal` UI 훅을 추가했습니다.
+- 보상 칩 등장 모션은 CSS 기반으로 처리해 이미지/SVG 추가 없이 고급스러운 수령감을 강화했습니다.
+- 보스 경고 카드는 작은 화면에서 `icon-only` 또는 `compact` 상태로 접히도록 `v1068-boss-warning-icon-trim` 토큰을 추가했습니다.
+- QA는 `check:restoration-theater-next-goal`에서 복원 완료 연출, 다음 목표 카드, 보스 경고 아이콘 밀도, 중복 HTML 속성, 손가락 위젯 미복귀를 같이 확인합니다.

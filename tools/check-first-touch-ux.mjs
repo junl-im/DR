@@ -13,7 +13,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.66', '1.0.67'].includes(pkg.version)) errors.push(`package version must be 1.0.66 or 1.0.67, got ${pkg.version}`);
+if (!['1.0.66', '1.0.67', '1.0.68'].includes(pkg.version)) errors.push(`package version must be 1.0.66 or 1.0.67, got ${pkg.version}`);
 if (!pkg.scripts['check:first-touch-ux']) errors.push('missing package script check:first-touch-ux');
 for (const token of ['v1066-first-touch-micro-tutorial', 'v1066-game-ui-stability-pass', 'dream-library-cache-v1.0.66', 'texture-atlas-manifest-v1.0.66.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.66 UX token');
@@ -30,7 +30,7 @@ has(css, 'body.game-ui-tight', 'game UI tight CSS');
 has(css, '.boss-attack-preview[data-game-ui-stability="v1066-game-ui-stability-pass"][data-attack-density="compact"]', 'boss preview compact CSS');
 has(sw, "dream-library-cache-v1.0.66", 'service worker v1.0.66 cache');
 has(sw, 'texture-atlas-manifest-v1.0.66.json', 'service worker v1.0.66 atlas preload');
-has(difficulty, 'texture-atlas-manifest-v1.0.66.json', 'difficulty v1.0.66 atlas preload');
+if (!difficulty.includes('texture-atlas-manifest-v1.0.66.json') && !difficulty.includes('texture-atlas-manifest-v1.0.68.json')) errors.push('difficulty v1.0.66/v1.0.68 atlas preload missing');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.66.json')) errors.push('missing v1.0.66 texture atlas manifest');
 has(pages, 'npm run check:first-touch-ux', 'GitHub Pages v1.0.66 QA hook');
 has(quality, 'npm run check:first-touch-ux', 'Quality v1.0.66 QA hook');
