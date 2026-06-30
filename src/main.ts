@@ -123,6 +123,10 @@ const LEADERBOARD_DUPLICATE_TAG_FIX_PATCH = 'v1071-leaderboard-duplicate-tag-fix
 const LOBBY_MENU_PORTAL_PATCH = 'v1072-lobby-menu-portal';
 const SECTION_POPUP_RESTRUCTURE_PATCH = 'v1072-section-popup-restructure';
 const ROUNDED_CARD_CONTENT_READABILITY_PATCH = 'v1072-rounded-card-content-readability';
+const LOBBY_MENU_MOTION_STATE_PATCH = 'v1073-lobby-menu-motion-state';
+const LOBBY_MENU_BACK_CLOSE_PATCH = 'v1073-lobby-menu-back-close';
+const LOBBY_MENU_TAB_SWITCH_PATCH = 'v1073-lobby-menu-tab-switch';
+const LOBBY_PANEL_STATE_RETENTION_PATCH = 'v1073-lobby-panel-state-retention';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
@@ -148,6 +152,7 @@ void V1069_COMPAT_TOKENS;
 const V1070_COMPAT_TOKENS = 'v1070-reward-action-accessibility-flow v1070-restoration-ceremony-feedback-cue v1070-boss-counter-line-polish v1070-mobile-safe-area-modal-qa v1070-compact-modal-action-flow dream-library-cache-v1.0.70 texture-atlas-manifest-v1.0.70.json';
 void V1070_COMPAT_TOKENS;
 const V1072_COMPAT_TOKENS = 'v1072-lobby-menu-portal v1072-section-popup-restructure v1072-rounded-card-content-readability dream-library-cache-v1.0.72 texture-atlas-manifest-v1.0.72.json';
+const V1073_COMPAT_TOKENS = 'v1073-lobby-menu-motion-state v1073-lobby-menu-back-close v1073-lobby-menu-tab-switch v1073-lobby-panel-state-retention dream-library-cache-v1.0.73 texture-atlas-manifest-v1.0.73.json';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
@@ -278,6 +283,8 @@ const el = {
   lobbyMenuHub: $('#lobby-menu-hub'),
   lobbyMenuOverlay: $('#lobby-menu-overlay'),
   lobbyMenuCloseButton: $('#lobby-menu-close-button'),
+  lobbyMenuBackButton: $('#lobby-menu-back-button'),
+  lobbyMenuTabs: $('#lobby-menu-tabs'),
   lobbyMenuTitle: $('#lobby-menu-title'),
   lobbyMenuSubtitle: $('#lobby-menu-subtitle'),
   lobbyPanelDock: $('#lobby-panel-dock'),
@@ -446,6 +453,8 @@ const state = {
   restorationFocus: readText('dream-library-restoration-focus') || 'shelf',
   collapsedPanels: readJson<Record<string, boolean>>('dream-library-lobby-collapsed-panels', {}),
   activeLobbyPanel: readText(ACTIVE_LOBBY_PANEL_KEY) || 'campaign',
+  lastLobbyMenuTrigger: null as HTMLElement | null,
+  lobbyMenuOpenCount: 0,
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
   activeBoss: getBossForStage(getStageById(readText('dream-library-selected-stage') || DEFAULT_STAGE_ID)) as any,
@@ -722,10 +731,16 @@ function bindEvents() {
   el.lobbyMenuHub?.addEventListener('click', (event) => {
     const trigger = (event.target as HTMLElement).closest<HTMLElement>('[data-lobby-menu-open]');
     if (!trigger) return;
-    openLobbyMenuPanel(trigger.dataset.lobbyMenuOpen || 'campaign');
+    openLobbyMenuPanel(trigger.dataset.lobbyMenuOpen || 'campaign', trigger);
   });
-  el.lobbyMenuCloseButton?.addEventListener('click', closeLobbyMenuPanel);
-  el.lobbyMenuOverlay?.addEventListener('click', (event) => { if (event.target === el.lobbyMenuOverlay) closeLobbyMenuPanel(); });
+  el.lobbyMenuTabs?.addEventListener('click', (event) => {
+    const trigger = (event.target as HTMLElement).closest<HTMLElement>('[data-lobby-menu-tab]');
+    if (!trigger) return;
+    openLobbyMenuPanel(trigger.dataset.lobbyMenuTab || 'campaign', trigger, { keepFocus: true });
+  });
+  el.lobbyMenuCloseButton?.addEventListener('click', () => closeLobbyMenuPanel({ returnFocus: true }));
+  el.lobbyMenuBackButton?.addEventListener('click', () => closeLobbyMenuPanel({ returnFocus: true }));
+  el.lobbyMenuOverlay?.addEventListener('click', (event) => { if (event.target === el.lobbyMenuOverlay) closeLobbyMenuPanel({ returnFocus: true }); });
   el.dailyStartSignal.addEventListener('pointerenter', () => document.body.classList.add('daily-start-signal-hovered'));
   el.dailyStartSignal.addEventListener('pointerleave', () => document.body.classList.remove('daily-start-signal-hovered'));
   el.firstTouchGuideClose?.addEventListener('click', () => hideFirstTouchGuide(true));
@@ -814,7 +829,7 @@ function bindEvents() {
   document.addEventListener('click', (event) => {
     const closeNode = (event.target as HTMLElement).closest<HTMLElement>('[data-lobby-menu-close]');
     if (closeNode) {
-      closeLobbyMenuPanel();
+      closeLobbyMenuPanel({ returnFocus: true });
       return;
     }
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-collapse-target]');
@@ -838,7 +853,7 @@ function bindEvents() {
   });
 
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && document.body.classList.contains('lobby-menu-open')) closeLobbyMenuPanel();
+    if (event.key === 'Escape' && document.body.classList.contains('lobby-menu-open')) closeLobbyMenuPanel({ returnFocus: true });
   });
 
   window.addEventListener('resize', () => {
@@ -868,6 +883,7 @@ function initBackNavigation() {
 }
 
 function handleSoftBack() {
+  if (document.body.classList.contains('lobby-menu-open')) { closeLobbyMenuPanel({ returnFocus: true }); return; }
   if (!el.rewardModal.classList.contains('hidden')) { closeReward(); return; }
   if (!el.restorationDetailModal.classList.contains('hidden')) { closeRestorationDetail(); return; }
   if (!el.optionsModal.classList.contains('hidden')) { closeOptionsPanel(); return; }
@@ -1536,7 +1552,7 @@ function updateScreen(screen: ScreenName) {
   // v1.0.37: no persistent top navigation line; browser back and in-screen actions handle flow.
   el.backButton.classList.add('hidden');
   if (screen === 'lobby') renderLobby();
-  if (screen !== 'lobby') { closeLobbyMenuPanel(); clearDailyStartNudge(); }
+  if (screen !== 'lobby') { closeLobbyMenuPanel({ silent: true }); clearDailyStartNudge(); }
   if (screen === 'settings') renderAuth();
   scheduleGameUiStabilityPass();
   if (state.browserBackReady) {
@@ -1877,6 +1893,10 @@ function applyAdaptiveVisualBudget() {
   el.app?.setAttribute('data-first-touch-ux', FIRST_TOUCH_MICRO_TUTORIAL_PATCH);
   el.app?.setAttribute('data-game-ui-stability', GAME_UI_STABILITY_PASS_PATCH);
   el.app?.setAttribute('data-lobby-ui-polish', LOBBY_UI_POLISH_PASS_PATCH);
+  el.app?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
+  el.app?.setAttribute('data-lobby-menu-back-close', LOBBY_MENU_BACK_CLOSE_PATCH);
+  el.app?.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
+  el.app?.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-engine-upgrade', ENGINE_DESIGN_UPGRADE_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-lobby-density-final-qa', LOBBY_DENSITY_FINAL_QA_PATCH);
   document.querySelector<HTMLElement>('.screen-lobby')?.setAttribute('data-start-signal', DAILY_START_SIGNAL_PATCH);
@@ -2876,21 +2896,37 @@ function syncLobbyMenuPortal() {
   document.body.dataset.lobbyMenuPortal = LOBBY_MENU_PORTAL_PATCH;
   document.body.dataset.lobbyScrollRestructure = SECTION_POPUP_RESTRUCTURE_PATCH;
   document.body.dataset.roundedContentReadable = ROUNDED_CARD_CONTENT_READABILITY_PATCH;
+  document.body.dataset.lobbyMenuMotionState = LOBBY_MENU_MOTION_STATE_PATCH;
+  document.body.dataset.lobbyPanelStateRetention = LOBBY_PANEL_STATE_RETENTION_PATCH;
   document.body.classList.toggle('lobby-menu-tight', tight);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-back-close', LOBBY_MENU_BACK_CLOSE_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
+  el.lobbyMenuTabs?.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
   document.querySelectorAll<HTMLElement>('[data-lobby-menu-open]').forEach((button) => {
     const key = normalizeLobbyPanelKey(button.dataset.lobbyMenuOpen || 'campaign');
     const selected = key === state.activeLobbyPanel && document.body.classList.contains('lobby-menu-open');
     button.classList.toggle('selected', selected);
     button.setAttribute('aria-pressed', selected ? 'true' : 'false');
     button.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+    button.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
+  });
+  document.querySelectorAll<HTMLElement>('[data-lobby-menu-tab]').forEach((button) => {
+    const key = normalizeLobbyPanelKey(button.dataset.lobbyMenuTab || 'campaign');
+    const selected = key === state.activeLobbyPanel && document.body.classList.contains('lobby-menu-open');
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-current', selected ? 'page' : 'false');
+    button.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
   });
   document.querySelectorAll<HTMLElement>('[data-lobby-panel]').forEach((panel) => {
     const key = normalizeLobbyPanelKey(panel.dataset.lobbyPanel || 'campaign');
     const active = key === state.activeLobbyPanel;
     panel.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
+    panel.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
     panel.classList.toggle('lobby-menu-panel-active', active);
     if (document.body.classList.contains('lobby-menu-open')) panel.classList.remove('collapsed');
     panel.setAttribute('aria-hidden', document.body.classList.contains('lobby-menu-open') && active ? 'false' : 'true');
@@ -2900,26 +2936,49 @@ function syncLobbyMenuPortal() {
   });
 }
 
-function openLobbyMenuPanel(panelKey = 'campaign') {
+function openLobbyMenuPanel(panelKey = 'campaign', trigger?: HTMLElement | null, options: { keepFocus?: boolean } = {}) {
   const key = normalizeLobbyPanelKey(panelKey);
   state.activeLobbyPanel = key;
+  state.lobbyMenuOpenCount += 1;
+  if (trigger && !trigger.closest('#lobby-menu-tabs')) state.lastLobbyMenuTrigger = trigger;
   writeText(ACTIVE_LOBBY_PANEL_KEY, key);
   const meta = LOBBY_MENU_TITLES[key];
   el.lobbyMenuTitle.textContent = meta.title;
   el.lobbyMenuSubtitle.textContent = meta.subtitle;
-  el.lobbyMenuOverlay.classList.remove('hidden');
+  el.lobbyMenuOverlay.classList.remove('hidden', 'closing');
+  el.lobbyMenuOverlay.classList.add('opening');
+  el.lobbyMenuOverlay.dataset.lobbyMenuMotionState = LOBBY_MENU_MOTION_STATE_PATCH;
+  el.lobbyMenuOverlay.dataset.lobbyMenuBackClose = LOBBY_MENU_BACK_CLOSE_PATCH;
+  el.lobbyMenuOverlay.dataset.lobbyPanelStateRetention = LOBBY_PANEL_STATE_RETENTION_PATCH;
   document.body.classList.add('lobby-menu-open');
+  document.body.dataset.activeLobbyPanel = key;
   syncLobbyMenuPortal();
   window.setTimeout(() => {
+    el.lobbyMenuOverlay.classList.remove('opening');
     const panel = document.querySelector<HTMLElement>(`[data-lobby-panel="${key}"]`);
     panel?.scrollIntoView({ block: 'start', behavior: 'auto' });
+    if (!options.keepFocus) el.lobbyMenuCloseButton?.focus({ preventScroll: true });
   }, 20);
 }
 
-function closeLobbyMenuPanel() {
-  el.lobbyMenuOverlay?.classList.add('hidden');
+function closeLobbyMenuPanel(options: { returnFocus?: boolean; silent?: boolean } = {}) {
+  if (!el.lobbyMenuOverlay || el.lobbyMenuOverlay.classList.contains('hidden')) {
+    document.body.classList.remove('lobby-menu-open');
+    syncLobbyMenuPortal();
+    return;
+  }
+  el.lobbyMenuOverlay.dataset.lobbyMenuBackClose = LOBBY_MENU_BACK_CLOSE_PATCH;
+  el.lobbyMenuOverlay.classList.remove('opening');
+  el.lobbyMenuOverlay.classList.add('closing');
   document.body.classList.remove('lobby-menu-open');
   syncLobbyMenuPortal();
+  const finish = () => {
+    el.lobbyMenuOverlay?.classList.add('hidden');
+    el.lobbyMenuOverlay?.classList.remove('closing');
+    if (options.returnFocus && state.lastLobbyMenuTrigger) state.lastLobbyMenuTrigger.focus({ preventScroll: true });
+  };
+  if (options.silent || window.matchMedia('(prefers-reduced-motion: reduce)').matches) finish();
+  else window.setTimeout(finish, 150);
 }
 
 function getLobbyPanelKeyForSelector(selector: string) {

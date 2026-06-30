@@ -124,6 +124,7 @@ jobs:
           npm run check:modal-action-safe-area
           npm run check:reward-modal-flow-polish
           npm run check:lobby-menu-portal
+          npm run check:lobby-menu-motion-state
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

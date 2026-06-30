@@ -122,23 +122,26 @@
             <div><p class="eyebrow">Start Route</p><strong>오늘의 복원이 게임 시작입니다</strong><small>버튼을 누르면 오늘 스테이지와 보스 퍼즐로 바로 들어갑니다.</small><p id="daily-start-focus-summary" class="daily-start-focus-summary" data-daily-start-focus="v1062-daily-start-focus-assist"><span>오늘 목표</span><b>보스 퍼즐로 바로 이동</b><small>복원 보상과 연결</small></p><div id="daily-quest-chain" class="daily-quest-chain" data-daily-quest-chain="v1063-daily-quest-chain" aria-label="오늘의 복원 퀘스트 체인"><span><b>1</b>보상 확인</span><span><b>2</b>보스 퍼즐</span><span><b>3</b>복원 연결</span></div></div>
             <ol><li><b>1</b><span>오늘의 복원</span></li><li><b>2</b><span>보스 퍼즐</span></li><li><b>3</b><span>서고 복원</span></li></ol>
           </aside>
-          <nav id="lobby-menu-hub" class="lobby-menu-hub luxury-panel alive-panel" data-lobby-menu-portal="v1072-lobby-menu-portal" data-lobby-scroll-restructure="v1072-section-popup-restructure" aria-label="서고 메뉴">
+          <nav id="lobby-menu-hub" class="lobby-menu-hub luxury-panel alive-panel" data-lobby-menu-portal="v1072-lobby-menu-portal" data-lobby-scroll-restructure="v1072-section-popup-restructure" data-lobby-menu-motion-state="v1073-lobby-menu-motion-state" aria-label="서고 메뉴">
             <div class="lobby-menu-copy"><p class="eyebrow">Library Menu</p><h3>필요한 구간만 열어보기</h3><small>상단 게임 시작은 그대로 두고, 아래 콘텐츠는 메뉴 버튼으로 정리했습니다.</small></div>
-            <div class="lobby-menu-grid" role="list">
-              <button type="button" data-lobby-menu-open="campaign"><span>스테이지</span><b>월드맵</b></button>
-              <button type="button" data-lobby-menu-open="mission"><span>미션</span><b>오늘 할 일</b></button>
-              <button type="button" data-lobby-menu-open="restoration"><span>복원</span><b>작업대</b></button>
-              <button type="button" data-lobby-menu-open="daily"><span>오늘</span><b>랭킹/보상</b></button>
-              <button type="button" data-lobby-menu-open="collection"><span>도감</span><b>수집품</b></button>
-              <button type="button" data-lobby-menu-open="summer"><span>상점</span><b>시즌 보상</b></button>
-              <button type="button" data-lobby-menu-open="progress"><span>기록</span><b>진행/랭킹</b></button>
+            <div class="lobby-menu-grid" role="list" data-lobby-menu-motion-state="v1073-lobby-menu-motion-state">
+              <button type="button" data-lobby-menu-open="campaign" data-menu-icon="map"><i aria-hidden="true">◇</i><span>스테이지</span><b>월드맵</b></button>
+              <button type="button" data-lobby-menu-open="mission" data-menu-icon="mission"><i aria-hidden="true">✦</i><span>미션</span><b>오늘 할 일</b></button>
+              <button type="button" data-lobby-menu-open="restoration" data-menu-icon="restore"><i aria-hidden="true">◆</i><span>복원</span><b>작업대</b></button>
+              <button type="button" data-lobby-menu-open="daily" data-menu-icon="daily"><i aria-hidden="true">☾</i><span>오늘</span><b>랭킹/보상</b></button>
+              <button type="button" data-lobby-menu-open="collection" data-menu-icon="codex"><i aria-hidden="true">✧</i><span>도감</span><b>수집품</b></button>
+              <button type="button" data-lobby-menu-open="summer" data-menu-icon="shop"><i aria-hidden="true">❖</i><span>상점</span><b>시즌 보상</b></button>
+              <button type="button" data-lobby-menu-open="progress" data-menu-icon="record"><i aria-hidden="true">⌁</i><span>기록</span><b>진행/랭킹</b></button>
             </div>
           </nav>
 
-          <div id="lobby-menu-overlay" class="lobby-menu-overlay hidden" data-lobby-menu-portal="v1072-lobby-menu-portal" role="dialog" aria-modal="true" aria-labelledby="lobby-menu-title">
-            <div class="lobby-menu-card luxury-panel">
-              <div class="lobby-menu-toolbar"><div><p class="eyebrow">Library Menu</p><h2 id="lobby-menu-title">서고 메뉴</h2><p id="lobby-menu-subtitle">원하는 구간만 크게 열어 확인하세요.</p></div><button id="lobby-menu-close-button" type="button" class="icon-button" data-lobby-menu-close aria-label="서고 메뉴 닫기">×</button></div>
-              <div id="lobby-panel-dock" class="lobby-panel-dock" data-lobby-menu-portal="v1072-lobby-menu-portal">
+          <div id="lobby-menu-overlay" class="lobby-menu-overlay hidden" data-lobby-menu-portal="v1072-lobby-menu-portal" data-lobby-menu-motion-state="v1073-lobby-menu-motion-state" data-lobby-menu-back-close="v1073-lobby-menu-back-close" role="dialog" aria-modal="true" aria-labelledby="lobby-menu-title">
+            <div class="lobby-menu-card luxury-panel" data-lobby-menu-motion-state="v1073-lobby-menu-motion-state" data-lobby-panel-state-retention="v1073-lobby-panel-state-retention">
+              <div class="lobby-menu-toolbar" data-lobby-menu-back-close="v1073-lobby-menu-back-close"><div><p class="eyebrow">Library Menu</p><h2 id="lobby-menu-title">서고 메뉴</h2><p id="lobby-menu-subtitle">원하는 구간만 크게 열어 확인하세요.</p></div><div class="lobby-menu-toolbar-actions"><button id="lobby-menu-back-button" type="button" class="secondary lobby-menu-back-button" data-lobby-menu-close>뒤로</button><button id="lobby-menu-close-button" type="button" class="icon-button" data-lobby-menu-close aria-label="서고 메뉴 닫기">×</button></div></div>
+              <div id="lobby-menu-tabs" class="lobby-menu-tabs" data-lobby-menu-tab-switch="v1073-lobby-menu-tab-switch" aria-label="서고 메뉴 빠른 전환">
+                <button type="button" data-lobby-menu-tab="campaign">스테이지</button><button type="button" data-lobby-menu-tab="mission">미션</button><button type="button" data-lobby-menu-tab="restoration">복원</button><button type="button" data-lobby-menu-tab="daily">오늘</button><button type="button" data-lobby-menu-tab="collection">도감</button><button type="button" data-lobby-menu-tab="summer">상점</button><button type="button" data-lobby-menu-tab="progress">기록</button>
+              </div>
+              <div id="lobby-panel-dock" class="lobby-panel-dock" data-lobby-menu-portal="v1072-lobby-menu-portal" data-lobby-panel-state-retention="v1073-lobby-panel-state-retention">
           <section class="mission-deck-panel luxury-panel alive-panel" aria-label="로비 추천 미션" data-lobby-panel="mission">
             <div class="section-heading compact"><div><p class="eyebrow">Mission Deck</p><h3>오늘 먼저 할 일</h3><p class="deck-helper">진행 상황을 보고 스테이지, daily, 복원, 컬렉션 목표를 자동 배치합니다.</p></div><div class="section-actions"><button id="lobby-deck-refresh-button" type="button" class="text-button">다시 배치</button><button type="button" class="text-button" data-collapse-target="mission">접기</button></div></div>
             <div id="lobby-mission-deck" class="mission-deck"></div>
@@ -284,6 +287,7 @@
   <!-- v1067-restoration-reward-bridge v1067-boss-vfx-density-guard v1067-micro-tutorial-comfort: reward-to-restoration action bridge, softer boss VFX, repeat tutorial comfort -->
   <!-- v1068-restoration-completion-theater v1068-reward-claim-motion v1068-next-goal-advisor v1068-boss-warning-icon-trim: restoration completion theater, reward claim motion, next goal advisor, boss warning icon trim -->
   <!-- v1069-lobby-rhythm-cleanup v1069-restoration-detail-ceremony v1069-reward-popup-density-guard v1069-boss-warning-icon-set-polish v1069-clear-flow-recommendation-qa: lobby rhythm cleanup, restoration ceremony, reward density, boss icon set, clear flow QA -->
+  <!-- v1073-lobby-menu-motion-state v1073-lobby-menu-back-close v1073-lobby-menu-tab-switch v1073-lobby-panel-state-retention: menu open/close motion, phone back closes menu first, panel tabs and state retention -->
   <!-- v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix: modal action priority, restoration feedback cue, boss telegraph contrast, small reward modal QA and leaderboard duplicate tag fix -->
 </body>
 </html>

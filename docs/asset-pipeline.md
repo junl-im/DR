@@ -91,3 +91,10 @@
 - Lobby restructure is DOM/CSS/runtime based: `v1072-lobby-menu-portal`, `v1072-section-popup-restructure`, and `v1072-rounded-card-content-readability`.
 - The top daily start CTA remains in the lobby root, while lower sections now open inside a menu overlay to reduce scroll fatigue.
 - `check:lobby-menu-portal` validates the menu hub, popup dock, rounded content readability token, workflow hook, cache and atlas manifest.
+
+## v1.0.73 Lobby Menu Motion / Panel State Pipeline Note
+
+- Generated `texture-atlas-manifest-v1.0.73.json` for the v1.0.73 cache cycle.
+- Kept SVG-free policy and reused CSS/text-symbol UI accents for the lobby menu icon polish.
+- Added `dream-library-cache-v1.0.73` to service worker cache anchors.
+- Added `check:lobby-menu-motion-state` to verify menu motion tokens, menu tabs, back-close flow, focus return, state retention, and the removed duplicate collapsed panel write.
