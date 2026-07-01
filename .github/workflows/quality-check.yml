@@ -125,6 +125,7 @@ jobs:
           npm run check:lobby-shortcut-scroll
           npm run check:lobby-navigation-rhythm
           npm run check:boss-board-clearance
+          npm run check:combat-hud-touch-clearance
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

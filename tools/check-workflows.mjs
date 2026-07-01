@@ -44,6 +44,8 @@ if (!pagesWorkflow.includes('npm run check:boss-pattern-density')) errors.push('
 if (!qualityWorkflow.includes('npm run check:boss-pattern-density')) errors.push('quality-check.yml: expected boss pattern density check.');
 if (!pagesWorkflow.includes('npm run check:board-focus-tempo-cache')) errors.push('github-pages.yml: expected board focus tempo cache check.');
 if (!qualityWorkflow.includes('npm run check:board-focus-tempo-cache')) errors.push('quality-check.yml: expected board focus tempo cache check.');
+if (!pagesWorkflow.includes('npm run check:combat-hud-touch-clearance')) errors.push('github-pages.yml: expected combat HUD touch clearance check.');
+if (!qualityWorkflow.includes('npm run check:combat-hud-touch-clearance')) errors.push('quality-check.yml: expected combat HUD touch clearance check.');
 
 if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);

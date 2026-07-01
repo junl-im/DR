@@ -138,6 +138,9 @@ const PANEL_SCROLL_QA_PATCH = 'v1076-panel-scroll-qa';
 const MODAL_CLOSE_FLOW_PATCH = 'v1076-modal-close-flow';
 const LOBBY_NAVIGATION_RHYTHM_PATCH = 'v1076-lobby-navigation-rhythm';
 const BOSS_BOARD_CLEARANCE_PATCH = 'v1077-boss-board-clearance';
+const COMBAT_HUD_TOUCH_CLEARANCE_PATCH = 'v1078-combat-hud-touch-clearance';
+const BOSS_STATUSBAR_READABILITY_PATCH = 'v1078-boss-statusbar-readability';
+const LOW_END_RENDER_BUDGET_GUARD_PATCH = 'v1078-low-end-render-budget-guard';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
@@ -168,6 +171,7 @@ const V1074_COMPAT_TOKENS = 'v1074-lobby-menu-focus-trap v1074-lobby-panel-conte
 const V1075_COMPAT_TOKENS = 'v1075-lobby-shortcut-menu-bar v1075-lobby-copy-cleanup v1075-lobby-scroll-stability dream-library-cache-v1.0.75 texture-atlas-manifest-v1.0.75.json';
 const V1076_COMPAT_TOKENS = 'v1076-shortcut-menu-icon-polish v1076-panel-scroll-qa v1076-modal-close-flow v1076-lobby-navigation-rhythm dream-library-cache-v1.0.76 texture-atlas-manifest-v1.0.76.json';
 const V1077_COMPAT_TOKENS = 'v1077-boss-board-clearance statusbar-left-icon-safe-v1077 dream-library-cache-v1.0.77 texture-atlas-manifest-v1.0.77.json';
+const V1078_COMPAT_TOKENS = 'v1078-combat-hud-touch-clearance v1078-boss-statusbar-readability v1078-low-end-render-budget-guard dream-library-cache-v1.0.78 texture-atlas-manifest-v1.0.78.json';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
@@ -224,6 +228,8 @@ const el = {
   app: $('#app'),
   pixiStage: $('#pixi-stage'),
   boardHost: $('#pixi-board-host'),
+  boardCameraShell: document.querySelector('.board-camera-shell') as HTMLElement | null,
+  gameActions: document.querySelector('.game-actions') as HTMLElement | null,
   boardCameraGuide: $('#board-camera-guide'),
   boardCameraControls: $('#board-camera-controls'),
   screens: $$('.screen'),
@@ -2180,6 +2186,34 @@ function syncUiUxStabilityPass() {
   }
 }
 
+
+function syncCombatHudTouchClearance(tight = false, micro = false) {
+  const battleStage = document.querySelector<HTMLElement>('.battle-stage');
+  const bossLane = document.querySelector<HTMLElement>('.boss-lane');
+  const gameHud = document.querySelector<HTMLElement>('.game-hud');
+  const actionButtons = Array.from(el.gameActions?.querySelectorAll<HTMLButtonElement>('button') || []);
+  const density = micro ? 'micro' : tight ? 'compact' : 'comfortable';
+  document.body.dataset.combatHudTouchClearance = COMBAT_HUD_TOUCH_CLEARANCE_PATCH;
+  document.body.dataset.lowEndRenderBudgetGuard = LOW_END_RENDER_BUDGET_GUARD_PATCH;
+  document.body.dataset.bossStatusReadability = BOSS_STATUSBAR_READABILITY_PATCH;
+  [battleStage, bossLane, gameHud, el.boardHost, el.boardCameraShell, el.gameActions].forEach((node) => {
+    node?.setAttribute('data-combat-hud-touch-clearance', COMBAT_HUD_TOUCH_CLEARANCE_PATCH);
+    node?.setAttribute('data-low-end-render-guard', LOW_END_RENDER_BUDGET_GUARD_PATCH);
+  });
+  bossLane?.setAttribute('data-boss-status-readability', BOSS_STATUSBAR_READABILITY_PATCH);
+  el.gameActions?.setAttribute('data-action-density', density);
+  el.boardHost?.setAttribute('data-board-action-clearance', density === 'micro' ? 'raised-actions' : 'safe-gap');
+  actionButtons.forEach((button, index) => {
+    button.dataset.combatHudTouchClearance = COMBAT_HUD_TOUCH_CLEARANCE_PATCH;
+    button.dataset.actionIndex = String(index + 1);
+    button.dataset.actionDensity = density;
+  });
+  if (state.renderBudget?.name === 'lite' || micro) {
+    battleStage?.setAttribute('data-low-end-render-guard', LOW_END_RENDER_BUDGET_GUARD_PATCH);
+    document.body.dataset.renderVfxCeiling = 'lite-safe';
+  }
+}
+
 function initGameUiStabilityWatcher() {
   window.addEventListener('resize', scheduleGameUiStabilityPass, { passive: true });
   window.addEventListener('orientationchange', scheduleGameUiStabilityPass, { passive: true });
@@ -2201,6 +2235,7 @@ function syncGameUiStabilityPass() {
   const bossLane = document.querySelector<HTMLElement>('.boss-lane');
   const gameHud = document.querySelector<HTMLElement>('.game-hud');
   const boardHost = el.boardHost;
+  syncCombatHudTouchClearance(tight, micro);
   document.body.dataset.gameUiStability = GAME_UI_STABILITY_PASS_PATCH;
   document.body.dataset.firstTouchUx = FIRST_TOUCH_MICRO_TUTORIAL_PATCH;
   document.body.dataset.microTutorialComfort = MICRO_TUTORIAL_COMFORT_PATCH;
@@ -3252,6 +3287,8 @@ function renderBossPanel() {
   const bossLane = document.querySelector<HTMLElement>('.boss-lane');
   bossLane?.setAttribute('data-boss-layout', 'statusbar-left-icon-safe-v1077');
   bossLane?.setAttribute('data-boss-board-clearance', BOSS_BOARD_CLEARANCE_PATCH);
+  bossLane?.setAttribute('data-combat-hud-touch-clearance', COMBAT_HUD_TOUCH_CLEARANCE_PATCH);
+  bossLane?.setAttribute('data-boss-status-readability', BOSS_STATUSBAR_READABILITY_PATCH);
   bossLane?.setAttribute('data-boss-season-polish', BOSS_SEASON_POLISH_PATCH);
   bossLane?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   bossLane?.setAttribute('data-boss-warning-readability', BOSS_WARNING_READABILITY_PATCH);
@@ -3260,6 +3297,8 @@ function renderBossPanel() {
   const battleStage = document.querySelector<HTMLElement>('.battle-stage');
   battleStage?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
   battleStage?.setAttribute('data-boss-board-clearance', BOSS_BOARD_CLEARANCE_PATCH);
+  battleStage?.setAttribute('data-combat-hud-touch-clearance', COMBAT_HUD_TOUCH_CLEARANCE_PATCH);
+  battleStage?.setAttribute('data-low-end-render-guard', LOW_END_RENDER_BUDGET_GUARD_PATCH);
   el.bossName.textContent = boss.name;
   const role = getBossReadableRole(boss);
   el.bossPattern.textContent = role.pattern;
@@ -3422,6 +3461,7 @@ function renderGameHud() {
   document.querySelector<HTMLElement>('.screen-game')?.setAttribute('data-hud-density', state.hudDensity);
   document.querySelector<HTMLElement>('.game-hud')?.setAttribute('data-hud-density', state.hudDensity);
   document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-hud-density', state.hudDensity);
+  syncCombatHudTouchClearance(state.hudDensity !== 'normal', state.hudDensity === 'micro');
   renderBoardCameraGuide(difficulty);
 }
 

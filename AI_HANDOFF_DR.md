@@ -4,17 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.77 |
+| 현재 버전 | v1.0.78 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Boss Board Clearance, Left Statusbar Portrait and Pixi Board Obstruction Guard Patch |
-| 핵심 수정 | 전투 보드 아래쪽에 보이던 Pixi 보스/몬스터 그림을 보드 위에서 제거하고, 보스 상태바 안으로 시각 정보를 이동 |
-| 보스 이미지 수정 | 보스 원본 이미지는 상태바 왼쪽 끝 `boss-core`에 고정 표시, 보스 공격/경고 atlas 연출은 오른쪽 작은 `boss-lane-echo`에서만 표시 |
-| 보드 방해 해결 | `DreamPixiRenderer`의 보드 우하단 보스 sprite/aura는 v1.0.77 상태바 echo가 감지되면 `visible=false`, `renderable=false`, `alpha=0`으로 차단 |
-| 원인 기록 | v1.0.76까지는 상태바 우측 압축 레이아웃과 Pixi 보스 레이어가 동시에 살아 있어, 실제 플레이 화면에서 보스 연출이 타일/하단 HUD 근처에 떠서 방해될 수 있었음 |
-| 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046` 복귀를 금지하는 `check:boss-board-clearance` 추가, old v1046 right-side CSS도 제거 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.76.zip`에서 이어서 작업 |
+| 이번 패치 | Combat HUD Density, Boss Statusbar Readability, Skill Bar Touch Clearance and Low-End Render Guard Patch |
+| 핵심 수정 | 전투 HUD 상단/하단 밀도, 보스 상태바 글자 겹침, 보드 아래 조작 버튼 터치 오입력 가능성, 저사양 VFX 예산을 함께 안정화 |
+| UI/UX 우선순위 | 보스/몬스터 그림은 v1.0.77처럼 보드에 올라오지 않게 유지하고, 이번 v1.0.78에서는 보드와 하단 버튼 사이 안전 여백 및 작은 화면 읽기성을 강화 |
+| 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
+| 작업 기준 | 이전 산출물 `DR_v1.0.77.zip`에서 이어서 작업 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.77.zip`, `DR_patch_v1.0.77.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.78.zip`, `DR_patch_v1.0.78.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
 
@@ -31,7 +29,7 @@
 - 로컬과 ZIP 산출물에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않는다.
 - 산출 규칙 문구 고정: `package-lock.json 제외`, `풀파일 ZIP`, `패치 ZIP`은 매번 기록한다.
 - SVG는 금지한다. 이미지 정책은 PNG/WebP/JPG 중심이다.
-- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`를 실행한다.
+- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`를 실행한다.
 
 ## 사용자가 결과를 보기 위한 명령
 
@@ -87,11 +85,12 @@ npm run check:stage-map-boss-difficulty-lobby
 npm run check:pixi-boss-layer
 npm run check:boss-asset-visibility
 npm run check:boss-board-clearance
+npm run check:combat-hud-touch-clearance
 npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.77 기준 `check:boss-board-clearance`까지 총 84개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.78 기준 `check:combat-hud-touch-clearance`까지 총 85개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -103,43 +102,57 @@ NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
 
-## v1.0.77 실제 수정 내역
+## v1.0.78 실제 수정 내역
 
-- `package.json` 버전을 `1.0.77`로 갱신했다.
-- `index.html`의 `.boss-lane`을 `statusbar-left-icon-safe-v1077` 레이아웃으로 교체했다.
-- `#boss-core`를 `.boss-info`보다 앞에 배치해 보스 원본 이미지가 상태바 왼쪽 끝에 먼저 보이게 했다.
-- `#boss-lane-echo`와 `#boss-lane-echo-sprite`를 추가해 보스 atlas 경고/피격/붕괴 연출을 상태바 오른쪽 작은 원형 echo로 이동했다.
-- `src/main.ts`에 `BOSS_BOARD_CLEARANCE_PATCH`와 echo DOM 참조를 추가했다.
-- `renderBossPanel()`, `setBossStableImage()`, `applyBossAtlasFrame()`, `setBossFrame()`이 상태바 왼쪽 보스 그림과 오른쪽 echo를 함께 갱신하도록 정리했다.
-- `src/rendering/DreamPixiRenderer.ts`에서 상태바 echo가 있으면 Pixi 보스 sprite/aura를 보드 위에 그리지 않도록 숨김 처리했다.
-- 기존 Pixi boss QA가 요구하는 `data-boss-layer="pixi"` 호환성은 유지하되 `data-boss-layer-placement="statusbar-echo-v1077"`, `data-boss-layer-visibility="dom-lane-echo"`로 실제 배치 이유를 남긴다.
-- `src/styles.css`에 v1.0.77 상태바 왼쪽 보스 초상, 오른쪽 echo, 작은 화면 밀도, reduced motion 규칙을 추가했다.
-- v1.0.46의 우측 압축 보스 레이아웃 CSS는 active fallback으로 살아나지 않도록 제거했다.
-- `tools/check-boss-board-clearance.mjs`를 새로 추가했다.
-- 기존 stage/boss 관련 QA가 v1.0.77 왼쪽 보스 초상 레이아웃을 기준으로 검사하도록 갱신했다.
-- `public/sw.js` cache를 `dream-library-cache-v1.0.77`로 갱신했다.
-- `public/assets/meta/texture-atlas-manifest-v1.0.77.json`을 생성했다.
-- GitHub Pages / quality-check workflow에 `npm run check:boss-board-clearance`를 추가했다.
+- `package.json` 버전을 `1.0.78`로 갱신했다.
+- `index.html`의 `.battle-stage`, `.board-camera-shell`, `#pixi-board-host`, `.game-actions`에 `data-combat-hud-touch-clearance="v1078-combat-hud-touch-clearance"`를 부여했다.
+- 하단 조작 버튼에 `data-action-role="hint|shuffle|restart"`와 사용자용 `aria-label`을 추가해 터치/접근성 기준을 명확히 했다.
+- `src/main.ts`에 `COMBAT_HUD_TOUCH_CLEARANCE_PATCH`, `BOSS_STATUSBAR_READABILITY_PATCH`, `LOW_END_RENDER_BUDGET_GUARD_PATCH`를 추가했다.
+- `syncCombatHudTouchClearance()`를 추가해 화면 회전/리사이즈/게임 HUD 렌더 때 보드, 상태바, 하단 버튼의 밀도 상태를 다시 동기화한다.
+- 작은 화면에서는 `.game-actions`를 더 낮은 높이와 안정된 sticky safe-area로 다듬어 보드 터치와 버튼 터치가 섞이지 않도록 했다.
+- 보스 상태바는 `v1078-boss-statusbar-readability`로 이름/예고/HP 라벨을 ellipsis 처리하고, 작은 화면에서는 보조 설명을 접어 겹침을 줄인다.
+- `DreamPixiRenderer`의 lite/balanced VFX 예산을 한 단계 낮춰 저사양 기기에서 경고/컷인/파티클 부담을 줄였다. lite는 `particleCap: 11`, `spriteStride: 3` 기준이다.
+- `tools/check-combat-hud-touch-clearance.mjs`를 추가했다.
+- 기존 버전 호환 QA 스크립트들의 허용 범위를 v1.0.78까지 확장했다.
+- GitHub Pages / quality-check workflow에 `npm run check:combat-hud-touch-clearance`를 추가했다.
+- `public/sw.js` cache를 `dream-library-cache-v1.0.78`로 갱신하고 `texture-atlas-manifest-v1.0.78.json`을 선로드에 추가했다.
+- `src/game/difficulty.js`에 v1.0.78 atlas manifest anchor를 추가했다.
 
-## v1.0.77 검수 결과
+## v1.0.78 검수 결과
 
 - `npm run typecheck` 통과.
-- 전체 84개 `check:*` QA suite 통과.
+- 전체 85개 `check:*` QA suite 통과.
 - `npm run check:boss-board-clearance` 통과.
-- `npm run check:pixi-boss-layer` 통과.
-- `npm run check:boss-asset-visibility` 통과.
+- `npm run check:combat-hud-touch-clearance` 통과.
 - `npm run report:images` 통과. 454 files, 51.98 MB. 1.2 MB 초과 이미지 9개는 후속 최적화 후보.
 - `npm run build:github` 통과.
 - 빌드 경고: `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고가 계속 있음. 기존 경고이며 실패 아님.
 - 빌드 경고: `vendor-effects` chunk 500 KB 초과 경고가 계속 있음. 기존 경고이며 실패 아님.
 
-## v1.0.77에서 특히 확인해야 할 화면
+## v1.0.78에서 특히 확인해야 할 화면
 
-- 전투 진입 후 하단 타일/스킬바 근처에 보스/몬스터 큰 그림이 남지 않아야 한다.
-- 보스 원본 이미지는 보스 상태바 왼쪽 끝 원형 초상으로 보여야 한다.
-- 보스 공격 예고/피격 같은 움직임은 상태바 오른쪽 작은 echo에서만 보여야 한다.
-- HP 100%, 예고 pill, 보스 이름, boss-role-stack이 390px 이하 화면에서도 서로 겹치지 않아야 한다.
+- 360~390px 폭, 650~720px 높이에서 시간/점수/콤보/이동 칸이 2줄로 깨지거나 버튼과 겹치지 않아야 한다.
+- 보스 상태바의 보스명, 예고 pill, HP 라벨, HP 바가 왼쪽 보스 초상과 오른쪽 echo 사이에서 눌리지 않아야 한다.
+- 하단 `힌트/섞기/다시 시작` 버튼을 누를 때 보드 타일 선택이 같이 일어나지 않아야 한다.
+- 보드 아래 버튼은 safe-area를 침범하지 않고, 작은 화면에서도 보드와 최소 여백을 유지해야 한다.
+- v1.0.77의 보스 보드 방해 방지 상태가 유지되어야 한다. 보스/몬스터 큰 그림이 보드 아래쪽에 다시 나타나면 실패다.
 - old active attribute `data-boss-layout="statusbar-icon-right-v1046"`가 HTML/main에서 다시 나타나면 실패로 봐야 한다.
+
+## 이전 버전 기록 요약
+
+### v1.0.77
+
+- 전투 화면에서 보스/몬스터 그림이 하단 보드와 스킬바 근처에 떠서 플레이를 방해하던 문제를 우선 수정했다.
+- 보스 원본 이미지는 상태바 왼쪽 끝 `boss-core`로 이동했다.
+- 보스 경고/피격 atlas 연출은 상태바 오른쪽 `boss-lane-echo`로 제한했다.
+- Pixi 보스 sprite/aura는 상태바 echo가 있으면 보드 위에서 `visible=false`, `renderable=false`, `alpha=0`으로 차단한다.
+- `check:boss-board-clearance`로 예전 오른쪽 보스 배치가 되살아나지 않게 검사한다.
+
+### v1.0.76
+
+- `AI_HANDOFF_DR.md`를 신규 생성했다.
+- 로비 바로가기 메뉴 아이콘 polish, 패널 스크롤 QA, 모달 닫기 흐름, 로비 내비게이션 리듬을 개선했다.
+- GitHub Desktop, Firebase 무료, ZIP 산출/제외 규칙을 문서화했다.
 
 ## ZIP 생성 규칙
 
@@ -168,20 +181,19 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 - 임시 분석/작업 폴더
 - 과거 1회성 삭제 스크립트
 
-패치 ZIP에는 v1.0.76에서 v1.0.77로 바뀐 파일만 넣는다. 삭제가 필요한 임시 파일은 만들지 않는다.
+패치 ZIP에는 v1.0.77에서 v1.0.78로 바뀐 파일만 넣는다. 삭제가 필요한 임시 파일은 만들지 않는다.
 
 ## 다음 업데이트 예상 내역
 
-다음은 v1.0.78로 이어간다.
+다음은 v1.0.79로 이어간다.
 
-- 전투 HUD 상단/하단 밀도 재검수: 제한 시간, 점수, 콤보, 이동 칸이 작은 화면에서 눌리거나 겹치지 않는지 확인.
-- 보스 상태바 HP/예고/이름 가독성 추가 다듬기.
-- 하단 스킬바와 타일 보드 사이 여백, 터치 오입력 가능성 QA.
 - 보상 모달과 복원 상세 모달 focus return 재검수.
-- Firebase 무료 기준 랭킹/일일 기록 읽기 빈도 점검.
-- 저사양 기기 Pixi render budget 재검토와 `vendor-effects` chunk 분리 후보 조사.
+- Firebase 무료 기준 랭킹/일일 기록 읽기 빈도 점검 및 local cache TTL 후보 조사.
+- `vendor-effects` chunk 분리 후보 조사와 동적 import 적용 가능성 검토.
+- 이미지 1.2 MB 초과 9개 WebP/PNG 최적화 후보 정리.
 - 남은 영어/개발자용 문구와 오래된 QA 출력 문구 정리.
+- 로비 긴 카드와 상점/복원/도감 패널의 작은 화면 스크롤 anchor 재검수.
 
 ## GitHub Desktop 커밋 메시지 추천
 
-Apply 꿈의 서고 v1.0.77 boss board clearance left portrait and statusbar echo patch
+Apply 꿈의 서고 v1.0.78 combat HUD touch clearance and low-end render guard patch

@@ -14,7 +14,7 @@ const all = Object.values(files).join('\n');
 const errors = [];
 const has = (src, token, label) => { if (!src.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77'].includes(files.pkg.version)) errors.push(`package version must be 1.0.73 or 1.0.74, got ${files.pkg.version}`);
+if (!['1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78'].includes(files.pkg.version)) errors.push(`package version must be 1.0.73 or 1.0.74, got ${files.pkg.version}`);
 [
   'v1073-lobby-menu-motion-state',
   'v1073-lobby-menu-back-close',

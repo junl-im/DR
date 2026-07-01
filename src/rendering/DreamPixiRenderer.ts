@@ -34,6 +34,7 @@ const SUMMER_PASS_MISSIONS_PATCH = 'v1049-summer-pass-missions';
 const ENGINE_RENDER_BUDGET_TUNING_PATCH = 'v1055-engine-render-budget-tuning';
 const BOSS_WARNING_READABILITY_PATCH = 'v1056-boss-warning-readability';
 const BOSS_BOARD_CLEARANCE_PATCH = 'v1077-boss-board-clearance';
+const LOW_END_RENDER_BUDGET_GUARD_PATCH = 'v1078-low-end-render-budget-guard';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -174,12 +175,13 @@ export class DreamPixiRenderer {
     const normalized: RenderBudgetName = name === 'lite' || name === 'rich' ? name : 'balanced';
     this.renderBudgetName = normalized;
     document.body.dataset.pixiRenderBudget = `${ENGINE_RENDER_BUDGET_TUNING_PATCH}-${normalized}`;
+    document.body.dataset.lowEndRenderBudgetGuard = LOW_END_RENDER_BUDGET_GUARD_PATCH;
   }
 
   private getRenderBudgetProfile(): RenderBudgetProfile {
-    if (this.renderBudgetName === 'lite') return { name: 'lite', particleScale: 0.52, particleCap: 14, spriteStride: 2, warningAlphaScale: 0.62, burstScale: 0.78 };
+    if (this.renderBudgetName === 'lite') return { name: 'lite', particleScale: 0.46, particleCap: 11, spriteStride: 3, warningAlphaScale: 0.54, burstScale: 0.7 };
     if (this.renderBudgetName === 'rich') return { name: 'rich', particleScale: 1.08, particleCap: 34, spriteStride: 1, warningAlphaScale: 1, burstScale: 1.08 };
-    return { name: 'balanced', particleScale: 0.78, particleCap: 24, spriteStride: 1, warningAlphaScale: 0.82, burstScale: 0.92 };
+    return { name: 'balanced', particleScale: 0.74, particleCap: 22, spriteStride: 1, warningAlphaScale: 0.78, burstScale: 0.88 };
   }
 
   async preloadTileAtlas() {
@@ -248,6 +250,7 @@ export class DreamPixiRenderer {
       host.dataset.bossBoardClearance = BOSS_BOARD_CLEARANCE_PATCH;
       host.dataset.bossLayerPlacement = laneEchoEnabled ? 'statusbar-echo-v1077' : 'board-corner';
       host.dataset.bossLayerVisibility = laneEchoEnabled ? 'dom-lane-echo' : 'pixi-board-visible';
+      host.dataset.lowEndRenderGuard = LOW_END_RENDER_BUDGET_GUARD_PATCH;
     }
     gsap.killTweensOf([this.bossLayerSprite, this.bossLayerAura]);
     if (mood !== 'idle') {
