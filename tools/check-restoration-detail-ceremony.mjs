@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label = token) => { if (!text.includes(token)) errors.push(`Missing ${label}`); };
 
-if (!['1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78'].includes(pkg.version)) errors.push(`package version must be 1.0.69 or 1.0.70, got ${pkg.version}`);
+if (!['1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79'].includes(pkg.version)) errors.push(`package version must be 1.0.69 or 1.0.70, got ${pkg.version}`);
 for (const token of [
   'v1069-lobby-rhythm-cleanup',
   'v1069-restoration-detail-ceremony',

@@ -18,7 +18,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (files.pkg.version !== '1.0.78') errors.push(`package version must be 1.0.78, got ${files.pkg.version}`);
+if (!['1.0.78', '1.0.79'].includes(files.pkg.version)) errors.push(`package version must be 1.0.78 or 1.0.79, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:combat-hud-touch-clearance');
 requireIncludes('index.html', files.html, 'data-combat-hud-touch-clearance="v1078-combat-hud-touch-clearance"');
 requireIncludes('index.html', files.html, 'data-boss-status-readability="v1078-boss-statusbar-readability"');

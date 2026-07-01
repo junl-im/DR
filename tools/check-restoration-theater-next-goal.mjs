@@ -13,7 +13,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78'].includes(pkg.version)) errors.push(`package version must be 1.0.68, got ${pkg.version}`);
+if (!['1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79'].includes(pkg.version)) errors.push(`package version must be 1.0.68, got ${pkg.version}`);
 if (!pkg.scripts['check:restoration-theater-next-goal']) errors.push('missing package script check:restoration-theater-next-goal');
 for (const token of ['v1068-restoration-completion-theater', 'v1068-reward-claim-motion', 'v1068-next-goal-advisor', 'v1068-boss-warning-icon-trim', 'dream-library-cache-v1.0.68', 'texture-atlas-manifest-v1.0.68.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.68 token');

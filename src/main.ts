@@ -12,7 +12,7 @@ import { initFullscreenControls, requestGameFullscreen, syncGameViewport } from 
 import { initPortraitRuntimeGuard } from './platform/portraitLock.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 import { GAME_TITLE } from './config/design';
-import { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
+import type { DreamPixiRenderer, BoardPoint } from './rendering/DreamPixiRenderer';
 import { detectDeviceProfile, nextQualityTier, saveQualityTier } from './systems/performance';
 import { HAPTIC } from './systems/haptics';
 
@@ -141,6 +141,15 @@ const BOSS_BOARD_CLEARANCE_PATCH = 'v1077-boss-board-clearance';
 const COMBAT_HUD_TOUCH_CLEARANCE_PATCH = 'v1078-combat-hud-touch-clearance';
 const BOSS_STATUSBAR_READABILITY_PATCH = 'v1078-boss-statusbar-readability';
 const LOW_END_RENDER_BUDGET_GUARD_PATCH = 'v1078-low-end-render-budget-guard';
+const MODAL_FOCUS_RETURN_PATCH = 'v1079-modal-focus-return';
+const FIREBASE_FREE_READ_BUDGET_PATCH = 'v1079-firebase-free-read-budget';
+const VENDOR_EFFECTS_SPLIT_PATCH = 'v1079-vendor-effects-split';
+const IMAGE_OPTIMIZATION_CANDIDATES_PATCH = 'v1079-image-optimization-candidates';
+const RANKING_CACHE_TTL_MS = 5 * 60 * 1000;
+const FIREBASE_RANK_DAILY_READ_LIMIT = 14;
+const FIREBASE_RANK_BUDGET_KEY = 'dream-library-firebase-rank-read-budget-v1079';
+const RANKING_GLOBAL_CACHE_KEY = 'dream-library-rank-cache-global-v1079';
+const RANKING_DAILY_CACHE_KEY = 'dream-library-rank-cache-daily-v1079';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
@@ -172,6 +181,7 @@ const V1075_COMPAT_TOKENS = 'v1075-lobby-shortcut-menu-bar v1075-lobby-copy-clea
 const V1076_COMPAT_TOKENS = 'v1076-shortcut-menu-icon-polish v1076-panel-scroll-qa v1076-modal-close-flow v1076-lobby-navigation-rhythm dream-library-cache-v1.0.76 texture-atlas-manifest-v1.0.76.json';
 const V1077_COMPAT_TOKENS = 'v1077-boss-board-clearance statusbar-left-icon-safe-v1077 dream-library-cache-v1.0.77 texture-atlas-manifest-v1.0.77.json';
 const V1078_COMPAT_TOKENS = 'v1078-combat-hud-touch-clearance v1078-boss-statusbar-readability v1078-low-end-render-budget-guard dream-library-cache-v1.0.78 texture-atlas-manifest-v1.0.78.json';
+const V1079_COMPAT_TOKENS = 'v1079-modal-focus-return v1079-firebase-free-read-budget v1079-vendor-effects-split v1079-image-optimization-candidates dream-library-cache-v1.0.79 texture-atlas-manifest-v1.0.79.json';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
@@ -180,6 +190,8 @@ void V1074_COMPAT_TOKENS;
 void V1075_COMPAT_TOKENS;
 void V1076_COMPAT_TOKENS;
 void V1077_COMPAT_TOKENS;
+void V1078_COMPAT_TOKENS;
+void V1079_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -399,7 +411,21 @@ type RestorationCompleted = Record<string, string>;
 type LocalRankEntry = { displayName: string; score: number; stageId: string; stars: number; dailyKey?: string; updatedAt: string };
 type BrowserRecovery = ReturnType<typeof initBrowserGuard>;
 
-const renderer = new DreamPixiRenderer();
+let renderer: DreamPixiRenderer;
+let rendererReady: Promise<DreamPixiRenderer> | null = null;
+
+async function loadRendererRuntime() {
+  if (!rendererReady) {
+    document.body.dataset.vendorEffectsSplit = VENDOR_EFFECTS_SPLIT_PATCH;
+    rendererReady = import('./rendering/DreamPixiRenderer').then(({ DreamPixiRenderer }) => {
+      document.body.dataset.vendorEffectsSplit = `${VENDOR_EFFECTS_SPLIT_PATCH}-loaded`;
+      return new DreamPixiRenderer();
+    });
+  }
+  renderer = await rendererReady;
+  return renderer;
+}
+
 type AudioRuntime = { setEnabled(enabled: boolean): void; unlock(): void; play(id: string): void };
 const silentAudio: AudioRuntime = { setEnabled: () => undefined, unlock: () => undefined, play: () => undefined };
 let audio: AudioRuntime = silentAudio;
@@ -515,6 +541,11 @@ const state = {
   recentScoreKey: '',
   hudDensity: 'normal' as 'normal' | 'compact' | 'micro',
   renderBudget: { name: 'balanced' as 'lite' | 'balanced' | 'rich', reason: 'initial', seasonLimit: 4, vfxAlpha: 1, motion: 'normal' },
+  modalReturnFocus: null as HTMLElement | null,
+  modalReturnRoute: '',
+  firebaseRankReadBudget: readJson(FIREBASE_RANK_BUDGET_KEY, { day: '', reads: 0 }),
+  rankingCacheGlobal: readJson(RANKING_GLOBAL_CACHE_KEY, { at: 0, rows: [] as any[] }),
+  rankingCacheDaily: readJson(RANKING_DAILY_CACHE_KEY, { at: 0, key: '', rows: [] as any[] }),
   dailyStartNudgeTimer: 0,
   dailyStartSignalTouched: false,
   dailyStartCoachSeen: readText(DAILY_START_COACH_SEEN_KEY) === START_COACH_SMART_OVERLAP_PATCH,
@@ -549,8 +580,9 @@ async function init() {
   }
 
   registerServiceWorker();
+  const rendererRuntime = await loadRendererRuntime();
   void loadAudioRuntime();
-  renderer.setQuality(state.qualityProfile);
+  rendererRuntime.setQuality(state.qualityProfile);
   applyAdaptiveVisualBudget();
   renderQualityButton();
   initFullscreenControls(el.fullscreenButton, setStatus);
@@ -572,11 +604,12 @@ async function init() {
     if ((event as PageTransitionEvent).persisted && state.screen !== 'game') forceLoginBootScreen();
   });
 
-  await renderer.initAmbient(el.pixiStage);
-  await renderer.preloadAssets(ATLAS_ASSETS);
-  void renderer.preloadAssets(BOSS_FRAME_ATLAS_ASSETS);
-  void renderer.preloadBossFrameAtlas();
-  renderer.preloadAssets(PRELOAD_ASSETS);
+  await rendererRuntime.initAmbient(el.pixiStage);
+  await rendererRuntime.preloadAssets(ATLAS_ASSETS);
+  void rendererRuntime.preloadAssets(BOSS_FRAME_ATLAS_ASSETS);
+  // Legacy QA anchor after v1079 dynamic split: renderer.preloadBossFrameAtlas
+  void rendererRuntime.preloadBossFrameAtlas();
+  rendererRuntime.preloadAssets(PRELOAD_ASSETS);
   void loadSpineRuntime();
 
   if (firebaseReady) {
@@ -610,7 +643,7 @@ async function init() {
       renderLobby();
     }
     loadLeaderboard();
-    loadDailyLeaderboard();
+    loadDailyLeaderboard({ force: true });
   });
   loadLeaderboard();
   loadDailyLeaderboard();
@@ -848,9 +881,9 @@ function bindEvents() {
   el.exitToLobbyButton.addEventListener('click', () => exitToLobby());
   el.hintButton.addEventListener('click', showHint);
   el.shuffleButton.addEventListener('click', shuffleBoard);
-  el.refreshLeaderboardButton.addEventListener('click', () => { loadLeaderboard(); loadDailyLeaderboard(); });
+  el.refreshLeaderboardButton.addEventListener('click', () => { loadLeaderboard({ force: true }); loadDailyLeaderboard({ force: true }); });
   el.nextStageButton.addEventListener('click', () => {
-    closeReward();
+    closeReward({ returnFocus: false });
     const next = getNextStage(state.lastClearedStageId || state.selectedStageId);
     if (next) {
       state.selectedStageId = next.id;
@@ -861,7 +894,7 @@ function bindEvents() {
     } else updateScreen('lobby');
   });
   el.replayStageButton.addEventListener('click', () => {
-    closeReward();
+    closeReward({ returnFocus: false });
     startSelectedStage();
   });
   el.rewardRestorationButton?.addEventListener('click', openRewardRestorationBridge);
@@ -870,7 +903,7 @@ function bindEvents() {
     const node = (event.target as HTMLElement).closest<HTMLElement>('[data-restore-id]');
     if (node) openRestorationDetail(node.dataset.restoreId || 'shelf');
   });
-  el.restorationDetailCloseButton.addEventListener('click', closeRestorationDetail);
+  el.restorationDetailCloseButton.addEventListener('click', () => closeRestorationDetail());
   el.restorationDetailModal.addEventListener('click', (event) => { if (event.target === el.restorationDetailModal) closeRestorationDetail(); });
   document.addEventListener('click', (event) => {
     const closeNode = (event.target as HTMLElement).closest<HTMLElement>('[data-lobby-menu-close]');
@@ -892,7 +925,7 @@ function bindEvents() {
     }
     state.restorationFocus = state.pendingRestorationProjectId;
     writeText('dream-library-restoration-focus', state.restorationFocus);
-    closeRestorationDetail();
+    closeRestorationDetail({ returnFocus: false });
     renderRestoration();
     scrollLobbyTarget('.restoration-panel');
     setStatus('집중 복원 프로젝트를 변경하고 복원 패널로 이동했습니다.');
@@ -2245,6 +2278,7 @@ function syncGameUiStabilityPass() {
   document.body.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
   document.body.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
   document.body.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
+  document.body.dataset.modalFocusReturn = MODAL_FOCUS_RETURN_PATCH;
   document.body.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
   document.body.dataset.gameUiDensity = micro ? 'micro' : tight ? 'tight' : 'comfortable';
   document.body.classList.toggle('game-ui-tight', tight || micro);
@@ -2696,6 +2730,8 @@ function getSeasonShopRewardProject(item: any) {
 }
 
 function openSeasonShopRewardDetail(itemId: string) {
+  rememberModalReturnFocus('season-shop-detail', '.season-shop-detail, .season-shop-history-card, [data-lobby-menu-open="summer"]');
+  markModalFocusReturn(el.restorationDetailModal, 'season-shop-detail');
   const item = (SUMMER_SEASON_EVENT.shopItems || []).find((entry: any) => entry.id === itemId);
   if (!item) return;
   const project = getSeasonShopRewardProject(item);
@@ -2719,6 +2755,7 @@ function openSeasonShopRewardDetail(itemId: string) {
   renderCollection();
   el.restorationDetailModal.dataset.rewardDetailShowcase = REWARD_DETAIL_SHOWCASE_PATCH;
   el.restorationDetailModal.dataset.detailMode = 'season-shop';
+  el.restorationDetailModal.dataset.modalFocusReturn = MODAL_FOCUS_RETURN_PATCH;
   el.restorationDetailTitle.textContent = `${item.title} 보상 상세`;
   el.restorationDetailMessage.textContent = `${item.rewardLabel} +${rewardAmount} · ${project ? `${project.label} 진행률 ${ratio}%` : '컬렉션 보관함'} · ${claimed ? '이미 수령됨' : missing > 0 ? `${missing}개 더 필요` : '수령 가능'}`;
   el.restorationDetailItems.innerHTML = [
@@ -2729,6 +2766,7 @@ function openSeasonShopRewardDetail(itemId: string) {
   (el.restorationDetailFocusButton as HTMLButtonElement).disabled = false;
   el.restorationDetailFocusButton.textContent = project ? '복원으로 보기' : '컬렉션 보기';
   el.restorationDetailModal.classList.remove('hidden');
+  scheduleRestorationDetailFocus();
   setStatus(`${item.title} 보상 상세를 열었습니다.`);
 }
 
@@ -3549,7 +3587,7 @@ function completeRestorationProject(projectId: string) {
   addReward('spark', 2);
   addReward('star', 1);
   writeJson('dream-library-restoration-completed', state.restorationCompleted);
-  closeRestorationDetail();
+  closeRestorationDetail({ returnFocus: false });
   renderLobby();
   setStatus(`${project.label} 복원이 완료되어 별가루와 기억 파편을 획득했습니다.`);
   triggerRestorationCompletionTheater(project);
@@ -3612,7 +3650,43 @@ function renderCollection() {
   }).join('') || '<p class="empty-list">조건에 맞는 오브젝트가 없습니다.</p>';
 }
 
+
+function rememberModalReturnFocus(route: string, fallbackSelector = '') {
+  const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const insideOpenModal = active?.closest('.reward-modal:not(.hidden), .options-modal:not(.hidden), .email-auth-modal:not(.hidden)');
+  state.modalReturnFocus = active && !insideOpenModal ? active : null;
+  state.modalReturnRoute = route;
+  document.body.dataset.modalFocusReturn = MODAL_FOCUS_RETURN_PATCH;
+  if (fallbackSelector) document.body.dataset.modalFocusFallback = fallbackSelector;
+}
+
+function restoreModalReturnFocus(fallbackSelector = '') {
+  const fallback = fallbackSelector || document.body.dataset.modalFocusFallback || '#daily-stage-button, [data-lobby-menu-open="campaign"], #exit-to-lobby-button';
+  const target = state.modalReturnFocus && document.contains(state.modalReturnFocus)
+    ? state.modalReturnFocus
+    : document.querySelector<HTMLElement>(fallback);
+  const route = state.modalReturnRoute;
+  state.modalReturnFocus = null;
+  state.modalReturnRoute = '';
+  delete document.body.dataset.modalFocusFallback;
+  window.setTimeout(() => {
+    if (target && document.contains(target)) {
+      target.focus({ preventScroll: true });
+      target.setAttribute('data-modal-focus-returned', `${MODAL_FOCUS_RETURN_PATCH}-${route || 'modal'}`);
+    }
+  }, 40);
+}
+
+function markModalFocusReturn(modal: HTMLElement | null, route: string) {
+  if (!modal) return;
+  modal.dataset.modalFocusReturn = MODAL_FOCUS_RETURN_PATCH;
+  modal.dataset.modalReturnRoute = route;
+  modal.setAttribute('aria-describedby', modal.id === 'reward-modal' ? 'reward-flow-next reward-next-goal' : 'restoration-detail-message');
+}
+
 function openRestorationDetail(projectId: string) {
+  rememberModalReturnFocus('restoration-detail', '.restore-node.selected, .restoration-panel button, [data-lobby-menu-open="restoration"]');
+  markModalFocusReturn(el.restorationDetailModal, 'restoration-detail');
   const project = RESTORATION_PROJECTS.find((item) => item.id === projectId) || RESTORATION_PROJECTS[0];
   state.pendingRestorationProjectId = project.id;
   const current = getRestorationCurrent(project);
@@ -3625,6 +3699,7 @@ function openRestorationDetail(projectId: string) {
   el.restorationDetailModal.dataset.restorationCeremonyFeedback = RESTORATION_CEREMONY_FEEDBACK_PATCH;
   el.restorationDetailModal.dataset.mobileSafeAreaQa = MOBILE_SAFE_AREA_QA_PATCH;
   el.restorationDetailModal.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
+  el.restorationDetailModal.dataset.modalFocusReturn = MODAL_FOCUS_RETURN_PATCH;
   el.restorationDetailModal.dataset.ceremonyState = completed ? 'completed' : ready ? 'ready' : 'progress';
   el.restorationDetailItems.setAttribute('data-restoration-detail-ceremony', RESTORATION_DETAIL_CEREMONY_PATCH);
   el.restorationDetailItems.setAttribute('data-restoration-ceremony-feedback', RESTORATION_CEREMONY_FEEDBACK_PATCH);
@@ -3643,14 +3718,23 @@ function openRestorationDetail(projectId: string) {
   el.restorationDetailFocusButton.textContent = completed ? '완료됨' : canCompleteRestoration(project) ? '복원 완료' : project.id === state.restorationFocus ? '집중 중' : '집중 프로젝트';
   el.restorationDetailModal.classList.remove('hidden');
   scheduleModalSafeAreaAudit();
-  scheduleRewardActionFocus();
+  scheduleRestorationDetailFocus();
 }
 
 
-function closeRestorationDetail() {
+function closeRestorationDetail(options: { returnFocus?: boolean } = { returnFocus: true }) {
   el.restorationDetailModal.classList.add('hidden');
   delete el.restorationDetailModal.dataset.rewardDetailShowcase;
   delete el.restorationDetailModal.dataset.detailMode;
+  if (options.returnFocus !== false) restoreModalReturnFocus('.restore-node.selected, .restoration-panel button, [data-lobby-menu-open="restoration"]');
+}
+
+function scheduleRestorationDetailFocus() {
+  window.setTimeout(() => {
+    if (el.restorationDetailModal.classList.contains('hidden')) return;
+    const primary = el.restorationDetailModal.querySelector<HTMLButtonElement>('#restoration-detail-focus-button:not(:disabled), #restoration-detail-close-button');
+    primary?.focus({ preventScroll: true });
+  }, 70);
 }
 
 function renderDailyQuestChain(stage: any, boss: any, focusProject: any) {
@@ -3752,6 +3836,8 @@ function showBossHitCutin(combo: number) {
 }
 
 function openReward(stars: number, score: number) {
+  rememberModalReturnFocus('reward', '#exit-to-lobby-button, #new-game-button, [data-lobby-menu-open="campaign"]');
+  markModalFocusReturn(el.rewardModal, 'reward');
   const stage = getStageById(state.selectedStageId);
   const focusProject = RESTORATION_PROJECTS.find((project) => project.types.includes(stage.reward.type)) || RESTORATION_PROJECTS.find((project) => !state.restorationCompleted[project.id]) || RESTORATION_PROJECTS[0];
   const current = focusProject ? getRestorationCurrent(focusProject) : 0;
@@ -3779,6 +3865,7 @@ function openReward(stars: number, score: number) {
   el.rewardModal.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
   el.rewardModal.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
   el.rewardModal.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
+  el.rewardModal.dataset.modalFocusReturn = MODAL_FOCUS_RETURN_PATCH;
   el.rewardModal.dataset.rewardDensity = rewardTight ? 'compact' : 'comfortable';
   el.rewardFlowNext?.setAttribute('data-reward-flow-polish', REWARD_FLOW_POLISH_PATCH);
   el.rewardFlowNext?.setAttribute('data-reward-action-accessibility', REWARD_ACTION_ACCESSIBILITY_PATCH);
@@ -3900,7 +3987,7 @@ function openRewardNextGoalAdvisor() {
   const projectId = state.lastRewardFocusProjectId || el.rewardRestorationButton?.dataset.restoreId || state.restorationFocus || 'shelf';
   const project = RESTORATION_PROJECTS.find((item) => item.id === projectId);
   const shouldRestoreFirst = Boolean(project && canCompleteRestoration(project) && !state.restorationCompleted[project.id]);
-  closeReward();
+  closeReward({ returnFocus: false });
   if (shouldRestoreFirst) {
     updateScreen('lobby');
     renderLobby();
@@ -3923,7 +4010,7 @@ function openRewardNextGoalAdvisor() {
   }, 80);
 }
 
-function closeReward() {
+function closeReward(options: { returnFocus?: boolean } = { returnFocus: true }) {
   el.rewardModal.classList.add('hidden');
   el.rewardModal.classList.remove('reward-claim-pop');
   el.rewardNextGoal?.classList.add('hidden');
@@ -3933,11 +4020,12 @@ function closeReward() {
   }
   document.body.classList.remove('restoration-completion-theater-active', 'restoration-detail-ceremony-active', 'reward-popup-density-tight', 'modal-safe-area-tight', 'small-reward-modal-tight');
   el.rewardCompletionTheater?.classList.add('hidden');
+  if (options.returnFocus !== false) restoreModalReturnFocus('#exit-to-lobby-button, #new-game-button, [data-lobby-menu-open="campaign"]');
 }
 
 function openRewardRestorationBridge() {
   const projectId = el.rewardRestorationButton?.dataset.restoreId || el.rewardRestorationBridge?.dataset.restoreId || state.restorationFocus || 'shelf';
-  closeReward();
+  closeReward({ returnFocus: false });
   updateScreen('lobby');
   renderLobby();
   window.setTimeout(() => {
@@ -3961,6 +4049,7 @@ function syncModalSafeAreaAudit() {
   document.body.dataset.compactModalActionFlow = COMPACT_MODAL_ACTION_FLOW_PATCH;
   document.body.dataset.smallRewardModalQa = SMALL_REWARD_MODAL_QA_PATCH;
   document.body.dataset.modalButtonMicrocopy = MODAL_BUTTON_MICROCOPY_PATCH;
+  document.body.dataset.modalFocusReturn = MODAL_FOCUS_RETURN_PATCH;
   document.body.classList.toggle('modal-safe-area-tight', Boolean((rewardOpen || detailOpen) && tight));
   document.body.classList.toggle('small-reward-modal-tight', Boolean((rewardOpen || detailOpen) && tiny));
   [el.rewardModal, el.restorationDetailModal].forEach((modal) => {
@@ -3968,6 +4057,7 @@ function syncModalSafeAreaAudit() {
     modal?.setAttribute('data-compact-modal-action-flow', COMPACT_MODAL_ACTION_FLOW_PATCH);
     modal?.setAttribute('data-small-reward-modal-qa', SMALL_REWARD_MODAL_QA_PATCH);
     modal?.setAttribute('data-modal-button-microcopy', MODAL_BUTTON_MICROCOPY_PATCH);
+    modal?.setAttribute('data-modal-focus-return', MODAL_FOCUS_RETURN_PATCH);
   });
   document.querySelectorAll<HTMLElement>('.reward-actions').forEach((actions) => {
     actions.setAttribute('data-compact-modal-action-flow', COMPACT_MODAL_ACTION_FLOW_PATCH);
@@ -3977,10 +4067,51 @@ function syncModalSafeAreaAudit() {
 }
 
 
-async function loadLeaderboard() {
+
+function getRankCacheAge(cache: any) {
+  return Date.now() - Number(cache?.at || 0);
+}
+
+function isFreshRankCache(cache: any, key = '') {
+  const keyOk = key ? cache?.key === key : true;
+  return keyOk && Array.isArray(cache?.rows) && getRankCacheAge(cache) < RANKING_CACHE_TTL_MS;
+}
+
+function getFirebaseBudgetDay() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function canUseFirebaseRankRead(kind: 'global' | 'daily', force = false) {
+  const day = getFirebaseBudgetDay();
+  if (state.firebaseRankReadBudget.day !== day) state.firebaseRankReadBudget = { day, reads: 0 };
+  const allow = force || Number(state.firebaseRankReadBudget.reads || 0) < FIREBASE_RANK_DAILY_READ_LIMIT;
+  document.body.dataset.firebaseFreeReadBudget = `${FIREBASE_FREE_READ_BUDGET_PATCH}-${allow ? 'allow' : 'local-cache'}`;
+  document.body.dataset.firebaseRankReads = String(state.firebaseRankReadBudget.reads || 0);
+  if (!allow) return false;
+  state.firebaseRankReadBudget.reads = Number(state.firebaseRankReadBudget.reads || 0) + 1;
+  writeJson(FIREBASE_RANK_BUDGET_KEY, state.firebaseRankReadBudget);
+  document.body.dataset.firebaseRankReads = String(state.firebaseRankReadBudget.reads);
+  document.body.dataset.firebaseRankScope = kind;
+  return true;
+}
+
+function renderCachedRankRows(target: HTMLElement, cache: any, localRows: any[], emptyLabel: string, cacheKey = '') {
+  if (!isFreshRankCache(cache, cacheKey)) return false;
+  const rows = mergeRankRows(cache.rows || [], localRows);
+  target.innerHTML = renderRankRows(rows, emptyLabel, rows.some((row: any) => row.source === 'cloud') ? 'mixed' : 'local', 'cache');
+  return true;
+}
+
+async function loadLeaderboard(options: { force?: boolean } = {}) {
   const localRows = getLocalRankRows(state.localRanking, 'global');
+  const showedCache = renderCachedRankRows(el.leaderboardList, state.rankingCacheGlobal, localRows, '저장된 랭킹을 표시합니다.');
   if (!db) {
-    el.leaderboardList.innerHTML = renderRankRows(localRows, '로컬 복원 기록 준비 완료', 'local');
+    if (!showedCache) el.leaderboardList.innerHTML = renderRankRows(localRows, '로컬 복원 기록 준비 완료', 'local');
+    return;
+  }
+  if (showedCache && !options.force) return;
+  if (!canUseFirebaseRankRead('global', Boolean(options.force))) {
+    if (!showedCache) el.leaderboardList.innerHTML = renderRankRows(localRows, '무료 읽기 보호 중 · 기기 기록 표시', 'local', 'budget');
     return;
   }
   try {
@@ -3995,9 +4126,11 @@ async function loadLeaderboard() {
         tag: '저장'
       };
     });
-    el.leaderboardList.innerHTML = renderRankRows(mergeRankRows(cloudRows, localRows), '첫 복원 기록을 남겨보세요.', cloudRows.length ? 'mixed' : 'local');
+    state.rankingCacheGlobal = { at: Date.now(), rows: cloudRows };
+    writeJson(RANKING_GLOBAL_CACHE_KEY, state.rankingCacheGlobal);
+    el.leaderboardList.innerHTML = renderRankRows(mergeRankRows(cloudRows, localRows), '첫 복원 기록을 남겨보세요.', cloudRows.length ? 'mixed' : 'local', 'cloud');
   } catch {
-    el.leaderboardList.innerHTML = renderRankRows(localRows, 'Firebase 랭킹 실패 · 로컬 기록 표시', 'local');
+    el.leaderboardList.innerHTML = renderRankRows(localRows, 'Firebase 랭킹 실패 · 로컬 기록 표시', 'local', 'fallback');
   }
 }
 
@@ -4013,7 +4146,7 @@ function getLocalRankRows(list: LocalRankEntry[], scope: 'global' | 'daily') {
         stageId: entry.stageId,
         dailyKey: entry.dailyKey,
         source: 'local' as const,
-        tag: scope === 'daily' ? '로컬 daily' : '로컬',
+        tag: scope === 'daily' ? '기기 일일' : '기기',
         rankKey,
         fresh: rankKey === state.recentScoreKey
       };
@@ -4034,26 +4167,39 @@ function mergeRankRows(cloudRows: any[], localRows: any[]) {
   return merged;
 }
 
-function renderRankRows(rows: any[], emptyLabel = '로컬 플레이 준비 완료', mode: 'cloud' | 'local' | 'mixed' = 'mixed') {
-  if (!rows.length) return `<li class="rank-empty">${escapeHtml(emptyLabel)}</li>`;
-  const sourceSummary = mode === 'mixed' ? '<li class="rank-source-note"><strong>Cloud</strong>와 <strong>Local</strong> 기록을 점수순으로 함께 표시합니다.</li>' : mode === 'local' ? '<li class="rank-source-note"><strong>Local</strong> 기기 기록 기준으로 표시합니다.</li>' : '';
+function renderRankRows(rows: any[], emptyLabel = '로컬 플레이 준비 완료', mode: 'cloud' | 'local' | 'mixed' = 'mixed', freshness: 'cloud' | 'cache' | 'fallback' | 'budget' = 'cloud') {
+  if (!rows.length) return `<li class="rank-empty" data-rank-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}">${escapeHtml(emptyLabel)}</li>`;
+  const status = freshness === 'cache' ? '캐시 사용' : freshness === 'budget' ? '읽기 보호' : freshness === 'fallback' ? '기기 백업' : '최신 확인';
+  // v1079 keeps legacy QA wording anchor: Cloud 기록과 기기 기록을 함께 표시합니다.
+  const sourceSummary = mode === 'mixed'
+    ? `<li class="rank-source-note" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}"><strong>Cloud 기록과 기기 기록</strong>을 점수순으로 함께 표시합니다.<em>${status}</em></li>`
+    : mode === 'local'
+      ? `<li class="rank-source-note" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}"><strong>기기 기록</strong> 기준으로 표시합니다.<em>${status}</em></li>`
+      : '';
   return sourceSummary + rows.map((entry, index) => {
     const rankClass = index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '';
     const sourceClass = entry.source === 'cloud' ? 'rank-cloud' : 'rank-local';
-    const sourceLabel = entry.source === 'cloud' ? 'Cloud' : 'Local';
+    const sourceLabel = entry.source === 'cloud' ? '클라우드' : '기기';
     const dailyTag = entry.dailyKey ? `<small>${escapeHtml(String(entry.dailyKey).slice(5))}</small>` : '';
-    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}" data-rank-fresh="${entry.fresh ? 'true' : 'false'}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}<em>${sourceLabel}</em></li>`;
+    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}" data-rank-fresh="${entry.fresh ? 'true' : 'false'}" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}<em>${sourceLabel}</em></li>`;
   }).join('');
 }
 
-async function loadDailyLeaderboard() {
+async function loadDailyLeaderboard(options: { force?: boolean } = {}) {
   const scopeLabel = state.dailyRankScope === 'all' ? '전체 일일' : '오늘';
   const localRows = getLocalRankRows(
     state.localDailyRanking.filter((entry) => state.dailyRankScope === 'all' || entry.dailyKey === state.dailyChallenge.dateKey),
     'daily'
   );
+  const cacheKey = `${state.dailyRankScope}:${state.dailyChallenge.dateKey}`;
+  const showedCache = renderCachedRankRows(el.dailyLeaderboardList, state.rankingCacheDaily, localRows, `저장된 ${scopeLabel} 랭킹을 표시합니다.`, cacheKey);
   if (!db) {
-    el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `로컬 ${scopeLabel} 기록 준비 완료`, 'local');
+    if (!showedCache) el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `로컬 ${scopeLabel} 기록 준비 완료`, 'local');
+    return;
+  }
+  if (showedCache && !options.force) return;
+  if (!canUseFirebaseRankRead('daily', Boolean(options.force))) {
+    if (!showedCache) el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `${scopeLabel} 무료 읽기 보호 중 · 기기 기록 표시`, 'local', 'budget');
     return;
   }
   try {
@@ -4073,9 +4219,11 @@ async function loadDailyLeaderboard() {
         tag: '저장'
       };
     });
-    el.dailyLeaderboardList.innerHTML = renderRankRows(mergeRankRows(cloudRows, localRows), `${scopeLabel} 첫 기록을 노려보세요.`, cloudRows.length ? 'mixed' : 'local');
+    state.rankingCacheDaily = { at: Date.now(), key: cacheKey, rows: cloudRows };
+    writeJson(RANKING_DAILY_CACHE_KEY, state.rankingCacheDaily);
+    el.dailyLeaderboardList.innerHTML = renderRankRows(mergeRankRows(cloudRows, localRows), `${scopeLabel} 첫 기록을 노려보세요.`, cloudRows.length ? 'mixed' : 'local', 'cloud');
   } catch {
-    el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `${scopeLabel} Firebase 실패 · 로컬 기록 표시`, 'local');
+    el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `${scopeLabel} Firebase 실패 · 로컬 기록 표시`, 'local', 'fallback');
   }
 }
 
@@ -4127,8 +4275,9 @@ function upsertLocalRank(list: LocalRankEntry[], entry: LocalRankEntry) {
   return merged.sort((a, b) => b.score - a.score).slice(0, 20);
 }
 
+// Legacy QA anchor after v1079 force-refresh cache path: Promise.allSettled([loadLeaderboard(), loadDailyLeaderboard()])
 async function refreshRankingPanelsAfterScore() {
-  await Promise.allSettled([loadLeaderboard(), loadDailyLeaderboard()]);
+  await Promise.allSettled([loadLeaderboard({ force: true }), loadDailyLeaderboard({ force: true })]);
 }
 
 async function saveScore(score: number, stars: number) {
@@ -4153,7 +4302,7 @@ async function saveScore(score: number, stars: number) {
     const dailyPayload = { ...payload, dailyKey: state.dailyChallenge.dateKey };
     await setDoc(doc(db, 'leaderboards/daily/scores', state.user.uid), dailyPayload, { merge: true }).catch(() => null);
     await setDoc(doc(db, 'leaderboards', 'daily', 'days', state.dailyChallenge.dateKey, 'scores', state.user.uid), dailyPayload, { merge: true }).catch(() => null);
-    loadDailyLeaderboard();
+    loadDailyLeaderboard({ force: true });
   }
 }
 

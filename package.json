@@ -98,7 +98,8 @@
     "check:lobby-shortcut-scroll": "node tools/check-lobby-shortcut-scroll.mjs",
     "check:lobby-navigation-rhythm": "node tools/check-lobby-navigation-rhythm.mjs",
     "check:boss-board-clearance": "node tools/check-boss-board-clearance.mjs",
-    "check:combat-hud-touch-clearance": "node tools/check-combat-hud-touch-clearance.mjs"
+    "check:combat-hud-touch-clearance": "node tools/check-combat-hud-touch-clearance.mjs",
+    "check:modal-focus-rank-budget": "node tools/check-modal-focus-rank-budget.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -112,5 +113,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.78"
+  "version": "1.0.79"
 }

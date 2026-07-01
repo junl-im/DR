@@ -2986,3 +2986,59 @@ Apply 꿈의 서고 v1.0.78 combat HUD touch clearance and low-end render guard 
 ```
 
 다음 업데이트 예정: v1.0.79 - Reward/Restoration Modal Focus Return, Firebase Free Read Budget, Vendor Effects Split and Image Optimization Candidate Patch
+
+
+## v1.0.79 Patch Notes - Modal Focus Return, Firebase Free Read Budget, Vendor Effects Split and Image Optimization Candidate Patch
+
+v1.0.79는 v1.0.78의 전투 HUD 안정화 위에, 보상/복원 모달의 포커스 복귀와 Firebase 무료 환경에서의 랭킹 읽기 빈도를 줄이는 UI/UX·성능 패치입니다. 동시에 Pixi/GSAP 렌더러를 동적 import로 분리해 `vendor-effects` chunk 비대화 경고를 줄일 수 있는 구조를 만들고, 이미지 최적화 후보를 QA에서 계속 추적하도록 했습니다.
+
+수정 상세:
+
+- `package.json` 버전을 `1.0.79`로 갱신했습니다.
+- `v1079-modal-focus-return`을 추가해 보상 모달과 복원 상세/시즌 보상 상세 모달이 열리기 전 포커스 위치를 기억하고, 닫힐 때 안전한 버튼으로 되돌리도록 했습니다.
+- `rememberModalReturnFocus()`, `restoreModalReturnFocus()`, `markModalFocusReturn()`, `scheduleRestorationDetailFocus()`를 추가했습니다.
+- 보상 모달에서 다음 스테이지/다시 플레이/복원 연결로 화면이 바뀌는 경우에는 숨겨진 버튼으로 포커스가 돌아가지 않도록 닫기 옵션을 분리했습니다.
+- `v1079-firebase-free-read-budget`을 추가해 랭킹과 일일 랭킹을 먼저 로컬/캐시로 표시하고, 5분 TTL 동안 Firestore 반복 읽기를 피하도록 했습니다.
+- Firebase 무료 기준 보호용으로 `dream-library-firebase-rank-read-budget-v1079`, `dream-library-rank-cache-global-v1079`, `dream-library-rank-cache-daily-v1079`를 추가했습니다.
+- 랭킹 UI의 사용자 노출 문구를 `클라우드/기기` 중심으로 정리했습니다.
+- `DreamPixiRenderer`를 정적 import에서 동적 import로 바꾸고 `v1079-vendor-effects-split` marker를 추가했습니다. 또한 `vite.config.js`에서 `vendor-audio-v1079`, `vendor-motion-v1079`, `vendor-spine-v1079`로 효과 런타임 chunk를 분리했습니다.
+- `v1079-image-optimization-candidates`를 추가해 1.2 MB 초과 이미지 후보를 후속 최적화 대상으로 계속 추적합니다.
+- `tools/check-modal-focus-rank-budget.mjs`를 추가하고 GitHub Pages / quality-check workflow에 연결했습니다.
+- 기존 버전 호환 QA 스크립트들의 허용 범위를 v1.0.79까지 확장했습니다.
+- service worker cache를 `dream-library-cache-v1.0.79`로 갱신하고, `texture-atlas-manifest-v1.0.79.json`을 생성/선로드에 추가했습니다.
+- `AI_HANDOFF_DR.md`에 v1.0.79 수정 내역, 검수 명령, GitHub Desktop/Firebase 무료 환경, 다음 v1.0.80 예정 내역을 기록했습니다.
+
+검수 완료:
+
+```bash
+npm run typecheck
+전체 86개 check:* QA suite 통과
+npm run check:modal-focus-rank-budget
+npm run check:combat-hud-touch-clearance
+npm run check:boss-board-clearance
+npm run report:images
+npm run build:github
+```
+
+유지 정책:
+
+- 전투 보드 위 Pixi 보스/몬스터 그림 재도입 없음
+- active HTML/main에 `statusbar-icon-right-v1046` 재도입 없음
+- 미니맵, 게임 내 카메라 도움말, 손가락 시작 위젯 재도입 없음
+- SVG 없음
+- GitHub Desktop + Firebase 무료 + GitHub Pages/Firebase 빌드 흐름 유지
+- `node_modules`, `dist`, `package-lock.json`, 임시 분석 파일은 ZIP 제외
+
+GitHub Desktop 커밋 메시지 추천:
+
+```text
+Apply 꿈의 서고 v1.0.79 modal focus return rank cache and vendor split patch
+```
+
+남은 참고 사항:
+
+- `boss-frames-v2.png` runtime resolve 경고는 계속 남아 있습니다. 기존 경고이며 빌드 실패는 아닙니다.
+- `vendor-effects` 단일 chunk 경고는 해소됐고, 현재 남은 경고는 `vendor-pixi` 527.93 KB 초과입니다. v1.0.80 이후 Pixi import 경량화 후보입니다.
+- 이미지 1.2 MB 초과 9개는 후속 최적화 후보입니다.
+
+다음 업데이트 예정: v1.0.80 - Image Optimization Pass, Lobby Long Card Scroll Anchor, QA Version Message Cleanup and Firebase Write Budget Patch

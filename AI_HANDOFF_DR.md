@@ -90,7 +90,7 @@ npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.78 기준 `check:combat-hud-touch-clearance`까지 총 85개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.79 기준 `check:modal-focus-rank-budget`까지 총 86개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -181,19 +181,78 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 - 임시 분석/작업 폴더
 - 과거 1회성 삭제 스크립트
 
-패치 ZIP에는 v1.0.77에서 v1.0.78로 바뀐 파일만 넣는다. 삭제가 필요한 임시 파일은 만들지 않는다.
+패치 ZIP에는 v1.0.78에서 v1.0.79로 바뀐 파일만 넣는다. 삭제가 필요한 임시 파일은 만들지 않는다.
 
 ## 다음 업데이트 예상 내역
 
-다음은 v1.0.79로 이어간다.
+다음은 v1.0.80으로 이어간다.
 
-- 보상 모달과 복원 상세 모달 focus return 재검수.
-- Firebase 무료 기준 랭킹/일일 기록 읽기 빈도 점검 및 local cache TTL 후보 조사.
-- `vendor-effects` chunk 분리 후보 조사와 동적 import 적용 가능성 검토.
-- 이미지 1.2 MB 초과 9개 WebP/PNG 최적화 후보 정리.
-- 남은 영어/개발자용 문구와 오래된 QA 출력 문구 정리.
+- 이미지 1.2 MB 초과 9개 WebP/PNG 실제 압축 적용 및 visual regression 확인.
 - 로비 긴 카드와 상점/복원/도감 패널의 작은 화면 스크롤 anchor 재검수.
+- 남은 오래된 QA 출력 문구와 버전 허용 메시지 정리.
+- 보드/보스/랭킹 경로에서 동적 import chunk 이름과 캐시 갱신 흐름 추가 검수.
+- Firebase 무료 기준 write path와 daily rank 문서 구조 비용 재점검.
 
 ## GitHub Desktop 커밋 메시지 추천
 
-Apply 꿈의 서고 v1.0.78 combat HUD touch clearance and low-end render guard patch
+Apply 꿈의 서고 v1.0.79 modal focus return rank cache and vendor split patch
+
+
+## v1.0.79 실제 수정 내역
+
+- `package.json` 버전을 `1.0.79`로 갱신했다.
+- `v1079-modal-focus-return`을 추가해 보상 모달과 복원 상세/시즌 보상 상세 모달이 열리기 전 포커스 위치를 기억하고, 닫힐 때 안전한 버튼으로 되돌린다.
+- `rememberModalReturnFocus()`, `restoreModalReturnFocus()`, `markModalFocusReturn()`, `scheduleRestorationDetailFocus()`를 추가해 모달 간 이동, ESC/back 닫기, 바깥 클릭 닫기 흐름을 정리했다.
+- 보상 모달에서 다음 스테이지/다시 플레이/복원 연결로 화면이 전환될 때는 숨겨진 요소로 포커스가 돌아가지 않도록 `closeReward({ returnFocus: false })` 경로를 분리했다.
+- `v1079-firebase-free-read-budget`을 추가해 랭킹/일일 랭킹을 먼저 로컬/캐시로 그린 뒤, 5분 TTL 안에서는 Firestore read를 반복하지 않는다.
+- `FIREBASE_RANK_DAILY_READ_LIMIT = 14`, `dream-library-firebase-rank-read-budget-v1079`, `dream-library-rank-cache-global-v1079`, `dream-library-rank-cache-daily-v1079`를 추가해 Firebase 무료 요금제에서 불필요한 반복 읽기를 줄였다.
+- 랭킹 표기의 `Cloud/Local` 노출을 `클라우드/기기`와 `Cloud 기록과 기기 기록` 안내로 정리해 사용자에게 더 자연스럽게 보이도록 했다.
+- `v1079-vendor-effects-split`으로 `DreamPixiRenderer`를 정적 import에서 동적 import로 바꿔 Pixi/GSAP 렌더러가 별도 chunk 후보가 되도록 했다. `vite.config.js`도 `vendor-audio-v1079`, `vendor-motion-v1079`, `vendor-spine-v1079`로 분리했다.
+- `v1079-image-optimization-candidates`를 QA anchor로 추가하고 1.2 MB 초과 이미지 후보가 계속 추적되도록 했다.
+- `tools/check-modal-focus-rank-budget.mjs`를 추가하고 GitHub Pages / quality-check workflow에 연결했다.
+- 기존 버전 호환 QA 스크립트들의 허용 범위를 v1.0.79까지 확장했다.
+- `public/sw.js` cache를 `dream-library-cache-v1.0.79`로 갱신하고 `texture-atlas-manifest-v1.0.79.json`을 선로드에 추가했다.
+- `src/game/difficulty.js`에 v1.0.79 atlas manifest anchor를 추가했다.
+
+## v1.0.79 필수 검수 명령
+
+```bash
+npm run typecheck
+npm run check:modal-focus-rank-budget
+npm run check:combat-hud-touch-clearance
+npm run check:boss-board-clearance
+npm run report:images
+npm run build:github
+```
+
+전체 검사 실행 예시:
+
+```bash
+node - <<'NODE' > /tmp/dr-checks.txt
+const pkg = require('./package.json');
+for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('check:'))) console.log(key);
+NODE
+while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
+```
+
+## v1.0.79에서 특히 확인해야 할 화면
+
+- 보상 모달에서 `다음 목표 보기`, `복원 완료 먼저 보기`, `다시 플레이`, `다음 스테이지`를 누른 뒤 포커스가 화면 밖/숨김 버튼으로 가지 않아야 한다.
+- 복원 상세 모달과 시즌 보상 상세 모달을 닫으면 방금 눌렀던 복원 카드/상점 상세 버튼 또는 가까운 패널 버튼으로 포커스가 돌아가야 한다.
+- 랭킹 새로고침을 여러 번 눌러도 5분 캐시와 read budget marker가 동작해야 하며, Firebase 실패 시 기기 기록이 먼저 보여야 한다.
+- `v1077` 보스 보드 방해 방지와 `v1078` 하단 버튼 touch clearance가 유지되어야 한다.
+- old active attribute `data-boss-layout="statusbar-icon-right-v1046"`, 미니맵, 카메라 도움말, 손가락 시작 문구가 다시 나타나면 실패다.
+
+## v1.0.79 검수 결과
+
+- `npm run typecheck` 통과.
+- 전체 86개 `check:*` QA suite 통과.
+- `npm run check:modal-focus-rank-budget` 통과. 1.2 MB 초과 이미지 후보 9개 추적.
+- `npm run check:combat-hud-touch-clearance` 통과.
+- `npm run check:boss-board-clearance` 통과.
+- `npm run report:images` 통과. 454 files, 51.98 MB.
+- `npm run build:github` 통과.
+- `vendor-effects` 단일 chunk 경고는 v1.0.79 분리 후 사라졌고, 남은 chunk 경고는 `vendor-pixi` 527.93 KB 초과다.
+- `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고는 계속 남아 있지만 빌드 실패는 아니다.
+
+산출 ZIP에는 `node_modules`, `dist`, `package-lock.json`, 과거 1회성 삭제 스크립트가 들어가면 안 된다.
