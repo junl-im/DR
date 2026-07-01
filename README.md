@@ -3042,3 +3042,79 @@ Apply 꿈의 서고 v1.0.79 modal focus return rank cache and vendor split patch
 - 이미지 1.2 MB 초과 9개는 후속 최적화 후보입니다.
 
 다음 업데이트 예정: v1.0.80 - Image Optimization Pass, Lobby Long Card Scroll Anchor, QA Version Message Cleanup and Firebase Write Budget Patch
+
+## v1.0.80 Patch Notes - Camera Gesture Separation and Boss Statusbar Balance Patch
+
+v1.0.80은 전투 보드 카메라 입력과 보스/몬스터 프로필 바 비율을 우선 정리한 UI/UX 안정화 패치입니다. 사용자가 보고한 “옆으로 드래그했는데 줌이 되는 느낌”을 줄이기 위해 한 손가락 드래그, 두 손가락 핀치, wheel/trackpad 입력을 명확히 분리했고, 보스 상태바는 왼쪽 초상화 공백과 우측 상태 슬롯의 폭 흔들림을 줄였습니다.
+
+### 변경 사항
+
+- `package.json` 버전을 `1.0.80`으로 갱신했습니다.
+- `DreamPixiRenderer`에 `v1080-camera-gesture-separation`을 추가했습니다.
+- 한 손가락 pointer drag는 `panCameraBy()`만 호출하게 하여 보드 scale이 바뀌지 않도록 했습니다.
+- 드래그 직후에는 `panLockedUntil`으로 짧게 잠가 우발적인 wheel/pinch zoom이 이어지지 않게 했습니다.
+- wheel/trackpad 입력은 `shouldTreatWheelAsPan()`을 거치게 했습니다. 가로 이동 성격의 wheel은 줌이 아니라 카메라 이동으로 처리합니다.
+- 두 손가락 핀치는 거리 변화가 충분히 커졌을 때만 `pinchStarted`가 켜지도록 해 작은 손떨림이 줌으로 보이지 않게 했습니다.
+- `#pixi-board-host`와 `.battle-stage`에 `data-camera-gesture-separation="v1080-camera-gesture-separation"`, `data-camera-gesture-mode="idle|pan|pinch|wheel"` marker를 추가했습니다.
+- `v1080-boss-statusbar-balance`를 추가해 보스/몬스터 프로필 바의 왼쪽 초상화 슬롯과 우측 echo/status 슬롯을 고정 폭으로 정리했습니다.
+- 기본 상태바는 `46px / 중앙 유동 / 42px`, 작은 화면은 `42px / 중앙 유동 / 38px` 비율을 사용합니다.
+- `.boss-lane-echo`에 고정 `width/min-width/max-width`와 `contain`을 부여해 우측 상태 알림이 켜졌다 꺼져도 바가 좁아졌다 넓어지는 느낌을 줄였습니다.
+- `tools/check-camera-gesture-statusbar-balance.mjs`를 추가해 카메라 입력 분리, 보스 상태바 비율, 구버전 레이아웃 부활 방지를 검사합니다.
+- GitHub Pages / quality-check workflow에 `npm run check:camera-gesture-statusbar-balance`를 추가했습니다.
+- 기존 QA 스크립트들의 버전 허용 범위를 v1.0.80까지 확장했습니다.
+- service worker cache를 `dream-library-cache-v1.0.80`으로 갱신하고 `texture-atlas-manifest-v1.0.80.json`을 생성/선로드에 추가했습니다.
+- `AI_HANDOFF_DR.md`에 v1.0.80 수정 내역, 검수 명령, GitHub Desktop/Firebase 무료 환경, 다음 v1.0.81 예정 내역을 기록했습니다.
+
+### 검수 명령
+
+```bash
+npm run typecheck
+npm run check:camera-gesture-statusbar-balance
+npm run check:board-camera
+npm run check:boss-board-clearance
+npm run check:combat-hud-touch-clearance
+npm run check:modal-focus-rank-budget
+npm run report:images
+npm run build:github
+```
+
+전체 검사 실행 예시:
+
+```bash
+node - <<'NODE' > /tmp/dr-checks.txt
+const pkg = require('./package.json');
+for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('check:'))) console.log(key);
+NODE
+while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
+```
+
+### v1.0.80에서 특히 확인할 점
+
+- 큰 보드에서 한 손가락 또는 마우스 드래그로 좌우/상하 이동할 때 보드 scale이 바뀌지 않아야 합니다.
+- 트랙패드 가로 wheel은 줌이 아니라 이동으로 느껴져야 합니다.
+- 두 손가락 핀치는 작은 흔들림에는 반응하지 않고 실제 확대/축소 거리 변화가 있을 때만 동작해야 합니다.
+- 보스/몬스터 프로필 바 왼쪽 초상화 주변 공백이 과하게 커 보이면 안 됩니다.
+- 우측 상태 echo/예고가 켜졌다 꺼져도 중앙 보스 정보가 갑자기 좁아졌다 넓어지지 않아야 합니다.
+- `data-boss-layout="statusbar-icon-right-v1046"`, 보드 미니맵, 카메라 도움말, 손가락 시작 문구가 다시 나타나면 실패입니다.
+
+### 다음 업데이트 예정
+
+다음 업데이트 예정: v1.0.81 - Real Device Camera Feel QA, Boss Statusbar Priority Polish, Image Optimization and Pixi Chunk Follow-up
+
+### GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.80 camera gesture and boss statusbar balance patch
+
+### v1.0.80 검수 결과
+
+- `npm run typecheck` 통과.
+- 전체 87개 `check:*` QA suite 통과.
+- `npm run check:camera-gesture-statusbar-balance` 통과.
+- `npm run check:board-camera` 통과.
+- `npm run check:boss-board-clearance` 통과.
+- `npm run check:combat-hud-touch-clearance` 통과.
+- `npm run check:modal-focus-rank-budget` 통과.
+- `npm run report:images` 통과. 454 files, 51.98 MB.
+- `npm run build:github` 통과.
+- 기존 경고: `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고는 남아 있지만 빌드 실패는 아닙니다.
+- 기존 경고: `vendor-pixi` chunk 527.93 KB 초과 경고는 남아 있어 v1.0.81 이후 분리 후보입니다.

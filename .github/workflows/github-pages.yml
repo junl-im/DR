@@ -131,6 +131,7 @@ jobs:
           npm run check:boss-board-clearance
           npm run check:combat-hud-touch-clearance
           npm run check:modal-focus-rank-budget
+          npm run check:camera-gesture-statusbar-balance
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

@@ -6964,3 +6964,88 @@ body[data-vendor-effects-split^="v1079-vendor-effects-split"] .pixi-stage::after
 }
 
 /* v1079 compatibility anchors: v1079-modal-focus-return v1079-firebase-free-read-budget v1079-vendor-effects-split v1079-image-optimization-candidates */
+
+/* v1.0.80 camera gesture separation and boss statusbar balance */
+.battle-stage[data-camera-gesture-separation="v1080-camera-gesture-separation"] .pixi-board-host[data-camera-gesture-separation="v1080-camera-gesture-separation"] {
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+.battle-stage[data-camera-gesture-separation="v1080-camera-gesture-separation"] .pixi-board-host[data-camera-gesture-mode="pan"] {
+  cursor: grabbing;
+}
+.battle-stage[data-camera-gesture-separation="v1080-camera-gesture-separation"] .pixi-board-host[data-camera-gesture-mode="pan"] canvas,
+.battle-stage[data-camera-gesture-separation="v1080-camera-gesture-separation"] .pixi-board-host[data-camera-gesture-mode="pinch"] canvas {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] {
+  grid-template-columns: 46px minmax(0, 1fr) 42px;
+  gap: 0.32rem;
+  padding-inline: 0.38rem 0.42rem;
+  min-height: 64px;
+  contain: layout paint;
+}
+.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-core {
+  width: 46px;
+  height: 46px;
+  justify-self: start;
+  align-self: center;
+  margin-inline-start: 0;
+}
+.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-core #boss-image,
+.boss-core[data-boss-status-balance="v1080-boss-statusbar-balance"] #boss-image {
+  width: 66px;
+  height: 66px;
+  transform: translate(-3px, -2px);
+  max-width: none;
+}
+.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-info {
+  min-width: 0;
+  width: 100%;
+  gap: 0.1rem;
+  padding-inline: 0.02rem 0.06rem;
+}
+.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-info > *,
+.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-attack-preview {
+  min-width: 0;
+  max-width: 100%;
+}
+.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-attack-preview {
+  grid-template-columns: 36px minmax(0, 1fr);
+  padding-inline: 0.34rem;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.boss-lane-echo[data-boss-status-balance="v1080-boss-statusbar-balance"] {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  max-width: 42px;
+  justify-self: end;
+  opacity: 0.76;
+  contain: layout paint;
+}
+.boss-lane-echo[data-boss-status-balance="v1080-boss-statusbar-balance"]::before {
+  inset: 7px;
+}
+.boss-lane-echo[data-boss-status-balance="v1080-boss-statusbar-balance"].boss-atlas-ready {
+  opacity: 0.88;
+}
+@media (max-height: 720px), (max-width: 390px) {
+  .boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] {
+    grid-template-columns: 42px minmax(0, 1fr) 38px;
+    gap: 0.26rem;
+    min-height: 58px;
+    padding-inline: 0.32rem 0.34rem;
+  }
+  .boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-core { width: 42px; height: 42px; }
+  .boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-core #boss-image,
+  .boss-core[data-boss-status-balance="v1080-boss-statusbar-balance"] #boss-image { width: 60px; height: 60px; }
+  .boss-lane-echo[data-boss-status-balance="v1080-boss-statusbar-balance"] { width: 38px; height: 38px; min-width: 38px; max-width: 38px; }
+  .boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-attack-preview { grid-template-columns: 30px minmax(0, 1fr); padding-inline: 0.28rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"] .boss-attack-preview {
+    transition: none !important;
+  }
+}
+/* v1080 compatibility anchors: v1080-camera-gesture-separation v1080-boss-statusbar-balance wheel-horizontal-pan single-pointer-pan-no-zoom stable-right-status-slot */

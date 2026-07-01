@@ -257,6 +257,7 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.80.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.79.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.78.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.77.json`,

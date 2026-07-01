@@ -35,6 +35,7 @@ const ENGINE_RENDER_BUDGET_TUNING_PATCH = 'v1055-engine-render-budget-tuning';
 const BOSS_WARNING_READABILITY_PATCH = 'v1056-boss-warning-readability';
 const BOSS_BOARD_CLEARANCE_PATCH = 'v1077-boss-board-clearance';
 const LOW_END_RENDER_BUDGET_GUARD_PATCH = 'v1078-low-end-render-budget-guard';
+const CAMERA_GESTURE_SEPARATION_PATCH = 'v1080-camera-gesture-separation';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -110,6 +111,11 @@ type BoardCamera = {
   pinchDistance: number;
   pinchScale: number;
   tapSuppressedUntil: number;
+  gestureMode: 'idle' | 'pan' | 'pinch' | 'wheel';
+  gestureStartX: number;
+  gestureStartY: number;
+  pinchStarted: boolean;
+  panLockedUntil: number;
 };
 
 export class DreamPixiRenderer {
@@ -146,7 +152,12 @@ export class DreamPixiRenderer {
     lastY: 0,
     pinchDistance: 0,
     pinchScale: 1,
-    tapSuppressedUntil: 0
+    tapSuppressedUntil: 0,
+    gestureMode: 'idle',
+    gestureStartX: 0,
+    gestureStartY: 0,
+    pinchStarted: false,
+    panLockedUntil: 0
   };
   lastPointerMove = 0;
   tileAtlasReady: Promise<void> | null = null;
@@ -642,6 +653,7 @@ export class DreamPixiRenderer {
       host.dataset.boardRows = String(this.layout.rows);
       host.dataset.boardCols = String(this.layout.cols);
       host.dataset.touchPrecision = 'cell-slope-guard';
+      host.dataset.cameraGestureSeparation = CAMERA_GESTURE_SEPARATION_PATCH;
     }
     this.updateBoardReadabilityTier();
   }
@@ -788,6 +800,33 @@ export class DreamPixiRenderer {
     this.animateCameraTo(targetX, targetY, scale, animated);
   }
 
+  private markCameraGestureState(mode: BoardCamera['gestureMode']) {
+    this.camera.gestureMode = mode;
+    const host = this.host || document.querySelector<HTMLElement>('#pixi-board-host');
+    if (host) {
+      host.dataset.cameraGestureSeparation = CAMERA_GESTURE_SEPARATION_PATCH;
+      host.dataset.cameraGestureMode = mode;
+    }
+    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-camera-gesture-separation', CAMERA_GESTURE_SEPARATION_PATCH);
+  }
+
+  private panCameraBy(dx: number, dy: number) {
+    if (this.layout.cameraMode !== 'panZoom') return;
+    this.camera.x += dx;
+    this.camera.y += dy;
+    this.applyCameraTransform();
+    this.camera.panLockedUntil = performance.now() + 260;
+    this.camera.tapSuppressedUntil = performance.now() + 180;
+    this.markCameraGestureState('pan');
+  }
+
+  private shouldTreatWheelAsPan(event: WheelEvent) {
+    if (event.ctrlKey || event.metaKey) return false;
+    const absX = Math.abs(event.deltaX);
+    const absY = Math.abs(event.deltaY);
+    return absX > 0 && absX >= absY * 0.72;
+  }
+
   private installCameraControls() {
     if (!this.boardApp) return;
     const canvas = this.boardApp.canvas as HTMLCanvasElement;
@@ -809,6 +848,10 @@ export class DreamPixiRenderer {
       this.camera.moved = false;
       this.camera.lastX = event.clientX;
       this.camera.lastY = event.clientY;
+      this.camera.gestureStartX = event.clientX;
+      this.camera.gestureStartY = event.clientY;
+      this.camera.pinchStarted = false;
+      this.markCameraGestureState(this.camera.pointers.size >= 2 ? 'pinch' : 'idle');
       if (this.camera.pointers.size >= 2) {
         this.camera.pinchDistance = distance();
         this.camera.pinchScale = this.camera.scale;
@@ -821,37 +864,54 @@ export class DreamPixiRenderer {
       this.camera.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (this.camera.pointers.size >= 2) {
         const currentDistance = distance();
-        if (this.camera.pinchDistance > 0 && currentDistance > 0) {
-          const center = midpoint();
-          this.zoomAt(center.x, center.y, this.camera.pinchScale * (currentDistance / this.camera.pinchDistance));
+        const ratio = this.camera.pinchDistance > 0 ? currentDistance / this.camera.pinchDistance : 1;
+        const distanceDelta = Math.abs(currentDistance - this.camera.pinchDistance);
+        if (!this.camera.pinchStarted && distanceDelta < 10 && Math.abs(ratio - 1) < 0.045) {
           this.camera.moved = true;
           this.camera.tapSuppressedUntil = performance.now() + 180;
+          return;
+        }
+        this.camera.pinchStarted = true;
+        if (this.camera.pinchDistance > 0 && currentDistance > 0 && performance.now() >= this.camera.panLockedUntil) {
+          const center = midpoint();
+          this.markCameraGestureState('pinch');
+          this.zoomAt(center.x, center.y, this.camera.pinchScale * ratio);
+          this.camera.moved = true;
+          this.camera.tapSuppressedUntil = performance.now() + 220;
         }
         return;
       }
-      if (this.layout.cameraMode !== 'panZoom') return;
       const dx = event.clientX - previous.x;
       const dy = event.clientY - previous.y;
-      if (Math.abs(event.clientX - this.camera.lastX) + Math.abs(event.clientY - this.camera.lastY) > 6) this.camera.moved = true;
-      if (this.camera.moved) {
-        this.camera.x += dx;
-        this.camera.y += dy;
-        this.applyCameraTransform();
-        this.camera.tapSuppressedUntil = performance.now() + 160;
-      }
+      const totalMove = Math.abs(event.clientX - this.camera.gestureStartX) + Math.abs(event.clientY - this.camera.gestureStartY);
+      if (totalMove > 7) this.camera.moved = true;
+      if (this.camera.moved) this.panCameraBy(dx, dy);
     }, { passive: false });
     const release = (event: PointerEvent) => {
-      if (this.camera.moved) this.camera.tapSuppressedUntil = performance.now() + 180;
+      if (this.camera.moved) this.camera.tapSuppressedUntil = performance.now() + 220;
       this.camera.pointers.delete(event.pointerId);
-      if (this.camera.pointers.size < 2) this.camera.pinchDistance = 0;
-      if (this.camera.pointers.size === 0) this.camera.dragging = false;
+      if (this.camera.pointers.size < 2) {
+        this.camera.pinchDistance = 0;
+        this.camera.pinchStarted = false;
+      }
+      if (this.camera.pointers.size === 0) {
+        this.camera.dragging = false;
+        window.setTimeout(() => this.markCameraGestureState('idle'), 120);
+      }
     };
     canvas.addEventListener('pointerup', release);
     canvas.addEventListener('pointercancel', release);
     canvas.addEventListener('wheel', (event) => {
       event.preventDefault();
+      if (this.shouldTreatWheelAsPan(event)) {
+        this.panCameraBy(-event.deltaX, -event.deltaY);
+        return;
+      }
+      if (this.camera.pointers.size > 0 || performance.now() < this.camera.panLockedUntil) return;
+      this.markCameraGestureState('wheel');
       const factor = event.deltaY < 0 ? 1.08 : 0.92;
       this.zoomAt(event.clientX, event.clientY, this.camera.scale * factor);
+      this.camera.tapSuppressedUntil = performance.now() + 180;
     }, { passive: false });
   }
 

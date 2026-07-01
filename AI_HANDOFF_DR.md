@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.78 |
+| 현재 버전 | v1.0.80 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Combat HUD Density, Boss Statusbar Readability, Skill Bar Touch Clearance and Low-End Render Guard Patch |
-| 핵심 수정 | 전투 HUD 상단/하단 밀도, 보스 상태바 글자 겹침, 보드 아래 조작 버튼 터치 오입력 가능성, 저사양 VFX 예산을 함께 안정화 |
-| UI/UX 우선순위 | 보스/몬스터 그림은 v1.0.77처럼 보드에 올라오지 않게 유지하고, 이번 v1.0.78에서는 보드와 하단 버튼 사이 안전 여백 및 작은 화면 읽기성을 강화 |
+| 이번 패치 | Camera Gesture Separation, Boss Statusbar Balance and Legacy Layout Guard Patch |
+| 핵심 수정 | 한 손가락 좌우/상하 드래그와 휠/핀치 줌 판정을 분리하고, 몬스터 프로필 바의 왼쪽 공백과 우측 상태 슬롯 흔들림을 안정화 |
+| UI/UX 우선순위 | 드래그 이동은 절대 줌처럼 느껴지지 않게 하고, 보스/몬스터 프로필 바는 왼쪽 초상화-중앙 정보-우측 상태 슬롯 비율이 고정되어야 한다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.77.zip`에서 이어서 작업 |
+| 작업 기준 | 이전 산출물 `DR_v1.0.79.zip`에서 이어서 작업 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.78.zip`, `DR_patch_v1.0.78.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.80.zip`, `DR_patch_v1.0.80.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
 
@@ -29,7 +29,7 @@
 - 로컬과 ZIP 산출물에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않는다.
 - 산출 규칙 문구 고정: `package-lock.json 제외`, `풀파일 ZIP`, `패치 ZIP`은 매번 기록한다.
 - SVG는 금지한다. 이미지 정책은 PNG/WebP/JPG 중심이다.
-- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`를 실행한다.
+- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`를 실행한다.
 
 ## 사용자가 결과를 보기 위한 명령
 
@@ -90,7 +90,7 @@ npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.79 기준 `check:modal-focus-rank-budget`까지 총 86개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.80 기준 `check:camera-gesture-statusbar-balance`까지 총 87개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -181,17 +181,11 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 - 임시 분석/작업 폴더
 - 과거 1회성 삭제 스크립트
 
-패치 ZIP에는 v1.0.78에서 v1.0.79로 바뀐 파일만 넣는다. 삭제가 필요한 임시 파일은 만들지 않는다.
+패치 ZIP에는 v1.0.79에서 v1.0.80으로 바뀐 파일만 넣는다. 삭제가 필요한 임시 파일은 만들지 않는다.
 
 ## 다음 업데이트 예상 내역
 
-다음은 v1.0.80으로 이어간다.
-
-- 이미지 1.2 MB 초과 9개 WebP/PNG 실제 압축 적용 및 visual regression 확인.
-- 로비 긴 카드와 상점/복원/도감 패널의 작은 화면 스크롤 anchor 재검수.
-- 남은 오래된 QA 출력 문구와 버전 허용 메시지 정리.
-- 보드/보스/랭킹 경로에서 동적 import chunk 이름과 캐시 갱신 흐름 추가 검수.
-- Firebase 무료 기준 write path와 daily rank 문서 구조 비용 재점검.
+v1.0.80은 이번 패치에서 진행 완료했다. 다음은 문서 하단의 v1.0.81 예상 내역을 따른다.
 
 ## GitHub Desktop 커밋 메시지 추천
 
@@ -256,3 +250,81 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 - `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고는 계속 남아 있지만 빌드 실패는 아니다.
 
 산출 ZIP에는 `node_modules`, `dist`, `package-lock.json`, 과거 1회성 삭제 스크립트가 들어가면 안 된다.
+
+
+## v1.0.80 실제 수정 내역
+
+- `package.json` 버전을 `1.0.80`으로 갱신했다.
+- 사용자가 보고한 "옆으로 이동하려고 드래그했더니 줌이 되는 느낌"을 우선 처리했다. `DreamPixiRenderer`에 `v1080-camera-gesture-separation`을 추가해 한 손가락 드래그, 두 손가락 핀치, 휠/트랙패드 입력을 분리했다.
+- 한 손가락 pointer move는 `panCameraBy()`만 호출하고 scale을 바꾸지 않는다. 드래그 후 짧은 시간은 `panLockedUntil`으로 잠가 우발적인 wheel/pinch zoom이 이어지지 않게 했다.
+- 트랙패드/마우스 wheel 입력은 `shouldTreatWheelAsPan()`을 거치며, 가로 이동 성격의 wheel은 줌이 아니라 카메라 이동으로 처리한다.
+- 핀치는 두 포인터 거리 변화가 충분히 커질 때만 `pinchStarted`가 켜지며, 작은 흔들림은 줌으로 처리하지 않는다.
+- `#pixi-board-host`와 `.battle-stage`에 `data-camera-gesture-separation="v1080-camera-gesture-separation"`, `data-camera-gesture-mode="idle|pan|pinch|wheel"` marker를 남겨 QA와 디버깅이 가능하게 했다.
+- 사용자가 지적한 몬스터 프로필 바 왼쪽 공백 문제를 처리했다. `v1080-boss-statusbar-balance`를 추가해 보스 초상화 슬롯을 46px, 우측 echo/status 슬롯을 42px로 고정하고 중앙 정보 영역만 유동적으로 늘어나게 했다.
+- 우측 상태 알림/echo가 켜졌다 꺼질 때 바 전체 폭이 좁아졌다 넓어지는 느낌을 줄이기 위해 `.boss-lane-echo`에 고정 width/min-width/max-width와 contain을 부여했다.
+- 작은 화면에서는 초상화 42px, 우측 슬롯 38px로 줄여 왼쪽 빈 공간을 더 줄이고 보스명/HP/예고 텍스트의 ellipsis 흐름을 유지한다.
+- active HTML/main/CSS에서 예전 `statusbar-icon-right-v1046`, 보드 미니맵, 카메라 도움말, 손가락 시작 문구가 되살아나면 실패하는 `tools/check-camera-gesture-statusbar-balance.mjs`를 추가했다.
+- GitHub Pages / quality-check workflow에 `npm run check:camera-gesture-statusbar-balance`를 연결했다.
+- 기존 버전 호환 QA 스크립트들의 허용 범위를 v1.0.80까지 확장했다.
+- `public/sw.js` cache를 `dream-library-cache-v1.0.80`으로 갱신하고 `texture-atlas-manifest-v1.0.80.json`을 선로드에 추가했다.
+- `src/game/difficulty.js`에 v1.0.80 atlas manifest anchor를 추가했다.
+
+## v1.0.80 필수 검수 명령
+
+```bash
+npm run typecheck
+npm run check:camera-gesture-statusbar-balance
+npm run check:board-camera
+npm run check:boss-board-clearance
+npm run check:combat-hud-touch-clearance
+npm run check:modal-focus-rank-budget
+npm run report:images
+npm run build:github
+```
+
+전체 검사 실행 예시:
+
+```bash
+node - <<'NODE' > /tmp/dr-checks.txt
+const pkg = require('./package.json');
+for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('check:'))) console.log(key);
+NODE
+while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
+```
+
+## v1.0.80에서 특히 확인해야 할 화면
+
+- 큰 보드에서 한 손가락 또는 마우스 드래그로 좌우/상하 이동할 때 보드 scale이 바뀌지 않아야 한다.
+- 트랙패드 가로 wheel은 줌이 아니라 이동으로 느껴져야 한다. Ctrl/메타 wheel 또는 명확한 세로 wheel만 줌으로 처리한다.
+- 두 손가락 핀치는 작은 흔들림에는 반응하지 않고, 실제 확대/축소 거리 변화가 있을 때만 scale이 바뀌어야 한다.
+- 보스/몬스터 프로필 바의 왼쪽 초상화 슬롯에 과한 빈 공간이 없어야 한다.
+- 우측 상태 echo/예고가 켜졌다 꺼져도 중앙 보스 정보가 과하게 좁아졌다 넓어지지 않아야 한다.
+- `data-boss-layout="statusbar-icon-right-v1046"`, 보드 미니맵, 카메라 도움말, 손가락 시작 문구가 다시 나타나면 실패다.
+
+## v1.0.80 검수 결과
+
+- `npm run typecheck` 통과.
+- 전체 87개 `check:*` QA suite 통과.
+- `npm run check:camera-gesture-statusbar-balance` 통과.
+- `npm run check:board-camera` 통과.
+- `npm run check:boss-board-clearance` 통과.
+- `npm run check:combat-hud-touch-clearance` 통과.
+- `npm run check:modal-focus-rank-budget` 통과.
+- `npm run report:images` 통과. 454 files, 51.98 MB.
+- `npm run build:github` 통과.
+- 기존 경고: `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고는 남아 있지만 빌드 실패가 아니다.
+- 기존 경고: `vendor-pixi` chunk 527.93 KB 초과 경고는 남아 있어 v1.0.81 이후 분리 후보다.
+
+## 다음 업데이트 예상 내역
+
+다음은 v1.0.81로 이어간다.
+
+- 실제 기기 기준 카메라 drag/zoom 체감 QA를 더 보고, 필요하면 sensitivity 프로필을 난이도별로 분리한다.
+- 보스 상태바에서 이름/HP/예고의 우선순위를 작은 화면별로 더 다듬는다.
+- 대용량 이미지 9개 WebP/PNG 실제 압축 적용 및 visual regression 확인.
+- `vendor-pixi` chunk 분리 가능성 조사.
+- Firebase 무료 기준 write path와 daily rank 문서 구조 비용 재점검.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.80 camera gesture and boss statusbar balance patch
