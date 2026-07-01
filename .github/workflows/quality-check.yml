@@ -123,6 +123,7 @@ jobs:
           npm run check:lobby-menu-motion-state
           npm run check:lobby-menu-focus-density
           npm run check:lobby-shortcut-scroll
+          npm run check:lobby-navigation-rhythm
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

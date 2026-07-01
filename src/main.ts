@@ -133,6 +133,10 @@ const LOBBY_MENU_TAP_TARGET_QA_PATCH = 'v1074-lobby-menu-tap-target-qa';
 const LOBBY_SHORTCUT_MENU_BAR_PATCH = 'v1075-lobby-shortcut-menu-bar';
 const LOBBY_COPY_CLEANUP_PATCH = 'v1075-lobby-copy-cleanup';
 const LOBBY_SCROLL_STABILITY_PATCH = 'v1075-lobby-scroll-stability';
+const SHORTCUT_MENU_ICON_POLISH_PATCH = 'v1076-shortcut-menu-icon-polish';
+const PANEL_SCROLL_QA_PATCH = 'v1076-panel-scroll-qa';
+const MODAL_CLOSE_FLOW_PATCH = 'v1076-modal-close-flow';
+const LOBBY_NAVIGATION_RHYTHM_PATCH = 'v1076-lobby-navigation-rhythm';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
@@ -161,12 +165,14 @@ const V1072_COMPAT_TOKENS = 'v1072-lobby-menu-portal v1072-section-popup-restruc
 const V1073_COMPAT_TOKENS = 'v1073-lobby-menu-motion-state v1073-lobby-menu-back-close v1073-lobby-menu-tab-switch v1073-lobby-panel-state-retention dream-library-cache-v1.0.73 texture-atlas-manifest-v1.0.73.json';
 const V1074_COMPAT_TOKENS = 'v1074-lobby-menu-focus-trap v1074-lobby-panel-content-density v1074-lobby-menu-tap-target-qa dream-library-cache-v1.0.74 texture-atlas-manifest-v1.0.74.json';
 const V1075_COMPAT_TOKENS = 'v1075-lobby-shortcut-menu-bar v1075-lobby-copy-cleanup v1075-lobby-scroll-stability dream-library-cache-v1.0.75 texture-atlas-manifest-v1.0.75.json';
+const V1076_COMPAT_TOKENS = 'v1076-shortcut-menu-icon-polish v1076-panel-scroll-qa v1076-modal-close-flow v1076-lobby-navigation-rhythm dream-library-cache-v1.0.76 texture-atlas-manifest-v1.0.76.json';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
 void V1073_COMPAT_TOKENS;
 void V1074_COMPAT_TOKENS;
 void V1075_COMPAT_TOKENS;
+void V1076_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -470,6 +476,8 @@ const state = {
   lobbyPanelScrollTop: readJson<Record<string, number>>('dream-library-lobby-panel-scroll-top', {}),
   lobbyPageScrollTopBeforeMenu: 0,
   lobbyMenuOpenCount: 0,
+  lobbyMenuBackdropPointerId: -1,
+  lobbyNavigationPhase: 'idle' as 'idle' | 'opening' | 'open' | 'closing',
   dailyChallenge: getDailyChallenge(new Date()),
   currentBoardId: 'global' as 'global' | 'daily',
   activeBoss: getBossForStage(getStageById(readText('dream-library-selected-stage') || DEFAULT_STAGE_ID)) as any,
@@ -755,7 +763,19 @@ function bindEvents() {
   });
   el.lobbyMenuCloseButton?.addEventListener('click', () => closeLobbyMenuPanel({ returnFocus: true }));
   el.lobbyMenuBackButton?.addEventListener('click', () => closeLobbyMenuPanel({ returnFocus: true }));
-  el.lobbyMenuOverlay?.addEventListener('click', (event) => { if (event.target === el.lobbyMenuOverlay) closeLobbyMenuPanel({ returnFocus: true }); });
+  el.lobbyMenuOverlay?.addEventListener('pointerdown', (event) => {
+    if (event.target !== el.lobbyMenuOverlay) return;
+    state.lobbyMenuBackdropPointerId = event.pointerId;
+  });
+  el.lobbyMenuOverlay?.addEventListener('pointerup', (event) => {
+    if (event.target !== el.lobbyMenuOverlay || state.lobbyMenuBackdropPointerId !== event.pointerId) {
+      state.lobbyMenuBackdropPointerId = -1;
+      return;
+    }
+    state.lobbyMenuBackdropPointerId = -1;
+    closeLobbyMenuPanel({ returnFocus: true });
+  });
+  el.lobbyMenuOverlay?.addEventListener('pointercancel', () => { state.lobbyMenuBackdropPointerId = -1; });
   el.dailyStartSignal.addEventListener('pointerenter', () => document.body.classList.add('daily-start-signal-hovered'));
   el.dailyStartSignal.addEventListener('pointerleave', () => document.body.classList.remove('daily-start-signal-hovered'));
   el.firstTouchGuideClose?.addEventListener('click', () => hideFirstTouchGuide(true));
@@ -2916,6 +2936,38 @@ function normalizeLobbyPanelKey(key: string) {
   return LOBBY_MENU_TITLES[key] ? key : 'campaign';
 }
 
+
+function setLobbyNavigationRhythm(phase: 'idle' | 'opening' | 'open' | 'closing') {
+  state.lobbyNavigationPhase = phase;
+  document.body.dataset.lobbyNavigationRhythm = LOBBY_NAVIGATION_RHYTHM_PATCH;
+  document.body.dataset.lobbyNavigationPhase = phase;
+  document.body.classList.toggle('lobby-nav-opening', phase === 'opening');
+  document.body.classList.toggle('lobby-nav-open', phase === 'open');
+  document.body.classList.toggle('lobby-nav-closing', phase === 'closing');
+  el.lobbyMenuHub?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyMenuTabs?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+}
+
+function saveLobbyPanelScroll(panelKey = state.activeLobbyPanel) {
+  if (!el.lobbyPanelDock || !panelKey) return;
+  state.lobbyPanelScrollTop[panelKey] = Math.max(0, el.lobbyPanelDock.scrollTop || 0);
+  writeJson('dream-library-lobby-panel-scroll-top', state.lobbyPanelScrollTop);
+}
+
+function restoreLobbyPanelScroll(panelKey = state.activeLobbyPanel) {
+  if (!el.lobbyPanelDock || !panelKey) return;
+  const desired = Math.max(0, state.lobbyPanelScrollTop[panelKey] || 0);
+  const apply = () => {
+    if (!el.lobbyPanelDock) return;
+    const max = Math.max(0, el.lobbyPanelDock.scrollHeight - el.lobbyPanelDock.clientHeight);
+    el.lobbyPanelDock.scrollTop = Math.min(desired, max);
+  };
+  apply();
+  requestAnimationFrame(() => requestAnimationFrame(apply));
+}
+
 function syncLobbyMenuPortal() {
   const tight = window.innerWidth <= 430 || window.innerHeight <= 720;
   document.body.dataset.lobbyMenuPortal = LOBBY_MENU_PORTAL_PATCH;
@@ -2929,12 +2981,18 @@ function syncLobbyMenuPortal() {
   document.body.dataset.lobbyShortcutBar = LOBBY_SHORTCUT_MENU_BAR_PATCH;
   document.body.dataset.lobbyCopyCleanup = LOBBY_COPY_CLEANUP_PATCH;
   document.body.dataset.lobbyScrollStability = LOBBY_SCROLL_STABILITY_PATCH;
+  document.body.dataset.shortcutMenuIconPolish = SHORTCUT_MENU_ICON_POLISH_PATCH;
+  document.body.dataset.panelScrollQa = PANEL_SCROLL_QA_PATCH;
+  document.body.dataset.modalCloseFlow = MODAL_CLOSE_FLOW_PATCH;
+  document.body.dataset.lobbyNavigationRhythm = LOBBY_NAVIGATION_RHYTHM_PATCH;
   document.body.classList.toggle('lobby-menu-tight', tight);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-copy-cleanup', LOBBY_COPY_CLEANUP_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-shortcut-menu-icon-polish', SHORTCUT_MENU_ICON_POLISH_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-back-close', LOBBY_MENU_BACK_CLOSE_PATCH);
@@ -2942,13 +3000,18 @@ function syncLobbyMenuPortal() {
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-tap-target-qa', LOBBY_MENU_TAP_TARGET_QA_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-modal-close-flow', MODAL_CLOSE_FLOW_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-panel-content-density', LOBBY_PANEL_CONTENT_DENSITY_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-panel-scroll-qa', PANEL_SCROLL_QA_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+  el.lobbyMenuTabs?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   document.querySelectorAll<HTMLElement>('[data-lobby-menu-open]').forEach((button) => {
     const key = normalizeLobbyPanelKey(button.dataset.lobbyMenuOpen || 'campaign');
     const selected = key === state.activeLobbyPanel && document.body.classList.contains('lobby-menu-open');
@@ -2958,6 +3021,10 @@ function syncLobbyMenuPortal() {
     button.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
     button.setAttribute('data-lobby-menu-tap-target-qa', LOBBY_MENU_TAP_TARGET_QA_PATCH);
     button.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+    button.setAttribute('data-shortcut-menu-icon-polish', SHORTCUT_MENU_ICON_POLISH_PATCH);
+    button.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+    const meta = LOBBY_MENU_TITLES[key];
+    if (meta) button.setAttribute('aria-label', `${button.textContent?.trim() || meta.title} 열기 - ${meta.subtitle}`);
   });
   document.querySelectorAll<HTMLElement>('[data-lobby-menu-tab]').forEach((button) => {
     const key = normalizeLobbyPanelKey(button.dataset.lobbyMenuTab || 'campaign');
@@ -2967,6 +3034,9 @@ function syncLobbyMenuPortal() {
     button.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
     button.setAttribute('data-lobby-menu-tap-target-qa', LOBBY_MENU_TAP_TARGET_QA_PATCH);
     button.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
+    button.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+    const meta = LOBBY_MENU_TITLES[key];
+    if (meta) button.setAttribute('aria-label', `${button.textContent?.trim() || meta.title} 패널로 전환 - ${meta.subtitle}`);
   });
   document.querySelectorAll<HTMLElement>('[data-lobby-panel]').forEach((panel) => {
     const key = normalizeLobbyPanelKey(panel.dataset.lobbyPanel || 'campaign');
@@ -2976,6 +3046,8 @@ function syncLobbyMenuPortal() {
     panel.setAttribute('data-lobby-panel-content-density', LOBBY_PANEL_CONTENT_DENSITY_PATCH);
     panel.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
     panel.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
+    panel.setAttribute('data-panel-scroll-qa', PANEL_SCROLL_QA_PATCH);
+    panel.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
     panel.classList.toggle('lobby-menu-panel-active', active);
     if (document.body.classList.contains('lobby-menu-open')) panel.classList.remove('collapsed');
     panel.setAttribute('aria-hidden', document.body.classList.contains('lobby-menu-open') && active ? 'false' : 'true');
@@ -2993,10 +3065,7 @@ function getAppShellScroller() {
 function openLobbyMenuPanel(panelKey = 'campaign', trigger?: HTMLElement | null, options: { keepFocus?: boolean } = {}) {
   const key = normalizeLobbyPanelKey(panelKey);
   const previousPanel = state.activeLobbyPanel;
-  if (previousPanel && previousPanel !== key && el.lobbyPanelDock) {
-    state.lobbyPanelScrollTop[previousPanel] = el.lobbyPanelDock.scrollTop;
-    writeJson('dream-library-lobby-panel-scroll-top', state.lobbyPanelScrollTop);
-  }
+  if (previousPanel && previousPanel !== key && el.lobbyPanelDock) saveLobbyPanelScroll(previousPanel);
   state.activeLobbyPanel = key;
   state.lobbyMenuOpenCount += 1;
   if (!document.body.classList.contains('lobby-menu-open')) {
@@ -3022,13 +3091,17 @@ function openLobbyMenuPanel(panelKey = 'campaign', trigger?: HTMLElement | null,
   el.lobbyMenuOverlay.dataset.lobbyMenuTapTargetQa = LOBBY_MENU_TAP_TARGET_QA_PATCH;
   el.lobbyMenuOverlay.dataset.lobbyShortcutBar = LOBBY_SHORTCUT_MENU_BAR_PATCH;
   el.lobbyMenuOverlay.dataset.lobbyScrollStability = LOBBY_SCROLL_STABILITY_PATCH;
+  el.lobbyMenuOverlay.dataset.modalCloseFlow = MODAL_CLOSE_FLOW_PATCH;
+  el.lobbyMenuOverlay.dataset.lobbyNavigationRhythm = LOBBY_NAVIGATION_RHYTHM_PATCH;
   document.body.classList.add('lobby-menu-open', 'lobby-scroll-locked');
+  setLobbyNavigationRhythm('opening');
   document.body.dataset.activeLobbyPanel = key;
   syncLobbyMenuPortal();
   window.setTimeout(() => {
     el.lobbyMenuOverlay.classList.remove('opening');
+    setLobbyNavigationRhythm('open');
     const panel = document.querySelector<HTMLElement>(`[data-lobby-panel="${key}"]`);
-    if (el.lobbyPanelDock) el.lobbyPanelDock.scrollTop = Math.max(0, state.lobbyPanelScrollTop[key] || 0);
+    restoreLobbyPanelScroll(key);
     const firstAction = panel?.querySelector<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     if (!options.keepFocus) (firstAction || el.lobbyMenuCloseButton)?.focus({ preventScroll: true });
   }, 20);
@@ -3037,22 +3110,22 @@ function openLobbyMenuPanel(panelKey = 'campaign', trigger?: HTMLElement | null,
 function closeLobbyMenuPanel(options: { returnFocus?: boolean; silent?: boolean } = {}) {
   if (!el.lobbyMenuOverlay || el.lobbyMenuOverlay.classList.contains('hidden')) {
     document.body.classList.remove('lobby-menu-open', 'lobby-scroll-locked');
+    setLobbyNavigationRhythm('idle');
     syncLobbyMenuPortal();
     return;
   }
-  if (el.lobbyPanelDock) {
-    state.lobbyPanelScrollTop[state.activeLobbyPanel] = el.lobbyPanelDock.scrollTop;
-    writeJson('dream-library-lobby-panel-scroll-top', state.lobbyPanelScrollTop);
-  }
+  if (el.lobbyPanelDock) saveLobbyPanelScroll(state.activeLobbyPanel);
   el.lobbyMenuOverlay.dataset.lobbyMenuBackClose = LOBBY_MENU_BACK_CLOSE_PATCH;
   el.lobbyMenuOverlay.classList.remove('opening');
   el.lobbyMenuOverlay.classList.add('closing');
   document.body.classList.remove('lobby-menu-open');
+  setLobbyNavigationRhythm('closing');
   syncLobbyMenuPortal();
   const finish = () => {
     el.lobbyMenuOverlay?.classList.add('hidden');
     el.lobbyMenuOverlay?.classList.remove('closing');
     document.body.classList.remove('lobby-scroll-locked');
+    setLobbyNavigationRhythm('idle');
     const appShell = getAppShellScroller();
     if (appShell && state.screen === 'lobby') appShell.scrollTop = state.lobbyPageScrollTopBeforeMenu || appShell.scrollTop;
     if (options.returnFocus) {
@@ -3114,7 +3187,7 @@ function scrollLobbyTarget(selector: string) {
 
 function toggleLobbyPanel(panelKey: string) {
   if (!panelKey) return;
-  if (document.body.classList.contains('lobby-menu-open')) { closeLobbyMenuPanel(); return; }
+  if (document.body.classList.contains('lobby-menu-open')) { closeLobbyMenuPanel({ returnFocus: true }); return; }
   state.collapsedPanels[panelKey] = !state.collapsedPanels[panelKey];
   writeJson('dream-library-lobby-collapsed-panels', state.collapsedPanels);
   renderLobbyPanelState();

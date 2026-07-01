@@ -6586,3 +6586,106 @@ body[data-lobby-copy-cleanup="v1075-lobby-copy-cleanup"] .lobby-menu-toolbar .ey
   }
 }
 /* v1075 compatibility anchors: v1075-lobby-shortcut-menu-bar v1075-lobby-copy-cleanup v1075-lobby-scroll-stability */
+
+/* v1.0.76 shortcut icon polish, panel scroll QA, modal close flow and lobby navigation rhythm */
+.lobby-menu-hub[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"] .lobby-menu-grid button {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(125, 220, 255, 0.2);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.14), transparent 34%),
+    linear-gradient(145deg, rgba(11, 31, 66, 0.88), rgba(24, 38, 84, 0.7));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 18px rgba(4, 11, 30, 0.24);
+}
+.lobby-menu-hub[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"] .lobby-menu-grid button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0 36%, rgba(255,255,255,0.11) 47%, transparent 58% 100%);
+  transform: translateX(-120%);
+  transition: transform 0.34s ease;
+  pointer-events: none;
+}
+.lobby-menu-hub[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"] .lobby-menu-grid button:is(:hover, :focus-visible, .selected)::after {
+  transform: translateX(120%);
+}
+.lobby-menu-grid button[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"] i {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  color: rgba(8, 22, 48, 0.92);
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255,255,255,0.88), transparent 28%),
+    linear-gradient(145deg, var(--gold-300), rgba(125, 220, 255, 0.96));
+  box-shadow: 0 8px 18px rgba(69, 192, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.62);
+  transform: translateZ(0);
+}
+.lobby-menu-grid button[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"] i::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  border: 1px solid rgba(8, 22, 48, 0.12);
+}
+.lobby-menu-grid button[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"].selected i,
+.lobby-menu-grid button[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"]:focus-visible i {
+  transform: translateY(-1px) scale(1.03);
+}
+.lobby-panel-dock[data-panel-scroll-qa="v1076-panel-scroll-qa"] {
+  scroll-behavior: auto;
+  scrollbar-gutter: stable both-edges;
+  contain: layout paint;
+}
+.lobby-panel-dock[data-panel-scroll-qa="v1076-panel-scroll-qa"] > [data-lobby-panel] {
+  overflow-anchor: none;
+}
+.lobby-panel-dock[data-panel-scroll-qa="v1076-panel-scroll-qa"] > [data-lobby-panel].lobby-menu-panel-active {
+  min-height: min(620px, calc(100dvh - 178px));
+}
+.lobby-menu-overlay[data-modal-close-flow="v1076-modal-close-flow"] {
+  cursor: default;
+}
+.lobby-menu-overlay[data-modal-close-flow="v1076-modal-close-flow"] .lobby-menu-card {
+  cursor: auto;
+}
+.lobby-menu-tabs[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] {
+  scroll-padding-inline: 0.55rem;
+  scrollbar-width: none;
+}
+.lobby-menu-tabs[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"]::-webkit-scrollbar { display: none; }
+body[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] .lobby-menu-grid button[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"],
+body[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] .lobby-menu-tabs[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] button {
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+body.lobby-nav-opening[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] .lobby-menu-card[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] {
+  animation: lobbyNavRhythmOpenV1076 0.2s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+body.lobby-nav-closing[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] .lobby-menu-card[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] {
+  animation: lobbyNavRhythmCloseV1076 0.14s ease-in both;
+}
+@keyframes lobbyNavRhythmOpenV1076 {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes lobbyNavRhythmCloseV1076 {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.99); }
+}
+@media (max-width: 430px) {
+  .lobby-menu-hub[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"] .lobby-menu-grid button {
+    flex-basis: 96px;
+    border-radius: 19px;
+  }
+  .lobby-panel-dock[data-panel-scroll-qa="v1076-panel-scroll-qa"] > [data-lobby-panel].lobby-menu-panel-active {
+    min-height: min(560px, calc(100dvh - 154px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.lobby-nav-opening[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] .lobby-menu-card[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"],
+  body.lobby-nav-closing[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"] .lobby-menu-card[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhythm"],
+  .lobby-menu-hub[data-shortcut-menu-icon-polish="v1076-shortcut-menu-icon-polish"] .lobby-menu-grid button::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* v1076 compatibility anchors: v1076-shortcut-menu-icon-polish v1076-panel-scroll-qa v1076-modal-close-flow v1076-lobby-navigation-rhythm */

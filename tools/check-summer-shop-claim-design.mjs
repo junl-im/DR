@@ -11,7 +11,7 @@ const pages = read('.github/workflows/github-pages.yml');
 const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
-if (!['1.0.51', '1.0.52', '1.0.53', '1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75'].includes(pkg.version)) errors.push(`package version must be 1.0.51-1.0.53, got ${pkg.version}`);
+if (!['1.0.51', '1.0.52', '1.0.53', '1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76'].includes(pkg.version)) errors.push(`package version must be 1.0.51-1.0.53, got ${pkg.version}`);
 if (!pkg.scripts['check:summer-shop-claim-design']) errors.push('missing package script check:summer-shop-claim-design');
 has(stages, 'costType', 'season shop cost metadata');
 has(stages, 'rewardType', 'season shop reward metadata');

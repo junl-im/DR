@@ -14,7 +14,7 @@ const all = Object.values(files).join('\n');
 const errors = [];
 const has = (src, token, label) => { if (!src.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.74', '1.0.75'].includes(files.pkg.version)) errors.push(`package version must be 1.0.74 or 1.0.75, got ${files.pkg.version}`);
+if (!['1.0.74', '1.0.75', '1.0.76'].includes(files.pkg.version)) errors.push(`package version must be 1.0.74 or 1.0.75, got ${files.pkg.version}`);
 [
   'v1074-lobby-menu-focus-trap',
   'v1074-lobby-panel-content-density',

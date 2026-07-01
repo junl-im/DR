@@ -1,6 +1,0 @@
-Delete these files from the repository if they remain from an older patch:
-
-package-lock.json
-
-Reason:
-The previous lockfile could contain registry URLs from a temporary build environment and made GitHub Actions npm ci unstable. v1.0.11 workflows remove old package-lock.json before installing dependencies and use npm install --no-audit --no-fund on Node 20 LTS. After a clean local npm install, you may commit a newly generated package-lock.json later if it points to the public npm registry.

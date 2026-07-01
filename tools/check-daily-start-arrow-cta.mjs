@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75'].includes(pkg.version)) errors.push(`package version must be 1.0.64, got ${pkg.version}`);
+if (!['1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76'].includes(pkg.version)) errors.push(`package version must be 1.0.64, got ${pkg.version}`);
 if (!pkg.scripts['check:daily-start-arrow-cta']) errors.push('missing package script check:daily-start-arrow-cta');
 for (const token of ['v1064-daily-start-arrow-only-cta', 'v1064-lobby-ui-polish-pass']) {
   has(index, token, 'index v1.0.64 token');
