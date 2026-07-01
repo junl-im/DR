@@ -33,6 +33,7 @@ const SUMMER_EVENT_VFX_PATCH = 'v1049-summer-event-vfx';
 const SUMMER_PASS_MISSIONS_PATCH = 'v1049-summer-pass-missions';
 const ENGINE_RENDER_BUDGET_TUNING_PATCH = 'v1055-engine-render-budget-tuning';
 const BOSS_WARNING_READABILITY_PATCH = 'v1056-boss-warning-readability';
+const BOSS_BOARD_CLEARANCE_PATCH = 'v1077-boss-board-clearance';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -223,21 +224,30 @@ export class DreamPixiRenderer {
     }
     this.bossLayerSprite.texture = texture;
     const app = this.boardApp;
-    const targetSize = Math.max(66, Math.min(112, app.renderer.width * 0.22));
+    const laneEchoEnabled = Boolean(document.querySelector<HTMLElement>('.boss-lane-echo[data-boss-board-clearance="v1077-boss-board-clearance"]'));
+    const targetSize = laneEchoEnabled ? Math.max(32, Math.min(46, app.renderer.width * 0.1)) : Math.max(66, Math.min(112, app.renderer.width * 0.22));
     const fit = targetSize / Math.max(texture.width || targetSize, texture.height || targetSize);
     const scale = mood === 'break' ? fit * 1.12 : mood === 'warn' ? fit * 1.06 : fit;
     this.bossLayerSprite.scale.set(scale);
-    this.bossLayerSprite.x = app.renderer.width - targetSize * 0.64;
-    this.bossLayerSprite.y = Math.max(34, targetSize * 0.58);
-    this.bossLayerSprite.alpha = mood === 'idle' ? 0.72 : 0.96;
+    this.bossLayerSprite.x = app.renderer.width - targetSize * 0.58;
+    this.bossLayerSprite.y = Math.max(22, targetSize * 0.5);
+    this.bossLayerSprite.alpha = laneEchoEnabled ? 0 : mood === 'idle' ? 0.72 : 0.96;
+    this.bossLayerSprite.visible = !laneEchoEnabled;
+    this.bossLayerSprite.renderable = !laneEchoEnabled;
+    this.bossLayerSprite.eventMode = 'none';
     this.bossLayerSprite.rotation = mood === 'hit' ? -0.025 : mood === 'warn' ? 0.018 : 0;
     this.bossLayerAura.x = this.bossLayerSprite.x;
     this.bossLayerAura.y = this.bossLayerSprite.y;
-    this.bossLayerAura.alpha = mood === 'idle' ? 0.26 : 0.52;
+    this.bossLayerAura.alpha = laneEchoEnabled ? 0 : mood === 'idle' ? 0.26 : 0.52;
+    this.bossLayerAura.visible = !laneEchoEnabled;
+    this.bossLayerAura.renderable = !laneEchoEnabled;
     const host = document.querySelector<HTMLElement>('.battle-stage');
     if (host) {
       host.dataset.bossLayer = 'pixi';
       host.dataset.bossLayerMood = mood;
+      host.dataset.bossBoardClearance = BOSS_BOARD_CLEARANCE_PATCH;
+      host.dataset.bossLayerPlacement = laneEchoEnabled ? 'statusbar-echo-v1077' : 'board-corner';
+      host.dataset.bossLayerVisibility = laneEchoEnabled ? 'dom-lane-echo' : 'pixi-board-visible';
     }
     gsap.killTweensOf([this.bossLayerSprite, this.bossLayerAura]);
     if (mood !== 'idle') {

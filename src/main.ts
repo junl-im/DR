@@ -137,6 +137,7 @@ const SHORTCUT_MENU_ICON_POLISH_PATCH = 'v1076-shortcut-menu-icon-polish';
 const PANEL_SCROLL_QA_PATCH = 'v1076-panel-scroll-qa';
 const MODAL_CLOSE_FLOW_PATCH = 'v1076-modal-close-flow';
 const LOBBY_NAVIGATION_RHYTHM_PATCH = 'v1076-lobby-navigation-rhythm';
+const BOSS_BOARD_CLEARANCE_PATCH = 'v1077-boss-board-clearance';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
@@ -166,6 +167,7 @@ const V1073_COMPAT_TOKENS = 'v1073-lobby-menu-motion-state v1073-lobby-menu-back
 const V1074_COMPAT_TOKENS = 'v1074-lobby-menu-focus-trap v1074-lobby-panel-content-density v1074-lobby-menu-tap-target-qa dream-library-cache-v1.0.74 texture-atlas-manifest-v1.0.74.json';
 const V1075_COMPAT_TOKENS = 'v1075-lobby-shortcut-menu-bar v1075-lobby-copy-cleanup v1075-lobby-scroll-stability dream-library-cache-v1.0.75 texture-atlas-manifest-v1.0.75.json';
 const V1076_COMPAT_TOKENS = 'v1076-shortcut-menu-icon-polish v1076-panel-scroll-qa v1076-modal-close-flow v1076-lobby-navigation-rhythm dream-library-cache-v1.0.76 texture-atlas-manifest-v1.0.76.json';
+const V1077_COMPAT_TOKENS = 'v1077-boss-board-clearance statusbar-left-icon-safe-v1077 dream-library-cache-v1.0.77 texture-atlas-manifest-v1.0.77.json';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
@@ -173,6 +175,7 @@ void V1073_COMPAT_TOKENS;
 void V1074_COMPAT_TOKENS;
 void V1075_COMPAT_TOKENS;
 void V1076_COMPAT_TOKENS;
+void V1077_COMPAT_TOKENS;
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -323,6 +326,8 @@ const el = {
   bossIntroBanner: $('#boss-intro-banner'),
   bossCore: $('#boss-core'),
   bossAtlasSprite: $('#boss-atlas-sprite'),
+  bossLaneEcho: $('#boss-lane-echo'),
+  bossLaneEchoSprite: $('#boss-lane-echo-sprite'),
   bossHpLabel: $('#boss-hp-label'),
   bossRoleHelp: $('#boss-role-help'),
   missionLabel: $('#mission-label'),
@@ -3245,13 +3250,16 @@ function renderBossPanel() {
   el.bossCore.dataset.bossAssetGuard = 'stable-fallback';
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
   const bossLane = document.querySelector<HTMLElement>('.boss-lane');
-  bossLane?.setAttribute('data-boss-layout', 'statusbar-icon-right-v1046');
+  bossLane?.setAttribute('data-boss-layout', 'statusbar-left-icon-safe-v1077');
+  bossLane?.setAttribute('data-boss-board-clearance', BOSS_BOARD_CLEARANCE_PATCH);
   bossLane?.setAttribute('data-boss-season-polish', BOSS_SEASON_POLISH_PATCH);
   bossLane?.setAttribute('data-engine-render-budget', ENGINE_RENDER_BUDGET_TUNING_PATCH);
   bossLane?.setAttribute('data-boss-warning-readability', BOSS_WARNING_READABILITY_PATCH);
   bossLane?.setAttribute('data-boss-attack-readability', BOSS_ATTACK_READABILITY_PATCH);
   bossLane?.setAttribute('data-season-claim-visual', getSeasonClaimVisualState());
-  document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
+  const battleStage = document.querySelector<HTMLElement>('.battle-stage');
+  battleStage?.setAttribute('data-stage-ladder', STAGE_LADDER_EXPANSION_PATCH);
+  battleStage?.setAttribute('data-boss-board-clearance', BOSS_BOARD_CLEARANCE_PATCH);
   el.bossName.textContent = boss.name;
   const role = getBossReadableRole(boss);
   el.bossPattern.textContent = role.pattern;
@@ -3273,8 +3281,8 @@ function getBossReadableRole(boss: any) {
   const bonus = getPairMatchTimeBonus();
   const base = {
     pattern: '보스 상태 · HP/압박/반격',
-    title: '오른쪽 작은 보스 아이콘은 현재 상대와 위험도를 표시합니다. HP와 반격 예고를 같이 확인하세요.',
-    help: `오른쪽 보스 아이콘은 현재 상대입니다. 멈추거나 실수하면 압박하고, 짝을 맞추면 HP가 줄고 +${bonus}초를 얻습니다.`
+    title: '왼쪽 보스 그림은 현재 상대와 위험도를 표시합니다. HP와 반격 예고를 같이 확인하세요.',
+    help: `왼쪽 보스 그림은 현재 상대입니다. 멈추거나 실수하면 압박하고, 짝을 맞추면 HP가 줄고 +${bonus}초를 얻습니다.`
   };
   if (boss?.id === 'shadow-librarian') {
     return { ...base, pattern: '보스 상태 · 빠른 실수 반격', help: `그림자 장서관장은 실수에 빠르게 반응합니다. 연속 매칭으로 반격 예고를 끊고 +${bonus}초를 챙기세요.` };
@@ -3309,26 +3317,41 @@ function setBossStableImage(src = BOSS_IMAGE_FALLBACK_SRC, alt = '망각의 서�
   };
   if (!el.bossImage.src.endsWith(src)) el.bossImage.src = src;
   el.bossCore.dataset.bossImageSrc = src;
+  el.bossCore.dataset.bossBoardClearance = BOSS_BOARD_CLEARANCE_PATCH;
 }
 
 function applyBossAtlasFrame(frameKey = '') {
   const frame = getBossAtlasFrame(frameKey);
+  const echo = el.bossLaneEcho as HTMLElement | null;
   if (!frame || !bossAtlasImageReady) {
     el.bossCore.classList.remove('boss-atlas-ready');
+    echo?.classList.remove('boss-atlas-ready');
     el.bossAtlasSprite?.removeAttribute('style');
+    echo?.removeAttribute('style');
     el.bossCore.dataset.bossAtlasReady = bossAtlasImageReady ? 'missing-frame' : 'fallback';
+    if (echo) echo.dataset.bossAtlasReady = el.bossCore.dataset.bossAtlasReady;
     return;
   }
   const coreSize = Math.max(44, el.bossCore.clientWidth || 64);
+  const echoSize = Math.max(42, echo?.clientWidth || 52);
   const scale = Math.min(0.38, Math.max(0.2, (coreSize * 1.48) / Math.max(frame.w, frame.h))); // v1.0.40: keep atlas overlay behind stable monster art
+  const echoScale = Math.min(0.24, Math.max(0.13, (echoSize * 1.2) / Math.max(frame.w, frame.h)));
   el.bossCore.classList.add('boss-atlas-ready');
+  echo?.classList.add('boss-atlas-ready');
   el.bossCore.dataset.bossVisualStack = BOSS_VISUAL_STACK_PATCH;
-  el.bossCore.style.setProperty('--boss-frame-w', `${frame.w}px`);
-  el.bossCore.style.setProperty('--boss-frame-h', `${frame.h}px`);
-  el.bossCore.style.setProperty('--boss-frame-x', `-${frame.x}px`);
-  el.bossCore.style.setProperty('--boss-frame-y', `-${frame.y}px`);
+  el.bossCore.dataset.bossBoardClearance = BOSS_BOARD_CLEARANCE_PATCH;
+  if (echo) echo.dataset.bossBoardClearance = BOSS_BOARD_CLEARANCE_PATCH;
+  const targets = [el.bossCore, echo].filter(Boolean) as HTMLElement[];
+  targets.forEach((target) => {
+    target.style.setProperty('--boss-frame-w', `${frame.w}px`);
+    target.style.setProperty('--boss-frame-h', `${frame.h}px`);
+    target.style.setProperty('--boss-frame-x', `-${frame.x}px`);
+    target.style.setProperty('--boss-frame-y', `-${frame.y}px`);
+    target.dataset.bossAtlasReady = 'true';
+    target.dataset.bossAtlasFrame = frameKey;
+  });
   el.bossCore.style.setProperty('--boss-frame-scale', `${scale}`);
-  el.bossCore.dataset.bossAtlasReady = 'true';
+  echo?.style.setProperty('--boss-echo-frame-scale', `${echoScale}`);
 }
 
 function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
@@ -3337,6 +3360,8 @@ function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
   const atlasFrame = boss.atlasFrames?.[stateName] || boss.atlasFrames?.idle || '';
   el.bossCore.dataset.bossFrame = stateName;
   el.bossCore.dataset.bossAtlasFrame = atlasFrame;
+  el.bossLaneEcho?.setAttribute('data-boss-frame', stateName);
+  el.bossLaneEcho?.setAttribute('data-boss-atlas-frame', atlasFrame);
   applyBossAtlasFrame(atlasFrame);
   renderer.syncPixiBossLayer(atlasFrame, stateName);
   setBossStableImage(src, boss.name);
@@ -3346,6 +3371,8 @@ function setBossFrame(stateName: 'idle' | 'warn' | 'hit' | 'break' = 'idle') {
       const idleAtlasFrame = boss.atlasFrames?.idle || '';
       el.bossCore.dataset.bossFrame = 'idle';
       el.bossCore.dataset.bossAtlasFrame = idleAtlasFrame;
+      el.bossLaneEcho?.setAttribute('data-boss-frame', 'idle');
+      el.bossLaneEcho?.setAttribute('data-boss-atlas-frame', idleAtlasFrame);
       applyBossAtlasFrame(idleAtlasFrame);
       renderer.syncPixiBossLayer(idleAtlasFrame, 'idle');
       setBossStableImage(idle, boss.name);

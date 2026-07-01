@@ -128,6 +128,7 @@ jobs:
           npm run check:lobby-menu-focus-density
           npm run check:lobby-shortcut-scroll
           npm run check:lobby-navigation-rhythm
+          npm run check:boss-board-clearance
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
