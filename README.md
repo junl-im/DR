@@ -3118,3 +3118,82 @@ Apply 꿈의 서고 v1.0.80 camera gesture and boss statusbar balance patch
 - `npm run build:github` 통과.
 - 기존 경고: `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고는 남아 있지만 빌드 실패는 아닙니다.
 - 기존 경고: `vendor-pixi` chunk 527.93 KB 초과 경고는 남아 있어 v1.0.81 이후 분리 후보입니다.
+
+## v1.0.81 Patch Notes - Real Device Camera Feel, Boss Status Priority and Image Boot Budget Patch
+
+v1.0.81은 실제 기기에서 카메라 드래그가 줌처럼 느껴지는 문제를 한 번 더 좁히고, 보스/몬스터 프로필 바의 왼쪽 빈 공간과 정보 우선순위를 다듬은 UI/UX 안정화 패치입니다. 동시에 큰 배경 PNG 2개에 WebP 후보를 추가하고 Pixi chunk 분리 후보를 Vite 설정에 명시했습니다.
+
+### 변경 사항
+
+- `package.json` 버전을 `1.0.81`로 갱신했습니다.
+- `DreamPixiRenderer`에 `v1081-real-device-camera-feel`을 추가했습니다.
+- 터치/펜/마우스별 pan 시작 threshold를 분리했습니다. 터치는 11px, 펜은 8px, 마우스는 6px 기준으로 잡아 손떨림이 바로 이동/줌으로 보이지 않게 했습니다.
+- `resolveGestureAxis()`로 첫 이동 방향을 `horizontal / vertical / free`로 고정해 좌우 드래그가 줌 경로와 섞이지 않게 했습니다.
+- 두 손가락 핀치에는 `pinchSettledAt` warmup을 추가하고, 거리 변화 기준을 `16px` / 비율 `0.065`로 높여 두 손가락을 올리는 순간의 흔들림이 확대/축소로 보이지 않게 했습니다.
+- wheel/trackpad 입력은 `shiftKey`, 가로 delta, pixel delta 조건을 더 분명히 나누어 가로 스크롤은 pan으로 처리합니다.
+- `v1081-boss-status-priority`를 추가해 보스/몬스터 프로필 바를 `40px / 중앙 유동 / 34px` 비율로 더 압축했습니다. 작은 화면에서는 `36px / 중앙 유동 / 30px`로 줄입니다.
+- 보스바의 표시 우선순위를 `보스명 + HP + 예고 + HP바` 중심으로 재배치하고, 장황한 상태 chip/도움말은 시각적으로 숨겨 공간을 회수했습니다.
+- `storybook-login.webp`, `dream-library-25d.webp`를 추가했습니다. 각각 약 2.4MB PNG에서 약 202KB WebP로 줄어 초기 부팅/캐시 후보를 가볍게 만들었습니다.
+- `PRELOAD_ASSETS`와 service worker core asset에 WebP를 PNG fallback보다 먼저 등록했습니다.
+- `vite.config.js`에서 Pixi chunk 후보를 `vendor-pixi-core-v1081`, `vendor-pixi-scene-v1081`, `vendor-pixi-renderer-v1081`, `vendor-pixi-assets-v1081`로 나누는 후속 분리 정책을 추가했습니다.
+- `tools/check-camera-status-image-budget.mjs`를 추가해 카메라 감도, 보스바 우선순위, WebP 후보, Pixi chunk 후보, 구버전 레이아웃 부활을 검사합니다.
+- GitHub Pages / quality-check workflow에 `npm run check:camera-status-image-budget`을 연결했습니다.
+- 기존 QA 스크립트들의 버전 허용 범위를 v1.0.81까지 확장했습니다.
+- service worker cache를 `dream-library-cache-v1.0.81`로 갱신하고 `texture-atlas-manifest-v1.0.81.json`을 생성/선로드에 추가했습니다.
+- `AI_HANDOFF_DR.md`에 v1.0.81 수정 내역, 검수 명령, GitHub Desktop/Firebase 무료 환경, 다음 v1.0.82 예정 내역을 기록했습니다.
+
+### 검수 명령
+
+```bash
+npm run typecheck
+npm run check:camera-status-image-budget
+npm run check:camera-gesture-statusbar-balance
+npm run check:board-camera
+npm run check:boss-board-clearance
+npm run check:combat-hud-touch-clearance
+npm run check:modal-focus-rank-budget
+npm run report:images
+npm run build:github
+```
+
+전체 검사 실행 예시:
+
+```bash
+node - <<'NODE' > /tmp/dr-checks.txt
+const pkg = require('./package.json');
+for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('check:'))) console.log(key);
+NODE
+while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
+```
+
+### v1.0.81에서 특히 확인할 점
+
+- 실제 휴대폰에서 한 손가락 좌우/상하 드래그를 할 때 보드가 확대/축소되는 느낌이 없어야 합니다.
+- 두 손가락을 올리는 순간 작은 흔들림으로 줌이 튀면 실패입니다. 손가락 간 거리를 명확히 벌리거나 좁힐 때만 zoom이 시작되어야 합니다.
+- 보스/몬스터 프로필 바 왼쪽 초상화 주변 빈 공간이 v1.0.80보다 더 작아야 합니다.
+- 우측 echo/status가 켜졌다 꺼져도 중앙 보스명, HP, 예고 영역이 과하게 흔들리면 실패입니다.
+- `data-boss-layout="statusbar-icon-right-v1046"`, 보드 미니맵, 카메라 도움말, 손가락 시작 문구가 다시 나타나면 실패입니다.
+- 새 WebP 2개는 PNG fallback을 유지하면서 service worker와 preload 후보에 들어가야 합니다.
+
+### 다음 업데이트 예정
+
+다음 업데이트 예정: v1.0.82 - Firebase Write Budget Guard, Lobby Long Card Scroll Anchor, QA Message Cleanup and Image Regression Check
+
+### GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.81 camera feel boss status priority and image budget patch
+
+### v1.0.81 검수 결과
+
+- `npm run typecheck` 통과.
+- 전체 88개 `check:*` QA suite 통과.
+- `npm run check:camera-status-image-budget` 통과.
+- `npm run check:camera-gesture-statusbar-balance` 통과.
+- `npm run check:board-camera` 통과.
+- `npm run check:boss-board-clearance` 통과.
+- `npm run check:combat-hud-touch-clearance` 통과.
+- `npm run check:modal-focus-rank-budget` 통과.
+- `npm run report:images` 통과. 456 files, 52.37 MB. PNG fallback 유지 때문에 1.2MB 초과 원본 9개는 계속 추적됩니다.
+- `npm run build:github` 통과.
+- 기존 경고: `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고는 남아 있지만 빌드 실패는 아닙니다.
+- v1.0.80의 `vendor-pixi` 527KB 초과 경고는 v1.0.81 chunk 분리 후 해소되었습니다. 현재 큰 vendor 경고는 없습니다.

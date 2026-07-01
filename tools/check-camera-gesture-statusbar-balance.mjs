@@ -18,7 +18,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (files.pkg.version !== '1.0.80') errors.push(`package version must be 1.0.80, got ${files.pkg.version}`);
+if (!['1.0.80', '1.0.81'].includes(files.pkg.version)) errors.push(`package version must be 1.0.80 or 1.0.81, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:camera-gesture-statusbar-balance');
 requireIncludes('index.html', files.html, 'data-camera-gesture-separation="v1080-camera-gesture-separation"');
 requireIncludes('index.html', files.html, 'data-boss-status-balance="v1080-boss-statusbar-balance"');
@@ -30,7 +30,7 @@ requireIncludes('src/rendering/DreamPixiRenderer.ts', files.renderer, "gestureMo
 requireIncludes('src/rendering/DreamPixiRenderer.ts', files.renderer, 'markCameraGestureState');
 requireIncludes('src/rendering/DreamPixiRenderer.ts', files.renderer, 'panCameraBy');
 requireIncludes('src/rendering/DreamPixiRenderer.ts', files.renderer, 'shouldTreatWheelAsPan');
-requireIncludes('src/rendering/DreamPixiRenderer.ts', files.renderer, 'distanceDelta < 10');
+if (!files.renderer.includes('distanceDelta < 10') && !files.renderer.includes('distanceDelta < 16')) errors.push('src/rendering/DreamPixiRenderer.ts missing pinch distance warmup guard');
 requireIncludes('src/rendering/DreamPixiRenderer.ts', files.renderer, 'performance.now() < this.camera.panLockedUntil');
 requireIncludes('src/styles.css', files.css, 'v1.0.80 camera gesture separation and boss statusbar balance');
 requireIncludes('src/styles.css', files.css, 'wheel-horizontal-pan single-pointer-pan-no-zoom stable-right-status-slot');

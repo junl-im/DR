@@ -15,7 +15,7 @@ const errors = [];
 const has = (src, token, label) => { if (!src.includes(token)) errors.push(`missing ${label}: ${token}`); };
 const lacks = (src, token, label) => { if (src.includes(token)) errors.push(`must remove ${label}: ${token}`); };
 
-if (!['1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80'].includes(files.pkg.version)) errors.push(`package version must be 1.0.76+ compatibility range through 1.0.77, got ${files.pkg.version}`);
+if (!['1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81'].includes(files.pkg.version)) errors.push(`package version must be 1.0.76+ compatibility range through 1.0.77, got ${files.pkg.version}`);
 if (!Object.prototype.hasOwnProperty.call(files.pkg.scripts || {}, 'check:lobby-navigation-rhythm')) errors.push('missing v1.0.76 package script key: check:lobby-navigation-rhythm');
 [
   'v1076-shortcut-menu-icon-polish',

@@ -36,6 +36,8 @@ const BOSS_WARNING_READABILITY_PATCH = 'v1056-boss-warning-readability';
 const BOSS_BOARD_CLEARANCE_PATCH = 'v1077-boss-board-clearance';
 const LOW_END_RENDER_BUDGET_GUARD_PATCH = 'v1078-low-end-render-budget-guard';
 const CAMERA_GESTURE_SEPARATION_PATCH = 'v1080-camera-gesture-separation';
+const REAL_DEVICE_CAMERA_FEEL_PATCH = 'v1081-real-device-camera-feel';
+const IMAGE_BOOT_BUDGET_PATCH = 'v1081-image-boot-budget';
 const createTileHitArea = (size: number, slop = Math.min(TOUCH_HIT_SLOP_MAX, size * TOUCH_HIT_SLOP_RATIO)) => ({
   contains: (x: number, y: number) => Math.abs(x) <= size / 2 + slop && Math.abs(y) <= size / 2 + slop
 });
@@ -116,6 +118,9 @@ type BoardCamera = {
   gestureStartY: number;
   pinchStarted: boolean;
   panLockedUntil: number;
+  pointerType: string;
+  gestureAxis: 'none' | 'horizontal' | 'vertical' | 'free';
+  pinchSettledAt: number;
 };
 
 export class DreamPixiRenderer {
@@ -157,7 +162,10 @@ export class DreamPixiRenderer {
     gestureStartX: 0,
     gestureStartY: 0,
     pinchStarted: false,
-    panLockedUntil: 0
+    panLockedUntil: 0,
+    pointerType: 'mouse',
+    gestureAxis: 'none',
+    pinchSettledAt: 0
   };
   lastPointerMove = 0;
   tileAtlasReady: Promise<void> | null = null;
@@ -654,6 +662,8 @@ export class DreamPixiRenderer {
       host.dataset.boardCols = String(this.layout.cols);
       host.dataset.touchPrecision = 'cell-slope-guard';
       host.dataset.cameraGestureSeparation = CAMERA_GESTURE_SEPARATION_PATCH;
+      host.dataset.realDeviceCameraFeel = REAL_DEVICE_CAMERA_FEEL_PATCH;
+      host.dataset.imageBootBudget = IMAGE_BOOT_BUDGET_PATCH;
     }
     this.updateBoardReadabilityTier();
   }
@@ -806,8 +816,12 @@ export class DreamPixiRenderer {
     if (host) {
       host.dataset.cameraGestureSeparation = CAMERA_GESTURE_SEPARATION_PATCH;
       host.dataset.cameraGestureMode = mode;
+      host.dataset.realDeviceCameraFeel = REAL_DEVICE_CAMERA_FEEL_PATCH;
+      host.dataset.imageBootBudget = IMAGE_BOOT_BUDGET_PATCH;
     }
-    document.querySelector<HTMLElement>('.battle-stage')?.setAttribute('data-camera-gesture-separation', CAMERA_GESTURE_SEPARATION_PATCH);
+    const stage = document.querySelector<HTMLElement>('.battle-stage');
+    stage?.setAttribute('data-camera-gesture-separation', CAMERA_GESTURE_SEPARATION_PATCH);
+    stage?.setAttribute('data-real-device-camera-feel', REAL_DEVICE_CAMERA_FEEL_PATCH);
   }
 
   private panCameraBy(dx: number, dy: number) {
@@ -820,11 +834,28 @@ export class DreamPixiRenderer {
     this.markCameraGestureState('pan');
   }
 
+  private getPanStartThreshold(pointerType = this.camera.pointerType) {
+    if (pointerType === 'touch') return 11;
+    if (pointerType === 'pen') return 8;
+    return 6;
+  }
+
+  private resolveGestureAxis(totalX: number, totalY: number) {
+    if (this.camera.gestureAxis !== 'none') return this.camera.gestureAxis;
+    const absX = Math.abs(totalX);
+    const absY = Math.abs(totalY);
+    if (absX + absY < this.getPanStartThreshold()) return 'none';
+    this.camera.gestureAxis = absX > absY * 1.35 ? 'horizontal' : absY > absX * 1.35 ? 'vertical' : 'free';
+    return this.camera.gestureAxis;
+  }
+
   private shouldTreatWheelAsPan(event: WheelEvent) {
     if (event.ctrlKey || event.metaKey) return false;
     const absX = Math.abs(event.deltaX);
     const absY = Math.abs(event.deltaY);
-    return absX > 0 && absX >= absY * 0.72;
+    if (event.shiftKey && absY > 0) return true;
+    if (absX > 0 && absX >= absY * 0.62) return true;
+    return event.deltaMode === 0 && absX > 0 && absY < 24;
   }
 
   private installCameraControls() {
@@ -844,6 +875,8 @@ export class DreamPixiRenderer {
     canvas.addEventListener('pointerdown', (event) => {
       canvas.setPointerCapture?.(event.pointerId);
       this.camera.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      this.camera.pointerType = event.pointerType || 'mouse';
+      this.camera.gestureAxis = 'none';
       this.camera.dragging = this.camera.pointers.size === 1;
       this.camera.moved = false;
       this.camera.lastX = event.clientX;
@@ -851,6 +884,8 @@ export class DreamPixiRenderer {
       this.camera.gestureStartX = event.clientX;
       this.camera.gestureStartY = event.clientY;
       this.camera.pinchStarted = false;
+      this.camera.pinchSettledAt = this.camera.pointers.size >= 2 ? performance.now() + 120 : 0;
+      if (this.camera.pointers.size >= 2) this.camera.panLockedUntil = performance.now() + 160;
       this.markCameraGestureState(this.camera.pointers.size >= 2 ? 'pinch' : 'idle');
       if (this.camera.pointers.size >= 2) {
         this.camera.pinchDistance = distance();
@@ -866,13 +901,13 @@ export class DreamPixiRenderer {
         const currentDistance = distance();
         const ratio = this.camera.pinchDistance > 0 ? currentDistance / this.camera.pinchDistance : 1;
         const distanceDelta = Math.abs(currentDistance - this.camera.pinchDistance);
-        if (!this.camera.pinchStarted && distanceDelta < 10 && Math.abs(ratio - 1) < 0.045) {
+        if (!this.camera.pinchStarted && (performance.now() < this.camera.pinchSettledAt || (distanceDelta < 16 && Math.abs(ratio - 1) < 0.065))) {
           this.camera.moved = true;
           this.camera.tapSuppressedUntil = performance.now() + 180;
           return;
         }
         this.camera.pinchStarted = true;
-        if (this.camera.pinchDistance > 0 && currentDistance > 0 && performance.now() >= this.camera.panLockedUntil) {
+        if (this.camera.pinchDistance > 0 && currentDistance > 0 && performance.now() >= this.camera.panLockedUntil && performance.now() >= this.camera.pinchSettledAt) {
           const center = midpoint();
           this.markCameraGestureState('pinch');
           this.zoomAt(center.x, center.y, this.camera.pinchScale * ratio);
@@ -883,19 +918,28 @@ export class DreamPixiRenderer {
       }
       const dx = event.clientX - previous.x;
       const dy = event.clientY - previous.y;
-      const totalMove = Math.abs(event.clientX - this.camera.gestureStartX) + Math.abs(event.clientY - this.camera.gestureStartY);
-      if (totalMove > 7) this.camera.moved = true;
-      if (this.camera.moved) this.panCameraBy(dx, dy);
+      const totalX = event.clientX - this.camera.gestureStartX;
+      const totalY = event.clientY - this.camera.gestureStartY;
+      const totalMove = Math.abs(totalX) + Math.abs(totalY);
+      const axis = this.resolveGestureAxis(totalX, totalY);
+      if (axis !== 'none' && totalMove > this.getPanStartThreshold()) this.camera.moved = true;
+      if (this.camera.moved) {
+        const damp = this.camera.pointerType === 'touch' ? 0.92 : 1;
+        this.panCameraBy(dx * damp, dy * damp);
+      }
     }, { passive: false });
     const release = (event: PointerEvent) => {
       if (this.camera.moved) this.camera.tapSuppressedUntil = performance.now() + 220;
       this.camera.pointers.delete(event.pointerId);
       if (this.camera.pointers.size < 2) {
+        if (this.camera.pinchStarted) this.camera.panLockedUntil = performance.now() + 320;
         this.camera.pinchDistance = 0;
         this.camera.pinchStarted = false;
+        this.camera.pinchSettledAt = 0;
       }
       if (this.camera.pointers.size === 0) {
         this.camera.dragging = false;
+        this.camera.gestureAxis = 'none';
         window.setTimeout(() => this.markCameraGestureState('idle'), 120);
       }
     };
