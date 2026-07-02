@@ -10,7 +10,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(pkg.version)) errors.push(`package version must be 1.0.54, got ${pkg.version}`);
+if (!['1.0.54', '1.0.55', '1.0.56', '1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(pkg.version)) errors.push(`package version must be 1.0.54, got ${pkg.version}`);
 if (!pkg.scripts['check:season-store-engine-design']) errors.push('missing package script check:season-store-engine-design');
 
 has(index, 'data-season-pass="v1054-store-collection-pass"', 'v1.0.54 season pass lobby mount');
@@ -35,7 +35,7 @@ has(css, 'v1054-engine-design-gesture-qa', 'gesture CSS token');
 has(css, 'v1054-mobile-design-overlap-audit', 'mobile CSS token');
 has(css, 'v1054-duplicate-id-cleanup', 'duplicate cleanup CSS token');
 
-has(sw, 'dream-library-cache-v1.0.54', 'service worker v1.0.54 cache');
+has(sw, 'dream-library-cache-v1.0.86', 'service worker v1.0.54 cache');
 has(sw, 'texture-atlas-manifest-v1.0.54.json', 'service worker v1.0.54 atlas preload');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.54.json')) errors.push('missing v1.0.54 texture atlas manifest');
 

@@ -9,7 +9,7 @@ const checks = [
   [renderer.includes('this.resolveAssetTexture(effectAsset(name))'), 'VFX texture resolver not used'],
   [renderer.includes('v2-fragments/v2-fragment') && renderer.includes('resolveAssetTexture'), 'fragment texture resolver not used'],
   [difficulty.includes('texture-atlas-manifest-v1.0.47.json'), 'v1.0.47 manifest not referenced'],
-  [sw.includes('texture-atlas-manifest-v1.0.47.json') && sw.includes('dream-library-cache-v1.0.47'), 'service worker v1.0.47 cache/manifest missing']
+  [sw.includes('texture-atlas-manifest-v1.0.86.json') && sw.includes('texture-atlas-manifest-v1.0.47.json') && sw.includes('dream-library-cache-v1.0.86'), 'service worker current cache/manifest missing']
 ];
 for (const file of ['public/assets/atlas/v2-tiles.png', 'public/assets/atlas/v2-tiles.atlas.json', 'public/assets/atlas/boss-frames-v2.png', 'public/assets/atlas/boss-frames-v2.atlas.json', 'public/assets/meta/texture-atlas-manifest-v1.0.47.json']) {
   try { statSync(file); } catch { checks.push([false, `missing ${file}`]); }

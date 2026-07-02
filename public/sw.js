@@ -1,8 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.85';
-const CACHE_SLIM_POLICY = 'v1052-cache-shop-reward-mobile-store';
-const PREVIOUS_CACHE_SLIM_POLICY = 'v1042-cache-slim-account-time-pressure';
-const LEGACY_QA_CACHE_ANCHORS = ['dream-library-cache-v1.0.84', 'dream-library-cache-v1.0.83', 'dream-library-cache-v1.0.82', 'dream-library-cache-v1.0.81', 'dream-library-cache-v1.0.80', 'dream-library-cache-v1.0.79', 'dream-library-cache-v1.0.78', 'dream-library-cache-v1.0.77', 'dream-library-cache-v1.0.76', 'dream-library-cache-v1.0.75', 'dream-library-cache-v1.0.74', 'dream-library-cache-v1.0.73', 'dream-library-cache-v1.0.72', 'dream-library-cache-v1.0.71', 'dream-library-cache-v1.0.70', 'dream-library-cache-v1.0.69', 'dream-library-cache-v1.0.68', 'dream-library-cache-v1.0.67', 'dream-library-cache-v1.0.66', 'dream-library-cache-v1.0.65', 'dream-library-cache-v1.0.64', 'dream-library-cache-v1.0.63', 'dream-library-cache-v1.0.62', 'dream-library-cache-v1.0.61', 'dream-library-cache-v1.0.60', 'dream-library-cache-v1.0.59', 'dream-library-cache-v1.0.58', 'dream-library-cache-v1.0.57', 'dream-library-cache-v1.0.56', 'dream-library-cache-v1.0.55', 'dream-library-cache-v1.0.54', 'dream-library-cache-v1.0.53', 'dream-library-cache-v1.0.52', 'dream-library-cache-v1.0.51', 'dream-library-cache-v1.0.50', 'dream-library-cache-v1.0.49', 'dream-library-cache-v1.0.48', 'dream-library-cache-v1.0.47', 'texture-atlas-manifest-v1.0.85.json', 'texture-atlas-manifest-v1.0.84.json', 'texture-atlas-manifest-v1.0.83.json', 'texture-atlas-manifest-v1.0.82.json', 'texture-atlas-manifest-v1.0.81.json', 'texture-atlas-manifest-v1.0.80.json', 'texture-atlas-manifest-v1.0.79.json', 'texture-atlas-manifest-v1.0.78.json', 'texture-atlas-manifest-v1.0.77.json', 'texture-atlas-manifest-v1.0.76.json', 'texture-atlas-manifest-v1.0.75.json', 'texture-atlas-manifest-v1.0.74.json', 'texture-atlas-manifest-v1.0.73.json', 'texture-atlas-manifest-v1.0.72.json', 'texture-atlas-manifest-v1.0.71.json', 'texture-atlas-manifest-v1.0.70.json', 'texture-atlas-manifest-v1.0.69.json', 'texture-atlas-manifest-v1.0.68.json', 'texture-atlas-manifest-v1.0.67.json', 'texture-atlas-manifest-v1.0.66.json', 'texture-atlas-manifest-v1.0.65.json', 'texture-atlas-manifest-v1.0.64.json', 'texture-atlas-manifest-v1.0.63.json', 'texture-atlas-manifest-v1.0.62.json', 'texture-atlas-manifest-v1.0.61.json', 'texture-atlas-manifest-v1.0.60.json', 'texture-atlas-manifest-v1.0.59.json', 'texture-atlas-manifest-v1.0.58.json', 'texture-atlas-manifest-v1.0.57.json', 'texture-atlas-manifest-v1.0.56.json', 'texture-atlas-manifest-v1.0.55.json', 'texture-atlas-manifest-v1.0.54.json', 'texture-atlas-manifest-v1.0.53.json', 'texture-atlas-manifest-v1.0.52.json', 'texture-atlas-manifest-v1.0.51.json', 'texture-atlas-manifest-v1.0.50.json', 'texture-atlas-manifest-v1.0.49.json', 'texture-atlas-manifest-v1.0.48.json', 'texture-atlas-manifest-v1.0.47.json'];
-const LEGACY_AUTH_MODAL_CACHE_SLIM_POLICY = 'v1043-cache-slim-auth-modal-boss-role';
+const CACHE_NAME = 'dream-library-cache-v1.0.86';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -30,6 +26,7 @@ const CORE_ASSETS = [
   './assets/effects/import-vfx-02.png',
   './assets/effects/import-vfx-04.png',
   './assets/effects/import-vfx-06.png',
+  './assets/meta/texture-atlas-manifest-v1.0.86.json',
   './assets/meta/texture-atlas-manifest-v1.0.85.json',
   './assets/meta/texture-atlas-manifest-v1.0.84.json',
   './assets/meta/texture-atlas-manifest-v1.0.83.json',
@@ -44,17 +41,31 @@ const CORE_ASSETS = [
   './assets/meta/texture-atlas-manifest-v1.0.74.json',
   './assets/meta/texture-atlas-manifest-v1.0.73.json',
   './assets/meta/texture-atlas-manifest-v1.0.72.json',
+  './assets/meta/texture-atlas-manifest-v1.0.71.json',
   './assets/meta/texture-atlas-manifest-v1.0.70.json',
   './assets/meta/texture-atlas-manifest-v1.0.69.json',
+  './assets/meta/texture-atlas-manifest-v1.0.68.json',
+  './assets/meta/texture-atlas-manifest-v1.0.67.json',
   './assets/meta/texture-atlas-manifest-v1.0.66.json',
   './assets/meta/texture-atlas-manifest-v1.0.65.json',
   './assets/meta/texture-atlas-manifest-v1.0.64.json',
+  './assets/meta/texture-atlas-manifest-v1.0.63.json',
   './assets/meta/texture-atlas-manifest-v1.0.62.json',
   './assets/meta/texture-atlas-manifest-v1.0.61.json',
   './assets/meta/texture-atlas-manifest-v1.0.60.json',
   './assets/meta/texture-atlas-manifest-v1.0.59.json',
+  './assets/meta/texture-atlas-manifest-v1.0.58.json',
   './assets/meta/texture-atlas-manifest-v1.0.57.json',
   './assets/meta/texture-atlas-manifest-v1.0.56.json',
+  './assets/meta/texture-atlas-manifest-v1.0.55.json',
+  './assets/meta/texture-atlas-manifest-v1.0.54.json',
+  './assets/meta/texture-atlas-manifest-v1.0.53.json',
+  './assets/meta/texture-atlas-manifest-v1.0.52.json',
+  './assets/meta/texture-atlas-manifest-v1.0.51.json',
+  './assets/meta/texture-atlas-manifest-v1.0.50.json',
+  './assets/meta/texture-atlas-manifest-v1.0.49.json',
+  './assets/meta/texture-atlas-manifest-v1.0.48.json',
+  './assets/meta/texture-atlas-manifest-v1.0.47.json',
   './assets/ui/frame-library-v2.webp',
   './assets/ui/frame-library-v2.png',
   './assets/ui/hp-frame.png',

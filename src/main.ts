@@ -233,25 +233,18 @@ const el = {
   boardCameraGuide: $('#board-camera-guide'),
   boardCameraControls: $('#board-camera-controls'),
   screens: $$('.screen'),
-  backButton: $('#back-button'),
   loginStatus: $('#login-status'),
   authName: $('#auth-name'),
   authProvider: $('#auth-provider'),
   anonymousButton: $('#anonymous-button'),
   googleButton: $('#google-button'),
   showEmailButton: $('#show-email-button'),
-  emailForm: $('#email-form') as HTMLFormElement,
-  emailInput: $('#email-input') as HTMLInputElement,
-  passwordInput: $('#password-input') as HTMLInputElement,
-  emailSignupButton: $('#email-signup-button'),
   emailAuthModal: $('#email-auth-modal'),
   emailAuthForm: $('#email-auth-form') as HTMLFormElement,
   emailModalInput: $('#email-modal-input') as HTMLInputElement,
   passwordModalInput: $('#password-modal-input') as HTMLInputElement,
   emailModalSignupButton: $('#email-modal-signup-button'),
   closeEmailAuthButton: $('#close-email-auth-button'),
-  enterLobbyButton: $('#enter-lobby-button'),
-  openSettingsButton: $('#open-settings-button'),
   closeOptionsButton: $('#close-options-button'),
   optionsModal: $('#options-modal'),
   signoutButton: $('#signout-button'),
@@ -382,7 +375,6 @@ function forceLoginBootScreen() {
   document.body.dataset.screen = 'login';
   document.body.dataset.authEntry = AUTH_ENTRY_SIMPLIFICATION_PATCH;
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === 'screen-login'));
-  el.backButton.classList.add('hidden');
   [el.optionsModal, el.emailAuthModal, el.rewardModal, el.exitConfirmModal, el.exitSleepModal, el.restorationDetailModal, el.lobbyMenuOverlay].forEach((modal) => modal.classList.add('hidden'));
   el.boardCameraGuide?.classList.add('hidden');
   el.boardCameraGuide?.setAttribute('aria-hidden', 'true');
@@ -660,11 +652,7 @@ async function loadSpineRuntime() {
 }
 
 function bindEvents() {
-  el.backButton.addEventListener('click', () => {
-    openExitConfirm();
-  });
-  // v1.0.37: the visible top option line was removed. Options now open from the back/exit sheet gear.
-  el.openSettingsButton?.addEventListener('click', openOptions);
+  // The visible top option line and retired shell buttons were deleted; options open from the back/exit sheet gear.
   el.closeOptionsButton.addEventListener('click', closeOptionsPanel);
   el.optionsModal.addEventListener('click', (event) => { if (event.target === el.optionsModal) closeOptionsPanel(); });
   el.settingsLoginButton.addEventListener('click', () => { closeOptionsPanel(); updateScreen('login'); });
@@ -729,11 +717,6 @@ function bindEvents() {
     enterLobbyFromAuth('guest');
   }, '게스트 로그인으로 로비를 열었습니다.'));
   el.googleButton.addEventListener('click', () => runGoogleLogin('start'));
-  el.emailForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    runEmailLoginFromInlineFallback();
-  });
-  el.emailSignupButton.addEventListener('click', runEmailSignupFromInlineFallback);
   el.emailAuthForm.addEventListener('submit', (event) => {
     event.preventDefault();
     runEmailLoginFromModal();
@@ -749,7 +732,6 @@ function bindEvents() {
     closeOptionsPanel();
     updateScreen('login');
   }, '로그아웃했습니다.'));
-  el.enterLobbyButton.addEventListener('click', () => enterLobbyFromAuth('resume')); // retired direct lobby button kept hidden for DOM compatibility
   el.exitCancelButton.addEventListener('click', closeExitConfirm);
   el.exitHomeButton.addEventListener('click', exitHomeFromBackSheet);
   el.exitConfirmButton.addEventListener('click', confirmExitApp);
@@ -1623,7 +1605,6 @@ function updateScreen(screen: ScreenName) {
   document.documentElement.style.setProperty('--library-background-url', bg.endsWith('-v2') ? backgroundImageSet(bg) : `url(${import.meta.env.BASE_URL}assets/backgrounds/${bg}.png)`);
   el.screens.forEach((screenEl) => screenEl.classList.toggle('active', screenEl.id === `screen-${screen}`));
   // v1.0.37: no persistent top navigation line; browser back and in-screen actions handle flow.
-  el.backButton.classList.add('hidden');
   if (screen === 'lobby') renderLobby();
   if (screen !== 'lobby') { closeLobbyMenuPanel({ silent: true }); clearDailyStartNudge(); }
   if (screen === 'settings') renderAuth();
@@ -1659,8 +1640,6 @@ function openEmailAuthModal(source: 'login' | 'options' = 'login') {
   el.emailAuthModal.classList.remove('hidden');
   el.emailAuthModal.dataset.emailAuth = 'center-popup-v1043';
   el.emailAuthModal.dataset.source = source;
-  el.emailForm.classList.add('collapsed');
-  el.emailForm.setAttribute('aria-hidden', 'true');
   el.emailModalInput.focus({ preventScroll: true });
   setStatus(source === 'options' ? '중앙 팝업에서 이메일 저장 계정으로 전환하세요.' : '이메일 저장 계정 정보를 입력하세요.');
 }
@@ -1716,17 +1695,6 @@ function runEmailSignupFromModal() {
   }, '이메일 계정을 만들고 저장 플레이를 시작했습니다.');
 }
 
-function runEmailLoginFromInlineFallback() {
-  el.emailModalInput.value = el.emailInput.value;
-  el.passwordModalInput.value = el.passwordInput.value;
-  runEmailLoginFromModal();
-}
-
-function runEmailSignupFromInlineFallback() {
-  el.emailModalInput.value = el.emailInput.value;
-  el.passwordModalInput.value = el.passwordInput.value;
-  runEmailSignupFromModal();
-}
 
 function openOptions() {
   renderAuth();
@@ -1835,8 +1803,6 @@ function renderAuth() {
   el.authProvider.textContent = provider;
   el.settingsAccountText.textContent = `${name} · ${provider}`;
   el.optionsModal.dataset.accountSwitch = 'v1043-account-switch-modal';
-  el.enterLobbyButton.classList.add('hidden');
-  el.enterLobbyButton.setAttribute('aria-hidden', 'true');
   el.signoutButton.classList.toggle('hidden', !hasSession());
   renderSoundButton();
 }

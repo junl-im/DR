@@ -18,7 +18,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.78 or 1.0.79, got ${files.pkg.version}`);
+if (!['1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.78 or 1.0.79, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:combat-hud-touch-clearance');
 requireIncludes('index.html', files.html, 'data-combat-hud-touch-clearance="v1078-combat-hud-touch-clearance"');
 requireIncludes('index.html', files.html, 'data-boss-status-readability="v1078-boss-statusbar-readability"');
@@ -38,7 +38,7 @@ requireIncludes('src/styles.css', files.css, 'v1.0.78 combat HUD density');
 requireIncludes('src/styles.css', files.css, '.game-actions[data-combat-hud-touch-clearance="v1078-combat-hud-touch-clearance"]');
 requireIncludes('src/styles.css', files.css, 'position: sticky');
 requireIncludes('src/styles.css', files.css, 'v1078-boss-statusbar-readability');
-requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.78');
+requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.86');
 requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.78.json');
 requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.78.json');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.78.json')) errors.push('missing v1.0.78 texture atlas manifest');

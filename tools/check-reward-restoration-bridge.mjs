@@ -13,9 +13,9 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(pkg.version)) errors.push(`package version must be 1.0.67, got ${pkg.version}`);
+if (!['1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(pkg.version)) errors.push(`package version must be 1.0.67, got ${pkg.version}`);
 if (!pkg.scripts['check:reward-restoration-bridge']) errors.push('missing package script check:reward-restoration-bridge');
-for (const token of ['v1067-restoration-reward-bridge', 'v1067-boss-vfx-density-guard', 'v1067-micro-tutorial-comfort', 'dream-library-cache-v1.0.67', 'texture-atlas-manifest-v1.0.67.json']) {
+for (const token of ['v1067-restoration-reward-bridge', 'v1067-boss-vfx-density-guard', 'v1067-micro-tutorial-comfort', 'dream-library-cache-v1.0.86', 'texture-atlas-manifest-v1.0.67.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.67 token');
 }
 has(index, 'id="reward-restoration-bridge"', 'reward restoration bridge markup');
@@ -29,7 +29,7 @@ has(main, 'softRepeat ? 2800 : 5200', 'short repeat tutorial timer');
 has(css, '.reward-restoration-bridge[data-restoration-reward-bridge="v1067-restoration-reward-bridge"]', 'reward bridge CSS');
 has(css, '.boss-attack-preview[data-boss-vfx-density-guard="v1067-boss-vfx-density-guard"]', 'boss VFX density CSS');
 has(css, '.first-touch-guide[data-micro-tutorial-comfort="v1067-micro-tutorial-comfort"][data-guide-mode="soft-repeat"]', 'soft repeat tutorial CSS');
-has(sw, "dream-library-cache-v1.0.67", 'service worker v1.0.67 cache');
+has(sw, "dream-library-cache-v1.0.86", 'service worker v1.0.67 cache');
 has(sw, 'texture-atlas-manifest-v1.0.67.json', 'service worker v1.0.67 atlas preload');
 if (!difficulty.includes('texture-atlas-manifest-v1.0.67.json') && !difficulty.includes('texture-atlas-manifest-v1.0.68.json')) errors.push('difficulty v1.0.67/v1.0.68 atlas preload missing');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.67.json')) errors.push('missing v1.0.67 texture atlas manifest');

@@ -13,9 +13,9 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(pkg.version)) errors.push(`package version must be 1.0.68, got ${pkg.version}`);
+if (!['1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(pkg.version)) errors.push(`package version must be 1.0.68, got ${pkg.version}`);
 if (!pkg.scripts['check:restoration-theater-next-goal']) errors.push('missing package script check:restoration-theater-next-goal');
-for (const token of ['v1068-restoration-completion-theater', 'v1068-reward-claim-motion', 'v1068-next-goal-advisor', 'v1068-boss-warning-icon-trim', 'dream-library-cache-v1.0.68', 'texture-atlas-manifest-v1.0.68.json']) {
+for (const token of ['v1068-restoration-completion-theater', 'v1068-reward-claim-motion', 'v1068-next-goal-advisor', 'v1068-boss-warning-icon-trim', 'dream-library-cache-v1.0.86', 'texture-atlas-manifest-v1.0.68.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.68 token');
 }
 has(index, 'id="reward-completion-theater"', 'restoration completion theater markup');
@@ -32,7 +32,7 @@ has(css, '.reward-completion-theater[data-restoration-completion-theater="v1068-
 has(css, '.reward-modal.reward-claim-pop[data-reward-claim-motion="v1068-reward-claim-motion"]', 'reward claim motion CSS');
 has(css, '.reward-next-goal[data-next-goal-advisor="v1068-next-goal-advisor"]', 'next goal advisor CSS');
 has(css, '.boss-attack-preview[data-boss-warning-icon-trim="v1068-boss-warning-icon-trim"]', 'boss warning icon trim CSS');
-has(sw, 'dream-library-cache-v1.0.68', 'service worker v1.0.68 cache');
+has(sw, 'dream-library-cache-v1.0.86', 'service worker v1.0.68 cache');
 has(sw, 'texture-atlas-manifest-v1.0.68.json', 'service worker v1.0.68 atlas preload');
 has(difficulty, 'texture-atlas-manifest-v1.0.68.json', 'difficulty v1.0.68 atlas preload');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.68.json')) errors.push('missing v1.0.68 texture atlas manifest');

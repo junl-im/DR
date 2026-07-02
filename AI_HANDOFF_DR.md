@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.85 |
+| 현재 버전 | v1.0.86 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Live Code Cleanup, Dead Function Deletion and QA Integration Patch |
-| 핵심 수정 | 죽은 함수/미사용 import/compat token 상수 삭제, 현재 살아있는 로직 기준 QA 통합, boss atlas CSS selector 통합 |
+| 이번 패치 | Service Worker Legacy Anchor and Hidden Compatibility Mount Cleanup Patch |
+| 핵심 수정 | service worker 죽은 legacy anchor 상수 삭제, hidden compatibility mount 삭제, inline email fallback 삭제, 현재 살아있는 모달/exit sheet/cache 경로 기준 QA 통합 |
 | UI/UX 우선순위 | 이번 패치에서는 새 UI를 만들지 않고 기존 정상 동작을 보존하며 죽은 코드만 삭제한다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.84.zip`에서 이어서 작업 |
+| 작업 기준 | 이전 산출물 `DR_v1.0.85.zip`에서 이어서 작업 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.85.zip`, `DR_patch_v1.0.85.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.86.zip`, `DR_patch_v1.0.86.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
 
@@ -29,7 +29,7 @@
 - 로컬과 ZIP 산출물에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않는다.
 - 산출 규칙 문구 고정: `package-lock.json 제외`, `풀파일 ZIP`, `패치 ZIP`은 매번 기록한다.
 - SVG는 금지한다. 이미지 정책은 PNG/WebP/JPG 중심이다.
-- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`를 실행한다.
+- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`, `npm run check:cleanup-live-paths`를 실행한다.
 
 ## 사용자가 결과를 보기 위한 명령
 
@@ -88,11 +88,12 @@ npm run check:boss-board-clearance
 npm run check:combat-hud-touch-clearance
 npm run check:rank-copy-webp-atlas
 npm run check:mobile-rank-fallback-anchor
+npm run check:cleanup-live-paths
 npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.85 기준 `check:mobile-rank-fallback-anchor`까지 총 91개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.86 기준 `check:cleanup-live-paths`까지 총 92개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -104,6 +105,64 @@ NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
 
+
+
+## v1.0.86 실제 수정 내역
+
+- `package.json` 버전을 `1.0.86`으로 갱신했다.
+- 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다. 기존 service worker, login/auth, exit sheet, QA script 위치에서 직접 정리했다.
+- 삭제 전 호출 추적 결과:
+  - `public/sw.js`의 `CACHE_SLIM_POLICY`, `PREVIOUS_CACHE_SLIM_POLICY`, `LEGACY_QA_CACHE_ANCHORS`, `LEGACY_AUTH_MODAL_CACHE_SLIM_POLICY`는 install/activate/fetch handler에서 읽히지 않았다. 실제 캐시 동작은 `CACHE_NAME`, `CORE_ASSETS`, fetch handler가 담당하므로 죽은 문자열 앵커로 판단하고 삭제했다.
+  - `retired-shell-actions`, `back-button`, `open-settings-button`은 active 화면에서 hidden/inert 상태였고, 실제 옵션 진입은 `exit-options-button`, `exit-options-row-button`, `openOptionsFromExitSheet()`가 담당했다. hidden mount와 main 참조/event binding, `#back-button` CSS를 삭제했다.
+  - `enter-lobby-button`은 hidden direct lobby compatibility mount였고, 실제 시작 흐름은 `anonymousButton`, `googleButton`, `showEmailButton`에서 `enterLobbyFromAuth()` 또는 중앙 이메일 모달로 이어졌다. DOM mount와 main 참조를 삭제했다.
+  - hidden inline email form은 실제 이메일 로그인/가입이 `email-auth-modal`, `openEmailAuthModal()`, `runEmailLoginFromModal()`, `runEmailSignupFromModal()`로 처리되어 삭제했다. inline fallback 함수와 input 참조, `.email-form` / `.email-buttons` / `.retired-inline-email-form` CSS를 삭제했다.
+- 예전 service worker cache 이름을 검사하던 QA는 현재 살아있는 `dream-library-cache-v1.0.86` 기준으로 통합했다. 오래된 cache 이름 문자열은 되살리지 않았고, 필요한 atlas manifest는 `CORE_ASSETS`의 실제 cache 대상 후보로 유지했다.
+- `tools/check-cleanup-live-paths.mjs`를 추가했다. 삭제한 compatibility mount/dead token이 active runtime에 다시 생기면 실패하고, 이메일 중앙 모달/exit sheet/current cache 경로가 살아있는지 확인한다.
+- GitHub Pages / quality-check workflow에 `npm run check:cleanup-live-paths`를 연결했다.
+- `dream-library-cache-v1.0.86`, `texture-atlas-manifest-v1.0.86.json`을 추가했다.
+
+## v1.0.86 필수 검수 명령
+
+```bash
+npm run typecheck
+npx tsc --noEmit --noUnusedLocals true --noUnusedParameters false
+npm run check:cleanup-live-paths
+npm run check:auth-entry-flow
+npm run check:auth-modal-boss-role
+npm run check:no-minimap-topbar
+npm run check:space-reclaim-back-options
+npm run report:images
+npm run build:github
+```
+
+가능하면 아래 방식으로 전체 `check:*` 92개를 모두 실행한다.
+
+```bash
+node - <<'NODE' > /tmp/dr-checks.txt
+const pkg = require('./package.json');
+for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('check:'))) console.log(key);
+NODE
+while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
+```
+
+## v1.0.86 검수 결과
+
+- `npm run typecheck` 통과.
+- `npx tsc --noEmit --noUnusedLocals true --noUnusedParameters false` 통과.
+- 전체 92개 `check:*` QA suite 통과.
+- `npm run check:cleanup-live-paths` 통과.
+- `npm run report:images` 통과. 458 files, 52.58 MB. 1.2MB 초과 이미지 9개는 계속 추적한다.
+- `npm run build:github` 통과. 가장 큰 JS chunk는 `vendor-pixi-core-v1081` 약 343.02 KB다.
+
+## v1.0.86 다음 업데이트 예상
+
+- v1.0.87에서는 CSS 안의 오래된 version selector 중 현재 runtime dataset과 연결되지 않은 항목을 실제 효과 기준으로 추가 분류한다.
+- `src/main.ts`의 오래된 data-* marker 중 사용자 화면/QA/상태표시에 필요한 것과 단순 과거 앵커를 분리한다.
+- 살아있는 로비/시즌/보스/랭킹 흐름은 유지하고, 효과가 끊긴 selector만 기존 로직에 통합하거나 삭제한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.86 cleanup live paths patch
 
 
 ## v1.0.85 실제 수정 내역

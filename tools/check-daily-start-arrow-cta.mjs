@@ -12,7 +12,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(pkg.version)) errors.push(`package version must be 1.0.64, got ${pkg.version}`);
+if (!['1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(pkg.version)) errors.push(`package version must be 1.0.64, got ${pkg.version}`);
 if (!pkg.scripts['check:daily-start-arrow-cta']) errors.push('missing package script check:daily-start-arrow-cta');
 for (const token of ['v1064-daily-start-arrow-only-cta', 'v1064-lobby-ui-polish-pass']) {
   has(index, token, 'index v1.0.64 token');
@@ -29,7 +29,7 @@ has(main, "arrow.textContent = '➜'", 'runtime arrow-only text guard');
 has(css, '.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow', 'arrow-only CTA CSS');
 has(css, '@keyframes dailyArrowOnlyNudge', 'arrow-only nudge animation');
 has(css, '.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-finger { display: none !important; }', 'finger safety hide guard');
-has(sw, 'dream-library-cache-v1.0.64', 'service worker v1.0.64 cache');
+has(sw, 'dream-library-cache-v1.0.86', 'service worker v1.0.64 cache');
 has(sw, 'texture-atlas-manifest-v1.0.64.json', 'service worker v1.0.64 atlas preload');
 has(difficulty, 'texture-atlas-manifest-v1.0.64.json', 'difficulty v1.0.64 atlas preload');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.64.json') && !difficulty.includes('texture-atlas-manifest-v1.0.65.json')) errors.push('missing v1.0.64 texture atlas manifest');

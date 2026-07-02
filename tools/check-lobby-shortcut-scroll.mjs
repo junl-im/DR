@@ -15,12 +15,12 @@ const errors = [];
 const has = (src, token, label) => { if (!src.includes(token)) errors.push(`missing ${label}: ${token}`); };
 const lacks = (src, token, label) => { if (src.includes(token)) errors.push(`must remove ${label}: ${token}`); };
 
-if (!['1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.75 or 1.0.76, got ${files.pkg.version}`);
+if (!['1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.75 or 1.0.76, got ${files.pkg.version}`);
 [
   'v1075-lobby-shortcut-menu-bar',
   'v1075-lobby-copy-cleanup',
   'v1075-lobby-scroll-stability',
-  'dream-library-cache-v1.0.75',
+  'dream-library-cache-v1.0.86',
   'texture-atlas-manifest-v1.0.75.json'
 ].forEach((token) => has(all, token, `v1.0.75 token ${token}`));
 [

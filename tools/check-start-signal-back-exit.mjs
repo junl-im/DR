@@ -12,7 +12,7 @@ const workflows = ['.github/workflows/github-pages.yml', '.github/workflows/qual
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
+if (!['1.0.57', '1.0.58', '1.0.59', '1.0.60', '1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(pkg.version)) errors.push(`package version must be 1.0.57 or 1.0.58, got ${pkg.version}`);
 for (const token of ['v1057-daily-start-signal-widget', 'v1057-back-action-sheet-restored', 'v1057-mobile-exit-options-qa']) {
   has(main, token, 'main v1.0.57 token');
   has(css, token, 'css v1.0.57 token');
@@ -28,7 +28,7 @@ has(main, 'function exitHomeFromBackSheet', 'first screen exit sheet handler');
 has(main, 'openExitConfirm();\n    return;', 'soft back opens action sheet');
 has(css, '@keyframes startGuideFloat', 'floating start guide animation');
 has(css, '.exit-sheet-actions', 'exit action sheet layout');
-has(sw, 'dream-library-cache-v1.0.57', 'service worker v1.0.57 cache');
+has(sw, 'dream-library-cache-v1.0.86', 'service worker v1.0.57 cache');
 has(sw, 'texture-atlas-manifest-v1.0.57.json', 'service worker v1.0.57 atlas preload');
 has(difficulty, 'texture-atlas-manifest-v1.0.59.json', 'difficulty current atlas preload');
 has(workflows, 'check:start-signal-back-exit', 'workflow v1.0.57 check hook');

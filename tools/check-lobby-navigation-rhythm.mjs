@@ -15,14 +15,14 @@ const errors = [];
 const has = (src, token, label) => { if (!src.includes(token)) errors.push(`missing ${label}: ${token}`); };
 const lacks = (src, token, label) => { if (src.includes(token)) errors.push(`must remove ${label}: ${token}`); };
 
-if (!['1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.76+ compatibility range through 1.0.77, got ${files.pkg.version}`);
+if (!['1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.76+ compatibility range through 1.0.77, got ${files.pkg.version}`);
 if (!Object.prototype.hasOwnProperty.call(files.pkg.scripts || {}, 'check:lobby-navigation-rhythm')) errors.push('missing v1.0.76 package script key: check:lobby-navigation-rhythm');
 [
   'v1076-shortcut-menu-icon-polish',
   'v1076-panel-scroll-qa',
   'v1076-modal-close-flow',
   'v1076-lobby-navigation-rhythm',
-  'dream-library-cache-v1.0.76',
+  'dream-library-cache-v1.0.86',
   'texture-atlas-manifest-v1.0.76.json'
 ].forEach((token) => has(all, token, `v1.0.76 token ${token}`));
 [

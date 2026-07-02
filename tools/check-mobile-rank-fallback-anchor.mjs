@@ -20,7 +20,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (files.pkg.version !== '1.0.85') errors.push(`package version must be 1.0.85, got ${files.pkg.version}`);
+if (!['1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.85, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:mobile-rank-fallback-anchor');
 
 for (const token of ['v1084-mobile-rank-chip-wrap', 'v1084-asset-fallback-load-polish', 'v1084-lobby-anchor-settle-qa', 'v1084-boss-atlas-build-verify']) {
@@ -62,7 +62,7 @@ for (const asset of [
   requireIncludes('public/sw.js', files.sw, webp.replace('public/', './'));
 }
 
-requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.85');
+requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.86');
 requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.85.json');
 requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.85.json');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.85.json')) errors.push('missing v1.0.85 texture atlas manifest');

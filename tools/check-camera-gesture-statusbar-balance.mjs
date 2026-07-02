@@ -18,7 +18,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.80 or 1.0.81, got ${files.pkg.version}`);
+if (!['1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.80 or 1.0.81, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:camera-gesture-statusbar-balance');
 requireIncludes('index.html', files.html, 'data-camera-gesture-separation="v1080-camera-gesture-separation"');
 requireIncludes('index.html', files.html, 'data-boss-status-balance="v1080-boss-statusbar-balance"');
@@ -37,7 +37,7 @@ requireIncludes('src/styles.css', files.css, 'wheel-horizontal-pan single-pointe
 requireIncludes('src/styles.css', files.css, '.boss-lane[data-boss-status-balance="v1080-boss-statusbar-balance"]');
 requireIncludes('src/styles.css', files.css, 'grid-template-columns: 46px minmax(0, 1fr) 42px');
 requireIncludes('src/styles.css', files.css, '.boss-lane-echo[data-boss-status-balance="v1080-boss-statusbar-balance"]');
-requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.80');
+requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.86');
 requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.80.json');
 requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.80.json');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.80.json')) errors.push('missing v1.0.80 texture atlas manifest');

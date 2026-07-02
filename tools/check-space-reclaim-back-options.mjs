@@ -23,7 +23,6 @@ for (const token of [
   if (runtime.includes(token)) errors.push(`Removed visible UI token still present: ${token}`);
 }
 for (const token of [
-  'retired-shell-actions hidden',
   'data-visible-controls="removed"',
   'id="exit-options-button"',
   'openOptionsFromExitSheet',
@@ -34,10 +33,13 @@ for (const token of [
 ]) {
   if (!runtime.includes(token)) errors.push(`Missing v1.0.47 space reclaim/back options token: ${token}`);
 }
-if (!pkg.includes('"version": "1.0.85"') && !pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && (!pkg.includes('"version": "1.0.53"') && (!pkg.includes('"version": "1.0.54"') && (!pkg.includes('"version": "1.0.55"') && (!pkg.includes('"version": "1.0.56"') && (!pkg.includes('"version": "1.0.57"') && (!pkg.includes('"version": "1.0.58"') && (!pkg.includes('"version": "1.0.59"') && (!pkg.includes('"version": "1.0.60"') && (!pkg.includes('"version": "1.0.61"') && (!pkg.includes('"version": "1.0.62"') && !pkg.includes('"version": "1.0.63"') && !pkg.includes('"version": "1.0.64"') && (!pkg.includes('"version": "1.0.65"') && (!pkg.includes('"version": "1.0.66"') && (!pkg.includes('"version": "1.0.67"') && (!pkg.includes('"version": "1.0.68"') && (!pkg.includes('"version": "1.0.69"') && (!pkg.includes('"version": "1.0.70"') && (!pkg.includes('\"version\": \"1.0.71\"') && (!pkg.includes('\"version\": \"1.0.72\"') && (!pkg.includes('\"version\": \"1.0.73\"') && !pkg.includes('\"version\": \"1.0.74\"') && !pkg.includes('\"version\": \"1.0.75\"') && !pkg.includes('\"version\": \"1.0.76\"') && !pkg.includes('\"version\": \"1.0.77\"') && !pkg.includes('\"version\": \"1.0.78\"') && (!pkg.includes('\"version\": \"1.0.79\"') && (!pkg.includes('\"version\": \"1.0.80\"') && (!pkg.includes('\"version\": \"1.0.81\"') && (!pkg.includes('\"version\": \"1.0.82\"') && !pkg.includes('\"version\": \"1.0.83\"')))))))))))))))))))))))))) errors.push('package.json version must be 1.0.47+ compatibility range through 1.0.77.');
+if (!pkg.includes('"version": "1.0.86"') && !pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && (!pkg.includes('"version": "1.0.53"') && (!pkg.includes('"version": "1.0.54"') && (!pkg.includes('"version": "1.0.55"') && (!pkg.includes('"version": "1.0.56"') && (!pkg.includes('"version": "1.0.57"') && (!pkg.includes('"version": "1.0.58"') && (!pkg.includes('"version": "1.0.59"') && (!pkg.includes('"version": "1.0.60"') && (!pkg.includes('"version": "1.0.61"') && (!pkg.includes('"version": "1.0.62"') && !pkg.includes('"version": "1.0.63"') && !pkg.includes('"version": "1.0.64"') && (!pkg.includes('"version": "1.0.65"') && (!pkg.includes('"version": "1.0.66"') && (!pkg.includes('"version": "1.0.67"') && (!pkg.includes('"version": "1.0.68"') && (!pkg.includes('"version": "1.0.69"') && (!pkg.includes('"version": "1.0.70"') && (!pkg.includes('\"version\": \"1.0.71\"') && (!pkg.includes('\"version\": \"1.0.72\"') && (!pkg.includes('\"version\": \"1.0.73\"') && !pkg.includes('\"version\": \"1.0.74\"') && !pkg.includes('\"version\": \"1.0.75\"') && !pkg.includes('\"version\": \"1.0.76\"') && !pkg.includes('\"version\": \"1.0.77\"') && !pkg.includes('\"version\": \"1.0.78\"') && (!pkg.includes('\"version\": \"1.0.79\"') && (!pkg.includes('\"version\": \"1.0.80\"') && (!pkg.includes('\"version\": \"1.0.81\"') && (!pkg.includes('\"version\": \"1.0.82\"') && !pkg.includes('\"version\": \"1.0.83\"')))))))))))))))))))))))))) errors.push('package.json version must be 1.0.47+ compatibility range through 1.0.77.');
 if (!pkg.includes('check:space-reclaim-back-options')) errors.push('package.json must expose check:space-reclaim-back-options.');
 if (!pages.includes('npm run check:space-reclaim-back-options')) errors.push('github-pages workflow must run space reclaim/back options check.');
 if (!quality.includes('npm run check:space-reclaim-back-options')) errors.push('quality workflow must run space reclaim/back options check.');
+for (const token of ['retired-shell-actions', 'id="back-button"', 'id="open-settings-button"', '#back-button']) {
+  if (runtime.includes(token)) errors.push(`Deleted shell action compatibility token came back: ${token}`);
+}
 if (/Display Assist|Frame Lock|Kakao Browser|Virtual Frame|Portrait Lock|카카오 브라우저 대응/.test(runtime)) {
   errors.push('Developer/browser diagnostic copy must not be visible in the game UI.');
 }
@@ -46,4 +48,4 @@ if (errors.length) {
   console.error(`Space reclaim/back options check failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Space reclaim/back options check passed: top option line and visible camera controls are removed, gear moved to back sheet.');
+console.log('Space reclaim/back options check passed: top option line, visible camera controls and retired shell mounts are removed; options stay in the back sheet.');

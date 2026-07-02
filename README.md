@@ -60,6 +60,26 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.86 - Service Worker Legacy Anchor and Hidden Compatibility Mount Cleanup Patch
+
+- v1.0.85 기준 통파일을 점검하고 이번 패치 범위를 코드 정리 2차로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.
+- 삭제 전 호출 추적 결과, `public/sw.js`의 `CACHE_SLIM_POLICY`, `PREVIOUS_CACHE_SLIM_POLICY`, `LEGACY_QA_CACHE_ANCHORS`, `LEGACY_AUTH_MODAL_CACHE_SLIM_POLICY`는 service worker install/activate/fetch 경로에서 읽히지 않는 문자열 앵커였다. 실제 캐시 정책은 `CACHE_NAME`, `CORE_ASSETS`, install/activate/fetch handler만 사용하므로 해당 상수들을 삭제했다.
+- `index.html`의 `retired-shell-actions` hidden mount와 그 안의 `back-button`, `open-settings-button`은 화면에 보이지 않고 실제 옵션 진입은 exit/back sheet의 `exit-options-button` / `openOptionsFromExitSheet()`가 담당한다는 것을 확인했다. 해당 hidden mount, main의 `backButton`/`openSettingsButton` 참조와 이벤트 바인딩, 관련 CSS `#back-button` selector를 삭제했다.
+- `index.html`의 hidden `enter-lobby-button` direct lobby mount는 실제 첫 화면 진입이 `anonymousButton`, `googleButton`, `showEmailButton`에서 `enterLobbyFromAuth()` 또는 이메일 중앙 모달로 이어지는 구조라 삭제했다. main의 `enterLobbyButton` 참조와 숨김 처리도 삭제했다.
+- hidden inline email form은 실제 이메일 로그인/가입이 `email-auth-modal`, `openEmailAuthModal()`, `runEmailLoginFromModal()`, `runEmailSignupFromModal()`로 통합되어 있어 삭제했다. `runEmailLoginFromInlineFallback()` / `runEmailSignupFromInlineFallback()`과 관련 input 참조, `.email-form`, `.email-buttons`, `.retired-inline-email-form` CSS를 삭제했다.
+- 예전 cache 이름을 강제로 찾던 QA는 현재 살아있는 `dream-library-cache-v1.0.86`과 실제 preload/core asset manifest를 확인하도록 통합했다. 단, 기존 baseline atlas manifest 파일은 `CORE_ASSETS`에 실제 캐시 대상 후보로 포함해 QA 문자열 앵커가 아니라 실제 asset preload 후보로 유지했다.
+- `tools/check-cleanup-live-paths.mjs`를 추가해 삭제한 compatibility mount와 dead token이 active runtime에 되살아나면 실패하도록 했다. GitHub Pages / Quality Check workflow에 `npm run check:cleanup-live-paths`를 연결했다.
+- service worker cache를 `dream-library-cache-v1.0.86`으로 갱신하고 `texture-atlas-manifest-v1.0.86.json`을 생성/선로드에 추가했다.
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
+
+다음 업데이트 예정: v1.0.87 - CSS Runtime Selector Audit and Old Version Selector Integration
+
+- CSS 안의 오래된 version selector 중 현재 runtime dataset과 연결되지 않은 항목을 추가 분류한다.
+- `src/main.ts`의 오래된 data-* marker 중 실제 QA/화면 상태에 필요한 것과 단순 과거 앵커를 분리한다.
+- 살아있는 로비/시즌/보스/랭킹 흐름은 유지하고, 효과가 끊긴 selector만 기존 로직에 통합하거나 삭제한다.
+
+
+
 ### v1.0.85 - Live Code Cleanup, Dead Function Deletion and QA Integration Patch
 
 - v1.0.84 기준 통파일을 점검하고 이번 패치 범위를 코드 정리로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.

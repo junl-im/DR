@@ -141,11 +141,6 @@ h3 { margin: 0; letter-spacing: -0.03em; }
 .auth-summary span { color: var(--muted); font-size: 0.88rem; }
 .primary-actions { display: grid; gap: 0.72rem; margin-top: 0.8rem; }
 .xl-button { width: 100%; min-height: 54px; font-size: 1rem; }
-.email-form { display: grid; gap: 0.7rem; margin-top: 0.8rem; overflow: hidden; transition: max-height 0.24s ease, opacity 0.24s ease; }
-.email-form.collapsed { max-height: 0; opacity: 0; margin-top: 0; }
-.email-form:not(.collapsed) { max-height: 300px; opacity: 1; }
-.email-form label span { display: block; margin: 0 0 0.35rem 0.2rem; color: var(--gold-300); font-size: 0.78rem; font-weight: 900; }
-.email-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.62rem; }
 .login-footer-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.72rem; }
 .bubble-status { margin: 0.9rem auto 0; width: fit-content; max-width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--line-soft); border-radius: 999px; background: rgba(6, 21, 45, 0.58); color: var(--muted); font-size: 0.88rem; }
 
@@ -279,10 +274,7 @@ button.danger { color: var(--gold-300); border-color: rgba(245, 200, 107, 0.34);
   .compact-title h1 { font-size: clamp(2.95rem, 13vw, 4.4rem); }
   .compact-login-card { padding: 0.68rem; }
   .start-now-button { min-height: 50px; }
-  .auth-summary span { font-size: 0.72rem; }
-  .email-form:not(.collapsed) { max-height: 245px; }
-  .email-form label span { margin-bottom: 0.18rem; }
-  input { min-height: 42px; padding: 0.58rem 0.78rem; }
+  .auth-summary span { font-size: 0.72rem; }  input { min-height: 42px; padding: 0.58rem 0.78rem; }
   .bubble-status { display: none; }
 }
 @media (max-width: 380px) {
@@ -684,7 +676,6 @@ body[data-browser="kakao"] .gear-button::after { border-color: rgba(54, 214, 164
 .exit-card p:not(.eyebrow) { color: var(--muted); line-height: 1.55; }
 .icon-button,
 .gear-button,
-#back-button,
 #hint-button,
 #shuffle-button,
 #refresh-leaderboard-button,
@@ -694,7 +685,6 @@ body[data-browser="kakao"] .gear-button::after { border-color: rgba(54, 214, 164
   background-position: 0.62rem center;
   background-size: 1.05rem 1.05rem;
 }
-#back-button { background-image: var(--ui-back-url); padding-left: 2rem; }
 .gear-button { background-image: var(--ui-settings-url); padding-left: 2rem; }
 #hint-button { background-image: var(--ui-hint-url); padding-left: 2rem; }
 #refresh-leaderboard-button { background-image: var(--ui-refresh-url); padding-left: 2rem; }
@@ -724,8 +714,7 @@ body[data-screen="login"] .login-stage-card::after {
 }
 .reward-modal:not(.hidden) .exit-card { animation: rewardPop 0.32s cubic-bezier(.2,1.35,.2,1) both; }
 @media (max-width: 430px) {
-  #back-button,
-  .gear-button,
+    .gear-button,
   #hint-button,
   #shuffle-button,
   #refresh-leaderboard-button,
@@ -1721,15 +1710,11 @@ body[data-lobby-mood="radiant"] .lobby-hero img { animation: mascotRadiant 2.8s 
 }
 .icon-button:hover,
 .gear-button:hover,
-#back-button:hover,
 #hint-button:hover,
 #shuffle-button:hover,
 #refresh-leaderboard-button:hover,
 #settings-fullscreen-button:hover,
 #signout-button:hover { filter: brightness(1.08) saturate(1.08); }
-#back-button:hover { background-image: var(--ui-back-hover-url); }
-#back-button:active { background-image: var(--ui-back-pressed-url); }
-#back-button:disabled { background-image: var(--ui-back-disabled-url); }
 .gear-button:hover { background-image: var(--ui-settings-hover-url); }
 .gear-button:active { background-image: var(--ui-settings-pressed-url); }
 .gear-button:disabled { background-image: var(--ui-settings-disabled-url); }
@@ -2418,7 +2403,6 @@ body[data-screen="game"] .pixi-board-host {
 }
 
 /* v1.0.37 Space reclaim, visible top options removal and back-sheet options entry */
-.retired-shell-actions,
 body .topbar,
 body .compact-topbar {
   display: none !important;
@@ -2741,14 +2725,10 @@ body[data-screen="game"] .screen-stack {
 /* v1.0.42 Auth entry simplification and lobby shortcut removal */
 .screen-login[data-auth-entry="v1042-auth-entry-simplified"],
 body[data-auth-entry="v1042-auth-entry-simplified"] .screen-login { --auth-entry-flow: guest-google-email; }
-.retired-direct-lobby-entry { display: none !important; }
 .login-card[data-auth-flow="guest-google-email-v1042"] .primary-actions { gap: 0.66rem; }
 .login-card[data-auth-flow="guest-google-email-v1042"] .login-provider-row { grid-template-columns: 1fr 1fr; }
-.login-card[data-auth-flow="guest-google-email-v1042"] .email-form:not(.collapsed) { max-height: 270px; }
-.login-card[data-auth-flow="guest-google-email-v1042"] .email-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.52rem; }
 @media (max-width: 380px) {
-  .login-card[data-auth-flow="guest-google-email-v1042"] .login-provider-row,
-  .login-card[data-auth-flow="guest-google-email-v1042"] .email-buttons { grid-template-columns: 1fr; }
+  .login-card[data-auth-flow="guest-google-email-v1042"] .login-provider-row { grid-template-columns: 1fr; }
 }
 
 
@@ -2834,7 +2814,6 @@ body.time-pressure-action #time-label {
 }
 
 /* v1.0.43 Google fallback, centered email auth and readable boss status */
-.retired-inline-email-form { display: none !important; }
 .login-card[data-auth-modal-flow="guest-google-email-v1043"] { --auth-modal-flow: center-popup; }
 .email-auth-modal {
   position: fixed;

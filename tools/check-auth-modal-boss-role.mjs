@@ -18,8 +18,7 @@ for (const token of [
   'password-modal-input',
   'openEmailAuthModal',
   'runEmailLoginFromModal',
-  'runEmailSignupFromModal',
-  'retired-inline-email-form'
+  'runEmailSignupFromModal'
 ]) {
   if (!runtime.includes(token)) errors.push(`Missing centered email auth token: ${token}`);
 }
@@ -56,14 +55,15 @@ for (const token of [
 ]) {
   if (!runtime.includes(token)) errors.push(`Missing readable boss role token: ${token}`);
 }
-if (/class="email-form(?![^>]*retired-inline-email-form)/.test(html)) errors.push('Inline email form must remain retired so email login opens in the centered modal.');
+for (const token of ['id="email-form"', 'id="email-input"', 'id="password-input"', 'id="email-signup-button"', 'retired-inline-email-form', 'runEmailLoginFromInlineFallback', 'runEmailSignupFromInlineFallback']) {
+  if (runtime.includes(token)) errors.push(`Deleted inline email fallback came back: ${token}`);
+}
 for (const banned of ['미니맵', '>보기<', '>중앙<', '>+<', '드래그 이동 도움말']) {
   if (html.includes(banned)) errors.push(`Removed UI/copy should not return in HTML: ${banned}`);
 }
-if (!pkg.includes('"version": "1.0.85"') && !pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && (!pkg.includes('"version": "1.0.53"') && (!pkg.includes('"version": "1.0.54"') && (!pkg.includes('"version": "1.0.55"') && (!pkg.includes('"version": "1.0.56"') && (!pkg.includes('"version": "1.0.57"') && (!pkg.includes('"version": "1.0.58"') && (!pkg.includes('"version": "1.0.59"') && (!pkg.includes('"version": "1.0.60"') && (!pkg.includes('"version": "1.0.61"') && (!pkg.includes('"version": "1.0.62"') && !pkg.includes('"version": "1.0.63"') && !pkg.includes('"version": "1.0.64"') && (!pkg.includes('"version": "1.0.65"') && (!pkg.includes('"version": "1.0.66"') && (!pkg.includes('"version": "1.0.67"') && (!pkg.includes('"version": "1.0.68"') && (!pkg.includes('"version": "1.0.69"') && (!pkg.includes('"version": "1.0.70"') && (!pkg.includes('\"version\": \"1.0.71\"') && (!pkg.includes('\"version\": \"1.0.72\"') && (!pkg.includes('\"version\": \"1.0.73\"') && !pkg.includes('\"version\": \"1.0.74\"') && !pkg.includes('\"version\": \"1.0.75\"') && !pkg.includes('\"version\": \"1.0.76\"') && !pkg.includes('\"version\": \"1.0.77\"') && !pkg.includes('\"version\": \"1.0.78\"') && (!pkg.includes('\"version\": \"1.0.79\"') && (!pkg.includes('\"version\": \"1.0.80\"') && (!pkg.includes('\"version\": \"1.0.81\"') && (!pkg.includes('\"version\": \"1.0.82\"') && !pkg.includes('\"version\": \"1.0.83\"')))))))))))))))))))))))))) errors.push('package.json version must be 1.0.47+ compatibility range through 1.0.77.');
+if (!pkg.includes('"version": "1.0.86"') && !pkg.includes('"version": "1.0.47"') && !pkg.includes('"version": "1.0.48"') && (!pkg.includes('"version": "1.0.49"') && !pkg.includes('"version": "1.0.51"') && !pkg.includes('"version": "1.0.52"') && (!pkg.includes('"version": "1.0.53"') && (!pkg.includes('"version": "1.0.54"') && (!pkg.includes('"version": "1.0.55"') && (!pkg.includes('"version": "1.0.56"') && (!pkg.includes('"version": "1.0.57"') && (!pkg.includes('"version": "1.0.58"') && (!pkg.includes('"version": "1.0.59"') && (!pkg.includes('"version": "1.0.60"') && (!pkg.includes('"version": "1.0.61"') && (!pkg.includes('"version": "1.0.62"') && !pkg.includes('"version": "1.0.63"') && !pkg.includes('"version": "1.0.64"') && (!pkg.includes('"version": "1.0.65"') && (!pkg.includes('"version": "1.0.66"') && (!pkg.includes('"version": "1.0.67"') && (!pkg.includes('"version": "1.0.68"') && (!pkg.includes('"version": "1.0.69"') && (!pkg.includes('"version": "1.0.70"') && (!pkg.includes('\"version\": \"1.0.71\"') && (!pkg.includes('\"version\": \"1.0.72\"') && (!pkg.includes('\"version\": \"1.0.73\"') && !pkg.includes('\"version\": \"1.0.74\"') && !pkg.includes('\"version\": \"1.0.75\"') && !pkg.includes('\"version\": \"1.0.76\"') && !pkg.includes('\"version\": \"1.0.77\"') && !pkg.includes('\"version\": \"1.0.78\"') && (!pkg.includes('\"version\": \"1.0.79\"') && (!pkg.includes('\"version\": \"1.0.80\"') && (!pkg.includes('\"version\": \"1.0.81\"') && (!pkg.includes('\"version\": \"1.0.82\"') && !pkg.includes('\"version\": \"1.0.83\"')))))))))))))))))))))))))) errors.push('package.json version must be 1.0.47+ compatibility range through 1.0.77.');
 if (!pkg.includes('check:auth-modal-boss-role')) errors.push('package.json must expose check:auth-modal-boss-role.');
-if (!sw.includes('dream-library-cache-v1.0.47') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must be v1.0.47.');
-if (!sw.includes('v1043-cache-slim-auth-modal-boss-role')) errors.push('service worker cache slim policy must be v1043 auth modal boss role.');
+if (!sw.includes('dream-library-cache-v1.0.86') || !sw.includes('texture-atlas-manifest-v1.0.86.json') || !sw.includes('texture-atlas-manifest-v1.0.47.json')) errors.push('service worker cache/manifest must include the current cache and required atlas manifests.');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.47.json')) errors.push('v1.0.47 texture atlas manifest file missing.');
 if (!pages.includes('npm run check:auth-modal-boss-role')) errors.push('github-pages workflow must run auth modal boss role check.');
 if (!quality.includes('npm run check:auth-modal-boss-role')) errors.push('quality workflow must run auth modal boss role check.');
@@ -72,4 +72,4 @@ if (errors.length) {
   console.error(`Auth modal boss role check failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Auth modal boss role check passed: Google fallback, centered email login and readable boss status v1.0.47 are active.');
+console.log('Auth modal boss role check passed: Google fallback, centered email login and readable boss status are active without inline fallback DOM.');

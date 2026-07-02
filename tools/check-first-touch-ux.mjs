@@ -13,9 +13,9 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(pkg.version)) errors.push(`package version must be 1.0.66 or 1.0.67, got ${pkg.version}`);
+if (!['1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(pkg.version)) errors.push(`package version must be 1.0.66 or 1.0.67, got ${pkg.version}`);
 if (!pkg.scripts['check:first-touch-ux']) errors.push('missing package script check:first-touch-ux');
-for (const token of ['v1066-first-touch-micro-tutorial', 'v1066-game-ui-stability-pass', 'dream-library-cache-v1.0.66', 'texture-atlas-manifest-v1.0.66.json']) {
+for (const token of ['v1066-first-touch-micro-tutorial', 'v1066-game-ui-stability-pass', 'dream-library-cache-v1.0.86', 'texture-atlas-manifest-v1.0.66.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.66 UX token');
 }
 has(index, 'id="first-touch-guide"', 'first touch guide markup');
@@ -28,7 +28,7 @@ has(main, 'preview.dataset.attackDensity', 'boss attack density guard');
 has(css, '.first-touch-guide[data-first-touch-ux="v1066-first-touch-micro-tutorial"]', 'first touch guide CSS');
 has(css, 'body.game-ui-tight', 'game UI tight CSS');
 has(css, '.boss-attack-preview[data-game-ui-stability="v1066-game-ui-stability-pass"][data-attack-density="compact"]', 'boss preview compact CSS');
-has(sw, "dream-library-cache-v1.0.66", 'service worker v1.0.66 cache');
+has(sw, "dream-library-cache-v1.0.86", 'service worker v1.0.66 cache');
 has(sw, 'texture-atlas-manifest-v1.0.66.json', 'service worker v1.0.66 atlas preload');
 if (!difficulty.includes('texture-atlas-manifest-v1.0.66.json') && !difficulty.includes('texture-atlas-manifest-v1.0.68.json')) errors.push('difficulty v1.0.66/v1.0.68 atlas preload missing');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.66.json')) errors.push('missing v1.0.66 texture atlas manifest');

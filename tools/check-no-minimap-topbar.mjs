@@ -13,8 +13,8 @@ for (const token of ['board-minimap', 'boardMinimap', 'installMinimapControls', 
 if (html.includes('<header class="topbar') || html.includes('class="topbar-spacer"') || html.includes('class="top-actions"')) {
   errors.push('Visible topbar/action line must be removed from HTML.');
 }
-if (!html.includes('retired-shell-actions hidden') || !css.includes('.retired-shell-actions')) {
-  errors.push('Retired shell actions must stay hidden for compatibility without a visible topbar.');
+for (const token of ['retired-shell-actions', 'id="back-button"', 'id="open-settings-button"', '#back-button']) {
+  if (runtime.includes(token)) errors.push(`Deleted shell action compatibility token came back: ${token}`);
 }
 if (!html.includes('id="exit-options-button"') || !main.includes('openOptionsFromExitSheet')) {
   errors.push('Back/exit sheet must include the gear options entry.');
@@ -30,4 +30,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('No-minimap/topbar check passed: minimap and visible top option line are removed while back-sheet options remain.');
+console.log('No-minimap/topbar check passed: minimap, visible top option line and retired shell action mounts are removed while back-sheet options remain.');

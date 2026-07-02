@@ -17,7 +17,8 @@ else {
   if (/requestKakaoPortraitLock\s*\(/.test(body)) errors.push('enterLobbyFromAuth must not call requestKakaoPortraitLock.');
   if (!/syncGameViewport/.test(body)) errors.push('enterLobbyFromAuth must use syncGameViewport.');
 }
-if (!main.includes("el.enterLobbyButton.addEventListener('click', () => enterLobbyFromAuth('resume'))")) errors.push('hidden lobby button must call enterLobbyFromAuth directly.');
+if (/enterLobbyButton|enter-lobby-button/.test(main)) errors.push('deleted hidden lobby button path came back.');
+if (!main.includes("enterLobbyFromAuth('guest')") || !main.includes("enterLobbyFromAuth('google')") || !main.includes("enterLobbyFromAuth('email')")) errors.push('active auth buttons must still route through enterLobbyFromAuth.');
 
 const startStageMatch = main.match(/async function startSelectedStage\([^]*?state\.board = createBoard/);
 if (!startStageMatch) errors.push('startSelectedStage block is missing.');
@@ -40,4 +41,4 @@ if (errors.length) {
   console.error(`Kakao lobby rotation policy failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Kakao lobby rotation policy passed: lobby auth entry uses soft portrait frame and skips rotation APIs.');
+console.log('Kakao lobby rotation policy passed: active auth entry uses soft portrait frame, skips rotation APIs and no hidden lobby button path remains.');

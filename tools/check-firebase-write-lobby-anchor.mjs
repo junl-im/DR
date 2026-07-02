@@ -20,7 +20,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.82 or 1.0.83, got ${files.pkg.version}`);
+if (!['1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.82 or 1.0.83, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:firebase-write-lobby-anchor');
 
 for (const token of ['v1082-firebase-free-write-budget', 'v1082-lobby-panel-anchor-stability', 'v1082-qa-output-wording-refresh']) {
@@ -54,7 +54,7 @@ requireIncludes('src/auth.js', files.auth, 'PROFILE_WRITE_TTL_MS');
 requireIncludes('src/auth.js', files.auth, 'function canWriteUserProfile');
 requireIncludes('src/auth.js', files.auth, 'data-firebase-profile-write-guard');
 
-requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.82');
+requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.86');
 requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.82.json');
 requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.82.json');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.82.json')) errors.push('missing v1.0.82 texture atlas manifest');

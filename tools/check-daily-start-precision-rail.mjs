@@ -11,7 +11,7 @@ const workflows = ['.github/workflows/github-pages.yml', '.github/workflows/qual
 const errors = [];
 const has = (text, token, label) => { if (!text.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(pkg.version)) errors.push(`package version must be 1.0.61, got ${pkg.version}`);
+if (!['1.0.61', '1.0.62', '1.0.63', '1.0.64', '1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(pkg.version)) errors.push(`package version must be 1.0.61, got ${pkg.version}`);
 for (const token of ['v1061-daily-start-precision-rail', 'v1061-lobby-content-guide', 'v1061-daily-reward-drama', 'v1061-boss-intro-polish']) {
   has(index, token, 'index v1.0.61 token');
   has(main, token, 'main v1.0.61 token');
@@ -30,7 +30,7 @@ has(css, '.daily-start-beam[data-daily-start-precision="v1061-daily-start-precis
 has(css, '.daily-start-guide[data-lobby-content-guide="v1061-lobby-content-guide"]', 'daily start guide CSS');
 has(css, '.daily-reward-promise[data-daily-reward-drama="v1061-daily-reward-drama"]', 'daily reward promise CSS');
 has(css, '.boss-intro-banner[data-boss-intro-polish="v1061-boss-intro-polish"]', 'boss intro CSS');
-has(sw, 'dream-library-cache-v1.0.61', 'service worker v1.0.61 cache');
+has(sw, 'dream-library-cache-v1.0.86', 'service worker v1.0.61 cache');
 has(sw, 'texture-atlas-manifest-v1.0.61.json', 'service worker v1.0.61 atlas preload');
 has(difficulty, 'texture-atlas-manifest-v1.0.61.json', 'difficulty v1.0.61 atlas preload');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.61.json')) errors.push('missing v1.0.61 texture atlas manifest');

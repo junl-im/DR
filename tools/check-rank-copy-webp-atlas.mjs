@@ -20,7 +20,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.83 or 1.0.85, got ${files.pkg.version}`);
+if (!['1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.83 or 1.0.85, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:rank-copy-webp-atlas');
 
 for (const token of ['v1083-rank-ui-copy-polish', 'v1083-webp-fallback-qa', 'v1083-boss-atlas-resolve-guard']) {
@@ -45,7 +45,7 @@ requireIncludes('src/styles.css', files.css, 'html[data-webp-fallback-qa="v1083-
 requireIncludes('src/styles.css', files.css, '.rank-source-note[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"]');
 if (files.css.includes("url('/DR/assets/atlas/boss-frames-v2")) errors.push('hardcoded /DR boss atlas CSS URL returned and may trigger resolve warnings');
 
-requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.83');
+requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.86');
 requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.83.json');
 requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.83.json');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.83.json')) errors.push('missing v1.0.83 texture atlas manifest');

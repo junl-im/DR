@@ -13,7 +13,7 @@ const files = {
 const errors = [];
 const has = (body, needle, label) => { if (!body.includes(needle)) errors.push(`missing ${label}: ${needle}`); };
 
-if (!['1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.70 or 1.0.71, got ${files.pkg.version}`);
+if (!['1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.70 or 1.0.71, got ${files.pkg.version}`);
 if (!files.pkg.scripts['check:modal-action-safe-area']) errors.push('missing package script check:modal-action-safe-area');
 [
   'v1070-reward-action-accessibility-flow',
@@ -21,7 +21,7 @@ if (!files.pkg.scripts['check:modal-action-safe-area']) errors.push('missing pac
   'v1070-boss-counter-line-polish',
   'v1070-mobile-safe-area-modal-qa',
   'v1070-compact-modal-action-flow',
-  'dream-library-cache-v1.0.70',
+  'dream-library-cache-v1.0.86',
   'texture-atlas-manifest-v1.0.70.json'
 ].forEach((token) => has(files.index + files.main + files.css + files.sw + files.difficulty, token, `v1.0.70 token ${token}`));
 has(files.index, 'data-reward-action-accessibility="v1070-reward-action-accessibility-flow"', 'reward action accessibility markup');
@@ -34,7 +34,7 @@ has(files.main, 'reward-action-hint', 'reward action hint markup');
 has(files.css, '.reward-actions[data-compact-modal-action-flow="v1070-compact-modal-action-flow"]', 'compact modal action CSS');
 has(files.css, '.boss-attack-preview[data-boss-counter-line-polish="v1070-boss-counter-line-polish"]', 'boss counter line CSS');
 has(files.css, '.restoration-ceremony-strip[data-restoration-ceremony-feedback="v1070-restoration-ceremony-feedback-cue"]', 'restoration feedback CSS');
-has(files.sw, 'dream-library-cache-v1.0.70', 'service worker v1.0.70 cache');
+has(files.sw, 'dream-library-cache-v1.0.86', 'service worker v1.0.70 cache');
 has(files.sw, 'texture-atlas-manifest-v1.0.70.json', 'service worker v1.0.70 atlas preload');
 has(files.difficulty, 'texture-atlas-manifest-v1.0.70.json', 'difficulty v1.0.70 atlas preload');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.70.json')) errors.push('missing v1.0.70 texture atlas manifest');

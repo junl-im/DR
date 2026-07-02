@@ -21,7 +21,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.81-v1.0.82 range, got ${files.pkg.version}`);
+if (!['1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.81-v1.0.82 range, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:camera-status-image-budget');
 requireIncludes('index.html', files.html, 'data-real-device-camera-feel="v1081-real-device-camera-feel"');
 requireIncludes('index.html', files.html, 'data-boss-status-priority="v1081-boss-status-priority"');
@@ -42,7 +42,7 @@ requireIncludes('src/styles.css', files.css, 'touch-pan-threshold pinch-warmup-g
 requireIncludes('src/game/difficulty.js', files.difficulty, 'storybook-login.webp');
 requireIncludes('src/game/difficulty.js', files.difficulty, 'dream-library-25d.webp');
 requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.81.json');
-requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.81');
+requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.86');
 requireIncludes('public/sw.js', files.sw, 'storybook-login.webp');
 requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.81.json');
 requireIncludes('vite.config.js', files.vite, 'vendor-pixi-core-v1081');

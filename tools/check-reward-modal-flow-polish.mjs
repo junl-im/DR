@@ -15,7 +15,7 @@ const errors = [];
 const all = files.index + files.main + files.css + files.sw + files.difficulty;
 const has = (body, token, label = token) => { if (!body.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.71 or 1.0.72, got ${files.pkg.version}`);
+if (!['1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85', '1.0.86'].includes(files.pkg.version)) errors.push(`package version must be 1.0.71 or 1.0.72, got ${files.pkg.version}`);
 if (!files.pkg.scripts['check:reward-modal-flow-polish']) errors.push('missing package script check:reward-modal-flow-polish');
 [
   'v1071-modal-button-microcopy-priority',
@@ -23,8 +23,8 @@ if (!files.pkg.scripts['check:reward-modal-flow-polish']) errors.push('missing p
   'v1071-boss-telegraph-contrast-safe',
   'v1071-small-reward-modal-qa',
   'v1071-leaderboard-duplicate-tag-fix',
-  'dream-library-cache-v1.0.71',
-  'dream-library-cache-v1.0.72',
+  'dream-library-cache-v1.0.86',
+  'dream-library-cache-v1.0.86',
   'texture-atlas-manifest-v1.0.71.json',
   'texture-atlas-manifest-v1.0.72.json'
 ].forEach((token) => has(all, token, `v1.0.71 token ${token}`));
@@ -40,7 +40,7 @@ has(files.main, 'small-reward-modal-tight', 'small reward modal body class');
 has(files.css, '.reward-flow-next[data-modal-button-microcopy="v1071-modal-button-microcopy-priority"] .reward-action-summary', 'reward action summary CSS');
 has(files.css, '.boss-telegraph[data-boss-telegraph-contrast="v1071-boss-telegraph-contrast-safe"]', 'boss contrast CSS');
 has(files.css, 'body.small-reward-modal-tight .reward-modal[data-small-reward-modal-qa="v1071-small-reward-modal-qa"]', 'small modal density CSS');
-has(files.sw, 'dream-library-cache-v1.0.72', 'service worker v1.0.72 cache');
+has(files.sw, 'dream-library-cache-v1.0.86', 'service worker v1.0.72 cache');
 has(files.sw, 'texture-atlas-manifest-v1.0.72.json', 'service worker v1.0.72 atlas preload');
 has(files.difficulty, 'texture-atlas-manifest-v1.0.72.json', 'difficulty v1.0.72 atlas anchor');
 if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.72.json')) errors.push('missing v1.0.72 texture atlas manifest');
