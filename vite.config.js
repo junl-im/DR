@@ -18,7 +18,10 @@ export default defineConfig({
             if (id.includes('/rendering/') || id.includes('/app/')) return 'vendor-pixi-renderer-v1081';
             return 'vendor-pixi-core-v1081';
           }
-          if (id.includes('firebase')) return 'vendor-firebase';
+          if (id.includes('firebase/firestore')) return 'vendor-firebase-firestore-v1083';
+          if (id.includes('firebase/auth')) return 'vendor-firebase-auth-v1083';
+          if (id.includes('firebase/app')) return 'vendor-firebase-app-v1083';
+          if (id.includes('firebase')) return 'vendor-firebase-core-v1083';
           if (id.includes('@esotericsoftware') || id.includes('spine')) return 'vendor-spine-v1079';
           if (id.includes('howler')) return 'vendor-audio-v1079';
           if (id.includes('gsap')) return 'vendor-motion-v1079';

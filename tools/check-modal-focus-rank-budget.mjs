@@ -19,7 +19,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.79', '1.0.80', '1.0.81'].includes(files.pkg.version)) errors.push(`package version must be 1.0.79 or 1.0.80, got ${files.pkg.version}`);
+if (!['1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.79-v1.0.82 range, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:modal-focus-rank-budget');
 
 for (const token of ['v1079-modal-focus-return', 'v1079-firebase-free-read-budget', 'v1079-vendor-effects-split', 'v1079-image-optimization-candidates']) {
@@ -71,7 +71,7 @@ if (errors.length) {
   console.error(`Modal focus/rank budget QA failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log(`Modal focus/rank budget QA passed for v1.0.79. ${bigImages.length} image optimization candidates tracked.`);
+console.log(`Modal focus/rank budget QA passed for supported v1.0.79-v1.0.82 range. ${bigImages.length} image optimization candidates tracked.`);
 
 function walk(dir, visitor) {
   for (const entry of readdirSync(dir)) {

@@ -18,7 +18,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.80', '1.0.81'].includes(files.pkg.version)) errors.push(`package version must be 1.0.80 or 1.0.81, got ${files.pkg.version}`);
+if (!['1.0.80', '1.0.81', '1.0.82', '1.0.83'].includes(files.pkg.version)) errors.push(`package version must be 1.0.80 or 1.0.81, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:camera-gesture-statusbar-balance');
 requireIncludes('index.html', files.html, 'data-camera-gesture-separation="v1080-camera-gesture-separation"');
 requireIncludes('index.html', files.html, 'data-boss-status-balance="v1080-boss-statusbar-balance"');

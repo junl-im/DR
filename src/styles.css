@@ -1875,7 +1875,7 @@ body[data-screen="game"] .hud-meters span {
 
 /* v1.0.23 boss frame atlas, mobile layout QA, ranking and scroll polish */
 :root {
-  --boss-motion-atlas-url: url('/DR/assets/atlas/boss-frames-v2.png');
+  --boss-motion-atlas-url: var(--boss-atlas-image-url);
 }
 .boss-core[data-boss-atlas-frame] {
   isolation: isolate;
@@ -1973,9 +1973,7 @@ body.is-lobby-dragging .collection-tile * { pointer-events: none; }
 .boss-core[data-boss-frame="warn"] .boss-atlas-sprite { transform: translate(-50%, -54%) scale(calc(var(--boss-frame-scale) * 1.08)) rotate(1deg); filter: drop-shadow(0 0 24px rgba(125, 220, 255, 0.48)) brightness(1.08); }
 .boss-core[data-boss-frame="hit"] .boss-atlas-sprite { transform: translate(-50%, -56%) scale(calc(var(--boss-frame-scale) * 1.16)) rotate(-1.2deg); filter: drop-shadow(0 0 26px rgba(245, 200, 107, 0.62)) brightness(1.2); }
 .boss-core[data-boss-frame="break"] .boss-atlas-sprite { transform: translate(-50%, -58%) scale(calc(var(--boss-frame-scale) * 1.22)) rotate(-2deg); filter: drop-shadow(0 0 32px rgba(143, 107, 255, 0.74)) brightness(1.28); }
-@supports (background-image: url('/DR/assets/atlas/boss-frames-v2.webp')) {
-  .boss-atlas-sprite { background-image: var(--boss-atlas-webp-url); }
-}
+html[data-webp-support="webp-first"] .boss-atlas-sprite { background-image: var(--boss-atlas-webp-url); }
 button[data-pointer-state="pressed"],
 .mission-card[data-pointer-state="pressed"],
 .stage-node[data-pointer-state="pressed"],
@@ -6750,9 +6748,7 @@ body.lobby-nav-closing[data-lobby-navigation-rhythm="v1076-lobby-navigation-rhyt
   transform: translate(-50%, -55%) scale(calc(var(--boss-echo-frame-scale, 0.18) * 1.14));
   filter: drop-shadow(0 0 26px rgba(143, 107, 255, 0.58)) brightness(1.16);
 }
-@supports (background-image: url('/DR/assets/atlas/boss-frames-v2.webp')) {
-  .boss-lane-echo-sprite { background-image: var(--boss-atlas-webp-url); }
-}
+html[data-webp-support="webp-first"] .boss-lane-echo-sprite { background-image: var(--boss-atlas-webp-url); }
 @media (max-height: 760px), (max-width: 390px) {
   .battle-stage[data-boss-board-clearance="v1077-boss-board-clearance"] { grid-template-rows: auto minmax(318px, 1fr) auto; }
   .boss-lane[data-boss-layout="statusbar-left-icon-safe-v1077"] {
@@ -7153,3 +7149,113 @@ body[data-vendor-effects-split^="v1079-vendor-effects-split"] .pixi-stage::after
   .battle-stage[data-real-device-camera-feel="v1081-real-device-camera-feel"] .pixi-board-host::after { display: none; }
 }
 /* v1081 compatibility anchors: v1081-real-device-camera-feel v1081-boss-status-priority v1081-image-boot-budget touch-pan-threshold pinch-warmup-guard pixi-chunk-follow-up */
+
+/* v1.0.82 Firebase free-write guard, lobby panel anchor stability and QA wording refresh */
+body[data-firebase-free-write-budget^="v1082-firebase-free-write-budget"] .rank-source-note em,
+body[data-firebase-free-write-budget^="v1082-firebase-free-write-budget"] .rank-row em {
+  white-space: nowrap;
+}
+.lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] {
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+  scroll-padding-block: 16px 28px;
+}
+.lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] > [data-lobby-panel] {
+  contain-intrinsic-size: auto 620px;
+  scroll-margin-block: 12px;
+}
+.lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] :is(.restore-node, .collection-tile, .mission-card, .season-shop-card, .stage-node, [data-filter]) {
+  scroll-margin-block: 18px;
+}
+.lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] > .collection-panel.lobby-menu-panel-active,
+.lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] > .restoration-panel.lobby-menu-panel-active,
+.lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] > .summer-season-panel.lobby-menu-panel-active {
+  min-height: min(640px, calc(100dvh - 168px));
+}
+body[data-qa-output-wording-refresh="v1082-qa-output-wording-refresh"] .lobby-panel-route-hint::after {
+  content: ' · 자동 검수 최신화';
+  color: rgba(125, 220, 255, 0.78);
+  font-weight: 900;
+}
+@media (max-width: 430px) {
+  .lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] {
+    scroll-padding-block: 12px calc(24px + env(safe-area-inset-bottom));
+  }
+  .lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] > .collection-panel.lobby-menu-panel-active,
+  .lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] > .restoration-panel.lobby-menu-panel-active,
+  .lobby-panel-dock[data-lobby-panel-anchor-stability="v1082-lobby-panel-anchor-stability"] > .summer-season-panel.lobby-menu-panel-active {
+    min-height: min(580px, calc(100dvh - 148px));
+  }
+}
+/* v1082 anchors: v1082-firebase-free-write-budget v1082-lobby-panel-anchor-stability v1082-qa-output-wording-refresh */
+
+
+/* v1.0.83 rank UI copy polish, WebP fallback QA and boss atlas resolve guard */
+html[data-webp-fallback-qa="v1083-webp-fallback-qa"][data-webp-support="png-fallback"] .boss-atlas-sprite,
+html[data-webp-fallback-qa="v1083-webp-fallback-qa"][data-webp-support="png-fallback"] .boss-lane-echo-sprite {
+  background-image: var(--boss-atlas-image-url);
+}
+.rank-source-note[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.08rem 0.46rem;
+  align-items: center;
+  border-color: rgba(136, 235, 255, 0.18);
+  background: linear-gradient(135deg, rgba(6, 21, 45, 0.42), rgba(27, 88, 136, 0.16));
+}
+.rank-source-note[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] strong {
+  color: rgba(232, 248, 255, 0.96);
+}
+.rank-source-note[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] span {
+  grid-column: 1 / -1;
+  min-width: 0;
+  color: rgba(179, 209, 225, 0.88);
+  line-height: 1.35;
+}
+.rank-source-note[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] em,
+.rank-empty[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] em,
+.rank-fresh-chip {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  padding: 0.12rem 0.34rem;
+  background: rgba(125, 220, 255, 0.12);
+  border: 1px solid rgba(125, 220, 255, 0.22);
+  color: rgba(232, 248, 255, 0.94);
+  font-style: normal;
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+.rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] {
+  grid-template-columns: 1.28rem minmax(0, 1fr) auto auto auto;
+  column-gap: 0.34rem;
+}
+.rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] em {
+  min-width: 3.55rem;
+  padding-inline: 0.24rem;
+}
+.rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"][data-rank-fresh="true"] {
+  box-shadow: inset 3px 0 0 rgba(125, 220, 255, 0.58), 0 12px 26px rgba(28, 132, 255, 0.12);
+}
+@media (max-width: 390px) {
+  .rank-source-note[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] {
+    grid-template-columns: 1.16rem minmax(0, 1fr) auto;
+    row-gap: 0.12rem;
+  }
+  .rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] small,
+  .rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] .rank-fresh-chip,
+  .rank-row[data-rank-ui-copy-polish="v1083-rank-ui-copy-polish"] em {
+    grid-column: 2 / -1;
+    justify-self: start;
+    min-width: auto;
+  }
+}
+/* v1083 anchors: v1083-rank-ui-copy-polish v1083-webp-fallback-qa v1083-boss-atlas-resolve-guard cloud-device-copy-safe cached-rank-natural-copy boss-atlas-no-hardcoded-dr-url */

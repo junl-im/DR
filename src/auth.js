@@ -12,6 +12,10 @@ import {
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, firebaseReady } from './firebase.js';
 
+const FIREBASE_PROFILE_WRITE_GUARD_PATCH = 'v1082-firebase-free-write-budget';
+const PROFILE_WRITE_KEY = 'dream-library-profile-write-guard-v1082';
+const PROFILE_WRITE_TTL_MS = 12 * 60 * 60 * 1000;
+
 const googleProvider = firebaseReady ? new GoogleAuthProvider() : null;
 if (googleProvider) {
   googleProvider.setCustomParameters({ prompt: 'select_account' });
@@ -98,8 +102,24 @@ function getProvider(user) {
   return user.isAnonymous ? 'anonymous' : 'firebase';
 }
 
+function canWriteUserProfile(user) {
+  if (!user?.uid) return false;
+  try {
+    const raw = localStorage.getItem(PROFILE_WRITE_KEY);
+    const guard = raw ? JSON.parse(raw) : {};
+    const key = `${user.uid}:${getProvider(user)}:${getDisplayName(user)}`;
+    const skip = guard.key === key && Date.now() - Number(guard.at || 0) < PROFILE_WRITE_TTL_MS;
+    document.body?.setAttribute('data-firebase-profile-write-guard', `${FIREBASE_PROFILE_WRITE_GUARD_PATCH}-${skip ? 'cache' : 'write'}`);
+    if (skip) return false;
+    localStorage.setItem(PROFILE_WRITE_KEY, JSON.stringify({ key, at: Date.now() }));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 async function saveUserProfile(user) {
-  if (!db) return;
+  if (!db || !canWriteUserProfile(user)) return;
   await setDoc(
     doc(db, 'users', user.uid),
     {

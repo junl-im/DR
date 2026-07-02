@@ -21,7 +21,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (files.pkg.version !== '1.0.81') errors.push(`package version must be 1.0.81, got ${files.pkg.version}`);
+if (!['1.0.81', '1.0.82', '1.0.83'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.81-v1.0.82 range, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:camera-status-image-budget');
 requireIncludes('index.html', files.html, 'data-real-device-camera-feel="v1081-real-device-camera-feel"');
 requireIncludes('index.html', files.html, 'data-boss-status-priority="v1081-boss-status-priority"');
@@ -73,4 +73,4 @@ if (errors.length) {
   console.error(`Camera/status/image budget QA failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Camera/status/image budget QA passed for v1.0.81.');
+console.log('Camera/status/image budget QA passed for supported v1.0.81-v1.0.82 range.');

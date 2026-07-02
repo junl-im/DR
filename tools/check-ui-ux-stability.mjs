@@ -13,7 +13,7 @@ const quality = read('.github/workflows/quality-check.yml');
 const errors = [];
 const has = (source, token, label) => { if (!source.includes(token)) errors.push(`Missing ${label}: ${token}`); };
 
-if (!['1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81'].includes(pkg.version)) errors.push(`package version must be 1.0.65 or 1.0.66, got ${pkg.version}`);
+if (!['1.0.65', '1.0.66', '1.0.67', '1.0.68', '1.0.69', '1.0.70', '1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83'].includes(pkg.version)) errors.push(`package version must be 1.0.65 or 1.0.66, got ${pkg.version}`);
 for (const token of ['v1065-ui-ux-stability-pass', 'dream-library-cache-v1.0.65', 'texture-atlas-manifest-v1.0.65.json']) {
   has(index + main + css + sw + difficulty, token, 'v1.0.65 stability token');
 }

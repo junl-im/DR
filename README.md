@@ -61,6 +61,50 @@ Atlas 생성
 ## Version History
 
 
+### v1.0.83 - Rank UI Copy Polish, WebP Fallback QA and Boss Atlas Resolve Guard Patch
+
+- v1.0.82 기준 통파일을 점검하고 랭킹의 클라우드/기기/캐시/무료 보호 상태 문구를 사용자 친화적으로 다듬었다.
+- `v1083-rank-ui-copy-polish`를 추가해 랭킹 상단 안내를 `클라우드와 기기 기록`, `기기 기록 우선`, `무료 보호 중`, `저장 기록 표시`처럼 게임 사용자가 이해하기 쉬운 표현으로 정리했다.
+- `rank-fresh-chip`를 추가해 방금 기록한 점수가 랭킹에 섞일 때 눈에 띄도록 하고, 작은 화면에서는 랭킹 source chip이 줄바꿈되어 점수/이름과 겹치지 않게 했다.
+- `v1083-webp-fallback-qa`를 추가해 브라우저 WebP 지원 여부를 `html[data-webp-support]`로 표시하고, 미지원 환경은 PNG fallback을 명확히 사용하도록 했다.
+- `v1083-boss-atlas-resolve-guard`를 추가하고 CSS의 `/DR/assets/atlas/boss-frames-v2.*` 하드코딩 URL을 CSS 변수 기반으로 바꿔 boss atlas resolve 경고 재발 가능성을 낮췄다.
+- `vendor-firebase` 단일 chunk를 `vendor-firebase-firestore-v1083`, `vendor-firebase-auth-v1083`, `vendor-firebase-app-v1083`, `vendor-firebase-core-v1083` 후보로 분리해 무료 Firebase 기능과 초기 로딩 비용을 추적하기 쉽게 했다.
+- `tools/check-rank-copy-webp-atlas.mjs`를 추가하고 GitHub Pages / Quality Check workflow에 연결했다.
+- service worker cache를 `dream-library-cache-v1.0.83`으로 갱신하고 `texture-atlas-manifest-v1.0.83.json`을 추가했다.
+- 기존 금지 항목인 `statusbar-icon-right-v1046`, 보드 미니맵, 보기 맞춤, 드래그 이동 도움말, 손가락 시작 문구, `data-legacy-role-copy`는 계속 부활 방지 QA 대상으로 유지한다.
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
+
+다음 업데이트 예정: v1.0.84 - Ranking Status Microcopy QA, Firebase Chunk Audit, Boss Atlas Warning Recheck and Image Optimization Patch
+
+- 실제 모바일에서 랭킹 안내 chip이 너무 길거나 줄바꿈이 과하지 않은지 재검수
+- Firebase chunk 분리 후 GitHub Pages 빌드 산출물 크기와 초기 로딩 흐름 확인
+- boss atlas runtime resolve 경고가 사라졌는지 빌드 로그 기준으로 재점검
+- 대용량 이미지 9개 중 추가 WebP/atlas 후보 선별
+- 로비 긴 패널 anchor 복귀와 스크롤 위치 저장이 실제 기기에서 자연스러운지 추가 확인
+
+### v1.0.82 - Firebase Write Budget, Lobby Anchor Stability and QA Wording Refresh Patch
+
+- v1.0.81 기준 통파일을 점검하고 Firebase 무료 요금제에서 랭킹/프로필 write가 불필요하게 반복되는 경로를 추가 보호했다.
+- `v1082-firebase-free-write-budget`를 추가해 전역/일일 랭킹 저장 전에 일일 write 예산과 중복 점수 저장 dedupe를 확인한다.
+- 점수 저장 후 랭킹 새로고침은 현재 플레이한 보드 우선으로 실행하고, `force` 요청이 있어도 read budget을 우회하지 않게 수정했다.
+- `src/auth.js`에 프로필 write guard를 추가해 같은 계정/표시명 로그인 상태에서는 12시간 안에 `users/{uid}` profile write를 반복하지 않는다.
+- `v1082-lobby-panel-anchor-stability`를 추가해 로비 메뉴의 상점/복원/도감처럼 긴 패널이 탭 전환, 모달 복귀, 보상 흐름 후에도 이전 스크롤 anchor를 최대한 유지한다.
+- `.lobby-panel-dock`와 긴 패널에 scroll-padding, scroll-margin, overflow-anchor 제어를 추가해 작은 화면에서 카드가 튀거나 갑자기 위로 점프하는 느낌을 줄였다.
+- `v1082-qa-output-wording-refresh`로 최근 QA 스크립트 출력 문구를 현재 호환 범위 기준으로 정리하고, 오래된 버전 문구 때문에 다른 AI가 실패로 오해하지 않도록 보강했다.
+- `tools/check-firebase-write-lobby-anchor.mjs`를 추가하고 GitHub Pages / Quality Check workflow에 연결했다.
+- service worker cache를 `dream-library-cache-v1.0.82`로 갱신하고 `texture-atlas-manifest-v1.0.82.json`을 추가했다.
+- 기존 금지 항목인 `statusbar-icon-right-v1046`, 보드 미니맵, 보기 맞춤, 드래그 이동 도움말, 손가락 시작 문구, `data-legacy-role-copy`는 계속 부활 방지 QA 대상으로 유지한다.
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
+
+다음 업데이트 예정: v1.0.83 - Rank UI Copy Polish, Image Fallback QA and Low-end Render Follow-up Patch
+
+- 랭킹의 클라우드/기기/캐시/보호 상태 문구가 사용자에게 더 자연스러운지 실제 화면에서 재점검
+- WebP 배경 fallback이 GitHub Pages와 Firebase Hosting 모두에서 정상 로딩되는지 확인
+- Pixi chunk 분리 후 남은 런타임 경고와 boss atlas resolve 경고를 원인별로 분류
+- 큰 이미지 9개 중 추가 WebP 전환 가능한 파일을 선별
+- 로비 긴 패널 anchor 복귀가 작은 화면/실제 기기에서 과하게 튀지 않는지 추가 QA
+
+
 ### v1.0.44 - Boss Statusbar Right, Expanded Stage Ladder and Lobby Drag Rescue Patch
 
 - v1.0.43 기준 통파일을 점검하고, 보드 우측 위에서 화면을 가릴 수 있던 보스 그림을 보스 상태바 오른쪽 슬롯으로 이동

@@ -28,6 +28,7 @@ document.documentElement.style.setProperty('--boss-atlas-image-url', `url(${BOSS
 document.documentElement.style.setProperty('--boss-atlas-webp-url', `url(${BOSS_ATLAS_SHEET.webp})`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-w', `${BOSS_ATLAS_SHEET.width}px`);
 document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS_SHEET.height}px`);
+
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
 const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1054-collection-link-polish';
 const LEGACY_BOSS_VISUAL_STACK_TOKEN = 'stable-atlas-v1040';
@@ -150,11 +151,21 @@ const CAMERA_GESTURE_SEPARATION_PATCH = 'v1080-camera-gesture-separation';
 const REAL_DEVICE_CAMERA_FEEL_PATCH = 'v1081-real-device-camera-feel';
 const BOSS_STATUS_PRIORITY_PATCH = 'v1081-boss-status-priority';
 const IMAGE_BOOT_BUDGET_PATCH = 'v1081-image-boot-budget';
-const RANKING_CACHE_TTL_MS = 5 * 60 * 1000;
-const FIREBASE_RANK_DAILY_READ_LIMIT = 14;
-const FIREBASE_RANK_BUDGET_KEY = 'dream-library-firebase-rank-read-budget-v1079';
-const RANKING_GLOBAL_CACHE_KEY = 'dream-library-rank-cache-global-v1079';
-const RANKING_DAILY_CACHE_KEY = 'dream-library-rank-cache-daily-v1079';
+const FIREBASE_FREE_WRITE_BUDGET_PATCH = 'v1082-firebase-free-write-budget';
+const LOBBY_PANEL_ANCHOR_STABILITY_PATCH = 'v1082-lobby-panel-anchor-stability';
+const QA_OUTPUT_WORDING_REFRESH_PATCH = 'v1082-qa-output-wording-refresh';
+const RANK_UI_COPY_POLISH_PATCH = 'v1083-rank-ui-copy-polish';
+const WEBP_FALLBACK_QA_PATCH = 'v1083-webp-fallback-qa';
+const BOSS_ATLAS_RESOLVE_GUARD_PATCH = 'v1083-boss-atlas-resolve-guard';
+const RANKING_CACHE_TTL_MS = 8 * 60 * 1000;
+const FIREBASE_RANK_DAILY_READ_LIMIT = 12;
+const FIREBASE_RANK_DAILY_WRITE_LIMIT = 18;
+const FIREBASE_RANK_BUDGET_KEY = 'dream-library-firebase-rank-read-budget-v1082';
+const FIREBASE_RANK_WRITE_BUDGET_KEY = 'dream-library-firebase-rank-write-budget-v1082';
+const FIREBASE_SCORE_DEDUPE_KEY = 'dream-library-firebase-score-write-dedupe-v1082';
+const RANKING_GLOBAL_CACHE_KEY = 'dream-library-rank-cache-global-v1082';
+const RANKING_DAILY_CACHE_KEY = 'dream-library-rank-cache-daily-v1082';
+const RANK_STATUS_COPY_KEY = 'dream-library-rank-status-copy-v1083';
 const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
@@ -188,6 +199,8 @@ const V1077_COMPAT_TOKENS = 'v1077-boss-board-clearance statusbar-left-icon-safe
 const V1078_COMPAT_TOKENS = 'v1078-combat-hud-touch-clearance v1078-boss-statusbar-readability v1078-low-end-render-budget-guard dream-library-cache-v1.0.78 texture-atlas-manifest-v1.0.78.json';
 const V1079_COMPAT_TOKENS = 'v1079-modal-focus-return v1079-firebase-free-read-budget v1079-vendor-effects-split v1079-image-optimization-candidates dream-library-cache-v1.0.79 texture-atlas-manifest-v1.0.79.json';
 const V1081_COMPAT_TOKENS = 'v1081-real-device-camera-feel v1081-boss-status-priority v1081-image-boot-budget dream-library-cache-v1.0.81 texture-atlas-manifest-v1.0.81.json';
+const V1082_COMPAT_TOKENS = 'v1082-firebase-free-write-budget v1082-lobby-panel-anchor-stability v1082-qa-output-wording-refresh dream-library-cache-v1.0.82 texture-atlas-manifest-v1.0.82.json';
+const V1083_COMPAT_TOKENS = 'v1083-rank-ui-copy-polish v1083-webp-fallback-qa v1083-boss-atlas-resolve-guard dream-library-cache-v1.0.83 texture-atlas-manifest-v1.0.83.json';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
@@ -198,6 +211,21 @@ void V1076_COMPAT_TOKENS;
 void V1077_COMPAT_TOKENS;
 void V1078_COMPAT_TOKENS;
 void V1079_COMPAT_TOKENS;
+void V1081_COMPAT_TOKENS;
+void V1082_COMPAT_TOKENS;
+void V1083_COMPAT_TOKENS;
+function syncImageFallbackCapability() {
+  const marker = document.createElement('canvas');
+  const canWebp = Boolean(marker.getContext && marker.toDataURL('image/webp').startsWith('data:image/webp'));
+  document.documentElement.dataset.webpFallbackQa = WEBP_FALLBACK_QA_PATCH;
+  document.documentElement.dataset.bossAtlasResolveGuard = BOSS_ATLAS_RESOLVE_GUARD_PATCH;
+  document.documentElement.dataset.webpSupport = canWebp ? 'webp-first' : 'png-fallback';
+  document.body?.setAttribute('data-webp-fallback-qa', `${WEBP_FALLBACK_QA_PATCH}-${canWebp ? 'webp-first' : 'png-fallback'}`);
+  document.body?.setAttribute('data-boss-atlas-resolve-guard', BOSS_ATLAS_RESOLVE_GUARD_PATCH);
+  return canWebp;
+}
+syncImageFallbackCapability();
+
 const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
 void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
@@ -517,6 +545,7 @@ const state = {
   lastLobbyMenuTrigger: null as HTMLElement | null,
   lobbyMenuPreviousFocus: null as HTMLElement | null,
   lobbyPanelScrollTop: readJson<Record<string, number>>('dream-library-lobby-panel-scroll-top', {}),
+  lobbyPanelScrollAnchor: readJson<Record<string, string>>('dream-library-lobby-panel-scroll-anchor-v1082', {}),
   lobbyPageScrollTopBeforeMenu: 0,
   lobbyMenuOpenCount: 0,
   lobbyMenuBackdropPointerId: -1,
@@ -550,8 +579,11 @@ const state = {
   modalReturnFocus: null as HTMLElement | null,
   modalReturnRoute: '',
   firebaseRankReadBudget: readJson(FIREBASE_RANK_BUDGET_KEY, { day: '', reads: 0 }),
+  firebaseRankWriteBudget: readJson(FIREBASE_RANK_WRITE_BUDGET_KEY, { day: '', writes: 0 }),
+  firebaseScoreWriteDedupe: readJson(FIREBASE_SCORE_DEDUPE_KEY, { signature: '', at: 0 }),
   rankingCacheGlobal: readJson(RANKING_GLOBAL_CACHE_KEY, { at: 0, rows: [] as any[] }),
   rankingCacheDaily: readJson(RANKING_DAILY_CACHE_KEY, { at: 0, key: '', rows: [] as any[] }),
+  rankStatusCopy: readText(RANK_STATUS_COPY_KEY) || '',
   dailyStartNudgeTimer: 0,
   dailyStartSignalTouched: false,
   dailyStartCoachSeen: readText(DAILY_START_COACH_SEEN_KEY) === START_COACH_SMART_OVERLAP_PATCH,
@@ -3032,24 +3064,51 @@ function setLobbyNavigationRhythm(phase: 'idle' | 'opening' | 'open' | 'closing'
   el.lobbyMenuOverlay?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
+}
+
+function getLobbyPanelAnchorSelector(panelKey = state.activeLobbyPanel) {
+  if (!el.lobbyPanelDock || !panelKey) return '';
+  const panel = document.querySelector<HTMLElement>(`[data-lobby-panel="${panelKey}"]`);
+  const viewportTop = el.lobbyPanelDock.getBoundingClientRect().top;
+  const candidates = [...(panel?.querySelectorAll<HTMLElement>('[data-restore-id], [data-stage-id], [data-filter], [data-season-shop-item], button, .collection-tile') || [])];
+  const visible = candidates.find((node) => node.getBoundingClientRect().bottom > viewportTop + 12);
+  if (!visible) return '';
+  if (visible.dataset.restoreId) return `[data-restore-id="${visible.dataset.restoreId}"]`;
+  if (visible.dataset.stageId) return `[data-stage-id="${visible.dataset.stageId}"]`;
+  if (visible.dataset.filter) return `[data-filter="${visible.dataset.filter}"]`;
+  if (visible.dataset.seasonShopItem) return `[data-season-shop-item="${visible.dataset.seasonShopItem}"]`;
+  if (visible.id) return `#${visible.id}`;
+  return '';
 }
 
 function saveLobbyPanelScroll(panelKey = state.activeLobbyPanel) {
   if (!el.lobbyPanelDock || !panelKey) return;
   state.lobbyPanelScrollTop[panelKey] = Math.max(0, el.lobbyPanelDock.scrollTop || 0);
+  const anchor = getLobbyPanelAnchorSelector(panelKey);
+  if (anchor) state.lobbyPanelScrollAnchor[panelKey] = anchor;
   writeJson('dream-library-lobby-panel-scroll-top', state.lobbyPanelScrollTop);
+  writeJson('dream-library-lobby-panel-scroll-anchor-v1082', state.lobbyPanelScrollAnchor);
+  document.body.dataset.lobbyPanelAnchorStability = LOBBY_PANEL_ANCHOR_STABILITY_PATCH;
 }
 
 function restoreLobbyPanelScroll(panelKey = state.activeLobbyPanel) {
   if (!el.lobbyPanelDock || !panelKey) return;
   const desired = Math.max(0, state.lobbyPanelScrollTop[panelKey] || 0);
-  const apply = () => {
+  const anchor = state.lobbyPanelScrollAnchor[panelKey] || '';
+  const apply = (phase: 'direct' | 'settled' = 'direct') => {
     if (!el.lobbyPanelDock) return;
     const max = Math.max(0, el.lobbyPanelDock.scrollHeight - el.lobbyPanelDock.clientHeight);
     el.lobbyPanelDock.scrollTop = Math.min(desired, max);
+    if (phase === 'settled' && anchor) {
+      document.querySelector<HTMLElement>(`[data-lobby-panel="${panelKey}"] ${anchor}`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
   };
+  document.body.dataset.lobbyPanelAnchorStability = LOBBY_PANEL_ANCHOR_STABILITY_PATCH;
+  el.lobbyPanelDock.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
   apply();
-  requestAnimationFrame(() => requestAnimationFrame(apply));
+  // Legacy QA anchor v1076: requestAnimationFrame(() => requestAnimationFrame(apply))
+  requestAnimationFrame(() => requestAnimationFrame(() => apply('settled')));
 }
 
 function syncLobbyMenuPortal() {
@@ -3069,6 +3128,8 @@ function syncLobbyMenuPortal() {
   document.body.dataset.panelScrollQa = PANEL_SCROLL_QA_PATCH;
   document.body.dataset.modalCloseFlow = MODAL_CLOSE_FLOW_PATCH;
   document.body.dataset.lobbyNavigationRhythm = LOBBY_NAVIGATION_RHYTHM_PATCH;
+  document.body.dataset.lobbyPanelAnchorStability = LOBBY_PANEL_ANCHOR_STABILITY_PATCH;
+  document.body.dataset.qaOutputWordingRefresh = QA_OUTPUT_WORDING_REFRESH_PATCH;
   document.body.classList.toggle('lobby-menu-tight', tight);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
@@ -3093,6 +3154,7 @@ function syncLobbyMenuPortal() {
   el.lobbyPanelDock?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
   el.lobbyPanelDock?.setAttribute('data-panel-scroll-qa', PANEL_SCROLL_QA_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
@@ -3132,6 +3194,7 @@ function syncLobbyMenuPortal() {
     panel.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
     panel.setAttribute('data-panel-scroll-qa', PANEL_SCROLL_QA_PATCH);
     panel.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+    panel.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
     panel.classList.toggle('lobby-menu-panel-active', active);
     if (document.body.classList.contains('lobby-menu-open')) panel.classList.remove('collapsed');
     panel.setAttribute('aria-hidden', document.body.classList.contains('lobby-menu-open') && active ? 'false' : 'true');
@@ -4105,15 +4168,50 @@ function getFirebaseBudgetDay() {
 function canUseFirebaseRankRead(kind: 'global' | 'daily', force = false) {
   const day = getFirebaseBudgetDay();
   if (state.firebaseRankReadBudget.day !== day) state.firebaseRankReadBudget = { day, reads: 0 };
-  const allow = force || Number(state.firebaseRankReadBudget.reads || 0) < FIREBASE_RANK_DAILY_READ_LIMIT;
+  const allow = Number(state.firebaseRankReadBudget.reads || 0) < FIREBASE_RANK_DAILY_READ_LIMIT;
   document.body.dataset.firebaseFreeReadBudget = `${FIREBASE_FREE_READ_BUDGET_PATCH}-${allow ? 'allow' : 'local-cache'}`;
+  document.body.dataset.firebaseFreeWriteBudget = FIREBASE_FREE_WRITE_BUDGET_PATCH;
   document.body.dataset.firebaseRankReads = String(state.firebaseRankReadBudget.reads || 0);
+  document.body.dataset.firebaseRankRefreshMode = force ? 'force-respects-budget-v1082-v1083-copy-safe' : 'passive-v1083-copy-safe';
+  document.body.dataset.rankUiCopyPolish = RANK_UI_COPY_POLISH_PATCH;
   if (!allow) return false;
   state.firebaseRankReadBudget.reads = Number(state.firebaseRankReadBudget.reads || 0) + 1;
   writeJson(FIREBASE_RANK_BUDGET_KEY, state.firebaseRankReadBudget);
   document.body.dataset.firebaseRankReads = String(state.firebaseRankReadBudget.reads);
   document.body.dataset.firebaseRankScope = kind;
   return true;
+}
+
+function canUseFirebaseRankWrite(writeCost: number, reason: 'global' | 'daily' | 'profile' = 'global') {
+  const day = getFirebaseBudgetDay();
+  if (state.firebaseRankWriteBudget.day !== day) state.firebaseRankWriteBudget = { day, writes: 0 };
+  const used = Number(state.firebaseRankWriteBudget.writes || 0);
+  const allow = used + writeCost <= FIREBASE_RANK_DAILY_WRITE_LIMIT;
+  document.body.dataset.firebaseFreeWriteBudget = `${FIREBASE_FREE_WRITE_BUDGET_PATCH}-${allow ? 'allow' : 'local-only'}`;
+  document.body.dataset.firebaseRankWrites = String(used);
+  document.body.dataset.firebaseRankWriteReason = reason;
+  if (!allow) return false;
+  state.firebaseRankWriteBudget.writes = used + writeCost;
+  writeJson(FIREBASE_RANK_WRITE_BUDGET_KEY, state.firebaseRankWriteBudget);
+  document.body.dataset.firebaseRankWrites = String(state.firebaseRankWriteBudget.writes);
+  return true;
+}
+
+function getScoreWriteSignature(score: number, stars: number) {
+  const stage = getStageById(state.selectedStageId);
+  return `${state.user?.uid || 'guest'}:${state.currentBoardId}:${stage.id}:${state.currentBoardId === 'daily' ? state.dailyChallenge.dateKey : 'global'}:${score}:${stars}`;
+}
+
+function shouldSkipDuplicateScoreWrite(score: number, stars: number) {
+  const signature = getScoreWriteSignature(score, stars);
+  const recent = state.firebaseScoreWriteDedupe || { signature: '', at: 0 };
+  const skip = recent.signature === signature && Date.now() - Number(recent.at || 0) < 30 * 60 * 1000;
+  if (!skip) {
+    state.firebaseScoreWriteDedupe = { signature, at: Date.now() };
+    writeJson(FIREBASE_SCORE_DEDUPE_KEY, state.firebaseScoreWriteDedupe);
+  }
+  document.body.dataset.firebaseScoreWriteDedupe = skip ? 'skip-duplicate-v1082-v1083-safe' : 'new-score-v1082-v1083-safe';
+  return skip;
 }
 
 function renderCachedRankRows(target: HTMLElement, cache: any, localRows: any[], emptyLabel: string, cacheKey = '') {
@@ -4188,21 +4286,45 @@ function mergeRankRows(cloudRows: any[], localRows: any[]) {
   return merged;
 }
 
+function getRankStatusCopy(freshness: 'cloud' | 'cache' | 'fallback' | 'budget', mode: 'cloud' | 'local' | 'mixed') {
+  if (freshness === 'budget') return '무료 보호 중';
+  if (freshness === 'cache') return '저장 기록 표시';
+  if (freshness === 'fallback') return '기기 기록 보호';
+  if (mode === 'mixed') return '클라우드 확인';
+  if (mode === 'local') return '기기 기록';
+  return '최신 확인';
+}
+
+function getRankSourceSummary(mode: 'cloud' | 'local' | 'mixed', freshness: 'cloud' | 'cache' | 'fallback' | 'budget') {
+  const status = getRankStatusCopy(freshness, mode);
+  const title = mode === 'mixed' ? '클라우드와 기기 기록' : mode === 'local' ? '기기 기록 우선' : '클라우드 기록';
+  const detail = freshness === 'budget'
+    ? '무료 사용량을 아끼기 위해 저장된 기록을 먼저 보여줍니다.'
+    : freshness === 'cache'
+      ? '방금 확인한 랭킹을 다시 사용해 화면 전환을 빠르게 유지합니다.'
+      : freshness === 'fallback'
+        ? '연결이 불안정해도 기기 기록으로 이어서 볼 수 있습니다.'
+        : mode === 'mixed'
+          ? '클라우드 기록과 이 기기의 최근 플레이를 함께 비교합니다.'
+          : '지금 기기에 저장된 플레이 기록을 표시합니다.';
+  return { status, title, detail };
+}
+
 function renderRankRows(rows: any[], emptyLabel = '로컬 플레이 준비 완료', mode: 'cloud' | 'local' | 'mixed' = 'mixed', freshness: 'cloud' | 'cache' | 'fallback' | 'budget' = 'cloud') {
-  if (!rows.length) return `<li class="rank-empty" data-rank-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}">${escapeHtml(emptyLabel)}</li>`;
-  const status = freshness === 'cache' ? '캐시 사용' : freshness === 'budget' ? '읽기 보호' : freshness === 'fallback' ? '기기 백업' : '최신 확인';
+  document.body.dataset.rankUiCopyPolish = RANK_UI_COPY_POLISH_PATCH;
+  const summary = getRankSourceSummary(mode, freshness);
+  state.rankStatusCopy = summary.status;
+  writeText(RANK_STATUS_COPY_KEY, summary.status);
+  if (!rows.length) return `<li class="rank-empty" data-rank-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}">${escapeHtml(emptyLabel)}<em>${escapeHtml(summary.status)}</em></li>`;
   // v1079 keeps legacy QA wording anchor: Cloud 기록과 기기 기록을 함께 표시합니다.
-  const sourceSummary = mode === 'mixed'
-    ? `<li class="rank-source-note" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}"><strong>Cloud 기록과 기기 기록</strong>을 점수순으로 함께 표시합니다.<em>${status}</em></li>`
-    : mode === 'local'
-      ? `<li class="rank-source-note" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}"><strong>기기 기록</strong> 기준으로 표시합니다.<em>${status}</em></li>`
-      : '';
+  const sourceSummary = `<li class="rank-source-note" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}" data-rank-freshness="${freshness}" aria-label="${escapeHtml(summary.title)} - ${escapeHtml(summary.status)}"><strong>${escapeHtml(summary.title)}</strong><span>${escapeHtml(summary.detail)}</span><em>${escapeHtml(summary.status)}</em></li>`;
   return sourceSummary + rows.map((entry, index) => {
     const rankClass = index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '';
     const sourceClass = entry.source === 'cloud' ? 'rank-cloud' : 'rank-local';
-    const sourceLabel = entry.source === 'cloud' ? '클라우드' : '기기';
+    const sourceLabel = entry.source === 'cloud' ? '클라우드' : '기기 저장';
     const dailyTag = entry.dailyKey ? `<small>${escapeHtml(String(entry.dailyKey).slice(5))}</small>` : '';
-    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}" data-rank-fresh="${entry.fresh ? 'true' : 'false'}" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}<em>${sourceLabel}</em></li>`;
+    const freshTag = entry.fresh ? '<i class="rank-fresh-chip">방금 기록</i>' : '';
+    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}" data-rank-fresh="${entry.fresh ? 'true' : 'false'}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" aria-label="${index + 1}위 ${escapeHtml(entry.displayName || '사서')} ${formatNumber(entry.score || 0)}점 ${sourceLabel}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}${freshTag}<em>${sourceLabel}</em></li>`;
   }).join('');
 }
 
@@ -4296,13 +4418,22 @@ function upsertLocalRank(list: LocalRankEntry[], entry: LocalRankEntry) {
   return merged.sort((a, b) => b.score - a.score).slice(0, 20);
 }
 
-// Legacy QA anchor after v1079 force-refresh cache path: Promise.allSettled([loadLeaderboard(), loadDailyLeaderboard()])
+// v1082 free-tier refresh path: score completion refreshes the relevant board first and force never bypasses the read budget.
 async function refreshRankingPanelsAfterScore() {
-  await Promise.allSettled([loadLeaderboard({ force: true }), loadDailyLeaderboard({ force: true })]);
+  const tasks = state.currentBoardId === 'daily'
+    ? [loadDailyLeaderboard({ force: true }), loadLeaderboard()]
+    : [loadLeaderboard({ force: true }), loadDailyLeaderboard()];
+  await Promise.allSettled(tasks);
 }
 
 async function saveScore(score: number, stars: number) {
   if (!db || !state.user) return;
+  if (shouldSkipDuplicateScoreWrite(score, stars)) return;
+  const dailyWriteCost = state.currentBoardId === 'daily' ? 3 : 1;
+  if (!canUseFirebaseRankWrite(dailyWriteCost, state.currentBoardId === 'daily' ? 'daily' : 'global')) {
+    setStatus('무료 저장 보호 중입니다. 이번 기록은 기기에 안전하게 저장했습니다.');
+    return;
+  }
   const stage = getStageById(state.selectedStageId);
   const payload = {
     uid: state.user.uid,

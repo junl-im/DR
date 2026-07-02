@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.81 |
+| 현재 버전 | v1.0.83 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Real Device Camera Feel, Boss Status Priority and Image Boot Budget Patch |
-| 핵심 수정 | 실제 기기 pan 시작 threshold, pinch warmup, 보스 상태바 우선순위, WebP 부팅 후보, Pixi chunk 후보를 보강 |
-| UI/UX 우선순위 | 한 손가락 drag는 pan만 수행하고, 보스/몬스터바는 이름/HP/예고가 우선 보이며 왼쪽 빈 공간이 커지면 안 된다 |
+| 이번 패치 | Rank UI Copy Polish, WebP Fallback QA and Boss Atlas Resolve Guard Patch |
+| 핵심 수정 | 랭킹 상태 문구 polish, WebP fallback QA, boss atlas CSS resolve guard, Firebase chunk 추적 분리 |
+| UI/UX 우선순위 | 랭킹의 클라우드/기기/캐시/무료 보호 상태가 사용자에게 자연스럽고, 작은 화면에서 chip이 이름/점수와 겹치지 않아야 한다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.80.zip`에서 이어서 작업 |
+| 작업 기준 | 이전 산출물 `DR_v1.0.82.zip`에서 이어서 작업 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.81.zip`, `DR_patch_v1.0.81.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.83.zip`, `DR_patch_v1.0.83.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
 
@@ -29,7 +29,7 @@
 - 로컬과 ZIP 산출물에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않는다.
 - 산출 규칙 문구 고정: `package-lock.json 제외`, `풀파일 ZIP`, `패치 ZIP`은 매번 기록한다.
 - SVG는 금지한다. 이미지 정책은 PNG/WebP/JPG 중심이다.
-- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`를 실행한다.
+- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`를 실행한다.
 
 ## 사용자가 결과를 보기 위한 명령
 
@@ -86,11 +86,12 @@ npm run check:pixi-boss-layer
 npm run check:boss-asset-visibility
 npm run check:boss-board-clearance
 npm run check:combat-hud-touch-clearance
+npm run check:rank-copy-webp-atlas
 npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.81 기준 `check:camera-status-image-budget`까지 총 88개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.83 기준 `check:rank-copy-webp-atlas`까지 총 90개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -101,6 +102,70 @@ for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('che
 NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
+
+
+
+## v1.0.83 실제 수정 내역
+
+- `package.json` 버전을 `1.0.83`으로 갱신했다.
+- `v1083-rank-ui-copy-polish`를 추가해 랭킹 안내 문구를 사용자용 표현으로 정리했다.
+- 랭킹 상단 source note를 항상 표시하고 `클라우드와 기기 기록`, `기기 기록 우선`, `무료 보호 중`, `저장 기록 표시`, `기기 기록 보호` 같은 상태를 표시한다.
+- 방금 기록한 점수에는 `rank-fresh-chip`을 붙여 랭킹에 섞여도 눈에 띄게 했다.
+- 작은 화면에서 랭킹 source chip이 이름/점수와 겹치지 않도록 grid와 줄바꿈을 보강했다.
+- `v1083-webp-fallback-qa`를 추가해 브라우저 WebP 지원 여부를 `html[data-webp-support="webp-first|png-fallback"]`로 표시한다.
+- WebP 미지원 환경에서는 boss atlas sprite가 PNG fallback으로 남도록 CSS를 분리했다.
+- `v1083-boss-atlas-resolve-guard`를 추가하고 CSS의 `/DR/assets/atlas/boss-frames-v2.*` 하드코딩 URL을 제거했다. boss atlas 이미지는 `--boss-atlas-image-url`, `--boss-atlas-webp-url` CSS 변수로만 연결한다.
+- `vendor-firebase` 단일 chunk를 `vendor-firebase-firestore-v1083`, `vendor-firebase-auth-v1083`, `vendor-firebase-app-v1083`, `vendor-firebase-core-v1083`로 분리해 후속 성능 점검 기준을 만들었다.
+- `tools/check-rank-copy-webp-atlas.mjs` 신규 추가 및 GitHub Pages / quality-check workflow에 연결했다.
+- 기존 QA 허용 범위를 v1.0.83까지 확장했다.
+- `dream-library-cache-v1.0.83`, `texture-atlas-manifest-v1.0.83.json`을 추가했다.
+- 구버전 코드 부활 방지 항목 유지: `statusbar-icon-right-v1046`, `board-minimap`, `보기 맞춤`, `드래그 이동`, `손가락 시작`, `data-legacy-role-copy`.
+
+## v1.0.83 검수 결과
+
+- `npm run typecheck` 통과.
+- 전체 90개 `check:*` QA suite 통과.
+- `npm run check:rank-copy-webp-atlas` 통과.
+- `npm run check:firebase-write-lobby-anchor` 통과.
+- `npm run report:images` 통과. 456 files, 52.37 MB. 1.2 MB 초과 이미지 9개는 계속 후속 최적화 후보.
+- `npm run build:github` 통과.
+- v1.0.82까지 남아 있던 `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고는 v1.0.83 CSS 변수 전환 후 이번 GitHub Pages build log에서 재현되지 않았다.
+- `vendor-firebase` 단일 420 KB대 chunk는 v1.0.83에서 `vendor-firebase-app`, `vendor-firebase-core`, `vendor-firebase-auth`, `vendor-firebase-firestore`로 분리되었다. 가장 큰 JS chunk는 `vendor-pixi-core-v1081` 약 343.01 KB다.
+
+## v1.0.83 다음 업데이트 예상
+
+- v1.0.84에서는 랭킹 상태 chip의 실제 모바일 줄바꿈, Firebase chunk 분리 후 산출물 크기, boss atlas runtime resolve 경고 소거 여부, 추가 WebP/atlas 이미지 최적화 후보를 이어서 본다.
+
+## v1.0.82 실제 수정 내역
+
+- `package.json` 버전을 `1.0.82`로 갱신했다.
+- `v1082-firebase-free-write-budget`를 추가해 랭킹 저장 전 일일 write budget과 중복 score signature를 확인한다.
+- `force` 랭킹 새로고침이 더 이상 Firebase read budget을 우회하지 않게 수정했다.
+- 점수 저장 후에는 현재 플레이한 보드의 랭킹을 먼저 갱신하고, 다른 랭킹은 cache/local 우선으로 처리한다.
+- `src/auth.js`에 profile write guard를 추가해 같은 계정/표시명은 12시간 안에 `users/{uid}` write를 반복하지 않는다.
+- `v1082-lobby-panel-anchor-stability`를 추가해 로비 메뉴 긴 패널의 scrollTop과 첫 visible anchor selector를 같이 저장한다.
+- 복원/도감/상점 긴 패널에 `overflow-anchor`, `scroll-padding`, `scroll-margin` 보강 CSS를 추가했다.
+- `v1082-qa-output-wording-refresh`를 추가하고 최근 QA 출력 문구를 호환 범위 기준으로 정리했다.
+- `tools/check-firebase-write-lobby-anchor.mjs` 신규 추가 및 GitHub Pages / quality-check workflow에 연결했다.
+- 기존 QA 허용 범위를 v1.0.82까지 확장했다.
+- `dream-library-cache-v1.0.82`, `texture-atlas-manifest-v1.0.82.json`을 추가했다.
+- 구버전 코드 부활 방지 항목 유지: `statusbar-icon-right-v1046`, `board-minimap`, `보기 맞춤`, `드래그 이동`, `손가락 시작`, `data-legacy-role-copy`.
+
+## v1.0.82 검수 결과
+
+- `npm run typecheck` 통과.
+- 전체 89개 `check:*` QA suite 통과.
+- `npm run check:firebase-write-lobby-anchor` 통과.
+- `npm run check:camera-status-image-budget` 통과.
+- `npm run check:modal-focus-rank-budget` 통과.
+- `npm run report:images` 통과. 456 files, 52.37 MB. 1.2 MB 초과 이미지 9개는 계속 후속 최적화 후보.
+- `npm run build:github` 통과.
+- 빌드 경고: `/DR/assets/atlas/boss-frames-v2.png` runtime resolve 경고가 계속 있음. 기존 경고이며 실패 아님.
+- v1.0.81에서 분리한 `vendor-pixi` 500 KB 초과 경고는 계속 해소 상태. 가장 큰 JS chunk는 `vendor-firebase` 약 420.91 KB.
+
+## v1.0.82 다음 업데이트 예상
+
+- v1.0.83에서는 랭킹 보호 상태 문구의 사용자 친화성, WebP fallback 실제 로딩, boss atlas resolve 경고, 대용량 이미지 추가 최적화, 로비 anchor 복귀 체감을 이어서 본다.
 
 ## v1.0.78 실제 수정 내역
 
