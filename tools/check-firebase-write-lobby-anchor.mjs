@@ -20,7 +20,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.82', '1.0.83'].includes(files.pkg.version)) errors.push(`package version must be 1.0.82 or 1.0.83, got ${files.pkg.version}`);
+if (!['1.0.82', '1.0.83', '1.0.84'].includes(files.pkg.version)) errors.push(`package version must be 1.0.82 or 1.0.83, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:firebase-write-lobby-anchor');
 
 for (const token of ['v1082-firebase-free-write-budget', 'v1082-lobby-panel-anchor-stability', 'v1082-qa-output-wording-refresh']) {
@@ -70,4 +70,4 @@ if (errors.length) {
   console.error(`Firebase write/lobby anchor QA failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Firebase write budget and lobby anchor QA passed for supported v1.0.82-v1.0.83 range.');
+console.log('Firebase write budget and lobby anchor QA passed for supported v1.0.82-v1.0.84 range.');

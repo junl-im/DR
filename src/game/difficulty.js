@@ -261,6 +261,7 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.84.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.83.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.82.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.80.json`,
@@ -314,6 +315,7 @@ export const PRELOAD_ASSETS = [
 
   `${import.meta.env.BASE_URL}assets/backgrounds/dream-library-25d.webp`,
   `${import.meta.env.BASE_URL}assets/backgrounds/dream-library-25d.png`,
+  `${import.meta.env.BASE_URL}assets/backgrounds/imported-moon-library.webp`,
   `${import.meta.env.BASE_URL}assets/backgrounds/imported-moon-library.png`,
   `${import.meta.env.BASE_URL}assets/characters/assistant-01.png`,
   `${import.meta.env.BASE_URL}assets/characters/assistant-02.png`,
@@ -341,6 +343,8 @@ export const PRELOAD_ASSETS = [
   `${import.meta.env.BASE_URL}assets/characters/boss-motion-sheet-v2.png`,
   `${import.meta.env.BASE_URL}assets/characters/boss-sticker-sheet-v2.png`,
   `${import.meta.env.BASE_URL}assets/ui/logo-dream-library-v2.png`,
+  `${import.meta.env.BASE_URL}assets/ui/frame-library-v2.webp`,
+  `${import.meta.env.BASE_URL}assets/ui/frame-library-v2.png`,
   `${import.meta.env.BASE_URL}assets/ui/frame-ornate-v2.png`,
   ...Array.from({ length: 24 }, (_, index) => `${import.meta.env.BASE_URL}assets/effects/v2-fragments/v2-fragment-${String(index + 1).padStart(2, '0')}.png`),
   ...TILE_SET.flatMap((tile) => tile.stateAssets ? Object.values(tile.stateAssets) : [tile.asset])

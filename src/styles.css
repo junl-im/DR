@@ -7259,3 +7259,70 @@ html[data-webp-fallback-qa="v1083-webp-fallback-qa"][data-webp-support="png-fall
   }
 }
 /* v1083 anchors: v1083-rank-ui-copy-polish v1083-webp-fallback-qa v1083-boss-atlas-resolve-guard cloud-device-copy-safe cached-rank-natural-copy boss-atlas-no-hardcoded-dr-url */
+
+html[data-asset-fallback-load-polish="v1084-asset-fallback-load-polish"] {
+  --v1084-fallback-polish: imported-moon-library-webp frame-library-webp boss-atlas-build-verify;
+}
+.rank-source-note[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"],
+.rank-empty[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] {
+  grid-template-columns: 1.18rem minmax(0, 1fr) minmax(3.8rem, auto) auto auto;
+  align-items: center;
+}
+.rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] strong {
+  justify-self: end;
+  min-width: 3.2rem;
+  text-align: right;
+}
+.rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] em,
+.rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] small,
+.rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] .rank-fresh-chip {
+  max-width: 5.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 430px) {
+  .rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] {
+    grid-template-columns: 1.08rem minmax(0, 1fr) minmax(3.25rem, auto);
+    column-gap: 0.26rem;
+    row-gap: 0.1rem;
+  }
+  .rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] small,
+  .rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] .rank-fresh-chip,
+  .rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] em {
+    grid-column: 2 / -1;
+    justify-self: start;
+    max-width: 100%;
+    padding-block: 0.08rem;
+  }
+  .rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] .rank-fresh-chip + em {
+    margin-left: 0;
+  }
+  .rank-source-note[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] em {
+    justify-self: start;
+    max-width: 100%;
+  }
+}
+@media (max-width: 360px) {
+  .rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] {
+    grid-template-columns: 1rem minmax(0, 1fr) auto;
+    padding-inline: 0.5rem;
+  }
+  .rank-row[data-rank-chip-wrap="v1084-mobile-rank-chip-wrap"] strong {
+    min-width: 2.8rem;
+    font-size: 0.8rem;
+  }
+}
+.lobby-panel-dock[data-lobby-anchor-settle-qa="v1084-lobby-anchor-settle-qa"] {
+  scroll-behavior: auto;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+}
+.lobby-panel-dock[data-lobby-anchor-settle-qa="v1084-lobby-anchor-settle-qa"] [data-lobby-panel] :is(button, [data-restore-id], [data-stage-id], [data-season-shop-item], .collection-tile) {
+  scroll-margin-block: 1.1rem;
+}
+/* v1084 anchors: v1084-mobile-rank-chip-wrap v1084-asset-fallback-load-polish v1084-lobby-anchor-settle-qa v1084-boss-atlas-build-verify imported-moon-library.webp frame-library-v2.webp */
+

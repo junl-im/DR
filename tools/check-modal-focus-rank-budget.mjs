@@ -19,7 +19,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.79-v1.0.82 range, got ${files.pkg.version}`);
+if (!['1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.84'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.79-v1.0.82 range, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:modal-focus-rank-budget');
 
 for (const token of ['v1079-modal-focus-return', 'v1079-firebase-free-read-budget', 'v1079-vendor-effects-split', 'v1079-image-optimization-candidates']) {

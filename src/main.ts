@@ -157,6 +157,10 @@ const QA_OUTPUT_WORDING_REFRESH_PATCH = 'v1082-qa-output-wording-refresh';
 const RANK_UI_COPY_POLISH_PATCH = 'v1083-rank-ui-copy-polish';
 const WEBP_FALLBACK_QA_PATCH = 'v1083-webp-fallback-qa';
 const BOSS_ATLAS_RESOLVE_GUARD_PATCH = 'v1083-boss-atlas-resolve-guard';
+const MOBILE_RANK_CHIP_WRAP_PATCH = 'v1084-mobile-rank-chip-wrap';
+const ASSET_FALLBACK_LOAD_POLISH_PATCH = 'v1084-asset-fallback-load-polish';
+const LOBBY_ANCHOR_SETTLE_QA_PATCH = 'v1084-lobby-anchor-settle-qa';
+const BOSS_ATLAS_BUILD_VERIFY_PATCH = 'v1084-boss-atlas-build-verify';
 const RANKING_CACHE_TTL_MS = 8 * 60 * 1000;
 const FIREBASE_RANK_DAILY_READ_LIMIT = 12;
 const FIREBASE_RANK_DAILY_WRITE_LIMIT = 18;
@@ -201,6 +205,7 @@ const V1079_COMPAT_TOKENS = 'v1079-modal-focus-return v1079-firebase-free-read-b
 const V1081_COMPAT_TOKENS = 'v1081-real-device-camera-feel v1081-boss-status-priority v1081-image-boot-budget dream-library-cache-v1.0.81 texture-atlas-manifest-v1.0.81.json';
 const V1082_COMPAT_TOKENS = 'v1082-firebase-free-write-budget v1082-lobby-panel-anchor-stability v1082-qa-output-wording-refresh dream-library-cache-v1.0.82 texture-atlas-manifest-v1.0.82.json';
 const V1083_COMPAT_TOKENS = 'v1083-rank-ui-copy-polish v1083-webp-fallback-qa v1083-boss-atlas-resolve-guard dream-library-cache-v1.0.83 texture-atlas-manifest-v1.0.83.json';
+const V1084_COMPAT_TOKENS = 'v1084-mobile-rank-chip-wrap v1084-asset-fallback-load-polish v1084-lobby-anchor-settle-qa v1084-boss-atlas-build-verify dream-library-cache-v1.0.84 texture-atlas-manifest-v1.0.84.json imported-moon-library.webp frame-library-v2.webp';
 void V1072_COMPAT_TOKENS;
 const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
 void V1071_COMPAT_TOKENS;
@@ -214,14 +219,19 @@ void V1079_COMPAT_TOKENS;
 void V1081_COMPAT_TOKENS;
 void V1082_COMPAT_TOKENS;
 void V1083_COMPAT_TOKENS;
+void V1084_COMPAT_TOKENS;
 function syncImageFallbackCapability() {
   const marker = document.createElement('canvas');
   const canWebp = Boolean(marker.getContext && marker.toDataURL('image/webp').startsWith('data:image/webp'));
   document.documentElement.dataset.webpFallbackQa = WEBP_FALLBACK_QA_PATCH;
   document.documentElement.dataset.bossAtlasResolveGuard = BOSS_ATLAS_RESOLVE_GUARD_PATCH;
+  document.documentElement.dataset.assetFallbackLoadPolish = ASSET_FALLBACK_LOAD_POLISH_PATCH;
+  document.documentElement.style.setProperty('--imported-moon-library-url', backgroundImageSet('imported-moon-library'));
+  document.documentElement.style.setProperty('--frame-library-v2-url', `image-set(url(${import.meta.env.BASE_URL}assets/ui/frame-library-v2.webp) type("image/webp"), url(${import.meta.env.BASE_URL}assets/ui/frame-library-v2.png) type("image/png"))`);
   document.documentElement.dataset.webpSupport = canWebp ? 'webp-first' : 'png-fallback';
   document.body?.setAttribute('data-webp-fallback-qa', `${WEBP_FALLBACK_QA_PATCH}-${canWebp ? 'webp-first' : 'png-fallback'}`);
   document.body?.setAttribute('data-boss-atlas-resolve-guard', BOSS_ATLAS_RESOLVE_GUARD_PATCH);
+  document.body?.setAttribute('data-asset-fallback-load-polish', `${ASSET_FALLBACK_LOAD_POLISH_PATCH}-${canWebp ? 'webp-first' : 'png-fallback'}`);
   return canWebp;
 }
 syncImageFallbackCapability();
@@ -3101,11 +3111,19 @@ function restoreLobbyPanelScroll(panelKey = state.activeLobbyPanel) {
     const max = Math.max(0, el.lobbyPanelDock.scrollHeight - el.lobbyPanelDock.clientHeight);
     el.lobbyPanelDock.scrollTop = Math.min(desired, max);
     if (phase === 'settled' && anchor) {
-      document.querySelector<HTMLElement>(`[data-lobby-panel="${panelKey}"] ${anchor}`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      const anchorNode = document.querySelector<HTMLElement>(`[data-lobby-panel="${panelKey}"] ${anchor}`);
+      if (anchorNode) {
+        const dockRect = el.lobbyPanelDock.getBoundingClientRect();
+        const nodeRect = anchorNode.getBoundingClientRect();
+        const outside = nodeRect.top < dockRect.top + 18 || nodeRect.bottom > dockRect.bottom - 18;
+        if (outside) anchorNode.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
     }
   };
   document.body.dataset.lobbyPanelAnchorStability = LOBBY_PANEL_ANCHOR_STABILITY_PATCH;
+  document.body.dataset.lobbyAnchorSettleQa = LOBBY_ANCHOR_SETTLE_QA_PATCH;
   el.lobbyPanelDock.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
+  el.lobbyPanelDock.setAttribute('data-lobby-anchor-settle-qa', LOBBY_ANCHOR_SETTLE_QA_PATCH);
   apply();
   // Legacy QA anchor v1076: requestAnimationFrame(() => requestAnimationFrame(apply))
   requestAnimationFrame(() => requestAnimationFrame(() => apply('settled')));
@@ -3130,6 +3148,8 @@ function syncLobbyMenuPortal() {
   document.body.dataset.lobbyNavigationRhythm = LOBBY_NAVIGATION_RHYTHM_PATCH;
   document.body.dataset.lobbyPanelAnchorStability = LOBBY_PANEL_ANCHOR_STABILITY_PATCH;
   document.body.dataset.qaOutputWordingRefresh = QA_OUTPUT_WORDING_REFRESH_PATCH;
+  document.body.dataset.lobbyAnchorSettleQa = LOBBY_ANCHOR_SETTLE_QA_PATCH;
+  document.body.dataset.mobileRankChipWrap = MOBILE_RANK_CHIP_WRAP_PATCH;
   document.body.classList.toggle('lobby-menu-tight', tight);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
@@ -4174,6 +4194,7 @@ function canUseFirebaseRankRead(kind: 'global' | 'daily', force = false) {
   document.body.dataset.firebaseRankReads = String(state.firebaseRankReadBudget.reads || 0);
   document.body.dataset.firebaseRankRefreshMode = force ? 'force-respects-budget-v1082-v1083-copy-safe' : 'passive-v1083-copy-safe';
   document.body.dataset.rankUiCopyPolish = RANK_UI_COPY_POLISH_PATCH;
+  document.body.dataset.mobileRankChipWrap = MOBILE_RANK_CHIP_WRAP_PATCH;
   if (!allow) return false;
   state.firebaseRankReadBudget.reads = Number(state.firebaseRankReadBudget.reads || 0) + 1;
   writeJson(FIREBASE_RANK_BUDGET_KEY, state.firebaseRankReadBudget);
@@ -4312,19 +4333,21 @@ function getRankSourceSummary(mode: 'cloud' | 'local' | 'mixed', freshness: 'clo
 
 function renderRankRows(rows: any[], emptyLabel = '로컬 플레이 준비 완료', mode: 'cloud' | 'local' | 'mixed' = 'mixed', freshness: 'cloud' | 'cache' | 'fallback' | 'budget' = 'cloud') {
   document.body.dataset.rankUiCopyPolish = RANK_UI_COPY_POLISH_PATCH;
+  document.body.dataset.mobileRankChipWrap = MOBILE_RANK_CHIP_WRAP_PATCH;
   const summary = getRankSourceSummary(mode, freshness);
   state.rankStatusCopy = summary.status;
   writeText(RANK_STATUS_COPY_KEY, summary.status);
-  if (!rows.length) return `<li class="rank-empty" data-rank-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}">${escapeHtml(emptyLabel)}<em>${escapeHtml(summary.status)}</em></li>`;
+  if (!rows.length) return `<li class="rank-empty" data-rank-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}" data-rank-chip-wrap="${MOBILE_RANK_CHIP_WRAP_PATCH}">${escapeHtml(emptyLabel)}<em>${escapeHtml(summary.status)}</em></li>`;
   // v1079 keeps legacy QA wording anchor: Cloud 기록과 기기 기록을 함께 표시합니다.
-  const sourceSummary = `<li class="rank-source-note" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}" data-rank-freshness="${freshness}" aria-label="${escapeHtml(summary.title)} - ${escapeHtml(summary.status)}"><strong>${escapeHtml(summary.title)}</strong><span>${escapeHtml(summary.detail)}</span><em>${escapeHtml(summary.status)}</em></li>`;
+  const sourceSummary = `<li class="rank-source-note" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}" data-rank-chip-wrap="${MOBILE_RANK_CHIP_WRAP_PATCH}" data-rank-freshness="${freshness}" aria-label="${escapeHtml(summary.title)} - ${escapeHtml(summary.status)}"><strong>${escapeHtml(summary.title)}</strong><span>${escapeHtml(summary.detail)}</span><em>${escapeHtml(summary.status)}</em></li>`;
   return sourceSummary + rows.map((entry, index) => {
     const rankClass = index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '';
     const sourceClass = entry.source === 'cloud' ? 'rank-cloud' : 'rank-local';
     const sourceLabel = entry.source === 'cloud' ? '클라우드' : '기기 저장';
+    const compactSourceLabel = entry.source === 'cloud' ? '클라우드' : '기기';
     const dailyTag = entry.dailyKey ? `<small>${escapeHtml(String(entry.dailyKey).slice(5))}</small>` : '';
-    const freshTag = entry.fresh ? '<i class="rank-fresh-chip">방금 기록</i>' : '';
-    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}" data-rank-fresh="${entry.fresh ? 'true' : 'false'}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" aria-label="${index + 1}위 ${escapeHtml(entry.displayName || '사서')} ${formatNumber(entry.score || 0)}점 ${sourceLabel}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}${freshTag}<em>${sourceLabel}</em></li>`;
+    const freshTag = entry.fresh ? '<i class="rank-fresh-chip" aria-label="방금 기록한 점수">방금</i>' : '';
+    return `<li class="rank-row ${rankClass} ${sourceClass}" data-rank-source="${entry.source}" data-rank-mode="${mode}" data-rank-fresh="${entry.fresh ? 'true' : 'false'}" data-rank-ui-copy-polish="${RANK_UI_COPY_POLISH_PATCH}" data-rank-chip-wrap="${MOBILE_RANK_CHIP_WRAP_PATCH}" data-firebase-free-read-budget="${FIREBASE_FREE_READ_BUDGET_PATCH}" aria-label="${index + 1}위 ${escapeHtml(entry.displayName || '사서')} ${formatNumber(entry.score || 0)}점 ${sourceLabel}"><b>${index + 1}</b><span>${escapeHtml(entry.displayName || '사서')}</span><strong>${formatNumber(entry.score || 0)}</strong>${dailyTag}${freshTag}<em title="${sourceLabel}">${compactSourceLabel}</em></li>`;
   }).join('');
 }
 

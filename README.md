@@ -61,6 +61,27 @@ Atlas 생성
 ## Version History
 
 
+### v1.0.84 - Mobile Ranking Chip Wrap, Asset Fallback Load Polish and Lobby Anchor Settle QA Patch
+
+- v1.0.83 기준 통파일을 점검하고 실제 모바일에서 랭킹 상태 chip이 이름/점수와 겹치거나 과하게 길어지는 흐름을 다시 다듬었다.
+- `v1084-mobile-rank-chip-wrap`을 추가해 랭킹 row에 `data-rank-chip-wrap`을 부여하고, 작은 화면에서는 점수/이름/source chip/방금 기록 chip이 안정적으로 줄바꿈되도록 grid를 재조정했다.
+- 방금 기록 chip 문구는 `방금 기록`에서 화면용 `방금`으로 줄이고, 접근성 `aria-label`에는 의미를 유지해 좁은 폭에서 덜 밀리게 했다.
+- `v1084-asset-fallback-load-polish`를 추가해 `imported-moon-library.webp`, `frame-library-v2.webp`를 생성하고 PNG fallback보다 WebP를 먼저 preload/cache 후보에 배치했다.
+- `v1084-lobby-anchor-settle-qa`를 추가해 로비 긴 패널 복귀 시 anchor가 이미 화면 안에 있으면 불필요한 `scrollIntoView`를 하지 않아 작은 화면 튐을 줄였다.
+- `v1084-boss-atlas-build-verify`를 추가해 v1.0.83의 boss atlas CSS 변수 guard가 유지되는지, 빌드에서 `/DR/assets/atlas/boss-frames-v2.png` resolve 경고가 다시 나오는지 계속 추적한다.
+- `tools/check-mobile-rank-fallback-anchor.mjs`를 추가하고 GitHub Pages / Quality Check workflow에 연결했다.
+- service worker cache를 `dream-library-cache-v1.0.84`로 갱신하고 `texture-atlas-manifest-v1.0.84.json`을 추가했다.
+- 기존 금지 항목인 `statusbar-icon-right-v1046`, 보드 미니맵, 보기 맞춤, 드래그 이동 도움말, 손가락 시작 문구, `data-legacy-role-copy`는 계속 부활 방지 QA 대상으로 유지한다.
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
+
+다음 업데이트 예정: v1.0.85 - Mobile Lobby Panel Touch QA, Remaining Image Budget and Firebase Rank State Polish Patch
+
+- 실제 모바일에서 로비 긴 패널 anchor 복귀가 탭/모달/보상 복귀 후에도 튀지 않는지 추가 확인
+- 남은 대용량 이미지 9개 중 atlas PNG와 UI frame의 WebP/atlas 분기 가능성 추가 조사
+- Firebase 무료 보호 상태가 랭킹 새로고침/점수 저장 직후 자연스럽게 보이는지 copy polish
+- 카메라 drag/zoom 분리와 보스 상태바 비율이 다음 빌드에서도 유지되는지 재확인
+
+
 ### v1.0.83 - Rank UI Copy Polish, WebP Fallback QA and Boss Atlas Resolve Guard Patch
 
 - v1.0.82 기준 통파일을 점검하고 랭킹의 클라우드/기기/캐시/무료 보호 상태 문구를 사용자 친화적으로 다듬었다.

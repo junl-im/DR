@@ -15,7 +15,7 @@ const errors = [];
 const all = files.index + files.main + files.css + files.sw + files.difficulty;
 const has = (body, token, label = token) => { if (!body.includes(token)) errors.push(`missing ${label}: ${token}`); };
 
-if (!['1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83'].includes(files.pkg.version)) errors.push(`package version must be 1.0.71 or 1.0.72, got ${files.pkg.version}`);
+if (!['1.0.71', '1.0.72', '1.0.73', '1.0.74', '1.0.75', '1.0.76', '1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.84'].includes(files.pkg.version)) errors.push(`package version must be 1.0.71 or 1.0.72, got ${files.pkg.version}`);
 if (!files.pkg.scripts['check:reward-modal-flow-polish']) errors.push('missing package script check:reward-modal-flow-polish');
 [
   'v1071-modal-button-microcopy-priority',
