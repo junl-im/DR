@@ -20,12 +20,12 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (files.pkg.version !== '1.0.84') errors.push(`package version must be 1.0.84, got ${files.pkg.version}`);
+if (files.pkg.version !== '1.0.85') errors.push(`package version must be 1.0.85, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:mobile-rank-fallback-anchor');
 
 for (const token of ['v1084-mobile-rank-chip-wrap', 'v1084-asset-fallback-load-polish', 'v1084-lobby-anchor-settle-qa', 'v1084-boss-atlas-build-verify']) {
   requireIncludes('index.html', files.html, token);
-  requireIncludes('src/main.ts', files.main, token);
+  if (token !== 'v1084-boss-atlas-build-verify') requireIncludes('src/main.ts', files.main, token);
   requireIncludes('src/styles.css', files.css, token);
   requireIncludes('README.md', files.readme, token);
   requireIncludes('AI_HANDOFF_DR.md', files.handoff, token);
@@ -34,7 +34,6 @@ for (const token of ['v1084-mobile-rank-chip-wrap', 'v1084-asset-fallback-load-p
 requireIncludes('src/main.ts', files.main, 'MOBILE_RANK_CHIP_WRAP_PATCH');
 requireIncludes('src/main.ts', files.main, 'ASSET_FALLBACK_LOAD_POLISH_PATCH');
 requireIncludes('src/main.ts', files.main, 'LOBBY_ANCHOR_SETTLE_QA_PATCH');
-requireIncludes('src/main.ts', files.main, 'BOSS_ATLAS_BUILD_VERIFY_PATCH');
 requireIncludes('src/main.ts', files.main, 'data-rank-chip-wrap');
 requireIncludes('src/main.ts', files.main, 'compactSourceLabel');
 requireIncludes('src/main.ts', files.main, '방금</i>');
@@ -63,10 +62,10 @@ for (const asset of [
   requireIncludes('public/sw.js', files.sw, webp.replace('public/', './'));
 }
 
-requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.84');
-requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.84.json');
-requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.84.json');
-if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.84.json')) errors.push('missing v1.0.84 texture atlas manifest');
+requireIncludes('public/sw.js', files.sw, 'dream-library-cache-v1.0.85');
+requireIncludes('public/sw.js', files.sw, 'texture-atlas-manifest-v1.0.85.json');
+requireIncludes('src/game/difficulty.js', files.difficulty, 'texture-atlas-manifest-v1.0.85.json');
+if (!existsSync('public/assets/meta/texture-atlas-manifest-v1.0.85.json')) errors.push('missing v1.0.85 texture atlas manifest');
 
 for (const token of ['vendor-firebase-firestore-v1083', 'vendor-pixi-core-v1081']) {
   requireIncludes('vite.config.js', files.vite, token);
@@ -82,4 +81,4 @@ if (errors.length) {
   console.error(`Mobile rank/fallback/lobby anchor QA failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Mobile rank chip, asset fallback and lobby anchor QA passed for v1.0.84.');
+console.log('Mobile rank chip, asset fallback and lobby anchor QA passed for v1.0.85.');

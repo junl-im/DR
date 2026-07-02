@@ -7,7 +7,7 @@ const html = readFileSync('index.html', 'utf8');
 
 const requiredStageTokens = ['getDailyChallenge', 'modifiers', 'fog', 'locked', 'timeSeal', 'bossPressure', 'bossId'];
 const requiredBossTokens = ['forgotten-spirit', 'shadow-librarian', 'sealed-page-golem', 'comboWarningEvery', 'warningSeconds', 'telegraphTitle', 'pressurePenalty'];
-const requiredMainTokens = ['renderRestoration', 'renderCollection', 'openRestorationDetail', 'loadDailyLeaderboard', 'dream-library-inventory', 'chapterTabs', 'initBackNavigation', 'handleSoftBack', 'exitToFirstScreen', 'handleSpecialTileGate', 'triggerBossTelegraph', 'renderLobbyMissionDeck', 'loadAudioRuntime', 'loadSpineRuntime', 'requestKakaoPortraitLock', 'showExitSleep', 'renderLocalDailyLeaderboard'];
+const requiredMainTokens = ['renderRestoration', 'renderCollection', 'openRestorationDetail', 'loadDailyLeaderboard', 'dream-library-inventory', 'chapterTabs', 'initBackNavigation', 'handleSoftBack', 'exitToFirstScreen', 'handleSpecialTileGate', 'triggerBossTelegraph', 'renderLobbyMissionDeck', 'loadAudioRuntime', 'loadSpineRuntime', 'requestKakaoPortraitLock', 'showExitSleep', 'getLocalRankRows'];
 const requiredHtmlTokens = ['collection-list', 'daily-leaderboard-list', 'restoration-detail-modal', 'boss-image', 'boss-pattern', 'exit-confirm-modal', 'exit-confirm-button', 'boss-telegraph', 'lobby-mission-deck', 'portrait-lock-overlay', 'exit-sleep-modal'];
 const missing = [
   ...requiredStageTokens.filter((token) => !stages.includes(token)),

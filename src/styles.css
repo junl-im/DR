@@ -2549,14 +2549,14 @@ body[data-screen="game"] .screen-stack {
   pointer-events: none;
   opacity: 0.72;
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1040"] {
+.boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"] {
   isolation: isolate;
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1040"] #boss-image {
+.boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"] #boss-image {
   z-index: 2;
   opacity: 1;
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+.boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"].boss-atlas-ready .boss-atlas-sprite {
   z-index: 3;
   opacity: 0.58;
   mix-blend-mode: screen;
@@ -2599,7 +2599,7 @@ body[data-screen="game"] .screen-stack {
     right: 0.42rem;
     top: 0.42rem;
   }
-  .boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+  .boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"].boss-atlas-ready .boss-atlas-sprite {
     opacity: 0.48;
   }
   .boss-telegraph[data-boss-id] {
@@ -2652,7 +2652,7 @@ body[data-screen="game"] .screen-stack {
 .boss-core[data-boss-flow-tempo="heavy-slow"]::after {
   box-shadow: 0 0 34px rgba(245, 200, 107, 0.3);
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+.boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"].boss-atlas-ready .boss-atlas-sprite {
   opacity: 0.5;
 }
 .battle-stage[data-boss-cutin-priority="compact"] .boss-hit-cutin[data-visual-priority="compact-hit"] {
@@ -2663,7 +2663,7 @@ body[data-screen="game"] .screen-stack {
   .pixi-board-host[data-zoom-readability="far"] canvas {
     filter: saturate(1.12) contrast(1.1);
   }
-  .boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+  .boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"].boss-atlas-ready .boss-atlas-sprite {
     opacity: 0.42;
   }
 }
@@ -2688,11 +2688,11 @@ body[data-screen="game"] .screen-stack {
 .battle-stage[data-board-focus-follow="near-edge-only-v1040"] .pixi-board-host::before {
   opacity: 0.1;
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1040"] #boss-image[data-boss-asset-polish="v1040-stable-visible"] {
+.boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"] #boss-image[data-boss-asset-polish="v1040-stable-visible"] {
   opacity: 1;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22)) saturate(1.04);
 }
-.boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+.boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"].boss-atlas-ready .boss-atlas-sprite {
   opacity: 0.38;
   transform: translate(-50%, -50%) scale(calc(var(--boss-frame-scale, 0.28) * 0.94));
 }
@@ -2732,7 +2732,7 @@ body[data-screen="game"] .screen-stack {
     padding: 0.48rem;
     font-size: 0.78rem;
   }
-  .boss-core[data-boss-visual-stack="stable-atlas-v1040"].boss-atlas-ready .boss-atlas-sprite {
+  .boss-core[data-boss-visual-stack="stable-atlas-v1054-collection-link-polish"].boss-atlas-ready .boss-atlas-sprite {
     opacity: 0.32;
   }
 }

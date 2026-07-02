@@ -118,5 +118,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.84"
+  "version": "1.0.85"
 }

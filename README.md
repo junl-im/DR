@@ -60,6 +60,27 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.85 - Live Code Cleanup, Dead Function Deletion and QA Integration Patch
+
+- v1.0.84 기준 통파일을 점검하고 이번 패치 범위를 코드 정리로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.
+- TypeScript `noUnusedLocals` 기준과 grep 호출 추적으로 살아있는 코드와 죽은 코드를 먼저 분리했다. 정상 호출 경로가 있는 함수와 실제 UI/게임 로직에 효과가 있는 코드는 유지했다.
+- `src/main.ts`에서 실제 호출 경로가 없던 `enterLobbyFromStart()`, `getRecentSeasonShopHistoryId()`, `renderLocalLeaderboard()`, `renderLocalDailyLeaderboard()`를 삭제했다. 로비 진입은 이미 `enterLobbyFromAuth('resume')` 경로로 통합되어 있었고, 랭킹 fallback은 `loadLeaderboard()` / `loadDailyLeaderboard()` 안에서 `getLocalRankRows()`와 `renderRankRows()`로 직접 처리되고 있었다.
+- `src/game/difficulty.js`에서 외부 import/내부 호출이 없던 `isV2GameplayTile()`와 그 전용 `V2_TILE_TYPES`를 삭제했다. 타일 선택은 `GAMEPLAY_TILE_SET` / `getGameplayTiles()` 경로가 살아있는 기준으로 유지된다.
+- `requestGameFullscreen`의 `src/main.ts` 미사용 import와, 값만 남아 있던 예전 patch token 상수/compat token 상수/`void ...COMPAT_TOKENS` 블록을 삭제했다. 보스 이미지, 카메라, 시즌, 랭킹, 모달의 실제 동작 상수는 유지했다.
+- `stable-atlas-v1040` 전용 CSS selector는 현재 런타임에서 실제로 설정되는 `stable-atlas-v1054-collection-link-polish` selector로 통합했다. 삭제 전 추적 결과, main은 이미 v1054 값을 쓰고 있어 v1040 selector는 실제 효과가 끊긴 상태였다.
+- QA 스크립트는 삭제한 함수/토큰 이름을 강제로 찾지 않도록 정리하고, 현재 살아있는 호출 경로와 실제 mount/dataset/CSS selector를 검사하도록 수정했다.
+- `src/game/difficulty.js`의 별도 `LEGACY_QA_ATLAS_MANIFEST_ANCHORS` 블록을 삭제하고, 필요한 manifest는 `ATLAS_ASSETS`의 실제 preload 후보로 통합했다.
+- service worker cache를 `dream-library-cache-v1.0.85`로 갱신하고 `texture-atlas-manifest-v1.0.85.json`을 추가했다.
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
+
+다음 업데이트 예정: v1.0.86 - Service Worker Legacy Anchor Cleanup and Hidden Compatibility Mount Audit
+
+- `public/sw.js`의 legacy QA cache anchor가 실제 캐시 정책인지, 단순 문자열 앵커인지 추가 추적
+- `index.html`의 hidden compatibility mount가 실제 화면/QA에 필요한지 추적 후 삭제 또는 실제 mount로 통합
+- CSS의 오래된 version selector 중 현재 runtime dataset과 연결되지 않은 항목 분류
+- 살아있는 로비/시즌/보스/랭킹 흐름은 건드리지 않고, 죽은 앵커와 죽은 selector만 단계적으로 정리
+
+
 
 ### v1.0.84 - Mobile Ranking Chip Wrap, Asset Fallback Load Polish and Lobby Anchor Settle QA Patch
 

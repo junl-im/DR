@@ -20,7 +20,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.83', '1.0.84'].includes(files.pkg.version)) errors.push(`package version must be 1.0.83 or 1.0.84, got ${files.pkg.version}`);
+if (!['1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must be 1.0.83 or 1.0.85, got ${files.pkg.version}`);
 requireIncludes('package.json', files.pkgText, 'check:rank-copy-webp-atlas');
 
 for (const token of ['v1083-rank-ui-copy-polish', 'v1083-webp-fallback-qa', 'v1083-boss-atlas-resolve-guard']) {

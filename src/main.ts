@@ -8,7 +8,7 @@ import { countRemaining, countSpecialTiles, createBoard, findConnectionPath, fin
 import { getBossForStage, getBossPhase, getBossStageTags } from './game/bosses.js';
 import { BOSS_ATLAS_SHEET, getBossAtlasFrame } from './game/bossAtlas.js';
 import { initBrowserGuard } from './platform/browserGuard.js';
-import { initFullscreenControls, requestGameFullscreen, syncGameViewport } from './platform/fullscreen.js';
+import { initFullscreenControls, syncGameViewport } from './platform/fullscreen.js';
 import { initPortraitRuntimeGuard } from './platform/portraitLock.js';
 import { initInstallPrompt, registerServiceWorker } from './platform/pwa.js';
 import { GAME_TITLE } from './config/design';
@@ -31,19 +31,15 @@ document.documentElement.style.setProperty('--boss-atlas-sheet-h', `${BOSS_ATLAS
 
 const BOSS_IMAGE_FALLBACK_SRC = `${import.meta.env.BASE_URL}assets/characters/forgotten-spirit.png`;
 const BOSS_VISUAL_STACK_PATCH = 'stable-atlas-v1054-collection-link-polish';
-const LEGACY_BOSS_VISUAL_STACK_TOKEN = 'stable-atlas-v1040';
 const STAGE_LADDER_EXPANSION_PATCH = 'v1054-stage-map-polish-90';
 const LEGACY_STAGE_MAP_COMFORT_TOKEN = 'v1046-stage-map-comfort-42';
 const LOBBY_DRAG_DEEP_RESCUE_PATCH = 'v1054-engine-design-gesture-qa';
-const LEGACY_LOBBY_DRAG_RESCUE_TOKEN = 'v1046-gesture-final-rescue';
 const CLEAR_REWARD_FLOW_PATCH = 'v1040-clear-to-restoration';
 const AUTH_ENTRY_SIMPLIFICATION_PATCH = 'v1042-auth-entry-simplified';
 const ACCOUNT_TIME_PRESSURE_PATCH = 'v1042-account-time-pressure';
-const AUTH_MODAL_BOSS_ROLE_PATCH = 'v1043-auth-modal-boss-role';
 const GOOGLE_REDIRECT_PENDING_KEY = 'dream-library-google-redirect-pending';
 const PAIR_MATCH_TIME_BONUS_SECONDS = 3;
 const DIFFICULTY_TEMPO_PATCH = 'v1054-finale-tempo-audio-balance';
-const LEGACY_DIFFICULTY_TEMPO_TOKEN = 'v1046-difficulty-tempo-wide-ladder';
 const SUMMER_SEASON_PATCH = 'v1054-store-collection-link-vfx';
 const SUMMER_REWARD_PASS_PATCH = 'v1054-store-collection-pass';
 const SUMMER_LIVE_BALANCE_PATCH = 'v1054-finale-tempo-audio-balance';
@@ -120,7 +116,6 @@ const MODAL_BUTTON_MICROCOPY_PATCH = 'v1071-modal-button-microcopy-priority';
 const RESTORATION_COMPLETION_CUE_PATCH = 'v1071-restoration-completion-feedback-cue';
 const BOSS_TELEGRAPH_CONTRAST_PATCH = 'v1071-boss-telegraph-contrast-safe';
 const SMALL_REWARD_MODAL_QA_PATCH = 'v1071-small-reward-modal-qa';
-const LEADERBOARD_DUPLICATE_TAG_FIX_PATCH = 'v1071-leaderboard-duplicate-tag-fix';
 const LOBBY_MENU_PORTAL_PATCH = 'v1072-lobby-menu-portal';
 const SECTION_POPUP_RESTRUCTURE_PATCH = 'v1072-section-popup-restructure';
 const ROUNDED_CARD_CONTENT_READABILITY_PATCH = 'v1072-rounded-card-content-readability';
@@ -145,7 +140,6 @@ const LOW_END_RENDER_BUDGET_GUARD_PATCH = 'v1078-low-end-render-budget-guard';
 const MODAL_FOCUS_RETURN_PATCH = 'v1079-modal-focus-return';
 const FIREBASE_FREE_READ_BUDGET_PATCH = 'v1079-firebase-free-read-budget';
 const VENDOR_EFFECTS_SPLIT_PATCH = 'v1079-vendor-effects-split';
-const IMAGE_OPTIMIZATION_CANDIDATES_PATCH = 'v1079-image-optimization-candidates';
 const BOSS_STATUSBAR_BALANCE_PATCH = 'v1080-boss-statusbar-balance';
 const CAMERA_GESTURE_SEPARATION_PATCH = 'v1080-camera-gesture-separation';
 const REAL_DEVICE_CAMERA_FEEL_PATCH = 'v1081-real-device-camera-feel';
@@ -160,7 +154,6 @@ const BOSS_ATLAS_RESOLVE_GUARD_PATCH = 'v1083-boss-atlas-resolve-guard';
 const MOBILE_RANK_CHIP_WRAP_PATCH = 'v1084-mobile-rank-chip-wrap';
 const ASSET_FALLBACK_LOAD_POLISH_PATCH = 'v1084-asset-fallback-load-polish';
 const LOBBY_ANCHOR_SETTLE_QA_PATCH = 'v1084-lobby-anchor-settle-qa';
-const BOSS_ATLAS_BUILD_VERIFY_PATCH = 'v1084-boss-atlas-build-verify';
 const RANKING_CACHE_TTL_MS = 8 * 60 * 1000;
 const FIREBASE_RANK_DAILY_READ_LIMIT = 12;
 const FIREBASE_RANK_DAILY_WRITE_LIMIT = 18;
@@ -174,52 +167,6 @@ const FIRST_TOUCH_GUIDE_SEEN_KEY = 'dream-library-first-touch-guide-seen';
 const DAILY_START_COACH_SEEN_KEY = 'dream-library-daily-start-coach-seen';
 const ACTIVE_LOBBY_PANEL_KEY = 'dream-library-active-lobby-panel';
 
-const LEGACY_SUMMER_QA_TOKENS = 'v1049-summer-event-vfx v1049-summer-pass-missions v1049-season-vfx-gesture-qa v1049-compact-chapter-carousel v1049-boss-season-polish dream-library-cache-v1.0.50 texture-atlas-manifest-v1.0.50.json';
-void LEGACY_SUMMER_QA_TOKENS;
-const LEGACY_V1062_COMPAT_TOKENS = 'v1062-daily-start-focus-assist v1062-lobby-guide-comfort v1062-boss-intro-preload dream-library-cache-v1.0.62 texture-atlas-manifest-v1.0.62.json';
-void LEGACY_V1062_COMPAT_TOKENS;
-const LEGACY_V1063_COMPAT_TOKENS = 'v1063-daily-quest-chain v1063-boss-attack-readability v1063-reward-flow-polish dream-library-cache-v1.0.63 texture-atlas-manifest-v1.0.63.json';
-void LEGACY_V1063_COMPAT_TOKENS;
-const V1064_COMPAT_TOKENS = 'v1064-daily-start-arrow-only-cta v1064-lobby-ui-polish-pass dream-library-cache-v1.0.64 texture-atlas-manifest-v1.0.64.json';
-void V1064_COMPAT_TOKENS;
-const V1065_COMPAT_TOKENS = 'v1065-ui-ux-stability-pass dream-library-cache-v1.0.65 texture-atlas-manifest-v1.0.65.json';
-void V1065_COMPAT_TOKENS;
-const V1066_COMPAT_TOKENS = 'v1066-first-touch-micro-tutorial v1066-game-ui-stability-pass dream-library-cache-v1.0.66 texture-atlas-manifest-v1.0.66.json';
-void V1066_COMPAT_TOKENS;
-const V1067_COMPAT_TOKENS = 'v1067-restoration-reward-bridge v1067-boss-vfx-density-guard v1067-micro-tutorial-comfort dream-library-cache-v1.0.67 texture-atlas-manifest-v1.0.67.json';
-void V1067_COMPAT_TOKENS;
-const V1068_COMPAT_TOKENS = 'v1068-restoration-completion-theater v1068-reward-claim-motion v1068-next-goal-advisor v1068-boss-warning-icon-trim dream-library-cache-v1.0.68 texture-atlas-manifest-v1.0.68.json';
-void V1068_COMPAT_TOKENS;
-const V1069_COMPAT_TOKENS = 'v1069-lobby-rhythm-cleanup v1069-restoration-detail-ceremony v1069-reward-popup-density-guard v1069-boss-warning-icon-set-polish v1069-clear-flow-recommendation-qa dream-library-cache-v1.0.69 texture-atlas-manifest-v1.0.69.json';
-void V1069_COMPAT_TOKENS;
-const V1070_COMPAT_TOKENS = 'v1070-reward-action-accessibility-flow v1070-restoration-ceremony-feedback-cue v1070-boss-counter-line-polish v1070-mobile-safe-area-modal-qa v1070-compact-modal-action-flow dream-library-cache-v1.0.70 texture-atlas-manifest-v1.0.70.json';
-void V1070_COMPAT_TOKENS;
-const V1072_COMPAT_TOKENS = 'v1072-lobby-menu-portal v1072-section-popup-restructure v1072-rounded-card-content-readability dream-library-cache-v1.0.72 texture-atlas-manifest-v1.0.72.json';
-const V1073_COMPAT_TOKENS = 'v1073-lobby-menu-motion-state v1073-lobby-menu-back-close v1073-lobby-menu-tab-switch v1073-lobby-panel-state-retention dream-library-cache-v1.0.73 texture-atlas-manifest-v1.0.73.json';
-const V1074_COMPAT_TOKENS = 'v1074-lobby-menu-focus-trap v1074-lobby-panel-content-density v1074-lobby-menu-tap-target-qa dream-library-cache-v1.0.74 texture-atlas-manifest-v1.0.74.json';
-const V1075_COMPAT_TOKENS = 'v1075-lobby-shortcut-menu-bar v1075-lobby-copy-cleanup v1075-lobby-scroll-stability dream-library-cache-v1.0.75 texture-atlas-manifest-v1.0.75.json';
-const V1076_COMPAT_TOKENS = 'v1076-shortcut-menu-icon-polish v1076-panel-scroll-qa v1076-modal-close-flow v1076-lobby-navigation-rhythm dream-library-cache-v1.0.76 texture-atlas-manifest-v1.0.76.json';
-const V1077_COMPAT_TOKENS = 'v1077-boss-board-clearance statusbar-left-icon-safe-v1077 dream-library-cache-v1.0.77 texture-atlas-manifest-v1.0.77.json';
-const V1078_COMPAT_TOKENS = 'v1078-combat-hud-touch-clearance v1078-boss-statusbar-readability v1078-low-end-render-budget-guard dream-library-cache-v1.0.78 texture-atlas-manifest-v1.0.78.json';
-const V1079_COMPAT_TOKENS = 'v1079-modal-focus-return v1079-firebase-free-read-budget v1079-vendor-effects-split v1079-image-optimization-candidates dream-library-cache-v1.0.79 texture-atlas-manifest-v1.0.79.json';
-const V1081_COMPAT_TOKENS = 'v1081-real-device-camera-feel v1081-boss-status-priority v1081-image-boot-budget dream-library-cache-v1.0.81 texture-atlas-manifest-v1.0.81.json';
-const V1082_COMPAT_TOKENS = 'v1082-firebase-free-write-budget v1082-lobby-panel-anchor-stability v1082-qa-output-wording-refresh dream-library-cache-v1.0.82 texture-atlas-manifest-v1.0.82.json';
-const V1083_COMPAT_TOKENS = 'v1083-rank-ui-copy-polish v1083-webp-fallback-qa v1083-boss-atlas-resolve-guard dream-library-cache-v1.0.83 texture-atlas-manifest-v1.0.83.json';
-const V1084_COMPAT_TOKENS = 'v1084-mobile-rank-chip-wrap v1084-asset-fallback-load-polish v1084-lobby-anchor-settle-qa v1084-boss-atlas-build-verify dream-library-cache-v1.0.84 texture-atlas-manifest-v1.0.84.json imported-moon-library.webp frame-library-v2.webp';
-void V1072_COMPAT_TOKENS;
-const V1071_COMPAT_TOKENS = 'v1071-modal-button-microcopy-priority v1071-restoration-completion-feedback-cue v1071-boss-telegraph-contrast-safe v1071-small-reward-modal-qa v1071-leaderboard-duplicate-tag-fix dream-library-cache-v1.0.71 texture-atlas-manifest-v1.0.71.json';
-void V1071_COMPAT_TOKENS;
-void V1073_COMPAT_TOKENS;
-void V1074_COMPAT_TOKENS;
-void V1075_COMPAT_TOKENS;
-void V1076_COMPAT_TOKENS;
-void V1077_COMPAT_TOKENS;
-void V1078_COMPAT_TOKENS;
-void V1079_COMPAT_TOKENS;
-void V1081_COMPAT_TOKENS;
-void V1082_COMPAT_TOKENS;
-void V1083_COMPAT_TOKENS;
-void V1084_COMPAT_TOKENS;
 function syncImageFallbackCapability() {
   const marker = document.createElement('canvas');
   const canWebp = Boolean(marker.getContext && marker.toDataURL('image/webp').startsWith('data:image/webp'));
@@ -235,9 +182,6 @@ function syncImageFallbackCapability() {
   return canWebp;
 }
 syncImageFallbackCapability();
-
-const LEGACY_V1051_TO_V1053_COMPAT_TOKENS = 'v1051-summer-shop-claim-vfx v1052-season-shop-reward-vfx v1053-shop-history-vfx v1051-summer-shop-claim-pass v1052-season-shop-reward-pass v1053-shop-history-pass v1051-auto-focus-compact-carousel v1052-store-auto-focus-carousel v1053-shortcut-focus-carousel v1051-boss-season-icon-readability v1052-boss-finale-cutin-icon v1053-claimed-boss-icon-polish v1051-summer-shop-claim-flow v1052-season-shop-reward-claim-flow v1053-season-shop-history-claim-flow v1051-finale-balance-missions v1052-finale-boss-missions v1053-finale-boss-balance-missions current-chapter-v1051 current-chapter-v1052 next-goal-v1051-shop-claim next-goal-v1052-shop-reward next-goal-v1053-shop-history v1052-season-shop-claim-burst v1053-season-shop-history-burst v1052-season-shop-earn-shortcut v1053-season-shop-earn-focus-shortcut v1052-finale-boss-cutin v1053-finale-boss-cooldown-cutin v1053-season-store-claim-history v1053-finale-cutin-cooldown-priority v1053-mobile-ui-density-overlap-qa';
-void LEGACY_V1051_TO_V1053_COMPAT_TOKENS;
 
 const SUMMER_SEASON_COMBO_BONUS_BY_DIFFICULTY: Record<string, number> = {
   beginner: 6,
@@ -1073,7 +1017,6 @@ function initButtonStateFeedback() {
   }, { passive: true });
 }
 
-const LEGACY_LOBBY_DRAG_THRESHOLD_NOTE = 'dy > 5'; // retained for scroll-polish policy while v1.0.47 uses dy > 1.2 season gesture fluid rescue; legacy v1.0.46 markers: dy > 1.6 and dx * 0.34 and shell.scrollTop -= deltaY * 1.18
 
 function initLobbyScrollGuard() {
   const shell = el.app?.closest<HTMLElement>('.app-shell') || document.querySelector<HTMLElement>('.app-shell');
@@ -1150,10 +1093,6 @@ function enterLobbyFromAuth(mode: 'guest' | 'google' | 'email' | 'email-signup' 
   setStatus(message[mode] || message.guest);
 }
 
-function enterLobbyFromStart() {
-  syncGameViewport({ reason: 'enter-lobby' });
-  enterLobbyFromAuth('resume');
-}
 
 async function startDailyStage() {
   markDailyStartSignalConsumed();
@@ -2594,7 +2533,6 @@ function renderStageLadderSummary(clearCount: number, selectedStage: any) {
   const nextOpen = STAGES.find((stage: any) => isStageUnlocked(stage.id) && !state.campaignProgress.cleared[stage.id]) || selectedStage;
   const nextLocked = STAGES.find((stage: any) => !isStageUnlocked(stage.id));
   const selectedIndex = Math.max(0, getStageIndex(selectedStage?.id));
-  const nextOpenIndex = Math.max(0, getStageIndex(nextOpen?.id));
   const grouped = order
     .map((key) => {
       const stages = STAGES.filter((stage: any) => stage.difficultyKey === key);
@@ -2858,10 +2796,6 @@ function addSeasonShopHistory(item: any) {
   state.seasonShopHistory = [entry, ...previous.filter((historyItem: any) => historyItem.id !== item.id)].slice(0, SUMMER_SHOP_HISTORY_LIMIT);
 }
 
-function getRecentSeasonShopHistoryId() {
-  const history = Array.isArray(state.seasonShopHistory) ? state.seasonShopHistory : [];
-  return history[0]?.id || '';
-}
 
 function getSeasonClaimVisualState() {
   if (state.inventory['summer-finale-cutin']) return 'finale-cutin-owned';
@@ -4391,23 +4325,6 @@ async function loadDailyLeaderboard(options: { force?: boolean } = {}) {
   } catch {
     el.dailyLeaderboardList.innerHTML = renderRankRows(localRows, `${scopeLabel} Firebase 실패 · 로컬 기록 표시`, 'local', 'fallback');
   }
-}
-
-function renderLocalLeaderboard(emptyLabel = '로컬 플레이 준비 완료', returnOnly = false) {
-  const markup = renderRankRows(getLocalRankRows(state.localRanking, 'global'), emptyLabel, 'local');
-  if (!returnOnly) el.leaderboardList.innerHTML = markup;
-  return markup;
-}
-
-function renderLocalDailyLeaderboard(emptyLabel = '로컬 일일 기록 준비 완료', returnOnly = false) {
-  const dailyKey = state.dailyChallenge.dateKey;
-  const rows = getLocalRankRows(
-    state.localDailyRanking.filter((entry) => state.dailyRankScope === 'all' || entry.dailyKey === dailyKey),
-    'daily'
-  );
-  const markup = renderRankRows(rows, emptyLabel, 'local');
-  if (!returnOnly) el.dailyLeaderboardList.innerHTML = markup;
-  return markup;
 }
 
 function saveLocalScore(score: number, stars: number) {

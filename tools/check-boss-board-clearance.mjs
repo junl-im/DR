@@ -15,7 +15,7 @@ const requireIncludes = (name, text, token) => {
   if (!text.includes(token)) errors.push(`${name} missing ${token}`);
 };
 
-if (!['1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.84'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.77-v1.0.82 range, got ${files.pkg.version}`);
+if (!['1.0.77', '1.0.78', '1.0.79', '1.0.80', '1.0.81', '1.0.82', '1.0.83', '1.0.85'].includes(files.pkg.version)) errors.push(`package version must stay in the supported v1.0.77-v1.0.82 range, got ${files.pkg.version}`);
 requireIncludes('package.json', JSON.stringify(files.pkg), 'check:boss-board-clearance');
 requireIncludes('index.html', files.html, 'data-boss-board-clearance="v1077-boss-board-clearance"');
 requireIncludes('index.html', files.html, 'data-boss-layout="statusbar-left-icon-safe-v1077"');

@@ -9,14 +9,15 @@ const css = readFileSync('src/styles.css', 'utf8');
 const packageJson = readFileSync('package.json', 'utf8');
 
 const errors = [];
-const enterLobbyMatch = main.match(/function enterLobbyFromStart\(\) \{[\s\S]*?\n\}/);
-if (!enterLobbyMatch) errors.push('enterLobbyFromStart is missing.');
+const enterLobbyMatch = main.match(/function enterLobbyFromAuth\([^]*?\n\}/);
+if (!enterLobbyMatch) errors.push('enterLobbyFromAuth is missing.');
 else {
   const body = enterLobbyMatch[0];
-  if (/requestGameFullscreen\s*\(/.test(body)) errors.push('enterLobbyFromStart must not call requestGameFullscreen.');
-  if (/requestKakaoPortraitLock\s*\(/.test(body)) errors.push('enterLobbyFromStart must not call requestKakaoPortraitLock.');
-  if (!/syncGameViewport/.test(body)) errors.push('enterLobbyFromStart must use syncGameViewport.');
+  if (/requestGameFullscreen\s*\(/.test(body)) errors.push('enterLobbyFromAuth must not call requestGameFullscreen.');
+  if (/requestKakaoPortraitLock\s*\(/.test(body)) errors.push('enterLobbyFromAuth must not call requestKakaoPortraitLock.');
+  if (!/syncGameViewport/.test(body)) errors.push('enterLobbyFromAuth must use syncGameViewport.');
 }
+if (!main.includes("el.enterLobbyButton.addEventListener('click', () => enterLobbyFromAuth('resume'))")) errors.push('hidden lobby button must call enterLobbyFromAuth directly.');
 
 const startStageMatch = main.match(/async function startSelectedStage\([^]*?state\.board = createBoard/);
 if (!startStageMatch) errors.push('startSelectedStage block is missing.');
@@ -39,4 +40,4 @@ if (errors.length) {
   console.error(`Kakao lobby rotation policy failed: ${errors.join('; ')}`);
   process.exit(1);
 }
-console.log('Kakao lobby rotation policy passed: lobby entry uses soft portrait frame and skips rotation APIs.');
+console.log('Kakao lobby rotation policy passed: lobby auth entry uses soft portrait frame and skips rotation APIs.');

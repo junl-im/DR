@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.84 |
+| 현재 버전 | v1.0.85 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Mobile Ranking Chip Wrap, Asset Fallback Load Polish and Lobby Anchor Settle QA Patch |
-| 핵심 수정 | 모바일 랭킹 chip 줄바꿈, 추가 WebP fallback, 로비 anchor settle, boss atlas build verify |
-| UI/UX 우선순위 | 좁은 모바일 폭에서 랭킹 이름/점수/source chip/방금 기록 chip이 겹치지 않고, 로비 긴 패널 복귀 시 스크롤이 튀지 않아야 한다 |
+| 이번 패치 | Live Code Cleanup, Dead Function Deletion and QA Integration Patch |
+| 핵심 수정 | 죽은 함수/미사용 import/compat token 상수 삭제, 현재 살아있는 로직 기준 QA 통합, boss atlas CSS selector 통합 |
+| UI/UX 우선순위 | 이번 패치에서는 새 UI를 만들지 않고 기존 정상 동작을 보존하며 죽은 코드만 삭제한다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.83.zip`에서 이어서 작업 |
+| 작업 기준 | 이전 산출물 `DR_v1.0.84.zip`에서 이어서 작업 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.84.zip`, `DR_patch_v1.0.84.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.85.zip`, `DR_patch_v1.0.85.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
 
@@ -92,7 +92,7 @@ npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.84 기준 `check:mobile-rank-fallback-anchor`까지 총 91개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.85 기준 `check:mobile-rank-fallback-anchor`까지 총 91개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -106,6 +106,36 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 
 
 
+## v1.0.85 실제 수정 내역
+
+- `package.json` 버전을 `1.0.85`로 갱신했다.
+- 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다. 기존 로직 위치에서 직접 정리했다.
+- `tsc --noEmit --noUnusedLocals true --noUnusedParameters false`와 grep 호출 추적으로 죽은 코드 후보를 먼저 분리했다.
+- 삭제 전 호출 추적 결과:
+  - `enterLobbyFromStart()`는 `tools/check-kakao-lobby-rotation.mjs`만 이름을 찾고 있었고, 실제 버튼은 `enterLobbyFromAuth('resume')`를 직접 호출했다. 그래서 wrapper를 삭제하고 QA를 실제 진입 함수 검사로 통합했다.
+  - `getRecentSeasonShopHistoryId()`는 선언 외 호출이 없었다. 시즌 상점 기록은 `addSeasonShopHistory()`, `getSummerShopHistoryCards()`, `state.seasonShopHistory` 저장 경로가 살아 있어 해당 미사용 helper만 삭제했다.
+  - `renderLocalLeaderboard()` / `renderLocalDailyLeaderboard()`는 선언 외 호출이 없었다. 실제 fallback은 `loadLeaderboard()` / `loadDailyLeaderboard()` 내부에서 `getLocalRankRows()`와 `renderRankRows()`로 처리되어 두 wrapper를 삭제했다.
+  - `isV2GameplayTile()` / `V2_TILE_TYPES`는 import/호출이 없었다. 타일 공급은 `GAMEPLAY_TILE_SET` / `getGameplayTiles()`가 살아 있어 삭제했다.
+- `src/main.ts`에서 미사용 import `requestGameFullscreen`을 삭제했다. fullscreen 실제 기능은 `src/platform/fullscreen.js`의 `initFullscreenControls()` 내부에 남아 있다.
+- `src/main.ts`의 예전 patch token 상수, `*_COMPAT_TOKENS`, `void ...COMPAT_TOKENS`, `LEGACY_V1051_TO_V1053_COMPAT_TOKENS`, `LEGACY_LOBBY_DRAG_THRESHOLD_NOTE`를 삭제했다. 이들은 실제 런타임 호출/DOM 효과가 없고 QA 문자열만 만족시키던 코드였다.
+- `src/game/difficulty.js`의 `LEGACY_QA_ATLAS_MANIFEST_ANCHORS` 블록을 삭제했다. 계속 필요한 manifest는 `ATLAS_ASSETS`에 실제 preload 후보로 통합했다.
+- `src/styles.css`의 boss atlas selector를 현재 런타임 값인 `stable-atlas-v1054-collection-link-polish` 기준으로 통합했다. 기존 v1040 selector는 main에서 더 이상 설정하지 않아 효과가 끊긴 상태였다.
+- 삭제한 함수/토큰을 강제로 찾던 QA 스크립트는 현재 살아있는 함수, dataset, CSS selector, preload 후보를 확인하도록 정리했다.
+- `dream-library-cache-v1.0.85`, `texture-atlas-manifest-v1.0.85.json`을 추가했다.
+
+## v1.0.85 검수 결과
+
+- `npm run typecheck` 통과.
+- `tsc --noEmit --noUnusedLocals true --noUnusedParameters false` 기준 `src/main.ts` / `src/game/difficulty.js` 미사용 함수·상수 없음.
+- 전체 91개 `check:*` QA suite 통과.
+- `npm run report:images` 통과.
+- `npm run build:github` 통과.
+
+## v1.0.85 다음 업데이트 예상
+
+- v1.0.86에서는 `public/sw.js`의 legacy QA cache anchor와 `index.html`의 hidden compatibility mount를 실제 호출/효과 기준으로 추적한다.
+- CSS 안의 오래된 version selector 중 현재 runtime dataset과 연결되지 않은 항목을 분류한다.
+- 살아있는 화면/게임 기능은 유지하고, 단순 문자열 앵커나 효과가 끊긴 selector만 단계적으로 삭제 또는 실제 로직에 통합한다.
 
 ## v1.0.84 실제 수정 내역
 

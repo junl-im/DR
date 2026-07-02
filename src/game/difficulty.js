@@ -9,26 +9,6 @@ const stateTileSet = (name) => ({
 });
 
 
-const LEGACY_QA_ATLAS_MANIFEST_ANCHORS = [
-  'texture-atlas-manifest-v1.0.83.json',
-  'texture-atlas-manifest-v1.0.82.json',
-  'texture-atlas-manifest-v1.0.81.json',
-  'texture-atlas-manifest-v1.0.80.json',
-  'texture-atlas-manifest-v1.0.78.json',
-  'texture-atlas-manifest-v1.0.77.json',
-  'texture-atlas-manifest-v1.0.75.json',
-  'texture-atlas-manifest-v1.0.72.json',
-  'texture-atlas-manifest-v1.0.70.json',
-  'texture-atlas-manifest-v1.0.69.json',
-  'texture-atlas-manifest-v1.0.66.json',
-  'texture-atlas-manifest-v1.0.65.json',
-  'texture-atlas-manifest-v1.0.64.json',
-  'texture-atlas-manifest-v1.0.63.json',
-  'texture-atlas-manifest-v1.0.62.json',
-  'texture-atlas-manifest-v1.0.61.json',
-  'texture-atlas-manifest-v1.0.60.json'
-];
-void LEGACY_QA_ATLAS_MANIFEST_ANCHORS;
 
 export const DIFFICULTIES = {
   beginner: {
@@ -223,8 +203,6 @@ export const TILE_SET = [
   { type: 'v2-tile-36', icon: '✦', asset: stateTileAsset('v2-tile-36'), stateAssets: stateTileSet('v2-tile-36'), label: '마지막 기억핵', theme: 'v2 에셋' }
 ];
 
-const V2_TILE_TYPES = new Set(TILE_SET.filter((tile) => tile.theme === 'v2 에셋').map((tile) => tile.type));
-
 export const GAMEPLAY_TILE_SET = [
   ...TILE_SET.filter((tile) => tile.theme === 'v2 에셋'),
   ...TILE_SET.filter((tile) => tile.theme === '프리미엄'),
@@ -236,9 +214,6 @@ export function getGameplayTiles(iconTypes = 16) {
   return GAMEPLAY_TILE_SET.slice(0, count);
 }
 
-export function isV2GameplayTile(type) {
-  return V2_TILE_TYPES.has(type);
-}
 
 export const TILE_ATLAS_ASSETS = [
   `${import.meta.env.BASE_URL}assets/atlas/v2-tiles.atlas.json`,
@@ -261,13 +236,16 @@ export const ATLAS_ASSETS = [
   ...ATLAS_WEBP_ASSETS,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.png`,
   `${import.meta.env.BASE_URL}assets/atlas/dream-objects.atlas.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.85.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.84.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.83.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.82.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.81.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.80.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.79.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.78.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.77.json`,
+  `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.72.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.70.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.69.json`,
   `${import.meta.env.BASE_URL}assets/meta/texture-atlas-manifest-v1.0.68.json`,

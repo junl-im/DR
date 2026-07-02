@@ -14,7 +14,7 @@ const required = [
   ['main', 'showExitSleep'],
   ['main', 'wakeFromExitSleep'],
   ['main', 'dream-library-local-ranking-global'],
-  ['main', 'renderLocalDailyLeaderboard'],
+  ['main', 'getLocalRankRows'],
   ['portrait', 'isTapLikeGesture'],
   ['portrait', 'pointerdown'],
   ['css', '.exit-sleep-modal'],
