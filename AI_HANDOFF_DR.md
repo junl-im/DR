@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.86 |
+| 현재 버전 | v1.0.87 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Service Worker Legacy Anchor and Hidden Compatibility Mount Cleanup Patch |
-| 핵심 수정 | service worker 죽은 legacy anchor 상수 삭제, hidden compatibility mount 삭제, inline email fallback 삭제, 현재 살아있는 모달/exit sheet/cache 경로 기준 QA 통합 |
+| 이번 패치 | CSS Runtime Selector Cleanup and Live Dataset QA Patch |
+| 핵심 수정 | runtime에서 생산되지 않는 오래된 CSS version selector 39개 계열/86개 rule 삭제, 살아있는 class 스타일 유지, QA를 현재 dataset 기준으로 통합 |
 | UI/UX 우선순위 | 이번 패치에서는 새 UI를 만들지 않고 기존 정상 동작을 보존하며 죽은 코드만 삭제한다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.85.zip`에서 이어서 작업 |
+| 작업 기준 | 이전 산출물 `DR_v1.0.86.zip`에서 이어서 작업 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.86.zip`, `DR_patch_v1.0.86.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.87.zip`, `DR_patch_v1.0.87.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
 
@@ -29,7 +29,7 @@
 - 로컬과 ZIP 산출물에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않는다.
 - 산출 규칙 문구 고정: `package-lock.json 제외`, `풀파일 ZIP`, `패치 ZIP`은 매번 기록한다.
 - SVG는 금지한다. 이미지 정책은 PNG/WebP/JPG 중심이다.
-- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`, `npm run check:cleanup-live-paths`를 실행한다.
+- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`, `npm run check:cleanup-live-paths`, `npm run check:css-runtime-selectors`를 실행한다.
 
 ## 사용자가 결과를 보기 위한 명령
 
@@ -89,11 +89,12 @@ npm run check:combat-hud-touch-clearance
 npm run check:rank-copy-webp-atlas
 npm run check:mobile-rank-fallback-anchor
 npm run check:cleanup-live-paths
+npm run check:css-runtime-selectors
 npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.86 기준 `check:cleanup-live-paths`까지 총 92개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.87 기준 `check:css-runtime-selectors`까지 총 93개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -105,6 +106,70 @@ NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
 
+
+
+## v1.0.87 실제 수정 내역
+
+- `package.json` 버전을 `1.0.87`로 갱신했다.
+- 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다. 기존 CSS, QA script, service worker, atlas preload 위치에서만 정리했다.
+- 삭제 전 호출 추적 결과:
+  - CSS에서 사용하는 versioned data selector 값을 `index.html`과 `src/**/*.ts`, `src/**/*.js` runtime source 전체와 대조했다.
+  - `clear-status-v1043`, `statusbar-right-portrait-v1044`, `statusbar-chip-right-v1045`, `v1045-stage-ladder-42`, `next-goal-v1046`, `v1048-campaign-gesture-fluid`, `v1049-compact-chapter-carousel`, `v1050-finale-compact-carousel`, `v1051-auto-focus-compact-carousel`, `v1053-season-store-claim-history`, `v1053-mobile-ui-density-overlap-qa`, `v1053-claimed-boss-icon-polish` 등 39개 token은 runtime에서 더 이상 생산되지 않았다.
+  - 해당 token을 포함한 86개 CSS rule은 사용자 화면에 실제 효과가 없는 죽은 selector로 판단해 삭제했다.
+  - `.stage-ladder-summary`, `.summer-season-panel`, `.boss-role-stack`, `.boss-state-icon`, `.boss-role-help`, `.season-shop-card`, `.season-shop-claim`, `.season-shop-history` 같은 실제 DOM/class 기반 스타일은 호출 경로가 살아 있어 유지했다.
+- `v1054 legacy check compatibility anchors` 주석은 QA 문자열만 남기는 앵커였으므로 삭제했다.
+- 삭제한 과거 selector를 찾던 QA는 현재 살아있는 dataset 기준으로 통합했다.
+  - 보스 상태 QA: `clear-status-v1043` 대신 `statusbar-left-icon-v1077` / `v1046-icon-readability` / `boss-role-stack` 경로 확인.
+  - 스테이지 맵 QA: `next-goal-v1046` CSS 대신 `next-goal-v1052-shop-reward` runtime dataset과 `.stage-ladder-summary` base style 확인.
+  - 시즌 패널 QA: 삭제된 v1050/v1051/v1053 selector 대신 `v1054-season-store-collection-link`, `v1054-mobile-design-overlap-audit`, 실제 `.season-shop-*` class 확인.
+- `tools/check-css-runtime-selectors.mjs`를 추가했다. 남은 versioned CSS data selector 값이 runtime source에서 생산되지 않으면 실패하며, 이번에 삭제한 과거 selector token이 CSS에 되살아나도 실패한다.
+- GitHub Pages / quality-check workflow에 `npm run check:css-runtime-selectors`를 연결했다.
+- `dream-library-cache-v1.0.87`, `texture-atlas-manifest-v1.0.87.json`을 추가했다.
+
+## v1.0.87 필수 검수 명령
+
+```bash
+npm run typecheck
+npx tsc --noEmit --noUnusedLocals true --noUnusedParameters false
+npm run check:css-runtime-selectors
+npm run check:cleanup-live-paths
+npm run check:auth-modal-boss-role
+npm run check:stage-map-boss-difficulty-lobby
+npm run check:summer-season-mega
+npm run check:summer-shop-claim-design
+npm run report:images
+npm run build:github
+```
+
+가능하면 아래 방식으로 전체 `check:*` 93개를 모두 실행한다.
+
+```bash
+node - <<'NODE' > /tmp/dr-checks.txt
+const pkg = require('./package.json');
+for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('check:'))) console.log(key);
+NODE
+while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
+```
+
+## v1.0.87 검수 결과
+
+- `npm run typecheck` 통과.
+- `npx tsc --noEmit --noUnusedLocals true --noUnusedParameters false` 통과.
+- 전체 93개 `check:*` QA suite 통과.
+- `npm run check:css-runtime-selectors` 통과.
+- `npm run check:cleanup-live-paths` 통과.
+- `npm run report:images` 통과. 458 files, 52.58 MB. 1.2MB 초과 이미지 9개는 계속 추적한다.
+- `npm run build:github` 통과. 가장 큰 JS chunk는 `vendor-pixi-core-v1081` 약 343.02 KB다.
+
+## v1.0.87 다음 업데이트 예상
+
+- v1.0.88에서는 `src/main.ts`의 오래된 `data-*` marker 중 CSS/QA/상태표시에 실제로 필요한 것과 단순 과거 앵커를 더 분리한다.
+- 살아있는 로비/시즌/보스/랭킹 흐름은 유지한다.
+- 효과가 끊긴 marker만 기존 로직에 통합하거나 삭제한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.87 css runtime selector cleanup patch
 
 
 ## v1.0.86 실제 수정 내역

@@ -60,6 +60,26 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.87 - CSS Runtime Selector Cleanup and Live Dataset QA Patch
+
+- v1.0.86 기준 통파일을 점검하고 이번 패치 범위를 CSS/runtime selector 정리로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.
+- 삭제 전 호출 추적 결과, `src/styles.css`의 일부 오래된 version selector는 `index.html`, `src/main.ts`, `src/rendering/DreamPixiRenderer.ts` 등 실제 runtime dataset 생성 경로에서 더 이상 해당 값을 만들지 않았다. 이 selector들은 화면 효과가 끊긴 죽은 CSS로 판단했다.
+- 삭제한 주요 selector 계열: `clear-status-v1043`, `statusbar-right-portrait-v1044`, `statusbar-chip-right-v1045`, `next-goal-v1046`, `v1048-campaign-gesture-fluid`, `v1049-compact-chapter-carousel`, `v1050-finale-compact-carousel`, `v1051-auto-focus-compact-carousel`, `v1053-season-store-claim-history`, `v1053-mobile-ui-density-overlap-qa`, `v1053-claimed-boss-icon-polish` 등 현재 runtime에서 생산되지 않는 39개 token 기반 selector다.
+- 총 86개 죽은 CSS rule과 `v1054 legacy check compatibility anchors` 주석을 삭제했다. 삭제 대상은 모두 runtime source에서 정확한 dataset 값이 나오지 않는 selector였고, `.stage-ladder-summary`, `.summer-season-panel`, `.boss-role-stack`, `.season-shop-*` 같은 살아있는 기본 class 스타일은 유지했다.
+- 기존 QA 중 삭제한 과거 selector token을 강제로 찾던 항목은 현재 살아있는 경로 기준으로 통합했다. 예를 들어 보스 상태는 `statusbar-left-icon-v1077` / `v1046-icon-readability`, 스테이지 맵은 `next-goal-v1052-shop-reward` + `.stage-ladder-summary`, 시즌 패널은 `v1054-season-store-collection-link` + 실제 shop/claim class를 확인한다.
+- `tools/check-css-runtime-selectors.mjs`를 추가해 CSS의 versioned data selector 값이 runtime source에서 생산되지 않으면 실패하도록 했다. 삭제한 과거 selector token이 CSS에 되살아나도 실패한다.
+- GitHub Pages / Quality Check workflow에 `npm run check:css-runtime-selectors`를 연결했다.
+- service worker cache를 `dream-library-cache-v1.0.87`로 갱신하고 `texture-atlas-manifest-v1.0.87.json`을 생성/선로드에 추가했다.
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
+
+다음 업데이트 예정: v1.0.88 - Runtime Data Marker Cleanup and QA Anchor Integration
+
+- `src/main.ts`의 오래된 `data-*` marker 중 CSS/QA/상태표시에 실제로 필요한 것과 단순 과거 앵커를 더 분리한다.
+- 살아있는 로비/시즌/보스/랭킹 흐름은 유지한다.
+- 정확한 호출/효과 경로가 끊긴 marker만 기존 로직에 통합하거나 삭제한다.
+
+
+
 ### v1.0.86 - Service Worker Legacy Anchor and Hidden Compatibility Mount Cleanup Patch
 
 - v1.0.85 기준 통파일을 점검하고 이번 패치 범위를 코드 정리 2차로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.

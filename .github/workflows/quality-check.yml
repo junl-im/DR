@@ -133,6 +133,7 @@ jobs:
           npm run check:rank-copy-webp-atlas
           npm run check:mobile-rank-fallback-anchor
           npm run check:cleanup-live-paths
+          npm run check:css-runtime-selectors
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github
