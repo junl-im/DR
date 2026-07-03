@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.91 / package.json 1.0.88 runtime baseline |
+| 현재 버전 | v1.0.92 / package.json 1.0.88 runtime baseline |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Lobby Shortcut Viewport Dock, Lobby Hero Compact CTA and Downward Start Pointer Patch |
-| 핵심 수정 | 바로가기 메뉴바를 `.app-shell` 스크롤 컨테이너 밖 `body`로 실제 포털 이동해 viewport 최하단에 고정하고, 바로가기 팝업 상단의 `바로가기` 문구 삭제, 첫 화면 제목 축소, 오늘의 복원/복원 작업대 같은 줄 배치, 게임 시작 알림을 아래쪽 화살표로 오늘의 복원을 가리키게 변경 |
-| UI/UX 우선순위 | 이번 패치는 로비 첫 화면 CTA, 바로가기 메뉴바, 바로가기 팝업 헤더 범위만 수정한다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않는다 |
+| 이번 패치 | UI/UX Stability QA Downward Arrow Guard Recovery Patch |
+| 핵심 수정 | v1.0.91에서 의도적으로 `게임 시작` CTA를 `↓`로 바꾼 뒤에도 `tools/check-ui-ux-stability.mjs`가 예전 `➜` 마크업을 요구해 build가 실패하던 QA guard 충돌을 수정했다. 화면 소스 동작은 유지하고 검수 기준만 현재 UI 의도와 통합했다 |
+| UI/UX 우선순위 | 이번 패치는 로비 시작 CTA 관련 QA guard 복구만 수정한다. 화면 배치, 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않는다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 사용자 요청: 바로가기 메뉴바가 전체 내용을 스크롤하지 않아도 보여지는 화면 최하단에 고정되어야 하고, 화면을 넘어서는 바로가기 키는 가로 드래그로 봐야 한다. 바로가기 버튼으로 열린 화면 최상단의 `바로가기` 글자는 제거하고, 첫 화면 제목은 0.5단계 작게, `오늘의 복원`과 `복원 작업대`는 같은 줄에 배치하며, 위젯형 게임 시작 알림은 오늘의 복원을 향하는 방향 화살표로 바꾼다 |
+| 작업 기준 | 사용자 빌드 실패 로그: `check:ui-ux-stability`가 `Missing right-arrow-only CTA markup: <span class="signal-arrow" aria-hidden="true">➜</span>`로 실패했다. v1.0.91의 `↓` 방향 CTA가 맞는 의도이므로 낡은 QA 요구사항을 현재 UI 기준으로 통합한다 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.91.zip`, `DRp_v1.0.91.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.92.zip`, `DRp_v1.0.92.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외. 분석/패치 기록은 `AI_HANDOFF_DR.md`와 `README.md`에만 남긴다 |
 
@@ -116,6 +116,50 @@ for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('che
 NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
+
+
+## v1.0.92 실제 수정 내역 - UI/UX Stability QA Downward Arrow Guard Recovery Patch
+
+- 범위는 GitHub Actions build 실패 복구, 그중 `check:ui-ux-stability` QA guard만으로 제한했다. 로비 화면 배치, 바로가기 dock, 게임 보드, 랭킹, 상점/복원 데이터 로직은 수정하지 않았다.
+- 실패 원인은 v1.0.91에서 사용자 요청대로 위젯형 `게임 시작` 알림을 `↓`로 바꿨지만, 기존 `tools/check-ui-ux-stability.mjs`가 아직 `<span class="signal-arrow" aria-hidden="true">➜</span>`를 필수 마크업으로 요구하고 있었던 점이다.
+- `tools/check-ui-ux-stability.mjs`를 기존 검사 자리에서 직접 수정했다. 이제 active HTML의 `<span class="signal-arrow" aria-hidden="true">↓</span>`와 `src/main.ts`의 `arrow.textContent = '↓'` runtime guard를 검사한다. 동시에 예전 `➜` 마크업이 active HTML에 되살아나면 실패하도록 역검사를 추가했다.
+- `index.html` 하단 compatibility comment의 `right-arrow-only start cue` 문구를 `downward-arrow start cue integrated by v1091`로 갱신했다. 화면 DOM 구조와 동작은 바꾸지 않았다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 새 파일 추가 없음. 삭제한 함수/DOM/asset 없음.
+- 삭제 대신 통합한 항목: `check:ui-ux-stability`의 예전 `➜` 요구사항을 v1.0.91의 `↓` 방향 CTA 의도와 통합했다. 이 검사는 화면 동작을 만드는 코드가 아니라 build-time QA guard라서, 현재 사용자 요청 UI를 유지한 채 build 실패만 해소하는 것이 안전하다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지한다. 산출물/문서 버전은 v1.0.92로 기록한다.
+
+## v1.0.92 필수 검수 명령
+
+```bash
+npm run check:ui-ux-stability
+npm run check:daily-start-arrow-cta
+npm run check:daily-start-pointer
+npm run check:lobby-bottom-shortcut
+npm run check:health
+npm run typecheck
+# 전체 check:*는 두 번에 나누어 실행
+# npm run report:images
+npm run build:github
+```
+
+## v1.0.92 검수 결과
+
+- `npm run check:ui-ux-stability` 통과. 예전 `➜` 요구가 제거되고 `↓` HTML/runtime guard가 검사된다.
+- `npm run check:daily-start-arrow-cta` 통과. v1.0.91 방향 CTA 의도와 일치한다.
+- `package.json`에 등록된 전체 `check:*` 스크립트를 순서대로 실행했고, 첫 실행은 도구 시간 제한으로 `check:lobby-menu-motion-state` 직전에 끊겨서 나머지를 이어서 실행했다. 최종적으로 전체 `check:*`가 모두 통과했다.
+- `npm run report:images` 통과. 458 files, 52.58 MB. 대형 이미지 9개 경고는 기존 추적 항목이며 이번 QA guard 복구 범위와 무관하다.
+- `npm run typecheck` 통과.
+- `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 `sh: 1: vite: not found`로 실행하지 못했다. GitHub Actions처럼 의존성이 설치되는 환경에서는 build job의 Verify project policy 다음 단계에서 재확인해야 한다.
+
+## v1.0.92 다음 업데이트 예상
+
+- GitHub Actions build를 재실행해 `check:ui-ux-stability` 이후 단계까지 넘어가는지 확인한다.
+- build job이 통과하면 deploy job에서 `actions/deploy-pages@v5`가 정상 배포되는지 확인한다.
+- 실제 기기에서는 v1.0.91에서 수정한 하단 바로가기 dock과 `↓` 게임 시작 CTA 시각 위치만 다시 확인한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Fix 꿈의 서고 v1.0.92 downward CTA QA guard
 
 ## v1.0.91 실제 수정 내역 - Lobby Shortcut Viewport Dock, Compact Hero CTA and Downward Start Pointer Patch
 

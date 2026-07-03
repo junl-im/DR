@@ -21,7 +21,9 @@ for (const fileToken of ['data-ui-ux-stability="v1065-ui-ux-stability-pass"', 's
   has(index + css + main, fileToken, 'UI/UX stability implementation');
 }
 if (index.includes('signal-finger') || index.includes('☝')) errors.push('finger start cue must remain removed from HTML');
-has(index, '<span class="signal-arrow" aria-hidden="true">➜</span>', 'right-arrow-only CTA markup');
+has(index, '<span class="signal-arrow" aria-hidden="true">↓</span>', 'downward-arrow CTA markup');
+has(main, "arrow.textContent = '↓'", 'runtime downward-arrow CTA guard');
+if (index.includes('<span class="signal-arrow" aria-hidden="true">➜</span>')) errors.push('right-arrow start cue markup must not remain after v1.0.91 downward pointer integration');
 has(css, '.daily-start-signal[data-ui-ux-stability="v1065-ui-ux-stability-pass"]', 'touch-safe CTA CSS');
 has(css, '.reward-modal[data-ui-ux-stability="v1065-ui-ux-stability-pass"]', 'modal density guard CSS');
 has(main, 'function syncUiUxStabilityPass()', 'runtime UI/UX stability sync');
@@ -49,4 +51,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('UI/UX stability QA check passed: v1.0.65 keeps arrow-only CTA, removes duplicate IDs, and guards mobile modal/CTA density.');
+console.log('UI/UX stability QA check passed: v1.0.65+ keeps the downward-arrow CTA integration, removes duplicate IDs, and guards mobile modal/CTA density.');

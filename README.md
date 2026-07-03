@@ -61,6 +61,20 @@ Atlas 생성
 ## Version History
 
 
+### v1.0.92 - UI/UX Stability QA Downward Arrow Guard Recovery Patch
+
+- GitHub Actions build가 `check:ui-ux-stability`에서 `Missing right-arrow-only CTA markup`로 실패한 원인을 수정했습니다.
+- v1.0.91에서 사용자 요청대로 `게임 시작` CTA를 `↓`로 바꿨지만, `tools/check-ui-ux-stability.mjs`가 아직 예전 `<span class="signal-arrow" aria-hidden="true">➜</span>` 마크업을 요구하고 있었습니다.
+- 화면 코드는 유지하고 QA guard만 현재 의도에 맞춰 통합했습니다. 이제 `check:ui-ux-stability`는 active HTML의 `↓` 마크업과 `src/main.ts`의 `arrow.textContent = '↓'` runtime guard를 검사하며, 예전 `➜` 마크업이 되살아나면 실패합니다.
+- `index.html` 하단 compatibility comment도 `right-arrow-only`에서 v1.0.91의 downward-arrow 통합 문구로 갱신했습니다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 새 파일 추가 없음. 삭제한 함수/DOM/asset 없음. 로비 배치, 바로가기 dock, 게임 보드, 랭킹, 상점/복원 데이터 로직은 수정하지 않았습니다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지합니다. 산출물/문서 패치 버전은 v1.0.92입니다.
+
+검수: `npm run check:ui-ux-stability`, `npm run check:daily-start-arrow-cta`, `npm run check:daily-start-pointer`, `npm run check:lobby-bottom-shortcut`, `npm run check:health`, 전체 `check:*`, `npm run report:images`, `npm run typecheck` 통과. `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 실행하지 못했으므로 GitHub Actions 의존성 설치 환경에서 재확인해야 합니다.
+
+다음 업데이트 예정: GitHub Actions build를 재실행해 `check:ui-ux-stability` 이후 전체 build/deploy가 통과하는지 확인합니다.
+
+
 
 ### v1.0.91 - Lobby Shortcut Viewport Dock, Compact Hero CTA and Downward Start Pointer Patch
 
