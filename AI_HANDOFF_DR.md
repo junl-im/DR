@@ -4,13 +4,13 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.89 / package.json 1.0.89 |
+| 현재 버전 | v1.0.89B / package.json 1.0.88 runtime baseline |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | GitHub Pages Deploy Runtime Stabilization Patch |
-| 핵심 수정 | GitHub Pages deploy job의 `actions/deploy-pages@v4`를 Node 24 대응 `actions/deploy-pages@v5`로 갱신하고 workflow QA 정책에 v4 이하 차단을 추가 |
+| 이번 패치 | GitHub Pages Build Guard Recovery Patch |
+| 핵심 수정 | v1.0.89 workflow 패치에서 package.json version을 올려 legacy QA allow-list에 걸린 문제를 수정하고, package.json version을 runtime baseline인 1.0.88로 복원 |
 | UI/UX 우선순위 | 이번 패치는 배포 workflow만 건드리며 화면/UI/게임 로직은 수정하지 않는다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | v1.0.88A audit 결과 + 사용자가 GitHub Pages Source = GitHub Actions 재확인 |
+| 작업 기준 | v1.0.89 GitHub Actions build 실패 로그: `check:tile-geometry-hud`의 package version guard 실패 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
 | 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.89.zip`, `DRp_v1.0.89.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
@@ -118,6 +118,44 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 ```
 
 
+
+
+## v1.0.89B 실제 수정 내역 - GitHub Pages Build Guard Recovery Patch
+
+- 사용자가 추가로 붙여준 새 실패 로그는 deploy job이 아니라 build job의 `npm run check:tile-geometry-hud` 단계 실패였다. 즉 v1.0.89의 `actions/deploy-pages@v5` 변경 자체가 아니라, build QA 중 package version guard가 먼저 실패한 상태다.
+- 원인 추적 결과, v1.0.89에서 workflow-only 패치임에도 `package.json` version을 `1.0.89`로 올린 것이 문제였다. 여러 legacy QA 스크립트는 현재 runtime/cache/asset baseline인 `1.0.88`까지 허용하도록 작성되어 있고, `check:tile-geometry-hud`가 가장 먼저 그 문제를 드러냈다.
+- 이번 v1.0.89B에서는 `package.json` version을 `1.0.88`로 되돌렸다. 이 패치는 GitHub Pages deploy action 교체를 유지하되 앱 runtime/cache/content 버전은 바꾸지 않는 build recovery 패치다.
+- `.github/workflows/github-pages.yml`의 `actions/deploy-pages@v5`와 `tools/check-workflows.mjs`의 v5 요구 정책은 유지했다. GitHub Pages Source는 사용자가 GitHub Actions로 맞다고 다시 확인했으므로 설정 후보는 계속 제외한다.
+- 화면/UI/게임 로직, service worker cache, asset manifest, HTML DOM, CSS selector, gameplay 함수는 수정하지 않았다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수도 추가하지 않았다.
+- 삭제한 파일/함수/DOM은 없다. 이번 변경은 `package.json` version 복원과 문서 기록 보정만 수행했다.
+- 안전 판단: 실패한 검수 스크립트는 실제 화면 동작이 아니라 package version 문자열 guard에서 멈췄다. 기존 v1.0.88 runtime baseline은 v1.0.89 이전까지 통과하던 기준이고, v1.0.89에서 바꾼 deploy action/workflow QA는 그대로 유지되므로 배포 문제 대응과 build guard 통과를 동시에 만족한다.
+
+## v1.0.89B 필수 검수 명령
+
+```bash
+npm run check:workflows
+npm run check:tile-geometry-hud
+```
+
+가능하면 GitHub Pages workflow의 Verify project policy에 들어있는 `npm run check:*`와 `npm run report:images`를 전체 실행한다. `node_modules`가 없는 산출 검수 환경에서는 `npm run typecheck`와 `npm run build:github`는 패치 적용 후 의존성 설치 환경에서 재확인한다.
+
+## v1.0.89B 검수 결과
+
+- `npm run check:workflows` 통과. `actions/deploy-pages@v5` 요구와 v4 이하 차단 정책은 유지된다.
+- `npm run check:tile-geometry-hud` 통과. build 실패 직접 지점인 package version guard가 해소됐다.
+- GitHub Pages workflow의 Verify project policy에 포함된 `npm run check:*` 및 `npm run report:images`를 가능한 범위에서 전체 실행했고 통과했다.
+- `npm run report:images` 결과: 458 files, 52.58 MB total, 1.2 MB 초과 대형 이미지 9개 경고는 기존 asset budget 추적 항목으로 남는다.
+- `npm run typecheck`, `npm run build:github`는 이 산출 환경에 `node_modules`가 없어 실행하지 않았다. 패치 적용 후 `npm install --no-audit --no-fund --prefer-online` 뒤 재실행해야 한다.
+
+## v1.0.89B 다음 업데이트 예상
+
+- GitHub Actions를 다시 실행해 build job이 `check:tile-geometry-hud` 이후 끝까지 통과하는지 확인한다.
+- build job이 통과하면 deploy job에서 `actions/deploy-pages@v5`가 실행되고, 기존 `syncing_files` 실패가 사라지는지 확인한다.
+- 만약 이후 다른 `check:*`가 package version guard로 실패하면, package version bump 정책과 legacy QA version guard 통합을 별도 범위로 다룬다. 이번 패치는 build 실패 직접 지점 복구만 수행했다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Recover 꿈의 서고 v1.0.89B build guard baseline
 
 ## v1.0.89 실제 수정 내역 - GitHub Pages Deploy Runtime Stabilization Patch
 

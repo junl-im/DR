@@ -61,6 +61,18 @@ Atlas 생성
 ## Version History
 
 
+
+### v1.0.89B - GitHub Pages Build Guard Recovery Patch
+
+- 새 실패 로그는 deploy job이 아니라 build job의 `npm run check:tile-geometry-hud`에서 멈춘 것으로 확인했습니다.
+- 원인은 v1.0.89 workflow-only 패치에서 `package.json` version을 `1.0.89`로 올린 점입니다. 기존 QA 스크립트들은 현재 runtime/cache/asset baseline인 `1.0.88`까지 허용하도록 작성되어 있어 package version bump가 build 검수 실패를 만들었습니다.
+- `package.json` version을 `1.0.88`로 복원했습니다. 산출물/문서 패치 버전은 v1.0.89B로 기록하지만, 앱 runtime baseline은 v1.0.88로 유지합니다.
+- `.github/workflows/github-pages.yml`의 `actions/deploy-pages@v5`와 `tools/check-workflows.mjs`의 v5 요구 정책은 유지했습니다.
+- 화면/UI/게임 로직, HTML DOM, CSS, service worker cache, asset manifest는 수정하지 않았습니다. 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 삭제한 파일/함수/DOM 없음.
+- 검수: `npm run check:workflows`, `npm run check:tile-geometry-hud`, GitHub Pages workflow의 Verify project policy에 포함된 `npm run check:*` 및 `npm run report:images` 통과. 이 산출 환경에는 `node_modules`가 없어 `npm run typecheck`, `npm run build:github`는 패치 적용 후 의존성 설치 환경에서 재실행해야 합니다.
+
+다음 업데이트 예정: GitHub Actions 재실행 후 build job이 끝까지 통과하는지 확인하고, 이후 deploy job에서 `actions/deploy-pages@v5`가 기존 `syncing_files` 실패를 해소하는지 확인합니다.
+
 ### v1.0.89 - GitHub Pages Deploy Runtime Stabilization Patch
 
 - GitHub Pages Source가 GitHub Actions로 맞다는 사용자 재확인을 반영해 Pages source 설정 오류 후보는 제외했습니다.
