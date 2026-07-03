@@ -4,17 +4,27 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.88 |
+| 현재 버전 | v1.0.89 / package.json 1.0.89 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Lobby Bottom Shortcut Bar and Native Scroll Stabilization Patch |
-| 핵심 수정 | 기존 `#lobby-menu-hub` 단일 DOM을 로비 최하단 고정 메뉴바로 전환, 팝업에서도 유지, 실게임에서는 숨김, 수동 scrollTop 보정 삭제 |
-| UI/UX 우선순위 | 이번 패치에서는 로비 첫 화면/로비 팝업의 바로가기 메뉴바와 스크롤 안정성만 작업한다 |
+| 이번 패치 | GitHub Pages Deploy Runtime Stabilization Patch |
+| 핵심 수정 | GitHub Pages deploy job의 `actions/deploy-pages@v4`를 Node 24 대응 `actions/deploy-pages@v5`로 갱신하고 workflow QA 정책에 v4 이하 차단을 추가 |
+| UI/UX 우선순위 | 이번 패치는 배포 workflow만 건드리며 화면/UI/게임 로직은 수정하지 않는다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.87.zip`에서 이어서 작업 |
+| 작업 기준 | v1.0.88A audit 결과 + 사용자가 GitHub Pages Source = GitHub Actions 재확인 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.88.zip`, `DR_patch_v1.0.88.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.89.zip`, `DRp_v1.0.89.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
-| 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
+| 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외. 분석/패치 기록은 `AI_HANDOFF_DR.md`와 `README.md`에만 남긴다 |
+
+## 사용자 고정 작업 규칙
+
+- 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수를 새로 추가하지 않는다. 기존 로직을 고칠 때는 해당 로직이 있는 자리에서 직접 수정한다.
+- 이전 버전 코드를 단순히 숨기거나 mute 처리하지 않는다. 더 이상 쓰지 않는다고 판단되면 실제 호출 여부와 화면/데이터 효과를 코드 추적으로 확인한 뒤 삭제하거나 살아있는 로직에 통합한다.
+- 삭제 전에는 반드시 “이 함수/DOM/selector/asset이 실제로 호출되고 효과가 있는지” 확인 결과를 기록한다.
+- 한 번에 여러 화면/기능을 동시에 건드리지 않는다. 사용자가 지정한 범위만 작업한다.
+- 작업 후 무엇을 지웠고/바꿨는지, 왜 안전하다고 판단했는지 요약한다.
+- 이 프로젝트의 공식 인수인계 파일은 `AI_HANDOFF_DR.md`다. 다른 프로젝트명 파일명을 언급하더라도 Dream Library 작업 기록은 `AI_HANDOFF_DR.md`와 `README.md`에만 남긴다.
+- 기록 문구는 “예전 걸 mute한다”가 아니라 “예전 걸 삭제했다/통합했다/유지했다”처럼 실제 처리 결과로 남긴다.
 
 ## 작업 환경 절대 유지
 
@@ -24,12 +34,12 @@
 - Firebase project id는 `dream-library-b732a` 이다.
 - GitHub Pages 빌드는 `/DR/` base를 사용한다.
 - Firebase 빌드는 `/` base를 사용한다.
-- Node는 GitHub Actions 기준 Node 20 LTS를 유지한다.
+- 앱 빌드용 `node-version: 20`은 유지한다. 단, GitHub Actions JavaScript Action 런타임은 2026-07-03 기준 Node 24 기본 전환기이므로 Pages deploy action은 Node 24 대응 major를 사용한다.
 - Actions에서는 `npm ci`를 쓰지 않고, `rm -f package-lock.json` 후 `npm install --no-audit --no-fund --prefer-online`을 사용한다.
 - 로컬과 ZIP 산출물에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않는다.
 - 산출 규칙 문구 고정: `package-lock.json 제외`, `풀파일 ZIP`, `패치 ZIP`은 매번 기록한다.
 - SVG는 금지한다. 이미지 정책은 PNG/WebP/JPG 중심이다.
-- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`, `npm run check:cleanup-live-paths`, `npm run check:css-runtime-selectors`, `npm run check:lobby-bottom-shortcut`를 실행한다.
+- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`, `npm run check:cleanup-live-paths`, `npm run check:css-runtime-selectors`, `npm run check:lobby-bottom-shortcut`를 실행한다. `tools/check-workflows.mjs`는 GitHub Pages workflow에서 `actions/deploy-pages@v5`를 요구하고 v4 이하를 차단한다.
 
 ## 사용자가 결과를 보기 위한 명령
 
@@ -106,6 +116,80 @@ for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('che
 NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
+
+
+
+## v1.0.89 실제 수정 내역 - GitHub Pages Deploy Runtime Stabilization Patch
+
+- 사용자가 GitHub 저장소 Settings -> Pages -> Build and deployment Source가 GitHub Actions로 맞다는 것을 재확인했다. 따라서 이번 원인 분류에서 Pages source 설정 오류 후보는 제외했다.
+- 실패 로그는 build/artifact 문제가 아니었다. `Fetching artifact metadata`, `Found 1 artifact(s)`, `Created deployment` 이후 `syncing_files` 상태에서 실패했다.
+- 놓친 핵심 지점은 앱 빌드 Node 버전과 GitHub Actions JavaScript Action 런타임 버전이 다르다는 점이다. `actions/setup-node`의 `node-version: 20`은 앱 빌드 Node이고, `actions/deploy-pages@v4` 자체가 어떤 Node 런타임으로 실행되는지는 Action major가 결정한다.
+- 2026-07-03 기준 GitHub Actions hosted runner는 Node 24 기본 실행 전환기에 있고, `actions/deploy-pages@v5`는 Node.js 24.x 대응 릴리스다. 따라서 `.github/workflows/github-pages.yml`에서 deploy step을 `actions/deploy-pages@v4`에서 `actions/deploy-pages@v5`로 갱신했다.
+- 임시 우회인 `ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true`는 넣지 않았다. 이유: Node 20으로 되돌리는 임시 대응이고, 이후 runner에서 Node 20이 제거되면 다시 깨질 수 있기 때문이다.
+- `tools/check-workflows.mjs`에 `actions/deploy-pages@v5` 필수 검사를 추가하고 `actions/deploy-pages@v4` 이하가 되살아나면 실패하도록 차단했다. 출력 문구도 “Node 20 app build, Node 24 Pages deploy action”으로 통합했다.
+- `package.json` version을 `1.0.89`로 갱신했다.
+- 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다. 화면/UI/게임 로직도 수정하지 않았다.
+- 삭제한 파일/함수/DOM은 없다. 이번 변경은 workflow action major 교체와 workflow QA 정책 통합만 수행했다.
+- 안전 판단: 기존 workflow는 `actions/upload-pages-artifact@v3`를 사용 중이고, 해당 artifact는 `actions/deploy-pages@v4 or newer` 요구 조건과 맞는다. `v5`는 이 조건의 newer 범위다. 로그상 artifact 생성/조회는 이미 성공하므로, 배포 실패 지점인 deploy action runtime만 최소 변경했다.
+
+## v1.0.89 필수 검수 명령
+
+```bash
+npm run check:workflows
+npm run check:health
+```
+
+가능하면 의존성 설치 후 아래도 실행한다. 현재 산출 검수 환경에는 `node_modules`가 포함되어 있지 않으므로 typecheck/build는 사용자가 패치 적용 후 `npm install --no-audit --no-fund --prefer-online`을 실행한 환경에서 재확인한다.
+
+```bash
+npm run typecheck
+npm run build:github
+```
+
+## v1.0.89 검수 결과
+
+- `npm run check:workflows` 통과. GitHub Pages workflow에서 `actions/deploy-pages@v5`를 요구하고 v4 이하를 차단하는 정책이 정상 작동했다.
+- `npm run check:health` 통과. 기본 프로젝트 필수 파일과 SVG 금지 정책이 유지됐다.
+- `npm run typecheck`, `npm run build:github`는 이 산출 환경에 `node_modules`가 없어 실행하지 않았다. 패치 적용 후 `npm install --no-audit --no-fund --prefer-online` 뒤 재실행해야 한다.
+
+## v1.0.89 다음 업데이트 예상
+
+- GitHub Actions 재실행 후 deploy job 로그에서 Node 20 deprecation / `punycode` warning / `syncing_files` 실패가 사라지는지 확인한다.
+- build job 쪽에서 `actions/checkout@v4`, `actions/setup-node@v4`, `actions/upload-pages-artifact@v3` 관련 Node 20 경고가 추가로 보이면, 다음 버전에서 GitHub official actions Node 24 migration을 별도 범위로 다룬다. 이번 v1.0.89에서는 deploy 실패 직접 지점만 고쳤다.
+- 만약 `actions/deploy-pages@v5` 적용 후에도 `syncing_files`에서 실패하면, GitHub Pages backend incident 또는 Pages deployment latency 재발 여부를 GitHub Status에서 먼저 확인한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.89 GitHub Pages deploy Node 24 action patch
+
+
+
+## v1.0.88A 분석 기록 - GitHub Pages Deploy Failure Audit and Handoff Rule Lock
+
+- 사용자가 업로드한 `DR.zip`을 기준으로 통파일 구조, 인수인계 문서, workflow, package script, service worker, 산출 규칙을 먼저 점검했다.
+- 이번 분석 패치에서는 소스/화면 로직을 변경하지 않았다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수도 추가하지 않았다.
+- 현재 프로젝트는 `AI_HANDOFF_DR.md` 724줄, `README.md` 3345줄, 전체 파일 692개, public asset 중심 구조다. 루트에는 `AI_HANDOFF_DR.md`, `README.md`, `.github/workflows/*.yml`, `src`, `public`, `tools`가 핵심이다.
+- `package.json` 기준 버전은 `1.0.88`이고 `check:*` 스크립트는 94개다. 이번 audit-only 산출물은 package version을 올리지 않고 문서 기록만 추가한다.
+- 업로드 ZIP 안에는 `package-lock.json`이 포함되어 있었다. 기존 인수인계 규칙은 산출 ZIP에서 `package-lock.json` 제외를 요구하므로, 이번 산출 풀파일 ZIP에서는 제외한다. 다만 패치 ZIP은 문서 2개만 포함하므로 기존 로컬의 `package-lock.json` 삭제까지 수행하지 않는다. 삭제가 필요하면 별도 범위로 지정해 실제 사용 여부와 workflow 영향을 확인한 뒤 처리한다.
+- GitHub Pages workflow 분석 결과: `.github/workflows/github-pages.yml`은 `actions/setup-node@v4` + `node-version: 20`, `actions/upload-pages-artifact@v3`, `actions/deploy-pages@v4`, `pages: write`, `id-token: write`를 사용한다. 로그는 artifact를 찾고 Pages deployment 생성까지 성공한 뒤 `syncing_files`에서 실패했다. 따라서 현재 증상은 build 실패/아티팩트 누락보다 Pages 배포 action 런타임 전환 또는 Pages 동기화 백엔드 계열 가능성이 높다.
+- `tools/check-workflows.mjs`는 아직 “Node 20 LTS” 문구를 정상 정책으로 출력하고 `node-version: 22`만 금지한다. 2026-07-03 기준 Node 20 Actions 런타임 전환 이슈가 실제 로그에 나타나므로, 다음 배포 패치에서 workflow와 QA 정책을 같이 바꿔야 한다.
+- 현재 로그의 `punycode` 경고는 Node 24에서 더 크게 보이는 deprecation warning 성격이며, 사용자가 붙여준 실패의 직접 지점은 그 뒤의 `Deployment failed, try again later`다.
+- `npm run check:workflows` 통과. 현재 workflow 정책 파일이 기존 Node 20 기준으로는 정상임을 확인했다.
+- `npm run check:lobby-bottom-shortcut` 통과. 직전 v1.0.88 로비 하단 메뉴바 QA는 유지되어 있다.
+- `npm run check:health` 통과. 기본 프로젝트 필수 파일/SVG 금지 확인은 유지되어 있다.
+- 이번 분석에서는 `npm install`, `npm run build:github`, 전체 94개 `check:*`는 실행하지 않았다. 이유: 사용자가 “분석부터”를 지시했고, 배포 실패 로그가 build 이후 deploy 단계에서 발생했기 때문이다. 다음 실제 workflow 패치에서는 최소 `npm run check:workflows`, `npm run typecheck`, `npm run build:github`를 다시 실행한다.
+
+## v1.0.88A 다음 업데이트 예상
+
+- v1.0.89 범위는 GitHub Pages Deploy Runtime Stabilization 하나로 제한한다.
+- 후보 1: `actions/deploy-pages@v4`를 현재 Node 24 전환에 맞는 최신 major로 갱신하는지 검토한다.
+- 후보 2: 앱 빌드용 `actions/setup-node`의 `node-version: 20` 유지/상향 여부를 Action 런타임과 분리해 판단한다.
+- 후보 3: `tools/check-workflows.mjs`, `AI_HANDOFF_DR.md`, `README.md`의 Node 20 고정 문구를 실제 정책과 맞게 통합한다.
+- 후보 4: GitHub Pages 설정에서 Build and deployment source가 `GitHub Actions`인지 사용자가 확인해야 한다. 이 항목은 저장소 설정이라 ZIP 패치만으로 검증할 수 없다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Record 꿈의 서고 v1.0.88A deploy failure audit and handoff rules
 
 
 

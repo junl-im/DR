@@ -60,6 +60,43 @@ Atlas 생성
 
 ## Version History
 
+
+### v1.0.89 - GitHub Pages Deploy Runtime Stabilization Patch
+
+- GitHub Pages Source가 GitHub Actions로 맞다는 사용자 재확인을 반영해 Pages source 설정 오류 후보는 제외했습니다.
+- 실패 로그는 `Found 1 artifact(s)`와 `Created deployment` 이후 `syncing_files`에서 실패했으므로 build/artifact 누락이 아니라 deploy action/runtime/Pages 동기화 단계 문제로 분류했습니다.
+- `.github/workflows/github-pages.yml`의 deploy step을 `actions/deploy-pages@v4`에서 `actions/deploy-pages@v5`로 갱신했습니다.
+- 앱 빌드용 `node-version: 20`은 유지했습니다. 이번 문제의 핵심은 앱 Node가 아니라 GitHub Actions JavaScript Action 런타임이 Node 24 기본 전환기에 들어갔다는 점입니다.
+- 임시 우회인 `ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true`는 추가하지 않았습니다. Node 20으로 되돌리는 임시 대응이라 이후 다시 깨질 수 있기 때문입니다.
+- `tools/check-workflows.mjs`에 `actions/deploy-pages@v5` 필수 검사와 v4 이하 차단 검사를 추가했습니다.
+- `package.json` version을 `1.0.89`로 갱신했습니다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 화면/UI/게임 로직 수정 없음. 삭제한 파일/함수/DOM 없음.
+- 검수: `npm run check:workflows`, `npm run check:health` 통과. 이 산출 환경에는 `node_modules`가 없어 `npm run typecheck`, `npm run build:github`는 패치 적용 후 의존성 설치 환경에서 재실행해야 합니다.
+
+다음 업데이트 예정: v1.0.90 - GitHub Official Actions Node 24 Migration Follow-up only if warnings remain
+
+- GitHub Actions 재실행 후 deploy job 로그에서 Node 20 deprecation, `punycode` warning, `syncing_files` 실패가 사라지는지 확인합니다.
+- build job에서 checkout/setup/upload 쪽 Node 20 경고가 남으면 다음 버전에서 official actions major migration을 별도 범위로 처리합니다.
+
+### v1.0.88A - GitHub Pages Deploy Failure Audit and Handoff Rule Lock
+
+- 사용자가 업로드한 `DR.zip` v1.0.88 기준으로 통파일 구조, workflow, 인수인계 문서, 산출 규칙을 먼저 분석했다.
+- 이번 audit-only 산출물은 소스/화면 로직을 변경하지 않았다. `package.json` version은 `1.0.88` 그대로 유지한다.
+- 사용자 고정 규칙을 `AI_HANDOFF_DR.md`에 추가했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수 금지, mute 대신 삭제/통합, 삭제 전 호출/효과 추적, 지정 범위만 작업, 변경/삭제/안전성 요약, 기록 파일은 `AI_HANDOFF_DR.md`와 `README.md`만 사용한다는 기준을 고정했다.
+- GitHub Actions 실패 로그는 build/artifact 단계가 아니라 `actions/deploy-pages@v4`가 Pages deployment를 만든 뒤 `syncing_files` 상태에서 실패한 형태로 분류했다.
+- 현재 workflow는 `actions/setup-node@v4` + `node-version: 20`, `actions/upload-pages-artifact@v3`, `actions/deploy-pages@v4` 구조다. GitHub Actions JavaScript Action 런타임은 Node 24 전환기에 있으므로, 다음 실제 패치에서는 deploy action major와 workflow QA 정책을 함께 검토한다.
+- `tools/check-workflows.mjs`는 아직 Node 20 LTS 기준 문구를 정상으로 출력하고 `node-version: 22`만 금지한다. 다음 배포 패치에서 workflow 변경과 함께 QA 문구/검사도 통합해야 한다.
+- 업로드 ZIP에는 `package-lock.json`이 포함되어 있었지만 기존 산출 규칙은 제외를 요구한다. 이번 풀파일 산출 ZIP에서는 제외하고, 패치 ZIP은 문서 2개만 포함한다.
+- 검수: `npm run check:workflows`, `npm run check:lobby-bottom-shortcut`, `npm run check:health` 통과.
+
+다음 업데이트 예정: v1.0.89 - GitHub Pages Deploy Runtime Stabilization Patch
+
+- 배포 범위만 작업한다. 화면/UI/게임 로직은 건드리지 않는다.
+- `actions/deploy-pages` 최신 major 전환 여부를 검토하고, `punycode` warning과 `syncing_files` 실패를 분리해서 기록한다.
+- 앱 빌드 Node 버전과 GitHub Actions JavaScript Action 런타임 버전을 분리해 정책을 정리한다.
+- `.github/workflows/github-pages.yml`, 필요 시 `quality-check.yml`, `tools/check-workflows.mjs`, `AI_HANDOFF_DR.md`, `README.md`만 후보로 둔다.
+
+
 ### v1.0.88 - Lobby Bottom Shortcut Bar and Native Scroll Stabilization Patch
 
 - v1.0.87 기준 통파일을 점검하고 이번 패치 범위를 로비 첫 화면 바로가기 메뉴바와 로비 스크롤 떨림 완화로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.

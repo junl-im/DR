@@ -15,6 +15,8 @@ for (const file of files) {
 if (pushMainCount !== 1) errors.push(`Expected exactly one push main workflow, found ${pushMainCount}.`);
 const pagesWorkflow = readFileSync(join(dir, 'github-pages.yml'), 'utf8');
 const qualityWorkflow = readFileSync(join(dir, 'quality-check.yml'), 'utf8');
+if (!pagesWorkflow.includes('actions/deploy-pages@v5')) errors.push('github-pages.yml: expected Node 24 GitHub Pages deploy action.');
+if (/actions\/deploy-pages@v[0-4]\b/.test(pagesWorkflow)) errors.push('github-pages.yml: deploy-pages v4 or older is blocked after GitHub Actions Node 24 default runtime migration.');
 if (!pagesWorkflow.includes('npm run check:background-optimization')) errors.push('github-pages.yml: expected background optimization check.');
 if (!pagesWorkflow.includes('npm run check:boss-atlas')) errors.push('github-pages.yml: expected boss atlas check.');
 if (!pagesWorkflow.includes('npm run check:mobile-layout')) errors.push('github-pages.yml: expected mobile layout QA check.');
@@ -51,4 +53,4 @@ if (errors.length) {
   console.error(`Workflow policy failed: ${errors.join('; ')}.`);
   process.exit(1);
 }
-console.log('Workflow policy passed: one main push workflow, Node 20, safe npm registry, retry install, v1.0.47 QA checks.');
+console.log('Workflow policy passed: one main push workflow, Node 20 app build, Node 24 Pages deploy action, safe npm registry, retry install, v1.0.89 QA checks.');
