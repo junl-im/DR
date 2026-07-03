@@ -62,6 +62,23 @@ Atlas 생성
 
 
 
+
+### v1.0.90 - Lobby Shortcut Nav Dock and Unified Back Button Patch
+
+- 로비 바로가기 메뉴바/바로가기 팝업 범위만 수정했습니다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않았습니다.
+- `#lobby-menu-hub`에 `v1090-lobby-shortcut-nav-dock` marker를 추가하고 하단 고정 CSS를 보강했습니다. 로비 스크롤 중에도 화면 최하단 safe-area 위에 붙어 있도록 `position: fixed !important`, `bottom: var(--lobby-shortcut-bottom-gap) !important`, `top: auto !important`를 명시했습니다.
+- 바로가기 아이콘 줄은 `overflow-x: auto`, `touch-action: pan-x`, `scroll-snap-type: x mandatory`로 보강해 버튼이 화면보다 많을 때 좌우로 넘겨 누를 수 있게 했습니다.
+- 바로가기 팝업 toolbar에서 별도 `#lobby-menu-close-button.icon-button`을 삭제했습니다. 이 버튼은 `.icon-button` 공통 back 이미지 때문에 `<` 이미지처럼 따로 보였고, 기존 `#lobby-menu-back-button`과 닫기 역할이 중복됐습니다.
+- 삭제 전 추적 결과, `#lobby-menu-close-button`은 선택자 lookup, optional click listener, focus fallback에서만 쓰였고 실제 닫기 동작은 `#lobby-menu-back-button[data-lobby-menu-close]`, document delegated close handler, backdrop, ESC/back flow로 유지됩니다. 그래서 삭제가 안전하다고 판단했습니다.
+- `#lobby-menu-back-button`은 `‹ 뒤로` 단일 버튼으로 통합했고, focus fallback도 이 버튼으로 연결했습니다.
+- `tools/check-lobby-bottom-shortcut.mjs`를 보강해 하단 fixed guard, 좌우 swipe, 통합 뒤로 버튼, 삭제된 close button wiring을 검사합니다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지합니다. 산출물/문서 패치 버전은 v1.0.90입니다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 새 파일 추가 없음.
+
+검수: `npm run check:lobby-bottom-shortcut`, `npm run check:lobby-shortcut-scroll`, `npm run check:lobby-menu-motion-state`, `npm run check:lobby-navigation-rhythm`, `npm run check:css-runtime-selectors`, `npm run check:health`, `npm run typecheck`, `npm run report:images` 통과. `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 실행하지 못했으므로 패치 적용 후 의존성 설치 환경에서 재실행해야 합니다.
+
+다음 업데이트 예정: 실제 기기에서 로비 스크롤 중 하단 메뉴바 고정, 팝업 `‹ 뒤로` 단일 버튼, 하단 아이콘 가로 swipe 접근성을 확인합니다.
+
 ### v1.0.89B - GitHub Pages Build Guard Recovery Patch
 
 - 새 실패 로그는 deploy job이 아니라 build job의 `npm run check:tile-geometry-hud`에서 멈춘 것으로 확인했습니다.

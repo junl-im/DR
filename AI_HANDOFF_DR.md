@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.89B / package.json 1.0.88 runtime baseline |
+| 현재 버전 | v1.0.90 / package.json 1.0.88 runtime baseline |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | GitHub Pages Build Guard Recovery Patch |
-| 핵심 수정 | v1.0.89 workflow 패치에서 package.json version을 올려 legacy QA allow-list에 걸린 문제를 수정하고, package.json version을 runtime baseline인 1.0.88로 복원 |
-| UI/UX 우선순위 | 이번 패치는 배포 workflow만 건드리며 화면/UI/게임 로직은 수정하지 않는다 |
+| 이번 패치 | Lobby Shortcut Nav Dock and Unified Back Button Patch |
+| 핵심 수정 | 로비 바로가기 메뉴바를 화면 최하단 고정 네비게이션으로 보강하고, 바로가기 팝업의 분리된 닫기 아이콘을 삭제해 `‹ 뒤로` 단일 버튼으로 통합 |
+| UI/UX 우선순위 | 이번 패치는 바로가기 메뉴바/바로가기 팝업 범위만 수정한다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않는다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | v1.0.89 GitHub Actions build 실패 로그: `check:tile-geometry-hud`의 package version guard 실패 |
+| 작업 기준 | 사용자 요청: 바로가기 메뉴바가 스크롤 중에도 화면 최하단에 붙어 있어야 하고, 바로가기 팝업의 `<` 이미지와 `뒤로` 텍스트가 `‹ 뒤로` 단일 버튼으로 보여야 하며, 바로가기 아이콘이 많으면 가로로 넘겨 눌러야 한다 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.89.zip`, `DRp_v1.0.89.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.90.zip`, `DRp_v1.0.90.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외. 분석/패치 기록은 `AI_HANDOFF_DR.md`와 `README.md`에만 남긴다 |
 
@@ -119,6 +119,55 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 
 
 
+
+
+## v1.0.90 실제 수정 내역 - Lobby Shortcut Nav Dock and Unified Back Button Patch
+
+- 범위는 사용자가 지정한 바로가기 메뉴바와 바로가기 버튼으로 열리는 팝업 UI에만 제한했다.
+- `index.html`의 `#lobby-menu-hub`, `#lobby-menu-overlay`, `#lobby-panel-dock`, `.lobby-menu-toolbar`에 `data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"` marker를 추가했다.
+- 바로가기 팝업 toolbar에서 `#lobby-menu-close-button` DOM을 실제 삭제했다. 기존에는 `#lobby-menu-back-button` 텍스트 버튼과 `#lobby-menu-close-button.icon-button`이 동시에 존재했고, `.icon-button` 공통 CSS가 `var(--ui-back-url)` 배경을 입혀 `<` 모양 이미지와 `뒤로` 버튼이 따로 보이는 상태였다.
+- 삭제 전 호출/효과 추적: `#lobby-menu-close-button`은 `el.lobbyMenuCloseButton` lookup과 optional click listener, `openLobbyMenuPanel()` focus fallback에서만 참조됐다. 닫기 동작은 같은 toolbar 안의 `#lobby-menu-back-button[data-lobby-menu-close]`, document delegated `[data-lobby-menu-close]` handler, overlay backdrop, ESC/back flow가 모두 유지하므로 중복 닫기 DOM으로 판단했다.
+- `#lobby-menu-back-button`을 `‹ 뒤로` 단일 버튼으로 바꾸고 `aria-label="바로가기 메뉴 뒤로가기"`를 추가했다. `openLobbyMenuPanel()`의 focus fallback은 삭제된 close button 대신 기존 back button으로 통합했다.
+- `src/styles.css`에 v1.0.90 보강 CSS를 추가했다. 로비 화면에서 `#lobby-menu-hub[data-lobby-shortcut-nav-dock]`는 `position: fixed !important`, `bottom: var(--lobby-shortcut-bottom-gap) !important`, `top: auto !important`로 화면 최하단 고정을 보강했다.
+- 바로가기 아이콘 줄은 `flex-wrap: nowrap`, `overflow-x: auto`, `touch-action: pan-x`, `scroll-snap-type: x mandatory`, `-webkit-overflow-scrolling: touch`로 보강해 화면보다 버튼이 많을 때 좌우로 넘겨 누를 수 있게 했다.
+- `.lobby-menu-back-button`에는 `background-image: none`을 지정해 공통 `.icon-button`의 back 이미지가 다시 섞이지 않도록 했다.
+- `tools/check-lobby-bottom-shortcut.mjs`를 기존 검사 자리에서 직접 보강했다. v1090 marker, fixed `!important` guard, horizontal pan/snap, 통합 `‹ 뒤로` 버튼, 삭제된 `#lobby-menu-close-button`, 삭제된 `lobbyMenuCloseButton` wiring을 검사한다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지했다. 산출물/문서 버전은 v1.0.90으로 기록한다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 화면 밖 기능/게임 로직 수정 없음. 새 파일 추가 없음.
+
+## v1.0.90 필수 검수 명령
+
+```bash
+npm run check:lobby-bottom-shortcut
+npm run check:lobby-shortcut-scroll
+npm run check:lobby-menu-motion-state
+npm run check:lobby-navigation-rhythm
+npm run check:css-runtime-selectors
+npm run check:health
+```
+
+## v1.0.90 검수 결과
+
+- `npm run check:lobby-bottom-shortcut` 통과. v1090 marker, 하단 fixed guard, 좌우 swipe, 통합 `‹ 뒤로` 버튼, 삭제된 close button wiring 검사 포함.
+- `npm run check:lobby-shortcut-scroll` 통과.
+- `npm run check:lobby-menu-motion-state` 통과. 삭제된 close button 없이 기존 back-close flow/focus return 유지 확인.
+- `npm run check:lobby-navigation-rhythm` 통과.
+- `npm run check:css-runtime-selectors` 통과.
+- `npm run check:health` 통과.
+- `npm run typecheck` 통과.
+- `npm run report:images` 통과. 458 files, 52.58 MB. 대형 이미지 9개 경고는 기존 추적 항목이며 이번 바로가기 UI 범위와 무관하다.
+- `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 `sh: 1: vite: not found`로 실행하지 못했다. 패치 적용 후 의존성 설치 환경에서 재실행해야 한다.
+
+## v1.0.90 다음 업데이트 예상
+
+- 실제 기기에서 로비를 세로로 스크롤할 때 하단 바로가기 메뉴바가 화면 최하단에 계속 붙어 있는지 확인한다.
+- 바로가기 버튼을 눌러 뜬 팝업에서 toolbar 우측이 `‹ 뒤로` 단일 버튼으로만 보이고 별도 `<` 이미지/닫기 아이콘이 따로 보이지 않는지 확인한다.
+- 하단 바로가기 버튼 7개가 작은 화면에서 좌우 swipe로 모두 접근되는지 확인한다.
+- 문제가 없으면 다음 범위는 사용자가 별도로 지정한 화면/기능 하나만 작업한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.90 lobby shortcut nav dock patch
 
 ## v1.0.89B 실제 수정 내역 - GitHub Pages Build Guard Recovery Patch
 

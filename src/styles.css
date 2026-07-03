@@ -7030,3 +7030,59 @@ html[data-asset-fallback-load-polish="v1084-asset-fallback-load-polish"] {
 }
 /* v1084 anchors: v1084-mobile-rank-chip-wrap v1084-asset-fallback-load-polish v1084-lobby-anchor-settle-qa v1084-boss-atlas-build-verify imported-moon-library.webp frame-library-v2.webp */
 
+
+/* v1.0.90 lobby shortcut nav dock, unified back button and overflow swipe polish */
+body[data-screen="lobby"] #lobby-menu-hub[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] {
+  position: fixed !important;
+  top: auto !important;
+  left: 50% !important;
+  bottom: var(--lobby-shortcut-bottom-gap) !important;
+  transform: translate3d(-50%, 0, 0) !important;
+  max-height: calc(100dvh - max(16px, env(safe-area-inset-top)) - var(--lobby-shortcut-bottom-gap));
+  overflow: hidden;
+  pointer-events: auto;
+}
+body[data-screen="lobby"] #lobby-menu-hub[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] .lobby-menu-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 0;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0.45rem;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+body[data-screen="lobby"] #lobby-menu-hub[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] .lobby-menu-grid::-webkit-scrollbar {
+  display: none;
+}
+body[data-screen="lobby"] #lobby-menu-hub[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] .lobby-menu-grid button {
+  flex: 0 0 clamp(90px, 27vw, 112px);
+  scroll-snap-align: start;
+}
+.lobby-menu-toolbar[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] .lobby-menu-toolbar-actions {
+  justify-content: flex-end;
+}
+.lobby-menu-toolbar[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] .lobby-menu-back-button[data-lobby-menu-close] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  gap: 0.2rem;
+  padding-inline: 0.72rem;
+  color: rgba(230, 238, 255, 0.94);
+  background-image: none;
+}
+@media (max-width: 430px) {
+  body[data-screen="lobby"] #lobby-menu-hub[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] .lobby-menu-grid button {
+    flex-basis: 92px;
+  }
+  .lobby-menu-toolbar[data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock"] .lobby-menu-back-button[data-lobby-menu-close] {
+    min-width: 72px;
+    min-height: 42px;
+  }
+}
+/* v1090 compatibility anchors: v1090-lobby-shortcut-nav-dock */

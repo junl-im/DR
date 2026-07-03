@@ -154,6 +154,7 @@ const BOSS_ATLAS_RESOLVE_GUARD_PATCH = 'v1083-boss-atlas-resolve-guard';
 const MOBILE_RANK_CHIP_WRAP_PATCH = 'v1084-mobile-rank-chip-wrap';
 const ASSET_FALLBACK_LOAD_POLISH_PATCH = 'v1084-asset-fallback-load-polish';
 const LOBBY_ANCHOR_SETTLE_QA_PATCH = 'v1084-lobby-anchor-settle-qa';
+const LOBBY_SHORTCUT_NAV_DOCK_PATCH = 'v1090-lobby-shortcut-nav-dock';
 const RANKING_CACHE_TTL_MS = 8 * 60 * 1000;
 const FIREBASE_RANK_DAILY_READ_LIMIT = 12;
 const FIREBASE_RANK_DAILY_WRITE_LIMIT = 18;
@@ -301,7 +302,6 @@ const el = {
   dailyRewardPromise: $('#daily-reward-promise'),
   lobbyMenuHub: $('#lobby-menu-hub'),
   lobbyMenuOverlay: $('#lobby-menu-overlay'),
-  lobbyMenuCloseButton: $('#lobby-menu-close-button'),
   lobbyMenuBackButton: $('#lobby-menu-back-button'),
   lobbyMenuTabs: $('#lobby-menu-tabs'),
   lobbyMenuTitle: $('#lobby-menu-title'),
@@ -779,7 +779,6 @@ function bindEvents() {
     if (!trigger) return;
     openLobbyMenuPanel(trigger.dataset.lobbyMenuTab || 'campaign', trigger, { keepFocus: true });
   });
-  el.lobbyMenuCloseButton?.addEventListener('click', () => closeLobbyMenuPanel({ returnFocus: true }));
   el.lobbyMenuBackButton?.addEventListener('click', () => closeLobbyMenuPanel({ returnFocus: true }));
   el.lobbyMenuOverlay?.addEventListener('pointerdown', (event) => {
     if (event.target !== el.lobbyMenuOverlay) return;
@@ -2964,10 +2963,13 @@ function setLobbyNavigationRhythm(phase: 'idle' | 'opening' | 'open' | 'closing'
   document.body.classList.toggle('lobby-nav-open', phase === 'open');
   document.body.classList.toggle('lobby-nav-closing', phase === 'closing');
   el.lobbyMenuHub?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
 }
 
 function getLobbyPanelAnchorSelector(panelKey = state.activeLobbyPanel) {
@@ -3015,6 +3017,7 @@ function restoreLobbyPanelScroll(panelKey = state.activeLobbyPanel) {
   };
   document.body.dataset.lobbyPanelAnchorStability = LOBBY_PANEL_ANCHOR_STABILITY_PATCH;
   document.body.dataset.lobbyAnchorSettleQa = LOBBY_ANCHOR_SETTLE_QA_PATCH;
+  document.body.dataset.lobbyShortcutNavDock = LOBBY_SHORTCUT_NAV_DOCK_PATCH;
   el.lobbyPanelDock.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
   el.lobbyPanelDock.setAttribute('data-lobby-anchor-settle-qa', LOBBY_ANCHOR_SETTLE_QA_PATCH);
   apply();
@@ -3042,6 +3045,7 @@ function syncLobbyMenuPortal() {
   document.body.dataset.lobbyPanelAnchorStability = LOBBY_PANEL_ANCHOR_STABILITY_PATCH;
   document.body.dataset.qaOutputWordingRefresh = QA_OUTPUT_WORDING_REFRESH_PATCH;
   document.body.dataset.lobbyAnchorSettleQa = LOBBY_ANCHOR_SETTLE_QA_PATCH;
+  document.body.dataset.lobbyShortcutNavDock = LOBBY_SHORTCUT_NAV_DOCK_PATCH;
   document.body.dataset.mobileRankChipWrap = MOBILE_RANK_CHIP_WRAP_PATCH;
   document.body.classList.toggle('lobby-menu-tight', tight);
   el.lobbyMenuHub?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
@@ -3051,6 +3055,7 @@ function syncLobbyMenuPortal() {
   el.lobbyMenuHub?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
   el.lobbyMenuHub?.setAttribute('data-shortcut-menu-icon-polish', SHORTCUT_MENU_ICON_POLISH_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-back-close', LOBBY_MENU_BACK_CLOSE_PATCH);
@@ -3060,6 +3065,7 @@ function syncLobbyMenuPortal() {
   el.lobbyMenuOverlay?.setAttribute('data-lobby-scroll-stability', LOBBY_SCROLL_STABILITY_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-modal-close-flow', MODAL_CLOSE_FLOW_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+  el.lobbyMenuOverlay?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-panel-state-retention', LOBBY_PANEL_STATE_RETENTION_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-panel-content-density', LOBBY_PANEL_CONTENT_DENSITY_PATCH);
@@ -3068,6 +3074,7 @@ function syncLobbyMenuPortal() {
   el.lobbyPanelDock?.setAttribute('data-panel-scroll-qa', PANEL_SCROLL_QA_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyPanelDock?.setAttribute('data-lobby-panel-anchor-stability', LOBBY_PANEL_ANCHOR_STABILITY_PATCH);
+  el.lobbyPanelDock?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-menu-tab-switch', LOBBY_MENU_TAB_SWITCH_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
   el.lobbyMenuTabs?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
@@ -3153,6 +3160,7 @@ function openLobbyMenuPanel(panelKey = 'campaign', trigger?: HTMLElement | null,
   el.lobbyMenuOverlay.dataset.lobbyScrollStability = LOBBY_SCROLL_STABILITY_PATCH;
   el.lobbyMenuOverlay.dataset.modalCloseFlow = MODAL_CLOSE_FLOW_PATCH;
   el.lobbyMenuOverlay.dataset.lobbyNavigationRhythm = LOBBY_NAVIGATION_RHYTHM_PATCH;
+  el.lobbyMenuOverlay.dataset.lobbyShortcutNavDock = LOBBY_SHORTCUT_NAV_DOCK_PATCH;
   document.body.classList.add('lobby-menu-open', 'lobby-scroll-locked');
   setLobbyNavigationRhythm('opening');
   document.body.dataset.activeLobbyPanel = key;
@@ -3163,7 +3171,7 @@ function openLobbyMenuPanel(panelKey = 'campaign', trigger?: HTMLElement | null,
     const panel = document.querySelector<HTMLElement>(`[data-lobby-panel="${key}"]`);
     restoreLobbyPanelScroll(key);
     const firstAction = panel?.querySelector<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    if (!options.keepFocus) (firstAction || el.lobbyMenuCloseButton)?.focus({ preventScroll: true });
+    if (!options.keepFocus) (firstAction || el.lobbyMenuBackButton)?.focus({ preventScroll: true });
   }, 20);
 }
 
