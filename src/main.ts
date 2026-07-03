@@ -1008,14 +1008,12 @@ function initLobbyScrollGuard() {
   let startTime = 0;
   let dragging = false;
   let dragLocked = false;
-  let lastY = 0;
 
   shell.addEventListener('pointerdown', (event) => {
     if (state.screen !== 'lobby') return;
     startX = event.clientX;
     startY = event.clientY;
     startTime = performance.now();
-    lastY = event.clientY;
     dragging = false;
     dragLocked = false;
     document.body.classList.remove('is-lobby-dragging');
@@ -1029,12 +1027,7 @@ function initLobbyScrollGuard() {
       dragging = true;
       dragLocked = dy > 4;
       document.body.classList.add('is-lobby-dragging');
-      const deltaY = event.clientY - lastY;
-      if (Math.abs(deltaY) > 0.55 && (event.target as HTMLElement).closest('button, .mission-card, .chapter-tab, .stage-node, .restore-node, .collection-tile, .selected-stage-card, .lobby-hero, .section-heading, .daily-panel, .restoration-panel, .collection-panel, .stage-ladder-summary, .ladder-chip, .world-map, .lobby-grid, .summer-season-panel, .season-jump-button, .season-shop-card, .season-shop-claim, .season-shop-earn, .season-shop-detail, .season-shop-history-card, .season-shop-reward-preview, .season-design-audit, .season-finale-card, .season-pass-mission, .daily-start-signal, .daily-route-ribbon, .start-focus-rail')) {
-        shell.scrollTop -= deltaY * 1.28;
-        document.body.dataset.lobbyDragRescue = LOBBY_DRAG_DEEP_RESCUE_PATCH;
-      }
-      lastY = event.clientY;
+      document.body.dataset.lobbyDragRescue = LOBBY_DRAG_DEEP_RESCUE_PATCH;
     }
   }, { passive: true });
 

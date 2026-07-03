@@ -106,7 +106,8 @@
     "check:rank-copy-webp-atlas": "node tools/check-rank-copy-webp-atlas.mjs",
     "check:mobile-rank-fallback-anchor": "node tools/check-mobile-rank-fallback-anchor.mjs",
     "check:cleanup-live-paths": "node tools/check-cleanup-live-paths.mjs",
-    "check:css-runtime-selectors": "node tools/check-css-runtime-selectors.mjs"
+    "check:css-runtime-selectors": "node tools/check-css-runtime-selectors.mjs",
+    "check:lobby-bottom-shortcut": "node tools/check-lobby-bottom-shortcut.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.3.7",
@@ -120,5 +121,5 @@
   "devDependencies": {
     "typescript": "^5.8.0"
   },
-  "version": "1.0.87"
+  "version": "1.0.88"
 }

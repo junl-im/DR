@@ -43,10 +43,10 @@ for (const token of [
 }
 
 for (const [fileName, token] of [
-  ['package.json', '"version": "1.0.87"'],
-  ['public/sw.js', "dream-library-cache-v1.0.87"],
-  ['public/sw.js', 'texture-atlas-manifest-v1.0.87.json'],
-  ['src/game/difficulty.js', 'texture-atlas-manifest-v1.0.87.json'],
+  ['package.json', '"version": "1.0.88"'],
+  ['public/sw.js', "dream-library-cache-v1.0.88"],
+  ['public/sw.js', 'texture-atlas-manifest-v1.0.88.json'],
+  ['src/game/difficulty.js', 'texture-atlas-manifest-v1.0.88.json'],
   ['index.html', 'id="email-auth-modal"'],
   ['src/main.ts', 'openEmailAuthModal'],
   ['src/main.ts', 'runEmailLoginFromModal'],

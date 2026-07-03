@@ -60,6 +60,26 @@ Atlas 생성
 
 ## Version History
 
+### v1.0.88 - Lobby Bottom Shortcut Bar and Native Scroll Stabilization Patch
+
+- v1.0.87 기준 통파일을 점검하고 이번 패치 범위를 로비 첫 화면 바로가기 메뉴바와 로비 스크롤 떨림 완화로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.
+- 삭제 전 호출 추적 결과, `#lobby-menu-hub`는 실제 바로가기 메뉴 버튼들이 사용하는 살아있는 단일 DOM이고 `openLobbyMenuPanel()` / `closeLobbyMenuPanel()` 흐름과 연결되어 있어 복제하거나 삭제하지 않고 기존 DOM을 그대로 고정형으로 전환했다.
+- `#lobby-menu-hub`에서 `alive-panel` class를 삭제했다. 해당 class는 계속 위아래로 움직이는 `panelFloat` animation을 적용하므로, 하단 고정 메뉴바에서는 스크롤 떨림처럼 보이는 원인이 될 수 있어 고정 메뉴바에 한해서 제거했다. 다른 로그인/로비 카드의 살아있는 연출은 유지했다.
+- `data-lobby-shortcut-placement="bottom-fixed"`를 기존 hub / overlay / panel dock에 추가하고, CSS에서 로비 화면일 때만 `#lobby-menu-hub`를 최하단 fixed bar로 배치했다. 실게임 화면과 로그인 화면에서는 표시되지 않도록 명시했다.
+- 메뉴 팝업이 열린 상태에서도 바로가기 메뉴바가 유지되도록 overlay보다 높은 z-index를 부여하고, 보상/옵션/종료 모달보다 낮은 레이어에 머물도록 했다. 팝업 카드와 panel dock에는 하단 고정바 공간만큼 padding/max-height를 보강해 겹침을 피했다.
+- 스크롤 떨림 원인으로 보이던 `initLobbyScrollGuard()` 내부의 수동 `shell.scrollTop -= deltaY * 1.28` 보정을 삭제했다. 삭제 전 추적 결과 해당 함수는 실제 호출되지만 브라우저 native scroll과 동시에 `scrollTop`을 직접 바꾸는 구조라 모바일 관성 스크롤과 충돌할 수 있었다. 드래그 중 클릭 방지 class와 marker는 기존 함수 안에 유지했다.
+- `tools/check-lobby-bottom-shortcut.mjs`를 추가해 단일 hub 고정, game 화면 숨김, overlay 하단 공간 확보, 수동 scrollTop 보정 삭제, 새 버전 꼬리 함수 미추가를 검사한다.
+- GitHub Pages / Quality Check workflow에 `npm run check:lobby-bottom-shortcut`를 연결했다.
+- service worker cache를 `dream-library-cache-v1.0.88`로 갱신하고 `texture-atlas-manifest-v1.0.88.json`을 생성/선로드에 추가했다.
+- 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
+
+다음 업데이트 예정: v1.0.89 - Lobby Fixed Bar Real Device Touch QA and Remaining Data Marker Cleanup
+
+- 실제 모바일에서 로비 하단 고정 메뉴바가 홈 인디케이터 / safe area / 긴 패널 스크롤과 겹치지 않는지 확인한다.
+- 로비 팝업을 열고 닫은 뒤 scroll anchor 복귀가 튀지 않는지 추가 검수한다.
+- `src/main.ts`의 오래된 `data-*` marker 중 이번 범위 밖이었던 단순 과거 앵커를 계속 분류한다.
+
+
 ### v1.0.87 - CSS Runtime Selector Cleanup and Live Dataset QA Patch
 
 - v1.0.86 기준 통파일을 점검하고 이번 패치 범위를 CSS/runtime selector 정리로 제한했다. 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.
@@ -72,7 +92,7 @@ Atlas 생성
 - service worker cache를 `dream-library-cache-v1.0.87`로 갱신하고 `texture-atlas-manifest-v1.0.87.json`을 생성/선로드에 추가했다.
 - 별도 삭제 안내 파일 추가 없음. 버전 기록과 적용 메모는 README.md와 AI_HANDOFF_DR.md에만 누적한다.
 
-다음 업데이트 예정: v1.0.88 - Runtime Data Marker Cleanup and QA Anchor Integration
+다음 업데이트 진행 완료: v1.0.88 - Lobby Bottom Shortcut Bar and Native Scroll Stabilization Patch
 
 - `src/main.ts`의 오래된 `data-*` marker 중 CSS/QA/상태표시에 실제로 필요한 것과 단순 과거 앵커를 더 분리한다.
 - 살아있는 로비/시즌/보스/랭킹 흐름은 유지한다.

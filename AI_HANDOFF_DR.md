@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.87 |
+| 현재 버전 | v1.0.88 |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | CSS Runtime Selector Cleanup and Live Dataset QA Patch |
-| 핵심 수정 | runtime에서 생산되지 않는 오래된 CSS version selector 39개 계열/86개 rule 삭제, 살아있는 class 스타일 유지, QA를 현재 dataset 기준으로 통합 |
-| UI/UX 우선순위 | 이번 패치에서는 새 UI를 만들지 않고 기존 정상 동작을 보존하며 죽은 코드만 삭제한다 |
+| 이번 패치 | Lobby Bottom Shortcut Bar and Native Scroll Stabilization Patch |
+| 핵심 수정 | 기존 `#lobby-menu-hub` 단일 DOM을 로비 최하단 고정 메뉴바로 전환, 팝업에서도 유지, 실게임에서는 숨김, 수동 scrollTop 보정 삭제 |
+| UI/UX 우선순위 | 이번 패치에서는 로비 첫 화면/로비 팝업의 바로가기 메뉴바와 스크롤 안정성만 작업한다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 이전 산출물 `DR_v1.0.86.zip`에서 이어서 작업 |
+| 작업 기준 | 이전 산출물 `DR_v1.0.87.zip`에서 이어서 작업 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.87.zip`, `DR_patch_v1.0.87.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.88.zip`, `DR_patch_v1.0.88.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외 |
 
@@ -29,7 +29,7 @@
 - 로컬과 ZIP 산출물에는 `node_modules`, `dist`, `package-lock.json`을 포함하지 않는다.
 - 산출 규칙 문구 고정: `package-lock.json 제외`, `풀파일 ZIP`, `패치 ZIP`은 매번 기록한다.
 - SVG는 금지한다. 이미지 정책은 PNG/WebP/JPG 중심이다.
-- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`, `npm run check:cleanup-live-paths`, `npm run check:css-runtime-selectors`를 실행한다.
+- 현재 GitHub Actions workflow는 GitHub Pages와 quality-check 양쪽 모두 `npm run check:boss-board-clearance`, `npm run check:combat-hud-touch-clearance`, `npm run check:modal-focus-rank-budget`, `npm run check:camera-gesture-statusbar-balance`, `npm run check:camera-status-image-budget`, `npm run check:firebase-write-lobby-anchor`, `npm run check:rank-copy-webp-atlas`, `npm run check:mobile-rank-fallback-anchor`, `npm run check:cleanup-live-paths`, `npm run check:css-runtime-selectors`, `npm run check:lobby-bottom-shortcut`를 실행한다.
 
 ## 사용자가 결과를 보기 위한 명령
 
@@ -90,11 +90,12 @@ npm run check:rank-copy-webp-atlas
 npm run check:mobile-rank-fallback-anchor
 npm run check:cleanup-live-paths
 npm run check:css-runtime-selectors
+npm run check:lobby-bottom-shortcut
 npm run report:images
 npm run build:github
 ```
 
-가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.87 기준 `check:css-runtime-selectors`까지 총 93개 `check:*` 스크립트가 있다.
+가능하면 전체 `check:*` 스크립트를 모두 실행한다. 현재 v1.0.88 기준 `check:lobby-bottom-shortcut`까지 총 94개 `check:*` 스크립트가 있다.
 
 전체 검사 실행 예시:
 
@@ -105,6 +106,69 @@ for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('che
 NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
+
+
+
+## v1.0.88 실제 수정 내역
+
+- `package.json` 버전을 `1.0.88`로 갱신했다.
+- 새 버전 번호가 붙은 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다. 기존 `#lobby-menu-hub`, `initLobbyScrollGuard()`, CSS, QA script, service worker, atlas preload 위치에서 직접 수정했다.
+- 삭제 전 호출 추적 결과:
+  - `#lobby-menu-hub`는 실제 메뉴 버튼 DOM이며 `openLobbyMenuPanel()` 흐름과 연결되어 있다. 살아있는 UI이므로 복제/삭제하지 않고 기존 DOM을 최하단 fixed bar로 전환했다.
+  - `#lobby-menu-hub`의 `alive-panel` class는 `panelFloat` animation을 통해 계속 위치를 움직인다. 하단 고정 메뉴바에서는 스크롤 떨림처럼 보일 수 있어 해당 class만 삭제했다. 다른 카드의 `alive-panel` 연출은 유지했다.
+  - `initLobbyScrollGuard()`는 실제 초기화 경로에서 호출된다. 함수 자체는 로비 드래그 중 실수 클릭을 막는 살아있는 코드라 유지했다.
+  - 다만 `shell.scrollTop -= deltaY * 1.28` 수동 보정은 native scroll과 동시에 작동해 모바일 관성 스크롤과 충돌할 수 있으므로 삭제했다. 드래그 상태 class와 클릭 방지 흐름은 유지했다.
+- `data-lobby-shortcut-placement="bottom-fixed"`를 기존 hub / overlay / panel dock에 추가했다. 이 marker는 새 함수를 만들기 위한 것이 아니라 기존 DOM의 고정 배치와 popup safe area를 CSS/QA에서 확인하기 위한 상태 표시다.
+- CSS에서 로비 화면에만 하단 고정 메뉴바를 표시하고, 로그인/실게임 화면에서는 숨기도록 했다. overlay보다 높은 z-index로 팝업 중에도 유지하되, 일반 모달 stack보다 낮은 레이어로 제한했다.
+- 로비 app shell과 screen, lobby overlay, lobby panel dock에 하단 고정바 공간을 예약해 긴 패널과 팝업이 메뉴바와 겹치지 않도록 했다.
+- `tools/check-lobby-bottom-shortcut.mjs`를 추가했다. 단일 hub 고정, `alive-panel` 제거, game 화면 숨김, overlay 하단 공간, 수동 scrollTop 보정 삭제, 새 버전 꼬리 함수 미추가를 검사한다.
+- GitHub Pages / quality-check workflow에 `npm run check:lobby-bottom-shortcut`를 연결했다.
+- `dream-library-cache-v1.0.88`, `texture-atlas-manifest-v1.0.88.json`을 추가했다.
+
+## v1.0.88 필수 검수 명령
+
+```bash
+npm run typecheck
+npx tsc --noEmit --noUnusedLocals true --noUnusedParameters false
+npm run check:lobby-bottom-shortcut
+npm run check:lobby-shortcut-scroll
+npm run check:lobby-navigation-rhythm
+npm run check:css-runtime-selectors
+npm run check:cleanup-live-paths
+npm run report:images
+npm run build:github
+```
+
+가능하면 아래 방식으로 전체 `check:*` 94개를 모두 실행한다.
+
+```bash
+node - <<'NODE' > /tmp/dr-checks.txt
+const pkg = require('./package.json');
+for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('check:'))) console.log(key);
+NODE
+while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
+```
+
+## v1.0.88 검수 결과
+
+- `npm run typecheck` 통과.
+- `npx tsc --noEmit --noUnusedLocals true --noUnusedParameters false` 통과.
+- 전체 94개 `check:*` QA suite 통과.
+- `npm run check:lobby-bottom-shortcut` 통과.
+- `npm run check:scroll-polish` 통과. 수동 `scrollTop` 보정 삭제 기준으로 QA를 통합했다.
+- `npm run check:boss-stage-lobby-scroll` 통과. 로비 drag rescue QA는 native scroll + 클릭 방지 기준으로 통합했다.
+- `npm run report:images` 통과. 458 files, 52.58 MB. 1.2MB 초과 이미지 9개는 계속 추적한다.
+- `npm run build:github` 통과. 가장 큰 JS chunk는 `vendor-pixi-core-v1081` 약 343.02 KB다.
+
+## v1.0.88 다음 업데이트 예상
+
+- 실제 모바일에서 로비 하단 고정 메뉴바가 safe area와 겹치지 않는지 확인한다.
+- 로비 팝업을 열고 닫은 뒤 scroll anchor 복귀가 튀지 않는지 확인한다.
+- 이번 범위 밖이었던 오래된 `data-*` marker 중 실제 CSS/QA/상태표시에 필요 없는 항목을 계속 분류한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.88 lobby bottom shortcut scroll stabilization patch
 
 
 
@@ -161,11 +225,11 @@ while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks
 - `npm run report:images` 통과. 458 files, 52.58 MB. 1.2MB 초과 이미지 9개는 계속 추적한다.
 - `npm run build:github` 통과. 가장 큰 JS chunk는 `vendor-pixi-core-v1081` 약 343.02 KB다.
 
-## v1.0.87 다음 업데이트 예상
+## v1.0.87 다음 업데이트 진행 완료
 
-- v1.0.88에서는 `src/main.ts`의 오래된 `data-*` marker 중 CSS/QA/상태표시에 실제로 필요한 것과 단순 과거 앵커를 더 분리한다.
-- 살아있는 로비/시즌/보스/랭킹 흐름은 유지한다.
-- 효과가 끊긴 marker만 기존 로직에 통합하거나 삭제한다.
+- v1.0.88에서 로비 첫 화면 바로가기 메뉴바를 최하단 고정형으로 통합했다.
+- `initLobbyScrollGuard()`의 수동 scrollTop 보정을 삭제하고 native scroll 중심으로 정리했다.
+- 오래된 `data-*` marker 분류는 v1.0.89 후속 후보로 넘긴다.
 
 ## GitHub Desktop 커밋 메시지 추천
 

@@ -138,6 +138,7 @@ jobs:
           npm run check:mobile-rank-fallback-anchor
           npm run check:cleanup-live-paths
           npm run check:css-runtime-selectors
+          npm run check:lobby-bottom-shortcut
           npm run report:images
       - name: Build GitHub Pages bundle
         run: npm run build:github

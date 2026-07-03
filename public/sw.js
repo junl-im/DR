@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dream-library-cache-v1.0.87';
+const CACHE_NAME = 'dream-library-cache-v1.0.88';
 const CORE_ASSETS = [
   './',
   './manifest.webmanifest',
@@ -26,7 +26,7 @@ const CORE_ASSETS = [
   './assets/effects/import-vfx-02.png',
   './assets/effects/import-vfx-04.png',
   './assets/effects/import-vfx-06.png',
-  './assets/meta/texture-atlas-manifest-v1.0.87.json',
+  './assets/meta/texture-atlas-manifest-v1.0.88.json',
   './assets/meta/texture-atlas-manifest-v1.0.86.json',
   './assets/meta/texture-atlas-manifest-v1.0.85.json',
   './assets/meta/texture-atlas-manifest-v1.0.84.json',
