@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.90 / package.json 1.0.88 runtime baseline |
+| 현재 버전 | v1.0.91 / package.json 1.0.88 runtime baseline |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | Lobby Shortcut Nav Dock and Unified Back Button Patch |
-| 핵심 수정 | 로비 바로가기 메뉴바를 화면 최하단 고정 네비게이션으로 보강하고, 바로가기 팝업의 분리된 닫기 아이콘을 삭제해 `‹ 뒤로` 단일 버튼으로 통합 |
-| UI/UX 우선순위 | 이번 패치는 바로가기 메뉴바/바로가기 팝업 범위만 수정한다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않는다 |
+| 이번 패치 | Lobby Shortcut Viewport Dock, Lobby Hero Compact CTA and Downward Start Pointer Patch |
+| 핵심 수정 | 바로가기 메뉴바를 `.app-shell` 스크롤 컨테이너 밖 `body`로 실제 포털 이동해 viewport 최하단에 고정하고, 바로가기 팝업 상단의 `바로가기` 문구 삭제, 첫 화면 제목 축소, 오늘의 복원/복원 작업대 같은 줄 배치, 게임 시작 알림을 아래쪽 화살표로 오늘의 복원을 가리키게 변경 |
+| UI/UX 우선순위 | 이번 패치는 로비 첫 화면 CTA, 바로가기 메뉴바, 바로가기 팝업 헤더 범위만 수정한다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않는다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 사용자 요청: 바로가기 메뉴바가 스크롤 중에도 화면 최하단에 붙어 있어야 하고, 바로가기 팝업의 `<` 이미지와 `뒤로` 텍스트가 `‹ 뒤로` 단일 버튼으로 보여야 하며, 바로가기 아이콘이 많으면 가로로 넘겨 눌러야 한다 |
+| 작업 기준 | 사용자 요청: 바로가기 메뉴바가 전체 내용을 스크롤하지 않아도 보여지는 화면 최하단에 고정되어야 하고, 화면을 넘어서는 바로가기 키는 가로 드래그로 봐야 한다. 바로가기 버튼으로 열린 화면 최상단의 `바로가기` 글자는 제거하고, 첫 화면 제목은 0.5단계 작게, `오늘의 복원`과 `복원 작업대`는 같은 줄에 배치하며, 위젯형 게임 시작 알림은 오늘의 복원을 향하는 방향 화살표로 바꾼다 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.90.zip`, `DRp_v1.0.90.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.91.zip`, `DRp_v1.0.91.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외. 분석/패치 기록은 `AI_HANDOFF_DR.md`와 `README.md`에만 남긴다 |
 
@@ -117,8 +117,67 @@ NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
 
+## v1.0.91 실제 수정 내역 - Lobby Shortcut Viewport Dock, Compact Hero CTA and Downward Start Pointer Patch
 
+- 범위는 로비 첫 화면 CTA, 바로가기 메뉴바, 바로가기 팝업 헤더에만 제한했다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 수정하지 않았다.
+- v1.0.90에서 하단바에 `position: fixed`를 줬지만 `#lobby-menu-hub`가 `.app-shell` 스크롤 컨테이너 안에 남아 있었다. `.app-shell`은 모바일/인앱 런타임에서 `overflow-y: auto`, `contain: layout paint`를 쓰므로 일부 환경에서 fixed가 viewport가 아니라 스크롤 컨테이너 끝처럼 보일 수 있었다.
+- 기존 `syncLobbyMenuPortal()` 함수 안에서 `#lobby-menu-hub`를 `document.body.appendChild(el.lobbyMenuHub)`로 실제 포털 이동하도록 직접 수정했다. 새 `sync...Ui()` 함수는 만들지 않았다.
+- `index.html`, `src/main.ts`, `src/styles.css`에 `v1091-lobby-shortcut-viewport-dock` marker를 추가했다. body 직계 `#lobby-menu-hub`에 대해 `position: fixed !important`, `bottom: max(6px, env(safe-area-inset-bottom)) !important`, `width: min(calc(100vw - 14px), 540px)`를 적용해 화면 최하단 dock 기준을 고정했다.
+- 하단 바로가기 dock에서는 `.lobby-menu-copy`를 숨기고, `.lobby-menu-grid`만 남겨 navigation bar처럼 보이게 했다. 버튼은 `flex-wrap: nowrap`, `overflow-x: auto`, `scroll-snap-type: x mandatory`, `touch-action: pan-x !important`로 유지해 화면을 넘어서는 바로가기 키를 좌우 드래그로 볼 수 있게 했다.
+- 바로가기 버튼으로 열린 팝업 toolbar의 정적 `<p class="eyebrow">바로가기</p>`를 삭제했다. 이 문구는 JS lookup, event listener, aria-labelledby에 연결되어 있지 않은 순수 상단 보조 문구였고, `#lobby-menu-title`과 `#lobby-menu-subtitle`, `‹ 뒤로` 버튼은 유지되므로 삭제가 안전하다.
+- 첫 화면의 `기억을 고르고 시작하세요` 제목은 `.lobby-hero h2`만 별도 CSS로 줄였다. 전역 `h2` 크기나 다른 화면 제목은 건드리지 않았다.
+- `.lobby-quick-actions`를 2열로 고정해 `오늘의 복원`과 `복원 작업대`를 같은 줄에 배치했다. `daily-route-ribbon`은 그 아래 줄로 유지했다.
+- 위젯형 `게임 시작` 알림의 화살표를 `➜`에서 `↓`로 바꾸고, runtime guard도 `arrow.textContent = '↓'`로 수정했다. CSS pseudo pointer도 아래쪽 beam/삼각형으로 바꿔 알림이 위에서 아래의 `오늘의 복원` 버튼을 가리키도록 했다.
+- 관련 QA는 기존 `tools/check-lobby-bottom-shortcut.mjs`와 `tools/check-daily-start-arrow-cta.mjs`를 직접 보강했다. 새 QA 파일은 만들지 않았다.
+- 삭제한 DOM은 팝업 toolbar의 정적 `바로가기` eyebrow 문구 1개다. 삭제 전 추적 결과 ID가 없고 JS 참조/이벤트/aria label 연결이 없어 화면 동작에는 영향이 없다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지한다. 산출물/문서 버전은 v1.0.91로 기록한다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 새 파일 추가 없음.
 
+## v1.0.91 필수 검수 명령
+
+```bash
+npm run check:lobby-bottom-shortcut
+npm run check:lobby-shortcut-scroll
+npm run check:daily-start-arrow-cta
+npm run check:daily-start-pointer
+npm run check:daily-start-precision-rail
+npm run check:daily-start-focus-assist
+npm run check:lobby-menu-portal
+npm run check:lobby-menu-motion-state
+npm run check:lobby-navigation-rhythm
+npm run check:css-runtime-selectors
+npm run check:health
+npm run typecheck
+npm run report:images
+```
+
+## v1.0.91 검수 결과
+
+- `npm run check:lobby-bottom-shortcut` 통과. v1091 viewport dock marker, body 포털 이동, fixed root selector, 가로 drag override를 검사했다.
+- `npm run check:lobby-shortcut-scroll` 통과.
+- `npm run check:daily-start-arrow-cta` 통과. runtime arrow guard가 `↓`로 통합됐는지 확인했다.
+- `npm run check:daily-start-pointer` 통과.
+- `npm run check:daily-start-precision-rail` 통과.
+- `npm run check:daily-start-focus-assist` 통과.
+- `npm run check:lobby-menu-portal` 통과.
+- `npm run check:lobby-menu-motion-state` 통과.
+- `npm run check:lobby-navigation-rhythm` 통과.
+- `npm run check:css-runtime-selectors` 통과.
+- `npm run check:health` 통과.
+- `npm run typecheck` 통과.
+- `npm run report:images` 통과. 458 files, 52.58 MB. 대형 이미지 9개 경고는 기존 추적 항목이며 이번 로비 바로가기 범위와 무관하다.
+- `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 `sh: 1: vite: not found`로 실행하지 못했다. 패치 적용 후 의존성 설치 환경/GitHub Actions에서 재실행해야 한다.
+
+## v1.0.91 다음 업데이트 예상
+
+- 실제 기기에서 로비를 위아래로 스크롤해도 바로가기 dock이 화면 최하단 safe-area 위에 붙어 있는지 확인한다.
+- 하단 바로가기 키 7개가 작은 화면에서 좌우 드래그로 모두 접근되는지 확인한다.
+- 바로가기 팝업 상단에 `바로가기` eyebrow가 더 이상 보이지 않고, `서고 메뉴`/선택 패널 제목과 `‹ 뒤로`만 보이는지 확인한다.
+- 첫 화면에서 `오늘의 복원`과 `복원 작업대`가 같은 줄에 있고, 게임 시작 알림의 `↓`가 오늘의 복원을 가리키는지 확인한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.91 lobby shortcut viewport dock patch
 
 
 ## v1.0.90 실제 수정 내역 - Lobby Shortcut Nav Dock and Unified Back Button Patch

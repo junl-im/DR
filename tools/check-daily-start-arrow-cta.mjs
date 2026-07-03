@@ -25,7 +25,7 @@ has(index, '<em>오늘의 복원</em> 버튼입니다', 'target copy points at d
 if (index.includes('signal-finger') || index.includes('☝') || index.includes('👆')) errors.push('finger cue must be removed from the daily start widget HTML');
 has(main, 'const DAILY_START_ARROW_CTA_PATCH', 'arrow CTA patch constant');
 has(main, 'document.body.dataset.dailyStartArrowCta', 'arrow CTA body dataset');
-has(main, "arrow.textContent = '➜'", 'runtime arrow-only text guard');
+has(main, "arrow.textContent = '↓'", 'runtime downward arrow text guard');
 has(css, '.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow', 'arrow-only CTA CSS');
 has(css, '@keyframes dailyArrowOnlyNudge', 'arrow-only nudge animation');
 has(css, '.daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-finger { display: none !important; }', 'finger safety hide guard');
@@ -44,4 +44,4 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log('Daily start arrow CTA QA check passed: v1.0.64 removes finger cue and keeps the right-arrow start widget aimed at 오늘의 복원.');
+console.log('Daily start arrow CTA QA check passed: v1.0.64 removes finger cue and keeps the downward-arrow start widget aimed at 오늘의 복원.');

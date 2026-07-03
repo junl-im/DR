@@ -7086,3 +7086,153 @@ body[data-screen="lobby"] #lobby-menu-hub[data-lobby-shortcut-nav-dock="v1090-lo
   }
 }
 /* v1090 compatibility anchors: v1090-lobby-shortcut-nav-dock */
+
+/* v1.0.91 viewport shortcut dock, compact lobby hero and downward daily start pointer */
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: max(6px, env(safe-area-inset-bottom)) !important;
+  width: min(calc(100vw - 14px), 540px) !important;
+  max-width: calc(100vw - 14px) !important;
+  max-height: min(96px, calc(100dvh - max(18px, env(safe-area-inset-top)) - max(8px, env(safe-area-inset-bottom)))) !important;
+  margin: 0 !important;
+  padding: 0.44rem 0.48rem 0.48rem !important;
+  transform: translate3d(-50%, 0, 0) !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  contain: layout paint style;
+  z-index: 118;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] .lobby-menu-copy {
+  display: none !important;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] .lobby-menu-grid {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 0.42rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  touch-action: pan-x !important;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0.42rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] .lobby-menu-grid::-webkit-scrollbar {
+  display: none;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] .lobby-menu-grid button {
+  flex: 0 0 clamp(82px, 24vw, 102px) !important;
+  min-height: 54px;
+  scroll-snap-align: start;
+  touch-action: pan-x !important;
+}
+body[data-screen="login"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"],
+body[data-screen="game"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] {
+  display: none !important;
+}
+body[data-screen="lobby"] .app-shell {
+  padding-bottom: calc(var(--lobby-shortcut-reserved-space) + 12px) !important;
+  scroll-padding-bottom: calc(var(--lobby-shortcut-reserved-space) + 12px) !important;
+}
+body[data-screen="lobby"] .screen-lobby {
+  padding-bottom: calc(var(--lobby-shortcut-reserved-space) + 12px) !important;
+}
+body[data-screen="lobby"] .lobby-hero h2 {
+  font-size: clamp(1.32rem, 5.1vw, 1.92rem);
+  letter-spacing: -0.045em;
+}
+body[data-screen="lobby"] .lobby-quick-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  min-width: min(286px, 100%);
+  gap: 0.42rem;
+}
+body[data-screen="lobby"] #daily-stage-button {
+  grid-column: 1;
+  grid-row: 1;
+}
+body[data-screen="lobby"] #restoration-focus-button {
+  grid-column: 2;
+  grid-row: 1;
+}
+body[data-screen="lobby"] #daily-route-ribbon {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+  left: 0.08rem !important;
+  right: auto !important;
+  top: -3.38rem !important;
+  width: calc((100% - 0.42rem) / 2);
+  min-width: 0;
+  max-width: 146px;
+  grid-template-columns: auto minmax(0, 1fr);
+  text-align: left;
+  border-radius: 18px 18px 10px 10px;
+  transform-origin: 50% 100%;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-pointer="v1060-daily-start-target-pointer"]::before {
+  left: 50% !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: -0.76rem !important;
+  width: 3px !important;
+  height: 0.76rem !important;
+  transform: translateX(-50%) !important;
+  background: linear-gradient(180deg, rgba(255, 231, 164, 0.98), rgba(125, 220, 255, 0.96));
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-pointer="v1060-daily-start-target-pointer"]::after {
+  left: calc(50% - 0.34rem) !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: -1.04rem !important;
+  width: 0.68rem !important;
+  height: 0.68rem !important;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: none !important;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow {
+  animation: dailyArrowDownNudgeV1091 0.86s ease-in-out infinite;
+}
+.lobby-menu-toolbar[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] .eyebrow {
+  display: none !important;
+}
+@keyframes dailyArrowDownNudgeV1091 {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(5px) scale(1.04); }
+}
+@media (max-width: 430px) {
+  body[data-screen="lobby"] .lobby-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+    top: -3.16rem !important;
+    max-width: 132px;
+    padding: 0.34rem 0.44rem;
+  }
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] .lobby-menu-grid button {
+    flex-basis: 86px !important;
+  }
+}
+@media (max-height: 680px) {
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] {
+    max-height: 82px !important;
+    padding-block: 0.34rem !important;
+  }
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"] .lobby-menu-grid button {
+    min-height: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow {
+    animation: none !important;
+  }
+}
+/* v1091 compatibility anchors: v1091-lobby-shortcut-viewport-dock dailyArrowDownNudgeV1091 */

@@ -62,6 +62,24 @@ Atlas 생성
 
 
 
+### v1.0.91 - Lobby Shortcut Viewport Dock, Compact Hero CTA and Downward Start Pointer Patch
+
+- 로비 첫 화면 CTA, 바로가기 메뉴바, 바로가기 팝업 헤더 범위만 수정했습니다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않았습니다.
+- `#lobby-menu-hub`가 `.app-shell` 스크롤 컨테이너 안에 남아 있어 일부 모바일 런타임에서 fixed가 화면 기준 최하단이 아니라 컨텐츠 하단처럼 보일 수 있던 문제를 수정했습니다. 기존 `syncLobbyMenuPortal()` 안에서 하단바를 `body`로 실제 포털 이동시켜 viewport 기준 fixed dock으로 고정했습니다.
+- `v1091-lobby-shortcut-viewport-dock` marker와 body 직계 selector CSS를 추가했습니다. 하단 dock은 safe-area 위에 고정되고, 내부 바로가기 버튼 줄은 `overflow-x: auto`, `scroll-snap-type: x mandatory`, `touch-action: pan-x !important`로 좌우 드래그할 수 있습니다.
+- 하단 dock에서는 설명 copy를 숨기고 바로가기 키만 남겨 navigation bar처럼 보이도록 했습니다.
+- 바로가기 버튼으로 열린 팝업 최상단의 정적 `바로가기` eyebrow 문구를 삭제했습니다. 이 문구는 JS 참조/이벤트/aria 연결이 없는 보조 copy였고, 제목/설명/`‹ 뒤로` 버튼은 유지됩니다.
+- 첫 화면 `기억을 고르고 시작하세요` 제목은 로비 hero 범위에서만 0.5단계 작게 보이도록 줄였습니다.
+- `오늘의 복원`과 `복원 작업대`를 같은 줄에 배치하고, `daily-route-ribbon`은 그 아래 줄로 유지했습니다.
+- 위젯형 `게임 시작` 알림은 `➜` 대신 `↓`를 쓰고, 아래쪽 beam/삼각형 pointer로 `오늘의 복원` 버튼을 가리키도록 바꿨습니다. runtime guard도 `arrow.textContent = '↓'`로 통합했습니다.
+- `tools/check-lobby-bottom-shortcut.mjs`와 `tools/check-daily-start-arrow-cta.mjs`를 기존 검사 자리에서 보강했습니다. 새 QA 파일은 추가하지 않았습니다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지합니다. 산출물/문서 패치 버전은 v1.0.91입니다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 새 파일 추가 없음.
+
+검수: `npm run check:lobby-bottom-shortcut`, `npm run check:lobby-shortcut-scroll`, `npm run check:daily-start-arrow-cta`, `npm run check:daily-start-pointer`, `npm run check:daily-start-precision-rail`, `npm run check:daily-start-focus-assist`, `npm run check:lobby-menu-portal`, `npm run check:lobby-menu-motion-state`, `npm run check:lobby-navigation-rhythm`, `npm run check:css-runtime-selectors`, `npm run check:health`, `npm run typecheck`, `npm run report:images` 통과. `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 실행하지 못했으므로 패치 적용 후 의존성 설치 환경/GitHub Actions에서 재실행해야 합니다.
+
+다음 업데이트 예정: 실제 기기에서 하단 dock viewport 고정, 바로가기 키 좌우 드래그, 팝업 상단 `바로가기` 문구 제거, `오늘의 복원`/`복원 작업대` 같은 줄 배치, `↓` 게임 시작 알림 방향을 확인합니다.
+
 
 ### v1.0.90 - Lobby Shortcut Nav Dock and Unified Back Button Patch
 
