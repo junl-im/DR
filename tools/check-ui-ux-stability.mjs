@@ -25,6 +25,7 @@ has(index, '<span class="signal-arrow" aria-hidden="true">↓</span>', 'downward
 has(main, "arrow.textContent = '↓'", 'runtime downward-arrow CTA guard');
 if (index.includes('<span class="signal-arrow" aria-hidden="true">➜</span>')) errors.push('right-arrow start cue markup must not remain after v1.0.91 downward pointer integration');
 has(css, '.daily-start-signal[data-ui-ux-stability="v1065-ui-ux-stability-pass"]', 'touch-safe CTA CSS');
+has(css, 'compact-daily-start-badge', 'compact downward CTA badge CSS');
 has(css, '.reward-modal[data-ui-ux-stability="v1065-ui-ux-stability-pass"]', 'modal density guard CSS');
 has(main, 'function syncUiUxStabilityPass()', 'runtime UI/UX stability sync');
 has(main, 'initUiUxStabilityWatcher()', 'runtime UI/UX watcher');

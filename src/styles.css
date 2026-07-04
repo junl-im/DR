@@ -7236,3 +7236,129 @@ body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-
   }
 }
 /* v1091 compatibility anchors: v1091-lobby-shortcut-viewport-dock dailyArrowDownNudgeV1091 */
+
+/* v1.0.93 compact daily start badge and explicit shortcut more entry */
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+  left: max(0.14rem, calc(((100% - 0.42rem) / 2 - 98px) / 2)) !important;
+  right: auto !important;
+  top: -2.02rem !important;
+  width: 98px !important;
+  min-width: 0 !important;
+  min-height: 30px !important;
+  max-width: 98px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.2rem 0.36rem !important;
+  border-radius: 999px 999px 999px 10px;
+  text-align: center;
+  line-height: 1;
+  transform-origin: 50% 100%;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] strong {
+  font-size: 0.56rem !important;
+  line-height: 1;
+  white-space: nowrap;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] small {
+  display: none !important;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] .signal-arrow {
+  margin: 0 !important;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-pointer="v1060-daily-start-target-pointer"]::before {
+  bottom: -0.48rem !important;
+  height: 0.48rem !important;
+}
+body[data-screen="lobby"] .daily-start-signal[data-daily-start-pointer="v1060-daily-start-target-pointer"]::after {
+  left: calc(50% - 0.25rem) !important;
+  bottom: -0.68rem !important;
+  width: 0.5rem !important;
+  height: 0.5rem !important;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0.38rem;
+  max-height: min(82px, calc(100dvh - max(18px, env(safe-area-inset-top)) - max(8px, env(safe-area-inset-bottom)))) !important;
+  padding: 0.36rem 0.42rem 0.42rem !important;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-grid {
+  grid-column: 1;
+  min-width: 0;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-more-button {
+  grid-column: 2;
+  align-self: stretch;
+  min-width: 58px;
+  min-height: 54px;
+  padding: 0.36rem 0.38rem;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  gap: 0.03rem;
+  color: var(--navy-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--sky-400));
+  border-color: rgba(255, 231, 164, 0.62);
+  box-shadow: 0 10px 22px rgba(6, 21, 45, 0.3), 0 0 0 1px rgba(125, 220, 255, 0.24);
+  font-weight: 1000;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-more-button::before {
+  content: '›';
+  font-size: 1.02rem;
+  line-height: 0.82;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-more-button span {
+  font-size: 0.62rem;
+  line-height: 1;
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-more-button b {
+  font-size: 0.52rem;
+  line-height: 1;
+  color: rgba(8, 22, 48, 0.72);
+}
+body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-grid button {
+  flex-basis: clamp(76px, 21vw, 94px) !important;
+  min-height: 52px;
+}
+@media (max-width: 430px) {
+  body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+    top: -1.84rem !important;
+    width: 92px !important;
+    max-width: 92px !important;
+    padding: 0.18rem 0.32rem !important;
+  }
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] {
+    width: min(calc(100vw - 10px), 540px) !important;
+    max-width: calc(100vw - 10px) !important;
+    gap: 0.3rem;
+    padding-inline: 0.34rem !important;
+  }
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-grid button {
+    flex-basis: 78px !important;
+  }
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-more-button {
+    min-width: 54px;
+    padding-inline: 0.3rem;
+  }
+}
+@media (max-height: 680px) {
+  body[data-screen="lobby"] .daily-start-signal[data-daily-start-arrow-cta="v1064-daily-start-arrow-only-cta"] {
+    top: -1.72rem !important;
+  }
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] {
+    max-height: 72px !important;
+    padding-block: 0.3rem !important;
+  }
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-more-button,
+  body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"] .lobby-menu-grid button {
+    min-height: 46px;
+  }
+}
+/* v1093 compatibility anchors: v1093-lobby-shortcut-more-entry compact-daily-start-badge */

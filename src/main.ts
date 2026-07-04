@@ -156,6 +156,7 @@ const ASSET_FALLBACK_LOAD_POLISH_PATCH = 'v1084-asset-fallback-load-polish';
 const LOBBY_ANCHOR_SETTLE_QA_PATCH = 'v1084-lobby-anchor-settle-qa';
 const LOBBY_SHORTCUT_NAV_DOCK_PATCH = 'v1090-lobby-shortcut-nav-dock';
 const LOBBY_SHORTCUT_VIEWPORT_DOCK_PATCH = 'v1091-lobby-shortcut-viewport-dock';
+const LOBBY_SHORTCUT_MORE_ENTRY_PATCH = 'v1093-lobby-shortcut-more-entry';
 const RANKING_CACHE_TTL_MS = 8 * 60 * 1000;
 const FIREBASE_RANK_DAILY_READ_LIMIT = 12;
 const FIREBASE_RANK_DAILY_WRITE_LIMIT = 18;
@@ -2966,6 +2967,7 @@ function setLobbyNavigationRhythm(phase: 'idle' | 'opening' | 'open' | 'closing'
   el.lobbyMenuHub?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-viewport-dock', LOBBY_SHORTCUT_VIEWPORT_DOCK_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-more', LOBBY_SHORTCUT_MORE_ENTRY_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-shortcut-viewport-dock', LOBBY_SHORTCUT_VIEWPORT_DOCK_PATCH);
@@ -3052,6 +3054,7 @@ function syncLobbyMenuPortal() {
   document.body.dataset.lobbyAnchorSettleQa = LOBBY_ANCHOR_SETTLE_QA_PATCH;
   document.body.dataset.lobbyShortcutNavDock = LOBBY_SHORTCUT_NAV_DOCK_PATCH;
   document.body.dataset.lobbyShortcutViewportDock = LOBBY_SHORTCUT_VIEWPORT_DOCK_PATCH;
+  document.body.dataset.lobbyShortcutMore = LOBBY_SHORTCUT_MORE_ENTRY_PATCH;
   document.body.dataset.mobileRankChipWrap = MOBILE_RANK_CHIP_WRAP_PATCH;
   document.body.classList.toggle('lobby-menu-tight', tight);
   if (el.lobbyMenuHub && el.lobbyMenuHub.parentElement !== document.body) {
@@ -3066,6 +3069,8 @@ function syncLobbyMenuPortal() {
   el.lobbyMenuHub?.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-nav-dock', LOBBY_SHORTCUT_NAV_DOCK_PATCH);
   el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-viewport-dock', LOBBY_SHORTCUT_VIEWPORT_DOCK_PATCH);
+  el.lobbyMenuHub?.setAttribute('data-lobby-shortcut-more', LOBBY_SHORTCUT_MORE_ENTRY_PATCH);
+  document.querySelector<HTMLElement>('#lobby-menu-more-button')?.setAttribute('data-lobby-shortcut-more', LOBBY_SHORTCUT_MORE_ENTRY_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-portal', LOBBY_MENU_PORTAL_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-motion-state', LOBBY_MENU_MOTION_STATE_PATCH);
   el.lobbyMenuOverlay?.setAttribute('data-lobby-menu-back-close', LOBBY_MENU_BACK_CLOSE_PATCH);
@@ -3101,6 +3106,11 @@ function syncLobbyMenuPortal() {
     button.setAttribute('data-lobby-shortcut-bar', LOBBY_SHORTCUT_MENU_BAR_PATCH);
     button.setAttribute('data-shortcut-menu-icon-polish', SHORTCUT_MENU_ICON_POLISH_PATCH);
     button.setAttribute('data-lobby-navigation-rhythm', LOBBY_NAVIGATION_RHYTHM_PATCH);
+    if (button.id === 'lobby-menu-more-button') {
+      button.setAttribute('data-lobby-shortcut-more', LOBBY_SHORTCUT_MORE_ENTRY_PATCH);
+      button.setAttribute('aria-label', '숨은 바로가기 전체 메뉴 열기 - 모든 바로가기 항목 보기');
+      return;
+    }
     const meta = LOBBY_MENU_TITLES[key];
     if (meta) button.setAttribute('aria-label', `${button.textContent?.trim() || meta.title} 열기 - ${meta.subtitle}`);
   });

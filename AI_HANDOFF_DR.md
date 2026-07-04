@@ -4,15 +4,15 @@
 
 | 항목 | 기록 |
 |---|---|
-| 현재 버전 | v1.0.92 / package.json 1.0.88 runtime baseline |
+| 현재 버전 | v1.0.93 / package.json 1.0.88 runtime baseline |
 | 프로젝트 | 꿈의 서고 / Dream Library, 세로형 모바일 우선 사천성 퍼즐 + 마법 전투 RPG |
-| 이번 패치 | UI/UX Stability QA Downward Arrow Guard Recovery Patch |
-| 핵심 수정 | v1.0.91에서 의도적으로 `게임 시작` CTA를 `↓`로 바꾼 뒤에도 `tools/check-ui-ux-stability.mjs`가 예전 `➜` 마크업을 요구해 build가 실패하던 QA guard 충돌을 수정했다. 화면 소스 동작은 유지하고 검수 기준만 현재 UI 의도와 통합했다 |
-| UI/UX 우선순위 | 이번 패치는 로비 시작 CTA 관련 QA guard 복구만 수정한다. 화면 배치, 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않는다 |
+| 이번 패치 | Compact Daily Start Badge and Shortcut More Entry Patch |
+| 핵심 수정 | 위젯형 `게임 시작` 알림을 작은 배지로 줄이고 `오늘의 복원` 위쪽에 더 가깝게 정렬했다. 하단 고정 바로가기 메뉴는 총 7개 항목임을 분명히 하기 위해 고정 `더보기` 버튼을 추가해 전체 바로가기 팝업으로 진입하게 했다 |
+| UI/UX 우선순위 | 이번 패치는 로비 첫 화면의 시작 CTA와 하단 바로가기 dock 노출성만 수정한다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 건드리지 않는다 |
 | 예전 코드 방지 | active HTML/main에서 `statusbar-icon-right-v1046`, 보드 미니맵, 드래그 이동 도움말, 손가락 시작 문구가 되살아나면 QA 실패로 본다 |
-| 작업 기준 | 사용자 빌드 실패 로그: `check:ui-ux-stability`가 `Missing right-arrow-only CTA markup: <span class="signal-arrow" aria-hidden="true">➜</span>`로 실패했다. v1.0.91의 `↓` 방향 CTA가 맞는 의도이므로 낡은 QA 요구사항을 현재 UI 기준으로 통합한다 |
+| 작업 기준 | 사용자 피드백: `게임 시작` 위젯이 너무 커지고 위치가 맞지 않으며, 하단 고정 메뉴바가 4개만 보이는 것처럼 느껴진다. 실제 바로가기는 7개이므로 가로 드래그 유지 + 명시적 `더보기` 진입을 추가한다 |
 | 필수 산출 | 그대로 사용 가능한 풀파일 ZIP 1개, 덮어쓰기용 패치 ZIP 1개 |
-| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.92.zip`, `DRp_v1.0.92.zip` |
+| 산출 파일명 규칙 | 짧은 이름 + 버전 숫자 포함. 예: `DR_v1.0.93.zip`, `DRp_v1.0.93.zip` |
 | 기록 파일 규칙 | 매 패치마다 `README.md`와 이 `AI_HANDOFF_DR.md`를 같이 갱신 |
 | 불필요 파일 금지 | 임시 분석 파일, `dist`, `node_modules`, `package-lock.json`, `DELETE_REMOVED`, 과거 1회성 삭제 스크립트는 산출 ZIP에서 제외. 분석/패치 기록은 `AI_HANDOFF_DR.md`와 `README.md`에만 남긴다 |
 
@@ -116,6 +116,60 @@ for (const key of Object.keys(pkg.scripts).filter((name) => name.startsWith('che
 NODE
 while IFS= read -r script; do npm run "$script" || exit 1; done < /tmp/dr-checks.txt
 ```
+
+
+## v1.0.93 실제 수정 내역 - Compact Daily Start Badge and Shortcut More Entry Patch
+
+- 범위는 로비 첫 화면의 위젯형 `게임 시작` CTA와 하단 고정 바로가기 메뉴바로 제한했다. 게임 보드, 랭킹, 상점/복원 데이터 로직은 수정하지 않았다.
+- 확인 결과 하단 바로가기 메뉴는 4개가 아니라 총 7개다. `스테이지`, `미션`, `복원`, `오늘`, `도감`, `상점`, `기록` 버튼이 모두 `#lobby-menu-hub .lobby-menu-grid` 안에 있고, 좁은 화면에서는 가로 드래그 영역 뒤에 숨어 보인다.
+- 숨은 항목이 있다는 것을 사용자가 바로 알 수 있도록 `#lobby-menu-more-button`을 추가했다. 이 버튼은 기존 `data-lobby-menu-open="campaign"` 흐름을 그대로 사용해 전체 바로가기 팝업을 열며, 별도 새 열기 함수는 만들지 않았다.
+- 기존 `syncLobbyMenuPortal()`와 `setLobbyNavigationRhythm()` 자리에서 `v1093-lobby-shortcut-more-entry` marker만 통합했다. 새 `install...Pass()` / `sync...Ui()` 함수는 추가하지 않았다.
+- 하단 dock은 `grid-template-columns: minmax(0, 1fr) auto`로 구성해 왼쪽은 기존 가로 드래그 바로가기 lane, 오른쪽은 고정 `더보기` 버튼으로 분리했다.
+- `게임 시작` CTA는 `오늘의 복원` 위의 작은 배지처럼 보이도록 줄였다. `small` 설명 문구는 시각적으로 숨기고 `↓ + 게임 시작`만 남겨 크기를 낮췄다.
+- `daily-start-signal`의 아래 beam/삼각형 pointer 길이도 줄여 `오늘의 복원` 버튼을 가리키되 버튼을 덮지 않게 했다.
+- `tools/check-lobby-bottom-shortcut.mjs`, `tools/check-daily-start-arrow-cta.mjs`, `tools/check-ui-ux-stability.mjs`를 기존 검사 자리에서 보강해 v1.0.93의 compact badge와 `더보기` 버튼이 유지되는지 검사한다. 새 QA 파일은 추가하지 않았다.
+- 삭제한 함수/DOM/asset은 없다. 새로 추가한 DOM은 `#lobby-menu-more-button` 1개이며, 기존 `el.lobbyMenuHub` delegated click handler가 처리하므로 별도 listener를 추가하지 않아 안전하다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지한다. 산출물/문서 패치 버전은 v1.0.93으로 기록한다.
+
+## v1.0.93 필수 검수 명령
+
+```bash
+npm run check:lobby-bottom-shortcut
+npm run check:daily-start-arrow-cta
+npm run check:ui-ux-stability
+npm run check:lobby-menu-portal
+npm run check:lobby-shortcut-scroll
+npm run check:lobby-navigation-rhythm
+npm run check:css-runtime-selectors
+npm run check:health
+npm run typecheck
+npm run report:images
+```
+
+## v1.0.93 검수 결과
+
+- `npm run check:lobby-bottom-shortcut` 통과.
+- `npm run check:daily-start-arrow-cta` 통과.
+- `npm run check:ui-ux-stability` 통과.
+- `npm run check:lobby-menu-portal` 통과.
+- `npm run check:lobby-shortcut-scroll` 통과.
+- `npm run check:lobby-navigation-rhythm` 통과.
+- `npm run check:css-runtime-selectors` 통과.
+- `npm run check:health` 통과.
+- `npm run typecheck` 통과.
+- 전체 `check:*` 스크립트는 두 구간으로 나누어 실행했고 모두 통과했다.
+- `npm run report:images` 통과. 458 files, 52.58 MB. 기존 large image warning 9개는 남아 있으며 이번 범위의 이미지 변경은 아니다.
+- `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 `sh: 1: vite: not found`로 실행하지 못했다. GitHub Actions 의존성 설치 환경에서 재확인한다.
+
+## v1.0.93 다음 업데이트 예상
+
+- 실제 기기에서 `게임 시작` 배지가 너무 크거나 오늘의 복원 버튼과 어긋나지 않는지 확인한다.
+- 하단 고정 메뉴바에서 `더보기`가 항상 오른쪽에 보이고, 왼쪽 바로가기 lane은 좌우 드래그로 7개 항목 모두 접근되는지 확인한다.
+- `더보기`를 누르면 바로가기 팝업이 열리고 상단 tab으로 전체 항목을 이동할 수 있어야 한다.
+
+## GitHub Desktop 커밋 메시지 추천
+
+Apply 꿈의 서고 v1.0.93 compact start badge and shortcut more entry patch
 
 
 ## v1.0.92 실제 수정 내역 - UI/UX Stability QA Downward Arrow Guard Recovery Patch

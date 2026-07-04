@@ -61,6 +61,22 @@ Atlas 생성
 ## Version History
 
 
+### v1.0.93 - Compact Daily Start Badge and Shortcut More Entry Patch
+
+- 로비 첫 화면의 위젯형 `게임 시작` 알림을 더 작은 배지 형태로 줄였습니다. 이제 `↓ + 게임 시작` 중심으로 보이고, 긴 설명 copy는 숨겨 `오늘의 복원` 버튼을 덮지 않게 했습니다.
+- `게임 시작` 배지의 위치를 `오늘의 복원` 위쪽으로 더 가깝게 정렬하고, beam/삼각형 pointer 길이도 줄였습니다.
+- 하단 고정 바로가기 메뉴는 실제로 7개 항목입니다. 좁은 화면에서 4개만 보이는 것처럼 느껴지는 문제를 줄이기 위해 오른쪽 고정 `더보기` 버튼을 추가했습니다.
+- 왼쪽 바로가기 lane은 기존처럼 좌우 드래그로 `스테이지`, `미션`, `복원`, `오늘`, `도감`, `상점`, `기록`을 모두 접근할 수 있고, 오른쪽 `더보기`는 기존 바로가기 팝업을 열어 전체 항목을 확인하게 합니다.
+- 새 `install...Pass()` / `sync...Ui()` 함수 추가 없음. 기존 `syncLobbyMenuPortal()`와 `setLobbyNavigationRhythm()`에 marker만 통합했습니다.
+- 삭제한 함수/DOM/asset 없음. 추가 DOM은 기존 delegated click handler가 처리하는 `#lobby-menu-more-button` 1개입니다.
+- `package.json` version은 legacy QA baseline 때문에 `1.0.88` 그대로 유지합니다. 산출물/문서 패치 버전은 v1.0.93입니다.
+
+검수: `npm run check:lobby-bottom-shortcut`, `npm run check:daily-start-arrow-cta`, `npm run check:ui-ux-stability`, `npm run check:lobby-menu-portal`, `npm run check:lobby-shortcut-scroll`, `npm run check:lobby-navigation-rhythm`, `npm run check:css-runtime-selectors`, `npm run check:health`, `npm run typecheck`, 전체 `check:*`, `npm run report:images` 통과. `npm run build:github`는 이 산출 환경에 `vite` 실행 파일이 없어 실행하지 못했으므로 의존성 설치 환경/GitHub Actions에서 재확인해야 합니다.
+
+다음 업데이트 예정: 실제 기기에서 compact `게임 시작` 배지 위치와 하단 `더보기` 버튼 노출성을 확인합니다.
+
+
+
 ### v1.0.92 - UI/UX Stability QA Downward Arrow Guard Recovery Patch
 
 - GitHub Actions build가 `check:ui-ux-stability`에서 `Missing right-arrow-only CTA markup`로 실패한 원인을 수정했습니다.

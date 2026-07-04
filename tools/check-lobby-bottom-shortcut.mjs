@@ -18,7 +18,8 @@ if (pkg.version !== '1.0.88') errors.push(`package version must be 1.0.88, got $
 if (!Object.prototype.hasOwnProperty.call(pkg.scripts || {}, 'check:lobby-bottom-shortcut')) errors.push('missing package script check:lobby-bottom-shortcut');
 
 has(html, 'id="lobby-menu-hub" class="lobby-menu-hub luxury-panel"', 'single fixed shortcut hub without floating animation class');
-has(html, 'data-lobby-shortcut-placement="bottom-fixed" data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock" data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock" aria-label="바로가기 메뉴"', 'bottom fixed shortcut hub marker');
+has(html, 'data-lobby-shortcut-placement="bottom-fixed" data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock" data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock" data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry" aria-label="바로가기 메뉴"', 'bottom fixed shortcut hub marker with explicit more entry');
+has(html, 'id="lobby-menu-more-button" type="button" class="lobby-menu-more-button" data-lobby-menu-open="campaign" data-lobby-shortcut-more="v1093-lobby-shortcut-more-entry"', 'persistent more button opens full shortcut popup');
 has(html, 'id="lobby-menu-overlay"', 'existing lobby menu overlay');
 has(html, 'data-lobby-shortcut-placement="bottom-fixed" data-lobby-shortcut-nav-dock="v1090-lobby-shortcut-nav-dock" data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock" role="dialog"', 'popup keeps bottom shortcut placement marker');
 has(html, 'id="lobby-panel-dock"', 'existing lobby panel dock');
@@ -30,6 +31,9 @@ has(css, 'body[data-screen="lobby"] #lobby-menu-hub[data-lobby-shortcut-placemen
 has(css, 'position: fixed;', 'fixed bottom shortcut position');
 has(css, 'v1090-lobby-shortcut-nav-dock', 'v1.0.90 shortcut dock marker');
 has(css, 'v1091-lobby-shortcut-viewport-dock', 'v1.0.91 viewport shortcut dock marker');
+has(css, 'v1093-lobby-shortcut-more-entry', 'v1.0.93 explicit more entry marker');
+has(css, '.lobby-menu-more-button', 'shortcut more button CSS');
+has(css, 'grid-template-columns: minmax(0, 1fr) auto;', 'shortcut dock grid reserves fixed more entry column');
 has(css, 'body[data-screen="lobby"] > #lobby-menu-hub[data-lobby-shortcut-viewport-dock="v1091-lobby-shortcut-viewport-dock"]', 'viewport-rooted shortcut dock CSS');
 has(css, 'position: fixed !important;', 'fixed viewport shortcut position guard');
 has(css, 'scroll-snap-type: x mandatory;', 'shortcut overflow swipe snap');
@@ -47,6 +51,8 @@ has(main, 'function initLobbyScrollGuard()', 'existing scroll guard was edited i
 has(main, 'document.body.dataset.lobbyDragRescue = LOBBY_DRAG_DEEP_RESCUE_PATCH;', 'drag click guard marker remains');
 has(main, 'const LOBBY_SHORTCUT_NAV_DOCK_PATCH', 'shortcut nav dock runtime marker');
 has(main, 'const LOBBY_SHORTCUT_VIEWPORT_DOCK_PATCH', 'viewport shortcut dock runtime marker');
+has(main, 'const LOBBY_SHORTCUT_MORE_ENTRY_PATCH', 'shortcut more button runtime marker');
+has(main, 'document.body.dataset.lobbyShortcutMore = LOBBY_SHORTCUT_MORE_ENTRY_PATCH;', 'shortcut more body marker');
 has(main, 'document.body.appendChild(el.lobbyMenuHub);', 'shortcut hub is portaled to body viewport root');
 has(main, 'document.body.dataset.lobbyShortcutNavDock = LOBBY_SHORTCUT_NAV_DOCK_PATCH;', 'shortcut nav dock body marker');
 has(main, 'document.body.dataset.lobbyShortcutViewportDock = LOBBY_SHORTCUT_VIEWPORT_DOCK_PATCH;', 'shortcut viewport dock body marker');
@@ -65,6 +71,7 @@ has(quality, 'npm run check:lobby-bottom-shortcut', 'Quality QA hook');
 has(handoff, 'v1.0.88', 'handoff v1.0.88 record');
 has(handoff, 'v1.0.90', 'handoff v1.0.90 record');
 has(handoff, 'v1.0.91', 'handoff v1.0.91 record');
+has(handoff, 'v1.0.93', 'handoff v1.0.93 record');
 has(handoff, '수동 scrollTop 보정 삭제', 'handoff deletion note');
 
 if (errors.length) {
