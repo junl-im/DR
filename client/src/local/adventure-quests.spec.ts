@@ -4,6 +4,8 @@ import {QUESTS,initialQuest,validateQuest,recordQuestKill,questSummary} from './
 
 const defeat=(s:LocalGameSession,idx:number)=>{
   const m=s.mobs[idx];m.x=s.state.player.x+1;m.z=s.state.player.z;m.hp=1;
+  // Controlled combat fixture: refuel MP between distinct kills, preserving real skill/damage paths.
+  s.state.player.mp=60;
   s.dispatch({type:'target',id:m.id});s.dispatch({type:'skill'});
   for(let i=0;i<81;i++)s.tick(.05);
 };
