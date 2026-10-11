@@ -154,9 +154,10 @@ export class LocalGameSession implements GameSession {
     p.gold += gold; p.xp += 30; p.kills++; p.wood += 1;
     // Deterministic local progression: every 2nd actual kill earns one shard.
     // No extra PRNG calls, preserving previous gold/potion RNG sequences.
-    if(p.kills%2===0 && p.armor!.fragments<1000000) p.armor!.fragments++;
+    const earnedFragment=p.kills%2===0 && p.armor!.fragments<1000000;
+    if(earnedFragment) p.armor!.fragments++;
     if (this.random() < .3) p.potions++;
-    this.message = `${m.name} 처치 · 경험치 +30 · 골드 +${gold}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
+    this.message = `${m.name} 처치 · 경험치 +30 · 골드 +${gold}${earnedFragment?' · 방어구 파편 +1':''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
     while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level} 달성! 체력과 마나가 회복되었습니다.`;this.emit({kind:'level',x:p.x,z:p.z,amount:p.level,text:this.message}); }
     if (p.level === 100) p.xp = Math.min(p.xp, xpNeeded(p) - 1);
     this.attacking = false; this.target = null;
