@@ -25,6 +25,78 @@ weaponToggle.onchange=()=>{
     void view.ready.then(()=>syncWeaponVisual(view.character.object,weaponToggle.checked ? 2369 : 0,view.weaponState));
   }
 };
+
+type GripAxis = 'x' | 'y' | 'z' | 'rx' | 'ry' | 'rz' | 'scale';
+type GripPose = Record<GripAxis, number>;
+const newGripPose = (): GripPose => ({x:0,y:0,z:0,rx:0,ry:0,rz:0,scale:1});
+const gripSettings = views.map(() => newGripPose());
+const gripModel = document.querySelector<HTMLSelectElement>('#grip-model')!;
+const gripValues = document.querySelector<HTMLElement>('#grip-values')!;
+const gripStatus = document.querySelector<HTMLElement>('#grip-status')!;
+const gripInputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-grip]'));
+const selectedGripIndex = (): number => Number(gripModel.value);
+const readableGrip = (index: number) => ({
+  model: entries[index].displayName,
+  position: [gripSettings[index].x,gripSettings[index].y,gripSettings[index].z],
+  rotationDegrees: [gripSettings[index].rx,gripSettings[index].ry,gripSettings[index].rz],
+  scale: gripSettings[index].scale,
+});
+function updateGripReadout(): void {
+  const index = selectedGripIndex();
+  const pose = gripSettings[index];
+  gripValues.textContent = JSON.stringify(readableGrip(index),null,2);
+  const state = views[index].weaponState;
+  gripStatus.textContent = !weaponToggle.checked ? '검을 부착하면 보정 결과를 확인할 수 있습니다.' :
+    state.prop ? '손뼈에 부착됨 · 실제 외형을 확인하세요.' :
+    state.loading ? '무기 모델을 읽는 중입니다.' : '손뼈 부착 실패 또는 아직 준비되지 않았습니다.';
+  for(const input of gripInputs) {
+    const axis=input.dataset['grip'] as GripAxis;
+    input.value=String(pose[axis]);
+  }
+}
+function applyGrip(index: number): void {
+  const prop = views[index].weaponState.prop;
+  if (!prop) { if(index===selectedGripIndex()) updateGripReadout(); return; }
+  const pose = gripSettings[index];
+  prop.position.set(pose.x,pose.y,pose.z);
+  prop.rotation.set(
+    THREE.MathUtils.degToRad(pose.rx),
+    THREE.MathUtils.degToRad(pose.ry),
+    THREE.MathUtils.degToRad(pose.rz)
+  );
+  prop.scale.setScalar(pose.scale);
+  if (index===selectedGripIndex()) updateGripReadout();
+}
+for (const input of gripInputs) {
+  input.addEventListener('input',()=>{
+    const key = input.dataset['grip'] as GripAxis;
+    gripSettings[selectedGripIndex()][key] = Number(input.value);
+    applyGrip(selectedGripIndex());
+  });
+}
+gripModel.addEventListener('change',updateGripReadout);
+document.querySelector<HTMLButtonElement>('#grip-reset')!.onclick=()=>{
+  gripSettings[selectedGripIndex()] = newGripPose();
+  applyGrip(selectedGripIndex());
+};
+document.querySelector<HTMLButtonElement>('#grip-copy')!.onclick=()=>{
+  const value=JSON.stringify(readableGrip(selectedGripIndex()),null,2);
+  if(navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(value).then(()=>{gripStatus.textContent='보정값을 복사했습니다.';}).catch(()=>{gripStatus.textContent='복사 권한이 없습니다. 표시된 JSON을 직접 선택하세요.';});
+  } else gripStatus.textContent='표시된 JSON을 직접 선택하세요.';
+};
+weaponToggle.addEventListener('change',()=>{
+  views.forEach((view,index)=>{
+    void view.ready.then(()=>{
+      const active=view.weaponState.loading;
+      if(active) return active.then(()=>applyGrip(index));
+      applyGrip(index);
+    });
+  });
+  updateGripReadout();
+});
+updateGripReadout();
+
 Promise.all(views.map(v=>v.ready)).then(models=>Object.assign(window,{__ART_LAB__:{ready:true,models}}));
 let last=performance.now();function tick(now:number){const dt=Math.min(.05,(now-last)/1000);last=now;for(const v of views){v.character.update(dt);v.renderer.render(v.scene,v.camera);}requestAnimationFrame(tick);}requestAnimationFrame(tick);
 
