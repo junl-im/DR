@@ -70,3 +70,6 @@ Elbera급 최종 UI 품질 목표에 맞춰 독자적인 어두운 금속 프레
 선택 무기의 장착/해제, 전후 공격력 비교, 실제 기본 공격 판정 및 미착용 강타 차단을 연결했다. 기존 저장은 장착 상태 true로 정규화하며 입력을 변형하지 않는다. false 장착 상태와 강화 단계는 IndexedDB/JSON에 보존된다. Firestore는 기존 JSON payload envelope를 사용하므로 규칙 변경 없음. 월드 캐릭터에 내장된 무기 외형은 아직 동기화하지 않았으며 방어구·장비별 3D 외형은 별도 단계다.
 0.5.0 검증: 로컬17개·타입·정적 빌드 통과. 무기 +2 통제 fixture에서 장착 공격력20/해제6, 미착용 강타 거부, 미착용 +2 저장 복원, 재장착 E표시와 모바일 토글 확인. 월드 무기 메시는 기존 내장 외형으로 남으며 이 단계의 검증 대상은 UI·판정·저장이다. docs/update-0.5-verification.json.
 전체 클라이언트 회귀 검사도 통과. Firebase 규칙·프로젝트·공개 Pages 설정은 변경하지 않았다.
+
+## V3 캐릭터 아트 시험
+System G6 Modular RPG Characters(CC0) 원본을 확보하고 남성 여행자/경갑/중갑3종을 GLB 변환했다. 갑옷에 원본 가중치를 연결하고 노드 재질/텍스처를 복구, Idle/Run/Attack/Cast/Death를 변환했다. 로컬 입장 화면 외형 시험 선택 또는 ?art=knight/ranger/traveler로 활성화한다. 기본 모델과 온라인 경로는 유지하며 선택 외형은 게임 능력치/장비 소유를 바꾸지 않는다. 문서 docs/research/v3-character.

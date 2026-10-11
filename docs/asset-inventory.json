@@ -772,6 +772,60 @@
     "rightsStatus": "upstream-notice-present; official-source-review-required"
   },
   {
+    "path": "models/characters/system-g6/CREDITS.md",
+    "bytes": 711,
+    "sha256": "f79b26a24c3f40f63f95f1eb3936d4f05ced95fb878123ca065ddeef49e0aa94",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "models/characters/system-g6/CREDITS.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "models/characters/system-g6/knight.glb",
+    "bytes": 1481808,
+    "sha256": "c5cbb244a7c505ee21b2cd1e35ba75a0675541c4b8caa7262dbdf640c4a4dd7c",
+    "format": "ok",
+    "animationClips": [
+      "Attack",
+      "Cast",
+      "Death",
+      "Idle",
+      "Run"
+    ],
+    "upstreamNotice": "models/characters/system-g6/CREDITS.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "models/characters/system-g6/ranger.glb",
+    "bytes": 1668388,
+    "sha256": "80d9c575669fde52f138910009559ef7953e3a1033b69fb05bfa632264896ab5",
+    "format": "ok",
+    "animationClips": [
+      "Attack",
+      "Cast",
+      "Death",
+      "Idle",
+      "Run"
+    ],
+    "upstreamNotice": "models/characters/system-g6/CREDITS.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "models/characters/system-g6/traveler.glb",
+    "bytes": 1487248,
+    "sha256": "1288df589643030f7e2d6efc18206d08e50eafbda237271062c4314b7d1749a5",
+    "format": "ok",
+    "animationClips": [
+      "Attack",
+      "Cast",
+      "Death",
+      "Idle",
+      "Run"
+    ],
+    "upstreamNotice": "models/characters/system-g6/CREDITS.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
     "path": "models/monsters/BeardedKeltir.glb",
     "bytes": 1951792,
     "sha256": "d6326a2e37c0518e2b8d43b99f23b3ee54913dd95262f77ac57fd74b5e4e1e29",

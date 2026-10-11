@@ -1,0 +1,116 @@
+{
+  "author": "System G6 / Qoma",
+  "sourceUrl": "https://opengameart.org/content/modular-rpg-characters",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "retrieved": "2026-10-12",
+  "archiveSha256": "ef53003c6b29798a634fb27a3f9fc3181a2c02b217689744f2944fc5fcc0fd99",
+  "blender": "4.5.9 LTS",
+  "models": [
+    {
+      "variant": "traveler",
+      "bytes": 1487248,
+      "sha256": "1288df589643030f7e2d6efc18206d08e50eafbda237271062c4314b7d1749a5",
+      "parts": [
+        "light_armor_2",
+        "light_boots_2",
+        "hands_default",
+        "head_default",
+        "hair_1"
+      ],
+      "textures": [
+        "tex_human_female_light_boots_2.png",
+        "tex_human_male_hair_1.png",
+        "tex_human_male_hands_1.png",
+        "tex_human_male_head_1.png",
+        "tex_human_male_light_armor_2.png"
+      ],
+      "clips": [
+        "Attack",
+        "Cast",
+        "Death",
+        "Idle",
+        "Run"
+      ],
+      "skins": 1,
+      "triangles": 2636,
+      "clipChannels": {
+        "Attack": 129,
+        "Cast": 129,
+        "Death": 129,
+        "Idle": 129,
+        "Run": 129
+      }
+    },
+    {
+      "variant": "ranger",
+      "bytes": 1668388,
+      "sha256": "80d9c575669fde52f138910009559ef7953e3a1033b69fb05bfa632264896ab5",
+      "parts": [
+        "medium_armor",
+        "medium_boots",
+        "medium_gloves",
+        "medium_helmet",
+        "head_default"
+      ],
+      "textures": [
+        "tex_human_female_medium_boots.png",
+        "tex_human_female_medium_gloves.png",
+        "tex_human_female_medium_helmet.png",
+        "tex_human_male_head_1.png",
+        "tex_human_male_medium_armor.png"
+      ],
+      "clips": [
+        "Attack",
+        "Cast",
+        "Death",
+        "Idle",
+        "Run"
+      ],
+      "skins": 1,
+      "triangles": 3604,
+      "clipChannels": {
+        "Attack": 129,
+        "Cast": 129,
+        "Death": 129,
+        "Idle": 129,
+        "Run": 129
+      }
+    },
+    {
+      "variant": "knight",
+      "bytes": 1481808,
+      "sha256": "c5cbb244a7c505ee21b2cd1e35ba75a0675541c4b8caa7262dbdf640c4a4dd7c",
+      "parts": [
+        "heavy_armor",
+        "heavy_boots",
+        "heavy_gloves",
+        "heavy_helmet",
+        "head_default"
+      ],
+      "textures": [
+        "tex_human_female_heavy_armor.png",
+        "tex_human_female_heavy_boots.png",
+        "tex_human_female_heavy_gloves.png",
+        "tex_human_female_heavy_helmet.png",
+        "tex_human_male_head_1.png"
+      ],
+      "clips": [
+        "Attack",
+        "Cast",
+        "Death",
+        "Idle",
+        "Run"
+      ],
+      "skins": 1,
+      "triangles": 3480,
+      "clipChannels": {
+        "Attack": 129,
+        "Cast": 129,
+        "Death": 129,
+        "Idle": 129,
+        "Run": 129
+      }
+    }
+  ]
+}

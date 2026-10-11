@@ -1,3 +1,4 @@
+import type { PlayerManifestEntry } from './creature/player-manifest';
 import * as THREE from 'three';
 import { generateTerrain, createTerrainMesh } from './terrain';
 import { type MovementIntent, TERRAIN_CONFIG, MOB_RENDER_DISTANCE } from '@nj/game-core';
@@ -167,7 +168,7 @@ function findMobId(object: THREE.Object3D): string | null {
   return null;
 }
 
-export async function createRenderer(canvas: HTMLCanvasElement, options: { cameraOffset?: { x: number; y: number; z: number }; cameraFov?: number; lockCamera?: boolean } = {}): Promise<GameRenderer> {
+export async function createRenderer(canvas: HTMLCanvasElement, options: { cameraOffset?: { x: number; y: number; z: number }; cameraFov?: number; lockCamera?: boolean; playerManifest?: PlayerManifestEntry } = {}): Promise<GameRenderer> {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -210,7 +211,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     setEnvironment({ ...envResult, loaded: true });
   });
 
-  let playerAvatar = createPlayerAvatar();
+  let playerAvatar = createPlayerAvatar({manifest:options.playerManifest});
   scene.add(playerAvatar.group);
   let activeClassId = -1;
   let activeSex = -1;
@@ -221,7 +222,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     activeClassId = classId;
     activeSex = sex;
     scene.remove(playerAvatar.group);
-    playerAvatar = createPlayerAvatar({ classId, sex });
+    playerAvatar = createPlayerAvatar({ classId, sex, manifest:options.playerManifest });
     // Re-apply the name label after the avatar is rebuilt for a class/sex change.
     if (localPlayerName) playerAvatar.setName(localPlayerName);
     scene.add(playerAvatar.group);

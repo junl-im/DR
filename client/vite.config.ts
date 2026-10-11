@@ -66,7 +66,7 @@ export default defineConfig(() => ({
     emptyOutDir: true,
     reportCompressedSize: true,
     rollupOptions: {
-      input: { main: path.join(root, 'index.html') },
+      input: { main: path.join(root, 'index.html'), artLab: path.join(root, 'art-lab.html') },
     },
     commonjsOptions: {
       transformMixedEsModules: true,

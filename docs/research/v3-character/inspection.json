@@ -1,0 +1,1048 @@
+{
+  "objects": [
+    {
+      "name": "Hemi",
+      "type": "LIGHT",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "materials": [],
+      "modifiers": []
+    },
+    {
+      "name": "human_male",
+      "type": "ARMATURE",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.2417912483215332,
+        0.8310384154319763,
+        4.198153495788574
+      ],
+      "materials": [],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_body_default",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.0951402187347412,
+        0.62981116771698,
+        2.639831066131592
+      ],
+      "materials": [
+        "mat_human_male_body_1"
+      ],
+      "modifiers": [
+        {
+          "type": "ARMATURE",
+          "object": "human_male"
+        }
+      ]
+    },
+    {
+      "name": "human_male_feet_default",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.004471778869629,
+        0.8658265471458435,
+        1.2062604427337646
+      ],
+      "materials": [
+        "mat_human_male_feet_1"
+      ],
+      "modifiers": [
+        {
+          "type": "ARMATURE",
+          "object": "human_male"
+        }
+      ]
+    },
+    {
+      "name": "human_male_hair_1",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.37242889404296875,
+        0.46210795640945435,
+        0.23796558380126953
+      ],
+      "materials": [
+        "mat_human_male_hair_1"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_hair_2",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.4396245777606964,
+        0.5205028653144836,
+        0.7405469417572021
+      ],
+      "materials": [
+        "mat_human_male_hair_2"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_hair_3",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.38863545656204224,
+        0.48051708936691284,
+        0.5028171539306641
+      ],
+      "materials": [
+        "mat_human_male_hair_3"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_hair_4",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.388977587223053,
+        0.5369619727134705,
+        0.49657416343688965
+      ],
+      "materials": [
+        "mat_human_male_hair_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_hair_5",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.39252179861068726,
+        0.4853222668170929,
+        0.5078451633453369
+      ],
+      "materials": [
+        "mat_human_male_hair_5"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_hair_6",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.39252179861068726,
+        0.4853222668170929,
+        0.5078451633453369
+      ],
+      "materials": [
+        "mat_human_male_hair_6"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_hands_default",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.2751983404159546,
+        0.37406763434410095,
+        0.8789037466049194
+      ],
+      "materials": [
+        "mat_human_male_hands_1"
+      ],
+      "modifiers": [
+        {
+          "type": "ARMATURE",
+          "object": "human_male"
+        }
+      ]
+    },
+    {
+      "name": "human_male_head_2",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.42706722021102905,
+        0.5358072519302368,
+        0.5561838150024414
+      ],
+      "materials": [
+        "mat_human_male_head_2"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_head_3",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.42706722021102905,
+        0.5358072519302368,
+        0.5561838150024414
+      ],
+      "materials": [
+        "mat_human_male_head_3"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_head_4",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.42706722021102905,
+        0.5358072519302368,
+        0.5561838150024414
+      ],
+      "materials": [
+        "mat_human_male_head_4"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_head_5",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.42706722021102905,
+        0.5358072519302368,
+        0.5561838150024414
+      ],
+      "materials": [
+        "mat_human_male_head_5"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_head_6",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.42706722021102905,
+        0.5358072519302368,
+        0.5561838150024414
+      ],
+      "materials": [
+        "mat_human_male_head_6"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_head_default",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.42706722021102905,
+        0.5356614589691162,
+        0.5561778545379639
+      ],
+      "materials": [
+        "mat_human_male_head_1"
+      ],
+      "modifiers": [
+        {
+          "type": "ARMATURE",
+          "object": "human_male"
+        }
+      ]
+    },
+    {
+      "name": "human_male_heavy_armor",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.9897644519805908,
+        0.641708493232727,
+        2.75856876373291
+      ],
+      "materials": [
+        "mat_human_male_heavy_armor"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_heavy_boots",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.3046473264694214,
+        0.7216730117797852,
+        1.1952838897705078
+      ],
+      "materials": [
+        "mat_human_male_heavy_boots"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_heavy_gloves",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        3.183483600616455,
+        0.2963801324367523,
+        0.6039187908172607
+      ],
+      "materials": [
+        "mat_human_male_heavy_gloves"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_heavy_helmet",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.4536125361919403,
+        0.5875410437583923,
+        0.728093147277832
+      ],
+      "materials": [
+        "mat_human_female_heavy_helmet"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_armor",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.807773232460022,
+        0.6607060432434082,
+        3.0398316383361816
+      ],
+      "materials": [
+        "mat_human_male_light_armor",
+        "mat_human_male_light_armor_skirt"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_armor_2",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.807773232460022,
+        0.5813155174255371,
+        2.6260743141174316
+      ],
+      "materials": [
+        "mat_human_male_light_armor_2"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_armor_3",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.807773232460022,
+        0.6547019481658936,
+        2.6260743141174316
+      ],
+      "materials": [
+        "mat_human_male_light_armor_3",
+        "mat_human_male_light_armor_3_skirt"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_armor_4",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.807773232460022,
+        0.6721144318580627,
+        2.6260743141174316
+      ],
+      "materials": [
+        "mat_human_male_light_armor_4",
+        "mat_human_male_light_armor_4_skirt"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_boots",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.256996750831604,
+        0.6546114087104797,
+        1.199893832206726
+      ],
+      "materials": [
+        "mat_human_male_light_boots"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_boots_2",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.256996750831604,
+        0.6546114087104797,
+        1.199893832206726
+      ],
+      "materials": [
+        "mat_human_female_light_boots_2"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_gloves",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        3.1717448234558105,
+        0.27359598875045776,
+        0.5980668067932129
+      ],
+      "materials": [
+        "mat_human_male_light_gloves"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_gloves_3",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        3.1717448234558105,
+        0.27359598875045776,
+        0.5980668067932129
+      ],
+      "materials": [
+        "mat_human_male_light_gloves_3"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_light_helmet",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.3636513948440552,
+        1.3648602962493896,
+        0.7652275562286377
+      ],
+      "materials": [
+        "mat_human_female_light_helmet"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_medium_armor",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.8987689018249512,
+        0.6239770650863647,
+        2.6260743141174316
+      ],
+      "materials": [
+        "mat_human_male_medium_armor",
+        "mat_human_male_medium_armor_skirt"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_medium_boots",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        1.256211757659912,
+        0.7113415598869324,
+        1.1998869180679321
+      ],
+      "materials": [
+        "mat_human_male_medium_boots"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_medium_gloves",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        3.1743927001953125,
+        0.2777468264102936,
+        0.5993869304656982
+      ],
+      "materials": [
+        "mat_human_male_medium_gloves"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "human_male_medium_helmet",
+      "type": "MESH",
+      "visible": true,
+      "hidden": false,
+      "dimensions": [
+        0.4891676604747772,
+        0.7398905754089355,
+        0.8461387157440186
+      ],
+      "materials": [
+        "mat_human_female_medium_helmet"
+      ],
+      "modifiers": []
+    }
+  ],
+  "actions": [
+    {
+      "name": "human_male_cast_dual_wield_melee",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_dual_wield_melee_2",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_dual_wield_melee_3",
+      "frames": [
+        0.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_dual_wield_melee_4",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_main_hand_melee",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_main_hand_melee_2",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_main_hand_melee_3",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_main_hand_wand",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_off_hand_shield",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_bow",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_bow_2",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_crossbow",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_melee",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_melee_2",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_melee_3",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_melee_4",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_melee_5",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_two_handed_staff",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_unarmed_magic",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_cast_unarmed_magic_2",
+      "frames": [
+        0.0,
+        9.0
+      ]
+    },
+    {
+      "name": "human_male_channel_dual_wield_melee",
+      "frames": [
+        0.0,
+        18.0
+      ]
+    },
+    {
+      "name": "human_male_channel_main_hand_melee",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_channel_main_hand_wand",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_channel_two_handed_bow",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_channel_two_handed_bow_2",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_channel_two_handed_crossbow",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_channel_two_handed_melee",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_channel_two_handed_staff",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_channel_unarmed_magic",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_death",
+      "frames": [
+        1.0,
+        20.0
+      ]
+    },
+    {
+      "name": "human_male_drink_potion",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_gathering",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_dual_wield_melee",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_main_hand_melee",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_main_hand_wand",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_two_handed_bow",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_two_handed_crossbow",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_two_handed_melee",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_two_handed_staff",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_idle_combat_unarmed",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_jump",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "human_male_power_up",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_power_up_2",
+      "frames": [
+        0.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_power_up_3",
+      "frames": [
+        1.0,
+        10.0
+      ]
+    },
+    {
+      "name": "human_male_pray",
+      "frames": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "name": "human_male_run",
+      "frames": [
+        1.0,
+        19.0
+      ]
+    },
+    {
+      "name": "IK_human_male_NEW_idle.001",
+      "frames": [
+        0.0,
+        20.0
+      ]
+    },
+    {
+      "name": "IK_human_male_NEW_run.000",
+      "frames": [
+        0.0,
+        20.0
+      ]
+    },
+    {
+      "name": "IK_human_male_NEW_run.002",
+      "frames": [
+        0.0,
+        20.0
+      ]
+    }
+  ],
+  "images": [
+    {
+      "name": "human_female_light_helmet.png",
+      "path": "//textures\\tex_human_female_light_helmet.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_female_heavy_armor.png",
+      "path": "//textures\\tex_human_female_heavy_armor.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_female_heavy_gloves.png",
+      "path": "//textures\\tex_human_female_heavy_gloves.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_female_light_boots_2.png",
+      "path": "//textures\\tex_human_female_light_boots_2.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_female_NEW_heavy_helmet.png",
+      "path": "//textures\\tex_human_female_heavy_helmet.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_female_NEW_medium_boots",
+      "path": "//textures\\tex_human_female_medium_boots.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_female_NEW_medium_gloves",
+      "path": "//textures\\tex_human_female_medium_gloves.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_female_NEW_medium_helmet",
+      "path": "//textures\\tex_human_female_medium_helmet.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_body_1",
+      "path": "//textures\\tex_human_male_body_1.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_feet_1",
+      "path": "//textures\\tex_human_male_feet_1.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_hair_1",
+      "path": "//textures\\tex_human_male_hair_1.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_hair_2",
+      "path": "//textures\\tex_human_male_hair_2.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_hair_3",
+      "path": "//textures\\tex_human_male_hair_3.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_hair_4",
+      "path": "//textures\\tex_human_male_hair_4.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_hair_5",
+      "path": "//textures\\tex_human_male_hair_5.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_hair_6",
+      "path": "//textures\\tex_human_male_hair_6.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_hands_1",
+      "path": "//textures\\tex_human_male_hands_1.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_head_1",
+      "path": "//textures\\tex_human_male_head_1.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_head_2",
+      "path": "//textures\\tex_human_male_head_2.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_head_3",
+      "path": "//textures\\tex_human_male_head_3.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_head_4",
+      "path": "//textures\\tex_human_male_head_4.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_head_5",
+      "path": "//textures\\tex_human_male_head_5.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_head_6",
+      "path": "//textures\\tex_human_male_head_6.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_light_armor",
+      "path": "//textures\\tex_human_male_light_armor.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_light_armor_2",
+      "path": "//textures\\tex_human_male_light_armor_2.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_light_armor_3",
+      "path": "//textures\\tex_human_male_light_armor_3.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_light_armor_4",
+      "path": "//textures\\tex_human_male_light_armor_4.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_light_gloves",
+      "path": "//textures\\tex_human_male_light_gloves.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_light_gloves_3",
+      "path": "//textures\\tex_human_male_light_gloves_3.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_medium_armor",
+      "path": "//textures\\tex_human_male_medium_armor.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_NEW_heavy_boots",
+      "path": "//textures\\tex_human_female_heavy_boots.png",
+      "packed": false
+    },
+    {
+      "name": "tex_human_male_NEW_light_boots",
+      "path": "//textures\\tex_human_female_light_boots.png",
+      "packed": false
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "models": {
+    "ready": true,
+    "models": [
+      {
+        "name": "현재 모델 · Knight",
+        "model": "/models/characters/Knight.glb",
+        "height": 2.453806883538454
+      },
+      {
+        "name": "V3 중갑 기사",
+        "model": "/models/characters/system-g6/knight.glb",
+        "height": 2.1215412449165205
+      },
+      {
+        "name": "V3 경갑 모험가",
+        "model": "/models/characters/system-g6/ranger.glb",
+        "height": 2.149260105207347
+      },
+      {
+        "name": "V3 여행자",
+        "model": "/models/characters/system-g6/traveler.glb",
+        "height": 2.1109566718222283
+      }
+    ]
+  },
+  "errors": [],
+  "bad": [],
+  "checks": [
+    "four actual GLB models rendered in shared lighting comparison",
+    "Idle/Run/Attack selected and captured",
+    "knight trial enters actual game",
+    "actual hunt kill with existing combat",
+    "mobile no horizontal overflow"
+  ],
+  "limits": [
+    "no device performance target measured",
+    "outfits are appearance trials, not earned armor",
+    "no attached weapon model yet"
+  ]
+}

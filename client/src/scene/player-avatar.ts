@@ -7,7 +7,7 @@ import {
   type AnimState,
 } from '@nj/game-core';
 import { createMeshCharacter, type MeshCharacter } from './creature/mesh-character';
-import { getPlayerManifestEntry } from './creature/player-manifest';
+import { type PlayerManifestEntry, getPlayerManifestEntry } from './creature/player-manifest';
 import { createNameplate, type Nameplate } from './nameplate';
 import { getGameState } from '../test-hook';
 import {
@@ -46,6 +46,7 @@ export interface PlayerAvatarOptions {
   classId?: number;
   sex?: number;
   mesh?: MeshCharacter;
+  manifest?: PlayerManifestEntry;
 }
 
 export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAvatar {
@@ -53,7 +54,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   group.name = 'player-avatar';
 
   const classId = options.classId ?? 0;
-  const entry = getPlayerManifestEntry(classId);
+  const entry = options.manifest ?? getPlayerManifestEntry(classId);
   const sexScale = options.sex === 1 ? 0.97 : 1.0;
   const feetOffsetY = entry.feetOffsetY;
 

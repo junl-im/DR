@@ -1,6 +1,7 @@
 import './inventory.css';
 import { createInventoryWindow } from './inventory-window';
 import './local.css';
+import { ART_TRIALS } from './art-trial';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -14,6 +15,8 @@ import { readSave, writeSave } from './saves';
 
 const root = document.createElement('main'); root.id = 'dream-ui'; document.body.append(root);
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
+const requestedArt = new URLSearchParams(location.search).get('art') ?? 'original';
+let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'original';
 let session: LocalGameSession;
 let game: GameRenderer;
 let saveTask: Promise<void> | undefined;
@@ -54,8 +57,10 @@ async function boot() {
   initGameState();
   let storageError = '';
   try { remembered = await readSave(); } catch(e) { storageError = errorText(e); }
-  root.innerHTML = `<section class="entry"><div class="entry-card"><span class="eyebrow">THE FIRST CHAPTER</span><h1>던전<br><em>zero</em></h1><p class="entry-lead">마을을 나서면 모험이 시작된다.</p><div class="entry-divider"></div><p>시작의 마을을 탐험하고, 골드를 모아<br>나만의 영지를 가꾸세요.</p><label>여행자의 이름<input id="name" maxlength="20" value="모험가" autocomplete="nickname"></label><label>모험의 길<select id="class"><option value="0">수호자 · 검과 방패</option><option value="10">별의 학자 · 마법</option><option value="18">숲의 방랑자 · 탐험</option></select></label><button id="start" class="primary">${remembered ? '새로운 여행 만들기' : '모험 시작하기'} <span>↗</span></button>${remembered ? '<button id="continue">이전 여행 이어하기</button>' : ''}${storageError ? '<button id="recover">백업 슬롯 복구</button>' : ''}<p id="entry-status" role="status"></p><small>단독 플레이 · 이 기기에 자동 저장<br>클라우드 저장은 입장 후 선택할 수 있습니다.</small></div></section>`;
+  root.innerHTML = `<section class="entry"><div class="entry-card"><span class="eyebrow">THE FIRST CHAPTER</span><h1>던전<br><em>zero</em></h1><p class="entry-lead">마을을 나서면 모험이 시작된다.</p><div class="entry-divider"></div><p>시작의 마을을 탐험하고, 골드를 모아<br>나만의 영지를 가꾸세요.</p><label>여행자의 이름<input id="name" maxlength="20" value="모험가" autocomplete="nickname"></label><label>모험의 길<select id="class"><option value="0">수호자 · 검과 방패</option><option value="10">별의 학자 · 마법</option><option value="18">숲의 방랑자 · 탐험</option></select></label><label>캐릭터 외형 시험<select id="art-trial"><option value="original">현재 기본 모델</option><option value="knight">V3 · 중갑 기사</option><option value="ranger">V3 · 경갑 모험가</option><option value="traveler">V3 · 여행자</option></select></label><button id="start" class="primary">${remembered ? '새로운 여행 만들기' : '모험 시작하기'} <span>↗</span></button>${remembered ? '<button id="continue">이전 여행 이어하기</button>' : ''}${storageError ? '<button id="recover">백업 슬롯 복구</button>' : ''}<p id="entry-status" role="status"></p><small>단독 플레이 · 이 기기에 자동 저장<br>클라우드 저장은 입장 후 선택할 수 있습니다.</small></div></section>`;
   $('#entry-status').textContent = storageError;
+  const artSelect=$<HTMLSelectElement>('#art-trial');artSelect.value=Object.hasOwn(ART_TRIALS,artTrial)?artTrial:'original';
+  artSelect.onchange=()=>{artTrial=artSelect.value;const url=new URL(location.href);url.searchParams.set('art',artTrial);history.replaceState(null,'',url);};
   $('#start').onclick = () => { if (remembered && !confirm('기존 여행을 백업 슬롯에 보존하고 새로운 여행을 시작할까요?')) return; void enter(newSave($<HTMLInputElement>('#name').value, Number($<HTMLSelectElement>('#class').value))); };
   root.querySelector<HTMLElement>('#continue')?.addEventListener('click', () => void enter(remembered!));
   root.querySelector<HTMLElement>('#recover')?.addEventListener('click', () => { void readSave('backup').then(s => { if (!s) throw new Error('백업 슬롯이 없습니다.'); return enter(s); }).catch(e => { $('#entry-status').textContent = errorText(e); }); });
@@ -65,7 +70,7 @@ async function enter(state: Save) {
   root.querySelectorAll<HTMLButtonElement>('.entry button').forEach(b => b.disabled = true);
   try {
     session = new LocalGameSession(state);
-    game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:{x:26,y:34,z:26},cameraFov:38,lockCamera:true});
+    game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:{x:26,y:34,z:26},cameraFov:38,lockCamera:true,playerManifest:ART_TRIALS[artTrial]});
     const classicScene=applyClassicScene(game.scene);
     buildTownDetails(game.scene);
     game.renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(max-width: 700px)').matches ? 1.1 : 1.5));
