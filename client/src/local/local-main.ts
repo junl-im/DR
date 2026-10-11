@@ -3,6 +3,7 @@ import { createInventoryWindow } from './inventory-window';
 import './local.css';
 import { ART_TRIALS } from './art-trial';
 import { equippedWeaponVisualId } from './equipment-visual';
+import { armorOutfitSelection, armorDefense } from './armor-economy';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -116,7 +117,7 @@ async function enter(state: Save) {
 function syncScene() {
   const p=session.state.player, y=snapEntityY(p.x,p.z);
   setPlayer({...getGameState().player,...p,y,powerStrikeCooldownEndMs:0});
-  game.syncLocalPlayer(p.x,y,p.z,session.action,session.actionSeq,equippedWeaponVisualId(p),p.classId,0);
+  game.syncLocalPlayer(p.x,y,p.z,session.action,session.actionSeq,equippedWeaponVisualId(p),p.classId,0,armorOutfitSelection(p.armor));
   game.syncPlayerVfx({hp:p.hp,level:p.level,action:session.action,actionSeq:session.actionSeq,x:p.x,y,z:p.z});
   for(const m of session.mobs) {
     if(m.hp===0) { if(!dead.has(m.id)) { game.removeMob(m.id); dead.add(m.id); } continue; }
@@ -136,7 +137,7 @@ function syncScene() {
 function mountHud() {
   root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="저장과 설정 열기">☰</button></header>
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
-<div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span></div>
+<div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
 <section class="quest card"><h2>초보 사냥</h2><div id="quest-progress"></div><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section>
 <div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span>FIXED VIEW</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
@@ -166,7 +167,7 @@ function updateHud() {
   $('#xp-caption').textContent=`EXP ${p.xp} / ${xpNeeded(p)}`;
   $('.chapter strong').textContent=Math.hypot(p.x,p.z)<=24?'시작의 마을 · 안전 지역':'동쪽 사냥터 · 전투 지역';
   const skillButton=root.querySelector<HTMLButtonElement>('[data-intent="skill"]')!;$('#skill-cooldown').textContent=session.skillCooldown>.05?`${session.skillCooldown.toFixed(1)}s`:'2';skillButton.classList.toggle('cooling',session.skillCooldown>.05);skillButton.style.setProperty('--remaining',`${session.skillCooldown/4*100}%`);skillButton.title=`${isWeaponEquipped(p)?'강타 · MP 12':'강타 · 무기 장착 필요'}${session.skillCooldown>.05?' · 재사용 대기 중':''}`;
-  $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood);
+  $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
   $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=`처치 ${p.kills} · 레벨 ${p.level} · 정원 ${session.state.territory.garden}단계`;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
   $('#target').hidden=!m; if(m) $('#target').textContent=`${m.name} · HP ${m.hp} / ${m.maxHp}`;
