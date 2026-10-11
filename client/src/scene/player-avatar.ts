@@ -73,8 +73,11 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
       clipMap: entry.clipMap,
     });
   group.add(character.object);
+  const weaponState: WeaponVisualState = createWeaponVisualState();
+  let requestedWeaponId = 0;
   const ready = character.ready
     .then(() => {
+      syncWeaponVisual(character.object, requestedWeaponId, weaponState);
       group.remove(placeholder);
       placeholder.geometry.dispose();
       (placeholder.material as THREE.Material).dispose();
@@ -91,8 +94,6 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   let action = EntityAction.None;
   let actionSeq = 0;
   let initialized = false;
-  const weaponState: WeaponVisualState = createWeaponVisualState();
-
   let nameplate: Nameplate | null = null;
   const setName = (name: string): void => {
     const trimmed = (name ?? '').trim();
@@ -124,7 +125,11 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
     if (typeof p.action === 'number') action = p.action;
     if (typeof p.actionSeq === 'number') actionSeq = p.actionSeq;
 
-    syncWeaponVisual(character.object, p.equippedWeaponItemId ?? 0, weaponState);
+    requestedWeaponId = p.equippedWeaponItemId ?? 0;
+    // Attachment must wait for the async GLB skeleton, not the placeholder.
+    if (!group.children.includes(placeholder)) {
+      syncWeaponVisual(character.object, requestedWeaponId, weaponState);
+    }
 
     group.position.set(p.x, p.y - feetOffsetY, p.z);
     prevX = p.x;
