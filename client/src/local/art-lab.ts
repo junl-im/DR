@@ -3,6 +3,7 @@ import {createMeshCharacter, KAYKIT_CLIP_MAP} from '../scene/creature/mesh-chara
 import {ART_TRIALS} from './art-trial';
 import type {AnimationClip} from '@nj/game-core';
 import { createWeaponVisualState, syncWeaponVisual } from '../scene/creature/weapon-visual';
+import { prepareModularArmor, type ModularArmorController, type ArmorSlot, type ArmorOutfit } from '../scene/creature/modular-armor';
 
 const entries=[{displayName:'현재 모델 · Knight',model:'/models/characters/Knight.glb',scale:1,clipMap:KAYKIT_CLIP_MAP},...Object.values(ART_TRIALS)];
 const views=entries.map(entry=>{
@@ -96,6 +97,46 @@ weaponToggle.addEventListener('change',()=>{
   updateGripReadout();
 });
 updateGripReadout();
+
+
+/** Cosmetic-only V3 outfit fitting on the existing traveler renderer.
+ * Reusing its WebGL context avoids a fifth context on low-memory phones. */
+const armorView = views[views.length-1];
+const armorStatus = document.querySelector<HTMLElement>('#armor-status')!;
+const armorValues = document.querySelector<HTMLElement>('#armor-values')!;
+const armorInputs = Array.from(document.querySelectorAll<HTMLSelectElement>('[data-armor-slot]'));
+for (const select of armorInputs) select.disabled = true;
+let armorController: ModularArmorController | null = null;
+function renderArmorReadout(): void {
+  armorValues.textContent = armorController ? JSON.stringify(armorController.snapshot(),null,2) : '';
+}
+const armorReady = armorView.ready.then(async () => {
+  armorController = await prepareModularArmor(armorView.character.object);
+  for(const input of armorInputs) {
+    armorController.setPart(input.dataset['armorSlot'] as ArmorSlot, input.value as ArmorOutfit);
+    input.disabled = false;
+  }
+  renderArmorReadout();
+  armorStatus.textContent='방어구 4부위 교체 준비 완료 · 4번째 여행자 캐릭터에서 확인하세요.';
+  Object.assign(window, {__ARMOR_LAB__:{ready:true,read:()=>armorController?.snapshot()}});
+}).catch(error=>{
+  armorStatus.textContent='방어구 시험 로드 실패: '+String(error);
+  Object.assign(window, {__ARMOR_LAB__:{ready:false,error:String(error)}});
+});
+armorInputs.forEach(input=>input.addEventListener('change',()=>{
+  if(!armorController) return;
+  armorController.setPart(input.dataset['armorSlot'] as ArmorSlot,input.value as ArmorOutfit);
+  renderArmorReadout();
+}));
+document.querySelector<HTMLButtonElement>('#armor-reset')!.onclick=()=>{
+  if(!armorController) return;
+  armorController.reset();
+  for(const input of armorInputs) input.value='traveler';
+  renderArmorReadout();
+};
+// Keep this as a separate readiness flag; all four base models remain in
+// __ART_LAB__ and are tested independently of optional modular fitting.
+void armorReady;
 
 Promise.all(views.map(v=>v.ready)).then(models=>Object.assign(window,{__ART_LAB__:{ready:true,models}}));
 let last=performance.now();function tick(now:number){const dt=Math.min(.05,(now-last)/1000);last=now;for(const v of views){v.character.update(dt);v.renderer.render(v.scene,v.camera);}requestAnimationFrame(tick);}requestAnimationFrame(tick);
