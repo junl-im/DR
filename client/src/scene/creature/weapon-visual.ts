@@ -18,7 +18,7 @@ export function syncWeaponVisual(
   itemId: number,
   state: WeaponVisualState
 ): void {
-  if (itemId === state.equippedItemId) return;
+  if (itemId === state.equippedItemId && (state.prop !== null || state.loading !== null || itemId === 0)) return;
 
   if (state.prop) {
     detachProp(state.prop);
@@ -29,12 +29,16 @@ export function syncWeaponVisual(
   const entry = itemId > 0 ? getWeaponAttachment(itemId) : null;
   if (!entry) return;
 
-  state.loading = loadGltfTemplate(entry.model)
+  const pending = loadGltfTemplate(entry.model)
     .then((template) => {
       if (state.equippedItemId !== itemId) return;
       const prop = template.scene.clone(true);
       prop.name = `weapon-${itemId}`;
-      if (!attachToBone(root, prop, entry.bone, entry.transform)) {
+      // The original KayKit rig and the licensed V3/G6 rig use different
+      // hand nodes. Keep the existing KayKit mount and fall back to G6 palm_R.
+      const attached = attachToBone(root, prop, entry.bone, entry.transform) ||
+        attachToBone(root, prop, 'palm_R', entry.transform);
+      if (!attached) {
         detachProp(prop);
         return;
       }
@@ -44,6 +48,7 @@ export function syncWeaponVisual(
       console.warn(`weapon prop load failed for item ${itemId}:`, err);
     })
     .finally(() => {
-      state.loading = null;
+      if (state.loading === pending) state.loading = null;
     });
+  state.loading = pending;
 }
