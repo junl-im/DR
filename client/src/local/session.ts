@@ -173,15 +173,18 @@ export class LocalGameSession implements GameSession {
     if (m.hp !== 0) return;
     m.action = EntityAction.Die; m.actionSeq++; m.respawn = this.clock + (m.name==='숲의 정예 감시자'?35:15);
     const p = this.state.player, elite=m.name==='숲의 정예 감시자';
-    const gold = (8 + Math.floor(this.random() * 7)) + (elite?18:0);
-    p.gold += gold; p.xp += elite?75:30; p.kills++; p.wood += elite?3:1;
+    const gold = Math.min(1000000-p.gold,(8 + Math.floor(this.random() * 7)) + (elite?18:0));
+    p.gold += gold; p.xp += elite?75:30;
+    const previousKills=p.kills;
+    p.kills=Math.min(1000000,p.kills+1);
+    p.wood=Math.min(1000000,p.wood+(elite?3:1));
     // Deterministic local progression: every 2nd actual kill earns one shard.
     // No extra PRNG calls, preserving previous gold/potion RNG sequences.
-    const earnedFragment=p.kills%2===0 && p.armor!.fragments<1000000;
+    const earnedFragment=p.kills!==previousKills && p.kills%2===0 && p.armor!.fragments<1000000;
     const eliteFragment=elite && p.armor!.fragments<999998 ? 2 : 0;
     if(earnedFragment && p.armor!.fragments<1000000) p.armor!.fragments++;
     if(eliteFragment) p.armor!.fragments+=eliteFragment;
-    if (this.random() < .3) p.potions++;
+    if (this.random() < .3) p.potions=Math.min(1000000,p.potions+1);
     const kind:HuntKind=m.name==='숲의 정예 감시자'?'sentinel':m.npcId===20001?'slime':'wanderer';
     const advanced=recordQuestKill(p.quest!,kind);
     this.message = `${m.name} 처치 · 경험치 +${elite?75:30} · 골드 +${gold}${earnedFragment||eliteFragment?' · 방어구 파편 +'+(Number(earnedFragment)+eliteFragment):''}${advanced?' · '+questSummary(p.quest!):''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
