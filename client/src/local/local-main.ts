@@ -2,6 +2,7 @@ import './inventory.css';
 import { createInventoryWindow } from './inventory-window';
 import './local.css';
 import { ART_TRIALS } from './art-trial';
+import { equippedWeaponVisualId } from './equipment-visual';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -115,7 +116,7 @@ async function enter(state: Save) {
 function syncScene() {
   const p=session.state.player, y=snapEntityY(p.x,p.z);
   setPlayer({...getGameState().player,...p,y,powerStrikeCooldownEndMs:0});
-  game.syncLocalPlayer(p.x,y,p.z,session.action,session.actionSeq,undefined,p.classId,0);
+  game.syncLocalPlayer(p.x,y,p.z,session.action,session.actionSeq,equippedWeaponVisualId(p),p.classId,0);
   game.syncPlayerVfx({hp:p.hp,level:p.level,action:session.action,actionSeq:session.actionSeq,x:p.x,y,z:p.z});
   for(const m of session.mobs) {
     if(m.hp===0) { if(!dead.has(m.id)) { game.removeMob(m.id); dead.add(m.id); } continue; }
