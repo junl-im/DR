@@ -75,6 +75,8 @@ describe('village quest board',()=>{
     expect(s.state.player.gold).toBeGreaterThanOrEqual(26);
     expect(s.state.player.wood).toBe(3);
     expect(s.state.player.armor!.fragments).toBe(2);
+    expect(s.state.player.armor!.owned.helmet).toBe(1);
+    expect(s.state.player.armor!.equipped.helmet).toBe(0);
     expect(s.state.player.quest).toEqual({stage:0,progress:0});
     const initialGold=s.state.player.gold;
     s.dispatch({type:'skill'});
