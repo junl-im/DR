@@ -207,7 +207,7 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop') {
       <p>2 강타 · 3 물약 · R 귀환 · 마을 주변에서는 체력이 회복됩니다.</p>
       <button id="help-hunt">사냥터로 출발</button>
       <small>의뢰 보상은 마을 모험 안내판 근처에서 1번만 수령할 수 있습니다.</small>`;
-    $('#quest-claim')?.addEventListener('click',()=>{session.dispatch({type:'claim-quest'});const result=session.message;addLog(result);showPanel('help');$('#quest-status').textContent=result;updateHud();void save();});
+    $('#quest-claim')?.addEventListener('click',()=>{session.dispatch({type:'claim-quest'});const result=session.message;lastLog=result;showPanel('help');$('#quest-status').textContent=result;updateHud();void save();});
     $('#help-hunt').onclick=()=>{$('#panel').hidden=true;$('#hunt-guide').click();};
   } else if(kind==='estate') {
     const t=session.state.territory;
