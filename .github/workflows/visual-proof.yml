@@ -1,0 +1,43 @@
+name: Dungeon zero WebGL visual proof
+on:
+  pull_request:
+    paths:
+      - 'client/**'
+      - 'scripts/armor-visual-smoke.cjs'
+      - '.github/workflows/visual-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  webgl-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      NX_DAEMON: 'false'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build:firebase
+      - run: npx playwright install --with-deps chromium
+      - name: Start local Vite preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4300 > /tmp/dungeon-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4300/art-lab.html >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/dungeon-preview.log
+          exit 1
+      - name: Capture WebGL armor proof
+        run: node scripts/armor-visual-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-webgl-evidence
+          path: artifacts/armor-visual-proof
+          if-no-files-found: warn
