@@ -80,3 +80,17 @@ export function armorOutfitSelection(armor?: ArmorInventory): Record<ArmorSlot,'
   const equipped=readArmor(armor).equipped;
   return Object.fromEntries(ARMOR_SLOTS.map(slot=>[slot,equipped[slot]===2?'knight':equipped[slot]===1?'ranger':'traveler'])) as Record<ArmorSlot,'traveler'|'ranger'|'knight'>;
 }
+
+/** Elite sentinel drops one missing medium armor piece, in stable slot order.
+ * The method never grants a duplicate item; after the collection is complete
+ * the normal shard/gold rewards remain useful.
+ */
+export function awardEliteArmorPiece(armor:ArmorInventory):ArmorSlot|null {
+  for(const slot of ARMOR_SLOTS) {
+    if(!ownsArmor(armor,slot,1)){
+      armor.owned[slot] |= armorBit(1);
+      return slot;
+    }
+  }
+  return null;
+}
