@@ -4,6 +4,7 @@ import './local.css';
 import { ART_TRIALS } from './art-trial';
 import { equippedWeaponVisualId } from './equipment-visual';
 import { armorOutfitSelection, armorDefense } from './armor-economy';
+import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest } from './adventure-quests';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -168,7 +169,7 @@ function updateHud() {
   $('.chapter strong').textContent=Math.hypot(p.x,p.z)<=24?'시작의 마을 · 안전 지역':'동쪽 사냥터 · 전투 지역';
   const skillButton=root.querySelector<HTMLButtonElement>('[data-intent="skill"]')!;$('#skill-cooldown').textContent=session.skillCooldown>.05?`${session.skillCooldown.toFixed(1)}s`:'2';skillButton.classList.toggle('cooling',session.skillCooldown>.05);skillButton.style.setProperty('--remaining',`${session.skillCooldown/4*100}%`);skillButton.title=`${isWeaponEquipped(p)?'강타 · MP 12':'강타 · 무기 장착 필요'}${session.skillCooldown>.05?' · 재사용 대기 중':''}`;
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
-  $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=`처치 ${p.kills} · 레벨 ${p.level} · 정원 ${session.state.territory.garden}단계`;
+  $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=`${questSummary(validateQuest(p.quest))} · 총 처치 ${p.kills}`;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
   $('#target').hidden=!m; if(m) $('#target').textContent=`${m.name} · HP ${m.hp} / ${m.maxHp}`;
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
@@ -193,7 +194,19 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop') {
       $('#'+id).onclick=()=>{session.dispatch({type:'buy-potion',quantity});const result=session.message;addLog(result);lastLog=result;showPanel('shop');$('#shop-message').textContent=result;updateHud();void save();};
     }
   } else if(kind==='help') {
-    $('#panel-content').innerHTML='<span class="eyebrow">모험 안내</span><h2>시작의 마을</h2><p>땅을 클릭하여 이동합니다. 동쪽 사냥터에서 몬스터를 선택하고 1 키로 공격하세요.</p><p>2 강타 · 3 물약 · R 마을 귀환<br>마을 반경 안에서는 체력이 회복됩니다.</p><p>처치 보상으로 장비를 강화하고 목재를 모아 영지 정원을 건설할 수 있습니다.</p><button id="help-hunt">사냥터로 출발</button><small>여행은 15초마다 기기에 저장됩니다.</small>';
+    const questState=validateQuest(session.state.player.quest),quest=activeQuest(questState);
+    const finished=quest?canClaimQuest(questState):false;
+    $('#panel-content').innerHTML=`<span class="eyebrow">모험 의뢰 게시판</span><h2>${quest?quest.title:'마을의 의뢰 완료'}</h2>
+      <p>${quest?quest.description:'마을의 3개 의뢰를 모두 완료했습니다. 다음 모험을 준비하세요.'}</p>
+      <div class="stat-line">의뢰 진행 <b id="quest-detail">${quest?questState.progress+' / '+quest.required:'3 / 3'}</b></div>
+      ${quest?`<p>보상 · 골드 ${quest.reward.gold} · 목재 ${quest.reward.wood} · 물약 ${quest.reward.potions} · 파편 ${quest.reward.fragments}</p>
+      <button id="quest-claim" ${!finished||!nearQuestBoard(session.state.player.x,session.state.player.z)?'disabled':''}>의뢰 보상 수령</button>`:''}
+      <p role="status" id="quest-status"></p>
+      <p>땅을 클릭해 이동 · 동쪽 사냥터에서 몬스터를 선택하고 1 키로 공격하세요.</p>
+      <p>2 강타 · 3 물약 · R 귀환 · 마을 주변에서는 체력이 회복됩니다.</p>
+      <button id="help-hunt">사냥터로 출발</button>
+      <small>의뢰 보상은 마을 모험 안내판 근처에서 1번만 수령할 수 있습니다.</small>`;
+    $('#quest-claim')?.addEventListener('click',()=>{session.dispatch({type:'claim-quest'});const result=session.message;addLog(result);showPanel('help');$('#quest-status').textContent=result;updateHud();void save();});
     $('#help-hunt').onclick=()=>{$('#panel').hidden=true;$('#hunt-guide').click();};
   } else if(kind==='estate') {
     const t=session.state.territory;
