@@ -63,6 +63,23 @@ describe('village quest board',()=>{
     const restored=new LocalGameSession(validateSave(JSON.parse(final)));
     expect(restored.state.player.quest).toEqual({stage:3,progress:0});
   });
+  it('elite drops additional shards, 75 XP, wood and gold without advancing wrong quest',()=>{
+    const s=new LocalGameSession(newSave('정예 전리품',0));
+    const m=s.mobs[11];
+    m.hp=1;m.x=s.state.player.x+1;m.z=s.state.player.z;
+    s.dispatch({type:'target',id:m.id});
+    s.dispatch({type:'skill'});
+    expect(m.hp).toBe(0);
+    expect(s.state.player.xp).toBe(15);
+    expect(s.state.player.level).toBe(2);
+    expect(s.state.player.gold).toBeGreaterThanOrEqual(26);
+    expect(s.state.player.wood).toBe(3);
+    expect(s.state.player.armor!.fragments).toBe(2);
+    expect(s.state.player.quest).toEqual({stage:0,progress:0});
+    const initialGold=s.state.player.gold;
+    s.dispatch({type:'skill'});
+    expect(s.state.player.gold).toBe(initialGold);
+  });
   it('does not award overflowing gold, materials or potions',()=>{
     const s=new LocalGameSession(newSave('한도 확인',0));
     s.state.player.quest={stage:0,progress:3};
