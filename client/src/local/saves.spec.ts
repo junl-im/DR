@@ -44,3 +44,18 @@ it('round-trips a mixed equipped four-slot armor kit through IndexedDB schema v1
   expect(restored?.player.weaponEquipped).toBe(true);
   expect(restored?.player.potions).toBe(5);
 });
+
+it('preserves claimed quest stages in IndexedDB and migrates legacy missing quest',async()=>{
+  const save=newSave('의뢰 기록',0);
+  save.player.quest={stage:1,progress:2};
+  await writeSave(save);
+  const restored=await readSave();
+  expect(restored?.player.quest).toEqual({stage:1,progress:2});
+  const older=newSave('옛 모험가',0);
+  delete older.player.quest;
+  await writeSave(older);
+  const migrated=await readSave();
+  expect(migrated?.schemaVersion).toBe(1);
+  expect(migrated?.player.quest).toEqual({stage:0,progress:0});
+  expect((await readSave('backup'))?.player.quest).toEqual({stage:1,progress:2});
+});
