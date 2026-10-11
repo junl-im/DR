@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { attachToBone, detachProp } from './attachment';
+import { attachToBone, detachProp, findBoneByName } from './attachment';
 import { getWeaponAttachment } from './weapon-manifest';
 import { loadGltfTemplate } from './mesh-character';
 
@@ -18,7 +18,9 @@ export function syncWeaponVisual(
   itemId: number,
   state: WeaponVisualState
 ): void {
-  if (itemId === state.equippedItemId && (state.prop !== null || state.loading !== null || itemId === 0)) return;
+  // Each equipment transition starts at most one load. Do not retry a missing
+  // rig on every animation frame; the caller waits for character.ready.
+  if (itemId === state.equippedItemId) return;
 
   if (state.prop) {
     detachProp(state.prop);
@@ -29,15 +31,17 @@ export function syncWeaponVisual(
   const entry = itemId > 0 ? getWeaponAttachment(itemId) : null;
   if (!entry) return;
 
-  const pending = loadGltfTemplate(entry.model)
+  const pending: Promise<void> = loadGltfTemplate(entry.model)
     .then((template) => {
       if (state.equippedItemId !== itemId) return;
       const prop = template.scene.clone(true);
       prop.name = `weapon-${itemId}`;
       // The original KayKit rig and the licensed V3/G6 rig use different
       // hand nodes. Keep the existing KayKit mount and fall back to G6 palm_R.
-      const attached = attachToBone(root, prop, entry.bone, entry.transform) ||
-        attachToBone(root, prop, 'palm_R', entry.transform);
+      const handBone = findBoneByName(root, entry.bone)
+        ? entry.bone
+        : findBoneByName(root, 'palm_R') ? 'palm_R' : null;
+      const attached = handBone !== null && attachToBone(root, prop, handBone, entry.transform);
       if (!attached) {
         detachProp(prop);
         return;
