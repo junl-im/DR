@@ -62,7 +62,7 @@ Elbera [LICENSE](https://github.com/elberacasa/Lineage2Elbera/blob/main/LICENSE)
 | [Flyff Universe](https://universe.flyff.com/) | 공식 사이트 | 브라우저 PC/모바일 대응 사례. 소스·상용 이미지 확보 안 함 |
 | [stein.world](https://stein.world/) | 공식 페이지 읽음 | 로그인·서버 선택 흐름 참고. 읽힌 페이지의 maintenance 표시는 실제 장애 확인으로 확대하지 않음 |
 | [RPG MO](https://rpg.mo.ee/) | 공식 사이트 | 장기 성장·생활·경제의 기획 비교. 실플레이 미검증 |
-| [Quaternius Textured Fantasy Nature](https://quaternius.com/packs/texturedfantasynature.html) | 공식 CC0·포맷 확인 | 나무·꽃·버섯 후보. 바이너리 미다운로드 |
+| [Quaternius Textured Fantasy Nature](https://quaternius.com/packs/texturedfantasynature.html) | 팩 페이지 CC0 표기·포맷 확인; 공통 QAL과 대조 필요 | 나무·꽃·버섯 후보. 바이너리 미다운로드; 취득 버전별 조건 확인 후 이용 |
 | [KayKit Dungeon Pack 1.1](https://kaylousberg.itch.io/kaykit-dungeon-pack) | 공식 free/extra 구분 확인 | 이번 확보는 GitHub의 1.0이며 최신 1.1이라고 표시하지 않음. 유료 EXTRA 미구매 |
 | [Poly Haven](https://polyhaven.com/license) | 공식 라이선스·사이트/API 조건 확인 | 실사 지형 텍스처 후보. 웹페이지 예제 렌더는 CC0 자산과 다름; 전체 사이트 수집 안 함 |
 | [Game-icons](https://game-icons.net/about.html) | 저작자 표시 조건 확인·16종 실확보 | 통일된 스킬/아이템 아이콘 |
@@ -95,3 +95,17 @@ revision: Reldens `02fbb2139dcf51264139142cc4a9c103b5479a86`, Aetheria `300c1dc9
 세 ZIP을 같은 폴더에 해제한다. 업로드 후 폴더 재조회와 ZIP 내부 1,974파일 전체 SHA256 재대조 통과. ZIP별 해시는 2026-10-12-archive-receipts.json, 검증 결과는 2026-10-12-archive-verification.json 참조.
 기존 FEATURE_BACKLOG.md도 추가 확인: 사냥/변신/강화, 직업/파티, 모바일 HUD, 영지/혈맹 공성의 조합이 기록되어 있다. 구체적인 4개 제품명은 여전히 확인 필요.
 조립 스크립트는 원본 조사 폴더를 인수로 받는다: node docs/research/build-library.cjs <원본 체크아웃과 팩 폴더가 모인 경로>. ZIP 검증 스크립트도 -ResearchRoot로 같은 경로를 지정한다.
+
+## 던전 zero 적용 대조 — 2026-10-12
+
+이 기록과 연결된 ‘NJ MMO — 리니지2풍 에셋 현실적 확보·제작 방안’을 읽고 기존 프로젝트 조사와 대조했다.
+
+- Elbera에서 우선 참고할 것은 모델·애니메이션 manifest, 좌표/스케일 정규화, 변환 결과 검사이다. 현재 확보한 KayKit GLB에는 Lineage II UKX/UTX 추출 과정이 필요하지 않다. 원작 클라이언트 변환 및 원작 이미지 반입은 수행하지 않았다.
+- 첫 적용 단위는 플레이어 1명·장비 외형 3종·몬스터 3종·마을 1곳·필드 1곳으로 제안한다. 이는 적용 범위 제안이며 구현 완료 표시가 아니다.
+- 자산 적용 기록에는 원본/결과 SHA256, 라이선스 URL·버전·취득일, 배포 조건, 스케일, 애니메이션 clip ID, 저장소 공개 범위를 추가한다. 미확인 값은 추정하지 않는다.
+- Quaternius 공식 공통 약관은 QAL v1.0(2026-08-28)이며 게임 이용을 허용하되 독립 에셋 묶음 재배포를 제한한다. 약관 7항은 과거 취득분에 소급하지 않는다고 명시한다. 반면 Textured Fantasy Nature 팩 페이지에는 현재 CC0 표기가 남아 있다. 따라서 모든 팩을 일괄 CC0 또는 QAL로 단정하지 않고 취득한 파일의 동봉 조건과 버전별 증거를 확인한다.
+- 기존에 실제 확보·백업한 11개 묶음에는 Quaternius가 포함되지 않는다. 현재 게임에 들어 있는 기존 모델의 출처 검수는 별도 미완료 항목으로 유지한다.
+
+공식 재확인: https://quaternius.com/license.html
+팩 페이지: https://quaternius.com/packs/texturedfantasynature.html
+프로젝트 기록: docs/research/2026-10-12-resource-review.md
