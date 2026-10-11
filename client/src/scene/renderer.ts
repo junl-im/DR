@@ -167,7 +167,7 @@ function findMobId(object: THREE.Object3D): string | null {
   return null;
 }
 
-export async function createRenderer(canvas: HTMLCanvasElement): Promise<GameRenderer> {
+export async function createRenderer(canvas: HTMLCanvasElement, options: { cameraOffset?: { x: number; y: number; z: number }; cameraFov?: number; lockCamera?: boolean } = {}): Promise<GameRenderer> {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -181,7 +181,7 @@ export async function createRenderer(canvas: HTMLCanvasElement): Promise<GameRen
   scene.fog = new THREE.Fog(0x87ceeb, FOG_NEAR_M, FOG_FAR_M);
 
   const camera = new THREE.PerspectiveCamera(
-    60,
+    options.cameraFov ?? 60,
     window.innerWidth / window.innerHeight,
     0.1,
     2000
@@ -290,12 +290,13 @@ export async function createRenderer(canvas: HTMLCanvasElement): Promise<GameRen
         lookAt: (target) => camera.lookAt(target.x, target.y, target.z),
       },
       { x: localPosition.x, y: localPosition.y, z: localPosition.z },
-      DEFAULT_CAMERA_OFFSET,
+      options.cameraOffset ?? DEFAULT_CAMERA_OFFSET,
       cameraYaw
     );
   };
 
   const rotateCamera = (deltaYaw: number): void => {
+    if (options.lockCamera) return;
     cameraYaw = (cameraYaw + deltaYaw) % (Math.PI * 2);
     updateCamera();
   };

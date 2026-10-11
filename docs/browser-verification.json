@@ -9,7 +9,7 @@
     "updatedAt": 0,
     "seed": 2855072631,
     "player": {
-      "name": "서고의 여행자",
+      "name": "모험가",
       "classId": 0,
       "x": 0,
       "z": 0,
@@ -26,16 +26,16 @@
     "territory": {
       "hall": 1,
       "garden": 1,
-      "stored": 0.2062500000000001
+      "stored": 0.2500000000000001
     }
   },
   "after": {
     "schemaVersion": 1,
     "gameVersion": "0.1.0",
-    "updatedAt": 1791727608345,
+    "updatedAt": 1791729260218,
     "seed": 2855072631,
     "player": {
-      "name": "서고의 여행자",
+      "name": "모험가",
       "classId": 0,
       "x": 0.5,
       "z": 0.5,
@@ -52,7 +52,7 @@
     "territory": {
       "hall": 1,
       "garden": 1,
-      "stored": 0.34999999999999976
+      "stored": 0.26875000000000004
     }
   },
   "verified": [

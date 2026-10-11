@@ -1,4 +1,6 @@
 import './local.css';
+import { applyClassicScene } from './classic-scene';
+import { classicIcon } from './classic-icons';
 import * as THREE from 'three';
 import { snapEntityY, EntityAction } from '@nj/game-core';
 import { createRenderer, type GameRenderer } from '../scene/renderer';
@@ -17,7 +19,16 @@ let remembered: Save | null = null;
 let dead = new Set<string>();
 let garden: THREE.Group | undefined;
 let gardenLevel = -1;
-function toast(text: string) { const node = root.querySelector<HTMLElement>('#notice'); if (node) node.textContent = text; }
+let lastLog = '';
+let logFilter = 'all';
+function addLog(text: string, personal = false) {
+  const lines = root.querySelector<HTMLElement>('#log-lines'); if (!lines) return;
+  const row = document.createElement('p'); row.dataset['kind'] = /처치|공격|피해|강화|강타|레벨/.test(text) ? 'combat' : 'system';
+  if(personal) row.className='self';
+  const time = document.createElement('time'); time.textContent=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}); row.append(time,document.createTextNode((personal?'[개인] ':'')+text));
+  row.hidden = logFilter==='combat' && row.dataset['kind']!=='combat';lines.append(row);while(lines.children.length>80)lines.firstElementChild?.remove();lines.scrollTop=lines.scrollHeight;
+}
+function toast(text: string) { const node = root.querySelector<HTMLElement>('#notice'); if (node) node.textContent = text; if(text && text!==lastLog){addLog(text);lastLog=text;} }
 function errorText(e: unknown) { return e instanceof Error ? e.message : String(e); }
 async function save(): Promise<void> {
   if (replacingSave || !session) return;
@@ -38,20 +49,19 @@ async function boot() {
   initGameState();
   let storageError = '';
   try { remembered = await readSave(); } catch(e) { storageError = errorText(e); }
-  root.innerHTML = `<section class="entry"><div class="entry-card"><span class="eyebrow">THE FIRST CHAPTER</span><h1>Dream<br><em>Library</em></h1><p class="entry-lead">잊힌 기억을 깨우는<br>당신만의 작은 모험.</p><div class="entry-divider"></div><p>서고의 정원을 탐험하고, 기억 조각을 모아<br>나만의 영지를 가꾸세요.</p><label>여행자의 이름<input id="name" maxlength="20" value="서고의 여행자" autocomplete="nickname"></label><label>모험의 길<select id="class"><option value="0">수호자 · 검과 방패</option><option value="10">별의 학자 · 마법</option><option value="18">숲의 방랑자 · 탐험</option></select></label><button id="start" class="primary">${remembered ? '새로운 여행 만들기' : '모험 시작하기'} <span>↗</span></button>${remembered ? '<button id="continue">이전 여행 이어하기</button>' : ''}${storageError ? '<button id="recover">백업 슬롯 복구</button>' : ''}<p id="entry-status" role="status"></p><small>단독 플레이 · 이 기기에 자동 저장<br>클라우드 저장은 입장 후 선택할 수 있습니다.</small></div><aside class="entry-art"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="book"><span>✦</span><b>DREAM<br>LIBRARY</b></div><div class="art-caption">A WORLD BETWEEN THE PAGES<span>꿈의 서고 · 첫 번째 장</span></div></aside></section>`;
+  root.innerHTML = `<section class="entry"><div class="entry-card"><span class="eyebrow">THE FIRST CHAPTER</span><h1>던전<br><em>zero</em></h1><p class="entry-lead">마을을 나서면 모험이 시작된다.</p><div class="entry-divider"></div><p>시작의 마을을 탐험하고, 골드를 모아<br>나만의 영지를 가꾸세요.</p><label>여행자의 이름<input id="name" maxlength="20" value="모험가" autocomplete="nickname"></label><label>모험의 길<select id="class"><option value="0">수호자 · 검과 방패</option><option value="10">별의 학자 · 마법</option><option value="18">숲의 방랑자 · 탐험</option></select></label><button id="start" class="primary">${remembered ? '새로운 여행 만들기' : '모험 시작하기'} <span>↗</span></button>${remembered ? '<button id="continue">이전 여행 이어하기</button>' : ''}${storageError ? '<button id="recover">백업 슬롯 복구</button>' : ''}<p id="entry-status" role="status"></p><small>단독 플레이 · 이 기기에 자동 저장<br>클라우드 저장은 입장 후 선택할 수 있습니다.</small></div></section>`;
   $('#entry-status').textContent = storageError;
   $('#start').onclick = () => { if (remembered && !confirm('기존 여행을 백업 슬롯에 보존하고 새로운 여행을 시작할까요?')) return; void enter(newSave($<HTMLInputElement>('#name').value, Number($<HTMLSelectElement>('#class').value))); };
   root.querySelector<HTMLElement>('#continue')?.addEventListener('click', () => void enter(remembered!));
   root.querySelector<HTMLElement>('#recover')?.addEventListener('click', () => { void readSave('backup').then(s => { if (!s) throw new Error('백업 슬롯이 없습니다.'); return enter(s); }).catch(e => { $('#entry-status').textContent = errorText(e); }); });
 }
 async function enter(state: Save) {
-  const entryStatus = root.querySelector<HTMLElement>('#entry-status'); if (entryStatus) entryStatus.textContent = '서고의 정원을 펼치고 있습니다…';
+  const entryStatus = root.querySelector<HTMLElement>('#entry-status'); if (entryStatus) entryStatus.textContent = '시작의 마을을 펼치고 있습니다…';
   root.querySelectorAll<HTMLButtonElement>('.entry button').forEach(b => b.disabled = true);
   try {
     session = new LocalGameSession(state);
-    game = await createRenderer(document.getElementById('game') as HTMLCanvasElement);
-    game.scene.background = new THREE.Color('#aecbd0');
-    game.scene.fog = new THREE.Fog('#aecbd0', 120, 240);
+    game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:{x:26,y:34,z:26},cameraFov:38,lockCamera:true});
+    applyClassicScene(game.scene);
     game.renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(max-width: 700px)').matches ? 1.1 : 1.5));
     game.renderer.shadowMap.enabled = !matchMedia('(max-width: 700px)').matches;
     game.setLocalPlayerName(session.state.player.name);
@@ -62,13 +72,15 @@ async function enter(state: Save) {
     let pointerStart: { x: number; y: number } | null = null;
     canvas.addEventListener('pointerdown', e => { pointerStart = {x:e.clientX,y:e.clientY}; });
     canvas.addEventListener('pointerup', e => { if (pointerStart && Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)<12) game.handleClick(e); pointerStart=null; });
-    canvas.addEventListener('wheel', e => { e.preventDefault(); game.rotateCamera(e.deltaY * .002); }, {passive:false});
-    window.addEventListener('resize', () => { game.renderer.setSize(innerWidth, innerHeight); game.camera.aspect=innerWidth/innerHeight; game.camera.updateProjectionMatrix(); });
+    // Fixed diagonal camera: wheel and Q/E never orbit the scene.
+    function resizeViewport() { const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock')) || 156; const height = Math.max(180, innerHeight-dock); game.renderer.setSize(innerWidth,height); game.camera.aspect=innerWidth/height;game.camera.updateProjectionMatrix(); }
+    resizeViewport();
+    window.addEventListener('resize', resizeViewport);
     window.addEventListener('keydown', e => {
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
       const keys: Record<string, Intent['type']> = { ' ': 'attack', '1':'attack', '2':'skill', '3':'potion', 'r':'recall' };
       if(keys[e.key]) { e.preventDefault(); session.dispatch({type:keys[e.key]} as Intent); }
-      if(e.key==='q') game.rotateCamera(-.15); if(e.key==='e') game.rotateCamera(.15);
+
     });
     setConnected(false); setReady(true);
     Object.assign(window, { __DREAM_SESSION__:session, __DREAM_SAVE__:save });
@@ -106,7 +118,13 @@ function syncScene() {
   }
 }
 function mountHud() {
-  root.innerHTML=`<header class="top"><a class="brand" href="#">✦ <span>Dream Library<small>꿈의 서고</small></span></a><div class="chapter"><span class="eyebrow">CHAPTER 01</span><strong>서고의 정원</strong></div><button id="menu" aria-label="저장과 설정 열기">☰</button></header><section class="vitals card"><div class="avatar">✦</div><div><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp"><i id="xp-bar"></i></div></div></section><section class="quest card"><span class="eyebrow">오늘의 작은 모험</span><h2>잊힌 기억을 찾아서</h2><p>숲의 몬스터를 사냥해 기억을 모으세요.</p><div id="quest-progress"></div><button id="hunt-guide">가까운 몬스터 찾기 ↗</button></section><div class="wallet card"><span>✧ <b id="gold">0</b> 기억 조각</span><span>♧ <b id="wood">0</b> 목재</span></div><section id="target" class="target card" hidden></section><div class="bottom"><div id="notice" role="status" aria-live="polite"></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack"><b>⚔</b><span>공격</span><small>1 / SPACE</small></button><button data-intent="skill"><b>✦</b><span>별빛 참격</span><small>2 · MP 12</small></button><button data-intent="potion"><b>♥</b><span id="potions">회복 물약</span><small>3</small></button><button data-intent="recall"><b>⌂</b><span>서고 귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>나의 영지</span><small>관리</small></button><button id="inventory"><b>◇</b><span>장비</span><small>강화</small></button></nav><p class="control-hint">땅을 눌러 이동 · 몬스터를 눌러 선택 · Q/E 또는 휠로 시점 회전</p></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
+  root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="저장과 설정 열기">☰</button></header>
+<section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div></section>
+<div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span></div>
+<section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
+<section class="quest card"><h2>초보 사냥</h2><div id="quest-progress"></div><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section>
+<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span>FIXED VIEW</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small>2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
+<div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
@@ -115,6 +133,8 @@ function mountHud() {
     const m=session.mobs.filter(m=>m.hp>0).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];
     if(m) { session.dispatch({type:'target',id:m.id}); game.setVfxTargetMobId(m.id); session.dispatch({type:'attack'}); }
   };
+  $('#log-form').onsubmit=e=>{e.preventDefault();const input=$<HTMLInputElement>('#log-input');if(input.value.trim())addLog(input.value.trim(),true);input.value='';};
+  root.querySelectorAll<HTMLButtonElement>('[data-log-filter]').forEach(button=>button.onclick=()=>{logFilter=button.dataset['logFilter']!;root.querySelectorAll('[data-log-filter]').forEach(b=>b.classList.toggle('active',b===button));$('#log-lines').querySelectorAll<HTMLElement>('p').forEach(p=>p.hidden=logFilter==='combat'&&p.dataset['kind']!=='combat');});
   $('.brand').onclick=e=>e.preventDefault();
 }
 function updateHud() {
@@ -123,7 +143,7 @@ function updateHud() {
   $('#hp').textContent=`${p.hp} / ${maxHp(p)}`; $('#mp').textContent=`${p.mp} / 60`;
   $('#hp-bar').style.width=`${p.hp/maxHp(p)*100}%`; $('#mp-bar').style.width=`${p.mp/60*100}%`; $('#xp-bar').style.width=`${p.xp/xpNeeded(p)*100}%`;
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood);
-  $('#potions').textContent=`회복 물약 ${p.potions}`; $('#quest-progress').textContent=`처치 ${p.kills} · 레벨 ${p.level} · 정원 ${session.state.territory.garden}단계`;
+  $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=`처치 ${p.kills} · 레벨 ${p.level} · 정원 ${session.state.territory.garden}단계`;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
   $('#target').hidden=!m; if(m) $('#target').textContent=`${m.name} · HP ${m.hp} / ${m.maxHp}`;
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
@@ -134,16 +154,16 @@ function showPanel(kind:'estate'|'inventory'|'save') {
   $('#panel').hidden=false;
   if(kind==='estate') {
     const t=session.state.territory;
-    $('#panel-content').innerHTML=`<span class="eyebrow">MY LITTLE TERRITORY</span><h2>기억의 정원</h2><p>목재를 모아 정원을 가꾸면<br>플레이하는 동안 기억 조각이 자랍니다.</p><div class="estate-illustration">♧ <span>✦</span> ♧</div><div class="stat-line">정원 단계 <b>${t.garden} / 5</b></div><div class="stat-line">수확 가능한 기억 <b>${Math.floor(t.stored)}</b></div><button id="gather">목재 채집 +3 · 서고 근처</button><button id="garden" class="primary">정원 ${t.garden?'확장':'건설'} · 목재 ${12+t.garden*6}</button><button id="collect">기억 조각 수확</button><small>생산량은 최대 120개까지 보관됩니다.</small>`;
+    $('#panel-content').innerHTML=`<span class="eyebrow">MY LITTLE TERRITORY</span><h2>영지 정원</h2><p>목재를 모아 정원을 가꾸면<br>플레이하는 동안 골드가 자랍니다.</p><div class="estate-illustration">♧ <span>✦</span> ♧</div><div class="stat-line">정원 단계 <b>${t.garden} / 5</b></div><div class="stat-line">수확 가능한 골드 <b>${Math.floor(t.stored)}</b></div><button id="gather">목재 채집 +3 · 마을 근처</button><button id="garden" class="primary">정원 ${t.garden?'확장':'건설'} · 목재 ${12+t.garden*6}</button><button id="collect">골드 수확</button><small>생산량은 최대 120개까지 보관됩니다.</small>`;
     panelAction('gather','gather','estate'); panelAction('garden','garden','estate'); panelAction('collect','collect','estate');
   } else if(kind==='inventory') {
     const p=session.state.player;
-    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR EQUIPMENT</span><h2>여행자의 장비</h2><div class="equipment-icon">⚔</div><h3>여행자의 무기 +${p.weapon}</h3><p>기본 공격력 ${10+p.level*2+p.weapon*4}<br>성공이 보장되는 기억 강화</p><button id="upgrade" class="primary">강화 · 기억 조각 ${20*(p.weapon+1)}</button><div class="stat-line">회복 물약 <b>${p.potions}개</b></div><small>현재 장비·재화는 단독 모험 전용입니다.</small>`;
+    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR EQUIPMENT</span><h2>여행자의 장비</h2><div class="equipment-icon">⚔</div><h3>여행자의 무기 +${p.weapon}</h3><p>기본 공격력 ${10+p.level*2+p.weapon*4}<br>성공이 보장되는 장비 강화</p><button id="upgrade" class="primary">강화 · 골드 ${20*(p.weapon+1)}</button><div class="stat-line">회복 물약 <b>${p.potions}개</b></div><small>현재 장비·재화는 단독 모험 전용입니다.</small>`;
     panelAction('upgrade','upgrade','inventory');
   } else {
     $('#panel-content').innerHTML=`<span class="eyebrow">YOUR JOURNEY, KEPT SAFE</span><h2>여행 기록</h2><p>15초마다 이 기기에 저장합니다.<br>Google 로그인으로 다른 기기에 기록을 옮길 수 있습니다.</p><button id="save-now" class="primary">지금 기기에 저장</button><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label><div class="entry-divider"></div><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button><p id="cloud-status" role="status"></p><small>단독 모험 기록입니다. 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
     $('#save-now').onclick=()=>void save();
-    $('#export').onclick=()=>{const blob=new Blob([JSON.stringify({...session.snapshot(),updatedAt:Date.now()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='Dream-Library-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+    $('#export').onclick=()=>{const blob=new Blob([JSON.stringify({...session.snapshot(),updatedAt:Date.now()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='Dungeon-zero-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
     $<HTMLInputElement>('#import').onchange=async e=>{try{const f=(e.target as HTMLInputElement).files?.[0];if(!f)return;if(f.size>50000)throw new Error('저장 파일이 너무 큽니다.'); const {validateSave}=await import('./session'); const s=validateSave(JSON.parse(await f.text())); if(confirm('현재 여행을 백업하고 파일의 여행으로 바꿀까요?')) {await replaceSave(s);}}catch(e){toast(errorText(e));}};
     const action=async(fn:(c:typeof import('./cloud'))=>Promise<void>)=>{try{cloud??=await import('./cloud');await fn(cloud);$('#account').textContent=cloud.auth.currentUser?.displayName??'Google 계정 연결';}catch(e){$('#cloud-status').textContent=errorText(e);}};
     $('#login').onclick=()=>void action(c=>c.login()); $('#logout').onclick=()=>void action(c=>c.logout());

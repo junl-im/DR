@@ -1,4 +1,4 @@
-name: Dream Library checks
+name: Dungeon zero checks
 on:
   pull_request:
   push:
@@ -27,3 +27,4 @@ jobs:
         with:
           name: dream-library-web
           path: dist/client
+

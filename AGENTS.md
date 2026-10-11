@@ -1,4 +1,4 @@
-# Dream Library development contract
+# 던전 zero development contract
 
 User instruction on 2026-10-11 replaces the upstream Composer/tlc-specific workflow with Codex's native implementation and verification workflow. No missing external skill is required.
 

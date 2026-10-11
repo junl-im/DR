@@ -1,4 +1,4 @@
-# Dream Library 인수 기록
+# 던전 zero 인수 기록
 
 ## 현재 제품과 문서 우선순위
 
@@ -46,3 +46,8 @@ Drive의 다섯 ZIP을 확보·압축 해제하고 최신 결정과 이전 서�
 - 전체 이전 Git bundle https://drive.google.com/file/d/1PAJRI-4o26RitvKPxy_xf3Ha94XLRhkJ/view
 
 Firebase 규칙 안내: I've set up prototype Security Rules to keep the data in Firestore safe. They are designed to be secure for private, owner-only single-player save documents with bounded payloads and server timestamps. However, you should review and verify them before broadly sharing your app. If you'd like, I can help you harden these rules.
+
+## 사용자 화면 기준 정정
+제품 이름은 던전 zero. 사용자는 기존 커스텀 서고 UI와 로우폴리 화면이 기대와 다르다고 지적했다. 첨부 이미지는 고전 리니지 계열 등각 화면으로 보이며 실제 NJ MMO 로우폴리 3D와 구분한다. 첨부 화면 지향 또는 NJ MMO 원본 복원 중 사용자 답변 전 대규모 UI/엔진 변경을 진행하지 않는다. 기존 Firebase 프로젝트 ID와 저장 DB 키는 데이터 보존을 위해 유지한다.
+
+사용자 선택 확정: 첨부 이미지의 고전 MMORPG 분위기·고정 시점·하단 HUD 기준으로 변경. 실제 NJ MMO 원본 UI 복원으로 오해하지 않는다. 로우폴리 3D 자산은 유지하며 원본 스크린샷의 게임 그래픽이 구현되었다고 주장하지 않는다.
