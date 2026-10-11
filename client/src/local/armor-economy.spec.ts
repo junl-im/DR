@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {ARMOR_SLOTS, armorDefense, armorCraftCost, emptyArmor} from './armor-economy';
+import {ARMOR_SLOTS, armorDefense, armorCraftCost, emptyArmor, awardEliteArmorPiece} from './armor-economy';
 import {LocalGameSession,newSave,validateSave} from './session';
 
 describe('real armor progression with schema v1 compatibility',()=>{
@@ -69,6 +69,13 @@ describe('real armor progression with schema v1 compatibility',()=>{
     }
     expect(s.state.player.kills).toBe(2);
     expect(s.state.player.armor!.fragments).toBe(1);
+  });
+  it('grants unique medium boss drops in stable slot order and never duplicates',()=>{
+    const armor=emptyArmor();
+    expect([0,1,2,3].map(()=>awardEliteArmorPiece(armor))).toEqual(['helmet','body','gloves','boots']);
+    expect(awardEliteArmorPiece(armor)).toBeNull();
+    expect(armor.owned).toEqual({helmet:1,body:1,gloves:1,boots:1});
+    expect(armor.equipped).toEqual({helmet:0,body:0,gloves:0,boots:0});
   });
   it('applies armor defense only after an owned piece is equipped',()=>{
     const seed=newSave('방어 확인',0);seed.player.x=30;seed.player.z=-19;
