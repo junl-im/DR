@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { snapEntityY, EntityAction } from '@nj/game-core';
 import { createRenderer, type GameRenderer } from '../scene/renderer';
 import { initGameState, setReady, setConnected, setPlayer, getGameState } from '../test-hook';
-import { LocalGameSession, newSave, maxHp, xpNeeded, type Save, type Intent } from './session';
+import { POTION_PRICE, canUsePotionShop, LocalGameSession, newSave, maxHp, xpNeeded, type Save, type Intent } from './session';
 import { readSave, writeSave } from './saves';
 
 const root = document.createElement('main'); root.id = 'dream-ui'; document.body.append(root);
@@ -161,9 +161,16 @@ const signPoint=new THREE.Vector3();
 function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(Math.hypot(session.state.player.x-sign.x,session.state.player.z-sign.z)>12){session.message='안내판 가까이 이동해주세요.';updateHud();return;}showPanel(sign.panel);};layer.append(button);}root.append(layer);}
 function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
-function showPanel(kind:'estate'|'inventory'|'save'|'help') {
+function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop') {
   $('#panel').hidden=false;
-  if(kind==='help') {
+  if(kind==='shop') {
+    const p=session.state.player;
+    $('#panel-content').innerHTML=`<span class="eyebrow">마을 보급 상점</span><h2>모험을 준비하세요</h2><div class="equipment-icon">${classicIcon('potion')}</div><h3>회복 물약</h3><p>체력 55 회복 · 최대 체력을 넘지 않습니다.</p><div class="stat-line">보유 골드 <b>${p.gold}</b></div><div class="stat-line">보유 물약 <b>${p.potions}개</b></div><button id="buy-one">1개 구매 · 골드 ${POTION_PRICE}</button><button id="buy-five">5개 구매 · 골드 ${POTION_PRICE*5}</button><p role="status" id="shop-message"></p><small>마을 보급 상점 근처에서 이용할 수 있습니다.</small>`;
+    for(const [id,quantity] of [['buy-one',1],['buy-five',5]] as const){
+      $<HTMLButtonElement>('#'+id).disabled=!canUsePotionShop(p)||p.gold<POTION_PRICE*quantity||p.potions+quantity>1000000;
+      $('#'+id).onclick=()=>{session.dispatch({type:'buy-potion',quantity});const result=session.message;addLog(result);lastLog=result;showPanel('shop');$('#shop-message').textContent=result;updateHud();void save();};
+    }
+  } else if(kind==='help') {
     $('#panel-content').innerHTML='<span class="eyebrow">모험 안내</span><h2>시작의 마을</h2><p>땅을 클릭하여 이동합니다. 동쪽 사냥터에서 몬스터를 선택하고 1 키로 공격하세요.</p><p>2 강타 · 3 물약 · R 마을 귀환<br>마을 반경 안에서는 체력이 회복됩니다.</p><p>처치 보상으로 장비를 강화하고 목재를 모아 영지 정원을 건설할 수 있습니다.</p><button id="help-hunt">사냥터로 출발</button><small>여행은 15초마다 기기에 저장됩니다.</small>';
     $('#help-hunt').onclick=()=>{$('#panel').hidden=true;$('#hunt-guide').click();};
   } else if(kind==='estate') {
@@ -172,8 +179,9 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help') {
     panelAction('gather','gather','estate'); panelAction('garden','garden','estate'); panelAction('collect','collect','estate');
   } else if(kind==='inventory') {
     const p=session.state.player;
-    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR EQUIPMENT</span><h2>여행자의 장비</h2><div class="equipment-icon">⚔</div><h3>여행자의 무기 +${p.weapon}</h3><p>기본 공격력 ${10+p.level*2+p.weapon*4}<br>성공이 보장되는 장비 강화</p><button id="upgrade" class="primary">강화 · 골드 ${20*(p.weapon+1)}</button><div class="stat-line">회복 물약 <b>${p.potions}개</b></div><small>현재 장비·재화는 단독 모험 전용입니다.</small>`;
+    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR EQUIPMENT</span><h2>여행자의 장비</h2><div class="equipment-icon">⚔</div><h3>여행자의 무기 +${p.weapon}</h3><p>기본 공격력 ${10+p.level*2+p.weapon*4}<br>성공이 보장되는 장비 강화</p><button id="upgrade" class="primary">강화 · 골드 ${20*(p.weapon+1)}</button><div class="stat-line">회복 물약 <b>${p.potions}개</b></div><button id="open-shop">마을 보급 상점</button><small>현재 장비·재화는 단독 모험 전용입니다.</small>`;
     panelAction('upgrade','upgrade','inventory');
+    $('#open-shop').onclick=()=>showPanel('shop');
   } else {
     $('#panel-content').innerHTML=`<span class="eyebrow">YOUR JOURNEY, KEPT SAFE</span><h2>여행 기록</h2><p>15초마다 이 기기에 저장합니다.<br>Google 로그인으로 다른 기기에 기록을 옮길 수 있습니다.</p><button id="save-now" class="primary">지금 기기에 저장</button><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label><div class="entry-divider"></div><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button><p id="cloud-status" role="status"></p><small>단독 모험 기록입니다. 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
     $('#save-now').onclick=()=>void save();

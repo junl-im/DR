@@ -1,11 +1,14 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 
-export const GAME_VERSION = '0.2.0';
+export const GAME_VERSION = '0.3.0';
+export const POTION_PRICE = 8;
+export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
+export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
 export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
 export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
 export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number }
-export type Intent = { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
+export type Intent = { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
 export interface GameSession { readonly mode: 'local' | 'online'; dispatch(intent: Intent): void; tick(dt: number): void; snapshot(): Save }
 export const maxHp = (p: Player) => 100 + (p.level - 1) * 18;
 export const xpNeeded = (p: Player) => 60 + (p.level - 1) * 30;
@@ -71,6 +74,17 @@ export class LocalGameSession implements GameSession {
   }
   dispatch(intent: Intent): void {
     const p = this.state.player;
+    if (intent.type === 'buy-potion') {
+      const quantity=intent.quantity;
+      if (!Number.isInteger(quantity) || quantity<1 || quantity>10) { this.message='구매 수량은 1~10개입니다.'; return; }
+      if (!canUsePotionShop(p)) { this.message='마을 보급 상점 가까이 이동해주세요.'; return; }
+      const cost=POTION_PRICE*quantity;
+      if (p.gold<cost) { this.message=`골드 ${cost}개가 필요합니다.`; return; }
+      if (p.potions+quantity>1000000) { this.message='물약을 더 보관할 수 없습니다.'; return; }
+      p.gold-=cost; p.potions+=quantity;
+      this.message=`회복 물약 ${quantity}개 구매 · 골드 -${cost}`;
+      return;
+    }
     if (intent.type === 'move') { this.attacking = false; this.move(intent.x, intent.z); }
     if (intent.type === 'target') { this.target = this.mobs.some(m => m.id === intent.id && m.hp > 0) ? intent.id : null; this.attacking = false; }
     if (intent.type === 'attack') { this.attacking = !this.attacking; if (!this.target) { this.attacking = false; this.message = '먼저 몬스터를 선택하세요.'; } }

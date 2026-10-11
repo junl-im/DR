@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { snapEntityY, FEET_OFFSET } from '@nj/game-core';
+import { POTION_SHOP } from './session';
 
 export const TOWN_SIGNS = [
+  {id:'shop',name:'마을 보급 상점',x:POTION_SHOP.x,z:POTION_SHOP.z,panel:'shop' as const},
   {id:'equipment',name:'장비 정비 안내',x:7,z:-3,panel:'inventory' as const},
   {id:'garden',name:'영지 관리 안내',x:-7,z:3,panel:'estate' as const},
   {id:'journey',name:'모험 안내판',x:-2,z:4,panel:'help' as const},

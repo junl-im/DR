@@ -61,3 +61,21 @@ describe('Dungeon zero local progression contract', () => {
     for(let i=0;i<81;i++)s.tick(.05);expect(s.skillCooldown).toBe(0);s.dispatch({type:'skill'});expect(m.hp).toBe(0);
   });
 });
+
+describe('town supply transactions',()=>{
+  it('spends exactly the price and persists purchased supplies',()=>{
+    const s=new LocalGameSession(newSave('상인',0));s.state.player.gold=40;
+    s.dispatch({type:'buy-potion',quantity:5});
+    expect(s.state.player.gold).toBe(0);expect(s.state.player.potions).toBe(10);
+    expect(new LocalGameSession(s.snapshot()).state.player).toEqual(s.state.player);
+    s.dispatch({type:'buy-potion',quantity:1});expect(s.state.player.potions).toBe(10);
+  });
+  it('rejects invalid quantities, remote purchases and capacity overflow atomically',()=>{
+    const s=new LocalGameSession(newSave('상인',0));s.state.player.gold=100;
+    for(const quantity of [0,-1,1.5,11,NaN,Infinity])s.dispatch({type:'buy-potion',quantity});
+    expect(s.state.player.gold).toBe(100);expect(s.state.player.potions).toBe(5);
+    s.state.player.x=80;s.dispatch({type:'buy-potion',quantity:1});expect(s.state.player.gold).toBe(100);
+    s.dispatch({type:'recall'});s.state.player.potions=999999;
+    s.dispatch({type:'buy-potion',quantity:5});expect(s.state.player.gold).toBe(100);expect(s.state.player.potions).toBe(999999);
+  });
+});

@@ -57,3 +57,7 @@ Firebase 규칙 안내: I've set up prototype Security Rules to keep the data in
 
 ## 2026-10-12 — 외부 자원 확장 조사
 사용자 지시로 프리서버 구축 분석 대화와 Notion 웹게임 조사 대조. Codes_KOR.zip·반하자.zip 원본 및 Library 파일은 미확보, 4종 정확한 제품명 질문 중. Elbera revision12c9656의 데이터/인벤토리/퀘스트 검사48개 통과. 공식 자산11묶음1974파일308012218바이트를 resources/library/2026-10-12에 확보(게임 적용 전, Git 제외). 세 Drive ZIP 폴더 재조회·모든 자산 SHA256 재대조 통과. 상세 docs/research/2026-10-12-resource-review.md. Elbera 원작 그래픽은 MIT 대상에서 제외되므로 복제 안 함. 게임 런타임·Firebase 설정 변경 없음.
+
+## 2026-10-12 최종 디자인 목표 및 0.3.0
+사용자는 최종 디자인을 Lineage2Elbera 급으로 확정했다. docs/DESIGN_TARGET.md 참조. 고전 고정 시점/하단 HUD 유지. 현재 저폴리 모델은 프로토타입이다. 마을 물약 상점(1/5개 구매, 개당8골드), 거래 거리/수량/잔액/수량 상한 검사와 기존 저장 호환을 추가했다. 검증 결과는 후속 기록 참조.
+검증: 로컬14개·전체 client/core·타입·정적 빌드·108개 자산 구조 검사 통과. 실제 사냥1회 보상11골드로 물약1개 구매해 골드3/물약7, IndexedDB 새로고침 복원과 모바일 가로 넘침 없음 확인. docs/update-0.3-verification.json. 공개 Pages 배포는 갱신하지 않음.
