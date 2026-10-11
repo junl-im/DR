@@ -54,3 +54,6 @@ Firebase 규칙 안내: I've set up prototype Security Rules to keep the data in
 
 ## 0.2.0 — 마을과 전투 피드백
 사용자 계속 개선 요청에 따라 고전 HUD/고정 카메라를 유지하며 마을 광장 패치의 비동기 로딩을 처리, 지형 기반 광장·길과 군집 수풀·실제 메뉴 안내판3개 추가. 공격/회복 숫자·강타 쿨다운·경험치 수치·지역 표시 추가. 비영속 bounded 이벤트 큐로 피해/보상/레벨업 기록을 분리하여 동시 보상 기록 손실 방지. 저장 스키마1/Firebase 연결 유지. 로컬12개·전체 클라이언트·타입·빌드 통과, 기존 플레이 저장복원과 새 UI 브라우저검증 통과. 브라우저 증거 docs/update-0.2-verification.json. 장식은 이동 차단 물체로 추가하지 않음. 새 외부 모델/텍스처 없음.
+
+## 2026-10-12 — 외부 자원 확장 조사
+사용자 지시로 프리서버 구축 분석 대화와 Notion 웹게임 조사 대조. Codes_KOR.zip·반하자.zip 원본 및 Library 파일은 미확보, 4종 정확한 제품명 질문 중. Elbera revision12c9656의 데이터/인벤토리/퀘스트 검사48개 통과. 공식 자산11묶음1974파일308012218바이트를 resources/library/2026-10-12에 확보(게임 적용 전, Git 제외). 세 Drive ZIP 폴더 재조회·모든 자산 SHA256 재대조 통과. 상세 docs/research/2026-10-12-resource-review.md. Elbera 원작 그래픽은 MIT 대상에서 제외되므로 복제 안 함. 게임 런타임·Firebase 설정 변경 없음.
