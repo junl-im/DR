@@ -1,5 +1,5 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
-import {ARMOR_SLOTS, ARMOR_LABELS, ARMOR_TIER_LABELS, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
+import {ARMOR_LABELS, ARMOR_TIER_LABELS, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
 
 export const GAME_VERSION = '0.5.0';
 export const POTION_PRICE = 8;
