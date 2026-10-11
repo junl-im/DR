@@ -31,3 +31,16 @@ it('round trips unequipped enhancement without granting a duplicate item',async(
   const s=newSave('장비 복원',0);s.player.weapon=3;s.player.weaponEquipped=false;await writeSave(s);
   const copy=await readSave();expect(copy?.player.weapon).toBe(3);expect(copy?.player.weaponEquipped).toBe(false);
 });
+
+it('round-trips a mixed equipped four-slot armor kit through IndexedDB schema v1',async()=>{
+  const save=newSave('방어구 기록',0);
+  save.player.armor!.fragments=7;
+  save.player.armor!.owned={helmet:3,body:1,gloves:2,boots:3};
+  save.player.armor!.equipped={helmet:2,body:1,gloves:2,boots:0};
+  await writeSave(save);
+  const restored=await readSave();
+  expect(restored?.schemaVersion).toBe(1);
+  expect(restored?.player.armor).toEqual(save.player.armor);
+  expect(restored?.player.weaponEquipped).toBe(true);
+  expect(restored?.player.potions).toBe(5);
+});
