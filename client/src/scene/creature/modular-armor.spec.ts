@@ -87,6 +87,24 @@ describe('four-slot modular armor visual fitting', () => {
     expect(helmet.visible).toBe(false);
   });
 
+
+  it.each(['ranger','knight'] as ArmorOutfit[])('supports %s as the chosen source avatar',async (base)=>{
+    const character=buildRig(base);
+    const originalHelmet=character.getObjectByName(base==='knight'?'human_male_heavy_helmet':'human_male_medium_helmet')!;
+    const ctrl=await prepareModularArmor(character,async url=>
+      source(buildRig(url.includes('ranger')?'ranger':url.includes('knight')?'knight':'traveler')),base
+    );
+    ctrl.setPart('helmet','traveler');
+    expect(originalHelmet.visible).toBe(false);
+    ctrl.setPart('body','ranger');
+    expect(ctrl.snapshot().body).toBe('ranger');
+    expect(character.getObjectByName('human_male_medium_armor-preview')?.visible ?? base==='ranger').toBe(true);
+    ctrl.setPart('boots','knight');
+    expect(ctrl.snapshot().boots).toBe('knight');
+    ctrl.reset();
+    expect(ctrl.snapshot()).toEqual({helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'});
+  });
+
   it('does not attach incompatible outfit geometry', async () => {
     const traveler = buildRig('traveler');
     const before = traveler.children.length;
