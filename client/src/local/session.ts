@@ -1,5 +1,5 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
-import {ARMOR_LABELS, ARMOR_TIER_LABELS, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
+import {ARMOR_LABELS, ARMOR_TIER_LABELS, awardEliteArmorPiece, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
 import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, type QuestProgress, type HuntKind } from './adventure-quests';
 
 export const GAME_VERSION = '0.6.0';
@@ -184,10 +184,11 @@ export class LocalGameSession implements GameSession {
     const eliteFragment=elite && p.armor!.fragments<999998 ? 2 : 0;
     if(earnedFragment && p.armor!.fragments<1000000) p.armor!.fragments++;
     if(eliteFragment) p.armor!.fragments+=eliteFragment;
+    const droppedSlot=elite?awardEliteArmorPiece(p.armor!):null;
     if (this.random() < .3) p.potions=Math.min(1000000,p.potions+1);
     const kind:HuntKind=m.name==='숲의 정예 감시자'?'sentinel':m.npcId===20001?'slime':'wanderer';
     const advanced=recordQuestKill(p.quest!,kind);
-    this.message = `${m.name} 처치 · 경험치 +${elite?75:30} · 골드 +${gold}${earnedFragment||eliteFragment?' · 방어구 파편 +'+(Number(earnedFragment)+eliteFragment):''}${advanced?' · '+questSummary(p.quest!):''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
+    this.message = `${m.name} 처치 · 경험치 +${elite?75:30} · 골드 +${gold}${earnedFragment||eliteFragment?' · 방어구 파편 +'+(Number(earnedFragment)+eliteFragment):''}${droppedSlot?' · 경갑 '+ARMOR_LABELS[droppedSlot]+' 획득':''}${advanced?' · '+questSummary(p.quest!):''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
     while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level} 달성! 체력과 마나가 회복되었습니다.`;this.emit({kind:'level',x:p.x,z:p.z,amount:p.level,text:this.message}); }
     if (p.level === 100) p.xp = Math.min(p.xp, xpNeeded(p) - 1);
     this.attacking = false; this.target = null;
