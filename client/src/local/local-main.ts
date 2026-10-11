@@ -1,3 +1,5 @@
+import './inventory.css';
+import { createInventoryWindow } from './inventory-window';
 import './local.css';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
@@ -18,6 +20,7 @@ let saveTask: Promise<void> | undefined;
 let replacingSave = false;
 let cloud: typeof import('./cloud') | undefined;
 let remembered: Save | null = null;
+let inventoryWindow: ReturnType<typeof createInventoryWindow> | undefined;
 let dead = new Set<string>();
 let garden: THREE.Group | undefined;
 let gardenLevel = -1;
@@ -83,6 +86,8 @@ async function enter(state: Save) {
     window.addEventListener('resize', resizeViewport);
     window.addEventListener('keydown', e => {
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
+      if(e.key==='Escape') { $('#panel').hidden=true; return; }
+      if(e.key.toLowerCase()==='i') { e.preventDefault();showPanel('inventory');return; }
       const keys: Record<string, Intent['type']> = { ' ': 'attack', '1':'attack', '2':'skill', '3':'potion', 'r':'recall' };
       if(keys[e.key]) { e.preventDefault(); session.dispatch({type:keys[e.key]} as Intent); }
 
@@ -133,6 +138,11 @@ function mountHud() {
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
+  const panel=$('#panel');let drag:{x:number;y:number;left:number;top:number}|undefined;
+  panel.addEventListener('pointerdown',e=>{if(innerWidth<=550||!(e.target as HTMLElement).closest('.inventory-heading'))return;const rect=panel.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:rect.left,top:rect.top};panel.style.height=rect.height+'px';panel.style.bottom='auto';panel.setPointerCapture(e.pointerId);});
+  panel.addEventListener('pointermove',e=>{if(!drag)return;panel.style.left=Math.max(0,Math.min(innerWidth-panel.offsetWidth,drag.left+e.clientX-drag.x))+'px';panel.style.top=Math.max(0,Math.min(innerHeight-panel.offsetHeight,drag.top+e.clientY-drag.y))+'px';panel.style.right='auto';});
+  panel.addEventListener('pointerup',()=>{drag=undefined;});panel.addEventListener('pointercancel',()=>{drag=undefined;});
+  window.addEventListener('resize',()=>{panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';});
   $('#hunt-guide').onclick=()=>{
     const p=session.state.player;
     const m=session.mobs.filter(m=>m.hp>0).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];
@@ -156,6 +166,7 @@ function updateHud() {
   $('#target').hidden=!m; if(m) $('#target').textContent=`${m.name} · HP ${m.hp} / ${m.maxHp}`;
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
   toast(session.message);
+  if(!$('#panel').hidden) inventoryWindow?.refresh();
 }
 const signPoint=new THREE.Vector3();
 function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(Math.hypot(session.state.player.x-sign.x,session.state.player.z-sign.z)>12){session.message='안내판 가까이 이동해주세요.';updateHud();return;}showPanel(sign.panel);};layer.append(button);}root.append(layer);}
@@ -163,6 +174,10 @@ function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingCl
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
 function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop') {
   $('#panel').hidden=false;
+  inventoryWindow=undefined;
+  if(kind!=='inventory'){const panel=$('#panel');panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';}
+  $('#panel').classList.toggle('inventory-panel',kind==='inventory');
+  $('#panel').setAttribute('aria-label',kind==='inventory'?'장비와 소지품':'게임 메뉴');
   if(kind==='shop') {
     const p=session.state.player;
     $('#panel-content').innerHTML=`<span class="eyebrow">마을 보급 상점</span><h2>모험을 준비하세요</h2><div class="equipment-icon">${classicIcon('potion')}</div><h3>회복 물약</h3><p>체력 55 회복 · 최대 체력을 넘지 않습니다.</p><div class="stat-line">보유 골드 <b>${p.gold}</b></div><div class="stat-line">보유 물약 <b>${p.potions}개</b></div><button id="buy-one">1개 구매 · 골드 ${POTION_PRICE}</button><button id="buy-five">5개 구매 · 골드 ${POTION_PRICE*5}</button><p role="status" id="shop-message"></p><small>마을 보급 상점 근처에서 이용할 수 있습니다.</small>`;
@@ -178,10 +193,7 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop') {
     $('#panel-content').innerHTML=`<span class="eyebrow">MY LITTLE TERRITORY</span><h2>영지 정원</h2><p>목재를 모아 정원을 가꾸면<br>플레이하는 동안 골드가 자랍니다.</p><div class="estate-illustration">♧ <span>✦</span> ♧</div><div class="stat-line">정원 단계 <b>${t.garden} / 5</b></div><div class="stat-line">수확 가능한 골드 <b>${Math.floor(t.stored)}</b></div><button id="gather">목재 채집 +3 · 마을 근처</button><button id="garden" class="primary">정원 ${t.garden?'확장':'건설'} · 목재 ${12+t.garden*6}</button><button id="collect">골드 수확</button><small>생산량은 최대 120개까지 보관됩니다.</small>`;
     panelAction('gather','gather','estate'); panelAction('garden','garden','estate'); panelAction('collect','collect','estate');
   } else if(kind==='inventory') {
-    const p=session.state.player;
-    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR EQUIPMENT</span><h2>여행자의 장비</h2><div class="equipment-icon">⚔</div><h3>여행자의 무기 +${p.weapon}</h3><p>기본 공격력 ${10+p.level*2+p.weapon*4}<br>성공이 보장되는 장비 강화</p><button id="upgrade" class="primary">강화 · 골드 ${20*(p.weapon+1)}</button><div class="stat-line">회복 물약 <b>${p.potions}개</b></div><button id="open-shop">마을 보급 상점</button><small>현재 장비·재화는 단독 모험 전용입니다.</small>`;
-    panelAction('upgrade','upgrade','inventory');
-    $('#open-shop').onclick=()=>showPanel('shop');
+    inventoryWindow=createInventoryWindow($('#panel-content'),()=>session.state.player,intent=>{session.dispatch(intent);updateHud();void save();},()=>showPanel('shop'));
   } else {
     $('#panel-content').innerHTML=`<span class="eyebrow">YOUR JOURNEY, KEPT SAFE</span><h2>여행 기록</h2><p>15초마다 이 기기에 저장합니다.<br>Google 로그인으로 다른 기기에 기록을 옮길 수 있습니다.</p><button id="save-now" class="primary">지금 기기에 저장</button><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label><div class="entry-divider"></div><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button><p id="cloud-status" role="status"></p><small>단독 모험 기록입니다. 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
     $('#save-now').onclick=()=>void save();

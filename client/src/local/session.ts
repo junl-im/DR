@@ -1,6 +1,6 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 
-export const GAME_VERSION = '0.3.0';
+export const GAME_VERSION = '0.4.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;

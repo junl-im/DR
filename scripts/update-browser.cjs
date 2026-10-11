@@ -6,7 +6,7 @@ const fs=require('node:fs');
   const p=await b.newPage({viewport:{width:1440,height:900}}),errors=[];p.on('pageerror',e=>errors.push(String(e)));
   await p.goto('http://127.0.0.1:4300/');await p.locator('#start').click();await p.waitForFunction(()=>window.__DREAM_SESSION__);
   await p.locator('#sign-journey').click();await expect(p.locator('#panel-content')).toContainText('모험 안내');await p.locator('#panel-close').click();
-  await p.locator('#sign-equipment').click();await expect(p.locator('#panel-content')).toContainText('여행자의 장비');await p.locator('#panel-close').click();
+  await p.locator('#sign-equipment').click();await expect(p.locator('#panel-content')).toContainText('장비와 소지품');await p.locator('#panel-close').click();
   await p.screenshot({path:'artifacts/Dungeon-zero-0.2-town.png'});
   await p.locator('#hunt-guide').click();await p.locator('.combat-number.damage').first().waitFor({timeout:60000});
   await p.locator('[data-intent=skill]').click();await expect(p.locator('[data-intent=skill]')).toHaveClass(/cooling/);await p.screenshot({path:'artifacts/Dungeon-zero-0.2-combat.png'});
