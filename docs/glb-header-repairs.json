@@ -1,0 +1,19 @@
+{
+  "reason": "Upstream wrote GLB version and length in reversed header slots; only these 8 bytes repaired, chunks unchanged.",
+  "files": [
+    "client/public/models/npcs/Baulro.glb",
+    "client/public/models/npcs/Biotin.glb",
+    "client/public/models/npcs/GuardKnightA.glb",
+    "client/public/models/npcs/GuardKnightB.glb",
+    "client/public/models/npcs/GuardKnightC.glb",
+    "client/public/models/npcs/GuardKnightD.glb",
+    "client/public/models/npcs/Gwinter.glb",
+    "client/public/models/npcs/Harrys.glb",
+    "client/public/models/npcs/Iris.glb",
+    "client/public/models/npcs/Minia.glb",
+    "client/public/models/npcs/Petron.glb",
+    "client/public/models/npcs/Pintage.glb",
+    "client/public/models/npcs/Vivyan.glb",
+    "client/public/models/npcs/Yohanes.glb"
+  ]
+}

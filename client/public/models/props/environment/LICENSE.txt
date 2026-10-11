@@ -1,0 +1,17 @@
+Environment assets imported from ~/Downloads/packs (pre-live prototyping).
+
+Tree.glb — Quaternius "Stylized Nature MegaKit" (CC0)
+  Source: CommonTree_3.gltf
+
+Rock.glb — Quaternius "Stylized Nature MegaKit" (CC0)
+  Source: Rock_Medium_2.gltf
+
+PeaceMarker.glb — KayKit "Fantasy Props MegaKit" (CC0)
+  Source: Banner_1.gltf
+
+Building_0.glb – Building_4.glb — KayKit "Medieval Village MegaKit" (CC0)
+  Each is a fully-closed house composed from floor/wall/door/roof/chimney modules
+  via composeHouse() in scripts/import-pack-assets.mjs. Building_4 is a 2-storey
+  tower using Roof_Tower_RoundTiles.
+
+Imported by: node scripts/import-pack-assets.mjs

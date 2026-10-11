@@ -1,0 +1,1 @@
+const {spawn}=require('node:child_process');const c=spawn(process.execPath,['node_modules/concurrently/dist/bin/concurrently.js','-n','server,client','-c','blue,green','nx serve server','nx serve client'],{stdio:'inherit',env:{...process.env,VITE_GAME_MODE:'online'}});c.on('exit',code=>process.exit(code??1));

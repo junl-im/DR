@@ -1,0 +1,387 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 24,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "spec_deviation::add an explicit vitest resolve alias to shared lib source tsconfig paths alone do not override nx vitest when dist output exists",
+      "text": "Add an explicit vitest resolve alias to shared lib source; tsconfig paths alone do not override Nx vitest when dist output exists.",
+      "signal": "spec_deviation",
+      "scope": "nx/vitest/shared-libs",
+      "status": "candidate",
+      "features": [
+        "phase-3-authoritative-server"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tsconfig.base.json + server/vitest.config.ts — vitest still resolves dist when present (nx/vitest/shared-libs)"
+      ],
+      "created": "2026-06-27T16:12:01Z",
+      "last_seen": "2026-06-27T16:12:01Z"
+    },
+    {
+      "id": "L-002",
+      "key": "surviving_mutant::room integration colyseus tests must await settleroommessages or waitfornextsimulationtick after client send before asserting server mutated state immediate reads false pass proximity and economy rejects",
+      "text": "Room-integration Colyseus tests must await settleRoomMessages (or waitForNextSimulationTick) after client.send before asserting server-mutated state; immediate reads false-pass proximity and economy rejects.",
+      "signal": "surviving_mutant",
+      "scope": "server/room-integration",
+      "status": "candidate",
+      "features": [
+        "phase-6-npcs-town"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "TownRoom.spec.ts:907 / mutant proximity-canInteract-true (server/room-integration)"
+      ],
+      "created": "2026-06-27T19:55:09Z",
+      "last_seen": "2026-06-27T19:55:09Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::when spec assigns room integration to a behavior unit only proof of the same outcome is a coverage gap add a townroom test that exercises the full message path",
+      "text": "When spec assigns room-integration to a behavior, unit-only proof of the same outcome is a coverage gap—add a TownRoom test that exercises the full message path.",
+      "signal": "ac_gap",
+      "scope": "server/room-integration",
+      "status": "candidate",
+      "features": [
+        "phase-6-npcs-town"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P6-R04-AC5 / spec.md (server/room-integration)"
+      ],
+      "created": "2026-06-27T19:55:09Z",
+      "last_seen": "2026-06-27T19:55:09Z"
+    },
+    {
+      "id": "L-005",
+      "key": "ac_gap::discover the real hand bone name from each rig glb before caching it in the weapon manifest never assume kaykit bipeds share handslot r without ingest verification",
+      "text": "Discover the real hand bone name from each rig GLB before caching it in the weapon manifest; never assume KayKit bipeds share handslot.r without ingest verification.",
+      "signal": "ac_gap",
+      "scope": "client/scene/creature",
+      "status": "candidate",
+      "features": [
+        "phase-11-remote-players-weapons"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "RPW-32 /tmp/char-shots/mob-20003-attack.png (client/scene/creature)"
+      ],
+      "created": "2026-06-28T17:49:40Z",
+      "last_seen": "2026-06-28T17:49:40Z"
+    },
+    {
+      "id": "L-006",
+      "key": "ac_gap::visual gate lab modes that attach async props must await weapon load before setting shot ready and capturing frames",
+      "text": "Visual-gate lab modes that attach async props must await weapon load before setting __SHOT_READY__ and capturing frames.",
+      "signal": "ac_gap",
+      "scope": "client/character-lab",
+      "status": "candidate",
+      "features": [
+        "phase-11-remote-players-weapons"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "RPW-31 /tmp/char-shots/dual-weapon-2369-idle.png (client/character-lab)"
+      ],
+      "created": "2026-06-28T17:49:40Z",
+      "last_seen": "2026-06-28T17:49:40Z"
+    },
+    {
+      "id": "L-007",
+      "key": "ac_gap::when glb load failure falls back to a capsule mesh unit test the rejected ready promise path not only the happy mesh path",
+      "text": "When GLB load failure falls back to a capsule mesh, unit-test the rejected ready promise path—not only the happy mesh path.",
+      "signal": "ac_gap",
+      "scope": "client/scene",
+      "status": "candidate",
+      "features": [
+        "phase-12-npcs-glb"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "NPCG-08 (client/scene)"
+      ],
+      "created": "2026-06-28T18:23:38Z",
+      "last_seen": "2026-06-28T18:23:38Z"
+    },
+    {
+      "id": "L-008",
+      "key": "surviving_mutant::avatar tick tests must spy on mesh update dt and assert it is called each frame not only the returned clip label",
+      "text": "Avatar tick tests must spy on mesh.update(dt) and assert it is called each frame, not only the returned clip label.",
+      "signal": "surviving_mutant",
+      "scope": "client/scene",
+      "status": "candidate",
+      "features": [
+        "phase-12-npcs-glb"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M2 npc-avatar.ts:99 (client/scene)"
+      ],
+      "created": "2026-06-28T18:23:38Z",
+      "last_seen": "2026-06-28T18:23:38Z"
+    },
+    {
+      "id": "L-009",
+      "key": "surviving_mutant::debounce tests must assert the guarded side effect does not repeat epoch counter facing or seq not only that the clip name stays the same",
+      "text": "Debounce tests must assert the guarded side effect does not repeat (epoch counter, facing, or seq), not only that the clip name stays the same.",
+      "signal": "surviving_mutant",
+      "scope": "client/scene",
+      "status": "candidate",
+      "features": [
+        "phase-12-npcs-glb"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M3 npc-avatar.ts:73 NPCG-20 (client/scene)"
+      ],
+      "created": "2026-06-28T18:23:38Z",
+      "last_seen": "2026-06-28T18:23:38Z"
+    },
+    {
+      "id": "L-010",
+      "key": "ac_gap::add unit tests for each vfx trigger call site player hp die dissolve attach dead target ring renderer tick shared detector tests alone do not satisfy wiring acs",
+      "text": "Add unit tests for each VFX trigger call site (player HP, die dissolve attach, dead-target ring, renderer tick) — shared detector tests alone do not satisfy wiring ACs.",
+      "signal": "ac_gap",
+      "scope": "client/vfx",
+      "status": "candidate",
+      "features": [
+        "phase-13-combat-vfx"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "CVFX-11,CVFX-15,CVFX-16,CVFX-27,CVFX-30 (client/vfx)"
+      ],
+      "created": "2026-06-28T18:52:58Z",
+      "last_seen": "2026-06-28T18:52:58Z"
+    },
+    {
+      "id": "L-011",
+      "key": "surviving_mutant::when spec requires placement coordinates assert world x z per placement not just prop count",
+      "text": "When spec requires placement coordinates, assert world x/z per placement—not just prop count.",
+      "signal": "surviving_mutant",
+      "scope": "client/scene environment-renderer",
+      "status": "candidate",
+      "features": [
+        "phase-15-environment-art"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "ENV-11 | environment-renderer.ts:190 x+10 mutant (client/scene environment-renderer)"
+      ],
+      "created": "2026-06-28T19:42:27Z",
+      "last_seen": "2026-06-28T19:42:27Z"
+    },
+    {
+      "id": "L-012",
+      "key": "gate_fail::when a gamestateplayerinput field is optional with a default in setplayer omit it from the base type before re adding as optional intersection does not relax required fields",
+      "text": "When a GameStatePlayerInput field is optional with a default in setPlayer, Omit it from the base type before re-adding as optional — intersection does not relax required fields.",
+      "signal": "gate_fail",
+      "scope": "client/test-hook",
+      "status": "candidate",
+      "features": [
+        "phase-18-consumable-use"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "client/src/test-hook.ts:GameStatePlayerInput (client/test-hook)"
+      ],
+      "created": "2026-06-29T02:39:43Z",
+      "last_seen": "2026-06-29T02:39:43Z"
+    },
+    {
+      "id": "L-014",
+      "key": "spec_precision_gap::document test hook cooldown remaining fields on the player sub object in ac text when mirroring powerstrikecooldownremainingms root level game state paths mislead implementers",
+      "text": "Document test-hook cooldown remaining fields on the player sub-object in AC text when mirroring powerStrikeCooldownRemainingMs — root-level __GAME_STATE__ paths mislead implementers.",
+      "signal": "spec_precision_gap",
+      "scope": "spec/client",
+      "status": "candidate",
+      "features": [
+        "phase-18-consumable-use"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "CONS-25 (spec/client)"
+      ],
+      "created": "2026-06-29T02:39:49Z",
+      "last_seen": "2026-06-29T02:39:49Z"
+    },
+    {
+      "id": "L-015",
+      "key": "surviving_mutant::room integration tests must reject useskill when the skill is not in knownskillids so learned skill gates cannot regress silently",
+      "text": "Room-integration tests must reject useSkill when the skill is not in knownSkillIds so learned-skill gates cannot regress silently",
+      "signal": "surviving_mutant",
+      "scope": "server/room-integration",
+      "status": "candidate",
+      "features": [
+        "phase-20-skills-combat"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "combat-resolver.ts:120 | sensor mut4 (server/room-integration)"
+      ],
+      "created": "2026-06-29T22:07:24Z",
+      "last_seen": "2026-06-29T22:07:24Z"
+    },
+    {
+      "id": "L-016",
+      "key": "ac_gap::when tasks md maps a block of room acs to one task verify each ac has its own named test before done helper shortcuts do not satisfy evidence or zero",
+      "text": "When tasks.md maps a block of room ACs to one task, verify each AC has its own named test before Done — helper shortcuts do not satisfy evidence-or-zero.",
+      "signal": "ac_gap",
+      "scope": "",
+      "status": "candidate",
+      "features": [
+        "phase-21-quests"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "QUEST21-15,19,20,22,28,30,33-35,37"
+      ],
+      "created": "2026-06-29T22:39:42Z",
+      "last_seen": "2026-06-29T22:39:42Z"
+    },
+    {
+      "id": "L-017",
+      "key": "spec_deviation::when deferring spawn mechanics e g nerkas document spec deviation and still assert the player visible turn in outcome not only the pure kill hook",
+      "text": "When deferring spawn mechanics (e.g. Nerkas), document SPEC_DEVIATION and still assert the player-visible turn-in outcome, not only the pure kill hook.",
+      "signal": "spec_deviation",
+      "scope": "",
+      "status": "candidate",
+      "features": [
+        "phase-21-quests"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "QUEST21-36 / quest-handlers.ts"
+      ],
+      "created": "2026-06-29T22:39:42Z",
+      "last_seen": "2026-06-29T22:39:42Z"
+    },
+    {
+      "id": "L-018",
+      "key": "gate_fail::room integration quest tests that share one colyseus boot must not rely on prior test side effects isolate state per case or split the block so nx vitest file workers cannot race interact delivery",
+      "text": "Room-integration quest tests that share one Colyseus boot must not rely on prior test side effects; isolate state per case or split the block so nx/vitest file workers cannot race interact delivery.",
+      "signal": "gate_fail",
+      "scope": "server/room-tests",
+      "status": "candidate",
+      "features": [
+        "phase-21-quests"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "TownRoom.spec.ts TownRoom quests block — quest 155/157 flake in full suite (server/room-tests)"
+      ],
+      "created": "2026-06-29T23:03:31Z",
+      "last_seen": "2026-06-29T23:03:31Z"
+    },
+    {
+      "id": "L-019",
+      "key": "ac_gap::when vendoring new glb assets update the pack license txt in the same commit as the binary ad 004 requires source attribution before the phase gate passes",
+      "text": "When vendoring new GLB assets, update the pack LICENSE.txt in the same commit as the binary — AD-004 requires source attribution before the phase gate passes.",
+      "signal": "ac_gap",
+      "scope": "assets",
+      "status": "candidate",
+      "features": [
+        "phase-22-ti-bestiary"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "BEST22-41 — client/public/models/monsters/LICENSE.txt (assets)"
+      ],
+      "created": "2026-06-29T23:34:46Z",
+      "last_seen": "2026-06-29T23:34:46Z"
+    },
+    {
+      "id": "L-020",
+      "key": "spec_precision_gap::seed test anchors must match the fixture xml values actually ingested if the planner table diverges from l2j fixture update the spec table before execute not at verify time",
+      "text": "Seed test anchors must match the fixture XML values actually ingested — if the planner table diverges from L2J fixture, update the spec table before Execute, not at verify time.",
+      "signal": "spec_precision_gap",
+      "scope": "seed",
+      "status": "candidate",
+      "features": [
+        "phase-22-ti-bestiary"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "BEST22-09/12/13 — monsters.seeder.spec.ts vs spec.md anchor table (seed)"
+      ],
+      "created": "2026-06-29T23:34:50Z",
+      "last_seen": "2026-06-29T23:34:50Z"
+    },
+    {
+      "id": "L-021",
+      "key": "ac_gap::town service acs need explicit tests per npc id and game state renderkind generic trainer range tests do not satisfy evidence or zero",
+      "text": "Town-service ACs need explicit tests per NPC id and __GAME_STATE__ renderKind — generic trainer-range tests do not satisfy evidence-or-zero.",
+      "signal": "ac_gap",
+      "scope": "validation",
+      "status": "candidate",
+      "features": [
+        "phase-24-town-services"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md (validation)"
+      ],
+      "created": "2026-06-30T01:43:26Z",
+      "last_seen": "2026-06-30T01:43:26Z"
+    },
+    {
+      "id": "L-022",
+      "key": "ac_gap::when spec acs declare test layer room add townroom spec ts blocks pure unit tests do not satisfy evidence or zero even if handlers exist",
+      "text": "When spec ACs declare test layer room, add TownRoom.spec.ts blocks — pure/unit tests do not satisfy evidence-or-zero even if handlers exist.",
+      "signal": "ac_gap",
+      "scope": "server/src/rooms/TownRoom.spec.ts",
+      "status": "candidate",
+      "features": [
+        "phase-25-items-economy"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "ITEM25-19..24,31,37-39,43-44,51 (server/src/rooms/TownRoom.spec.ts)"
+      ],
+      "created": "2026-06-30T04:07:42Z",
+      "last_seen": "2026-06-30T04:07:42Z"
+    },
+    {
+      "id": "L-023",
+      "key": "spec_deviation::silvia buylist l2j classic 3000301 xml has 13 rows not 18 15 update spec ac or fixture before weakening assertion to 13",
+      "text": "Silvia buylist L2J Classic 3000301.xml has 13 rows not 18/15 — update spec AC or fixture before weakening assertion to >=13.",
+      "signal": "spec_deviation",
+      "scope": "seed",
+      "status": "candidate",
+      "features": [
+        "phase-25-items-economy"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "ITEM25-13:merchant-items.seeder.spec.ts:50 (seed)"
+      ],
+      "created": "2026-06-30T04:07:43Z",
+      "last_seen": "2026-06-30T04:07:43Z"
+    }
+  ]
+}

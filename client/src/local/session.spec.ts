@@ -1,0 +1,50 @@
+import { describe, it, expect } from 'vitest';
+import { LocalGameSession, newSave, validateSave, maxHp } from './session';
+describe('Dream Library local progression contract', () => {
+  it('replays the same intents deterministically and rejects unbounded time', () => {
+    const a = new LocalGameSession(newSave('여행자', 0)), b = new LocalGameSession(newSave('여행자', 0));
+    a.dispatch({type:'move',x:8,z:4}); b.dispatch({type:'move',x:8,z:4});
+    for(let i=0;i<100;i++) { a.tick(.05); b.tick(.05); }
+    expect(a.snapshot()).toEqual(b.snapshot()); expect(a.state.player.x).not.toBe(0);
+    const before = a.snapshot(); a.tick(Infinity); expect(a.snapshot()).toEqual(before);
+  });
+  it('kills grant loot once, advance level, and survive a save round trip', () => {
+    const s = new LocalGameSession(newSave('여행자', 10));
+    for (const m of s.mobs.slice(0,2)) {
+      m.x = s.state.player.x + 2; m.z = s.state.player.z; m.hp = 1;
+      s.dispatch({type:'target',id:m.id}); s.dispatch({type:'skill'});
+      for(let i=0;i<81;i++) s.tick(.05);
+    }
+    expect(s.state.player.level).toBe(2); expect(s.state.player.kills).toBe(2); expect(s.state.player.gold).toBeGreaterThanOrEqual(16);
+    const copy = new LocalGameSession(validateSave(JSON.parse(JSON.stringify(s.snapshot()))));
+    expect(copy.state.player).toEqual(s.state.player);
+  });
+  it('prevents reward without a target, out of range, or without resources', () => {
+    const s = new LocalGameSession(newSave('여행자', 0));
+    s.dispatch({type:'skill'}); s.dispatch({type:'upgrade'}); s.dispatch({type:'garden'});
+    expect(s.state.player.gold).toBe(0); expect(s.state.player.weapon).toBe(0); expect(s.state.territory.garden).toBe(0);
+    s.dispatch({type:'target',id:s.mobs[0].id}); s.dispatch({type:'skill'}); expect(s.state.player.mp).toBe(60);
+  });
+  it('builds a resource-funded garden and collects only earned production', () => {
+    const s = new LocalGameSession(newSave('여행자', 0));
+    s.state.player.wood = 12; s.dispatch({type:'garden'}); expect(s.state.player.wood).toBe(0);
+    for(let i=0;i<160;i++) s.tick(.05);
+    s.dispatch({type:'collect'}); expect(s.state.player.gold).toBe(1);
+    s.dispatch({type:'collect'}); expect(s.state.player.gold).toBe(1);
+  });
+  it('respawns defeated players at home and caps death loss', () => {
+    const s = new LocalGameSession(newSave('여행자', 0)); const m = s.mobs[0];
+    s.state.player.x = m.x; s.state.player.z = m.z; s.state.player.hp = 1; s.state.player.gold = 2;
+    s.dispatch({type:'move',x:m.x,z:m.z});
+    // Set movement via the actual saved position, as a restored field character.
+    const field = new LocalGameSession(s.snapshot()); field.mobs[0].x = field.state.player.x; field.mobs[0].z = field.state.player.z;
+    field.tick(.05); expect(field.state.player.hp).toBe(maxHp(field.state.player)); expect(field.state.player.gold).toBe(0); expect(field.state.player.x).toBe(0);
+  });
+  it('rejects corrupt, future-schema, and invalid character saves', () => {
+    const good = newSave('여행자',0);
+    expect(()=>validateSave({...good,schemaVersion:2})).toThrow();
+    expect(()=>validateSave({...good,player:{...good.player,gold:-1}})).toThrow();
+    expect(()=>validateSave({...good,player:{...good.player,classId:999}})).toThrow();
+    expect(()=>validateSave({...good,player:{...good.player,x:NaN}})).toThrow();
+  });
+});
