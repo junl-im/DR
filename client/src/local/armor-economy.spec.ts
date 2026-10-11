@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {ARMOR_SLOTS, armorDefense, armorCraftCost, emptyArmor, validateArmor} from './armor-economy';
+import {ARMOR_SLOTS, armorDefense, armorCraftCost, emptyArmor} from './armor-economy';
 import {LocalGameSession,newSave,validateSave} from './session';
 
 describe('real armor progression with schema v1 compatibility',()=>{
@@ -71,15 +71,15 @@ describe('real armor progression with schema v1 compatibility',()=>{
     expect(s.state.player.armor!.fragments).toBe(1);
   });
   it('applies armor defense only after an owned piece is equipped',()=>{
-    const original=new LocalGameSession(newSave('방어 확인',0));
-    const protectedPlayer=new LocalGameSession(newSave('방어 확인',0));
+    const seed=newSave('방어 확인',0);seed.player.x=30;seed.player.z=-19;
+    const original=new LocalGameSession(seed);
+    const protectedPlayer=new LocalGameSession(seed);
     protectedPlayer.state.player.armor!.owned.helmet=2;
     protectedPlayer.state.player.armor!.owned.body=2;
     protectedPlayer.dispatch({type:'equip-armor',slot:'helmet',tier:2});
     protectedPlayer.dispatch({type:'equip-armor',slot:'body',tier:2});
     for(const s of [original,protectedPlayer]){
-      s.state.player.x=30;s.state.player.z=-19;
-      s.mobs[0].x=30;s.mobs[0].z=-19;
+      s.mobs[0].x=s.state.player.x;s.mobs[0].z=s.state.player.z;
       s.tick(.05);
     }
     expect(original.state.player.hp-protectedPlayer.state.player.hp).toBeLessThan(0);
