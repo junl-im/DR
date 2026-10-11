@@ -26,13 +26,24 @@ function buildRig(outfit: ArmorOutfit, mismatch = false): THREE.Group {
   });
   const skeleton = new THREE.Skeleton(bones);
   for (const name of nameByOutfit[outfit]) {
-    const mesh = new THREE.SkinnedMesh(
-      new THREE.BoxGeometry(0.2, 0.2, 0.2),
-      new THREE.MeshBasicMaterial()
-    );
-    mesh.name = name;
-    mesh.bind(skeleton, new THREE.Matrix4());
-    group.add(mesh);
+    const primitive = (partName: string) => {
+      const mesh = new THREE.SkinnedMesh(
+        new THREE.BoxGeometry(0.2, 0.2, 0.2),
+        new THREE.MeshBasicMaterial()
+      );
+      mesh.name = partName;
+      mesh.bind(skeleton, new THREE.Matrix4());
+      return mesh;
+    };
+    if (outfit === 'ranger' && name === 'human_male_medium_armor') {
+      // Source GLB uses a Group containing two skinned primitives.
+      const multi = new THREE.Group();
+      multi.name = name;
+      multi.add(primitive('medium-armor-primitive-0'), primitive('medium-armor-primitive-1'));
+      group.add(multi);
+    } else {
+      group.add(primitive(name));
+    }
   }
   return group;
 }
@@ -54,14 +65,19 @@ describe('four-slot modular armor visual fitting', () => {
     expect(ctrl.snapshot()).toEqual({helmet:'knight',body:'ranger',gloves:'knight',boots:'traveler'});
     expect(hair.visible).toBe(false);
     expect(base.visible).toBe(false);
-    const helmet = traveler.getObjectByName('human_male_heavy_helmet-preview') as THREE.SkinnedMesh;
-    const armor = traveler.getObjectByName('human_male_medium_armor-preview') as THREE.SkinnedMesh;
+    const helmet = traveler.getObjectByName('human_male_heavy_helmet-preview') as THREE.Group;
+    const armor = traveler.getObjectByName('human_male_medium_armor-preview') as THREE.Group;
     expect(helmet.visible).toBe(true);
     expect(armor.visible).toBe(true);
+    const armorSkins: THREE.SkinnedMesh[] = [];
+    armor.traverse(node => { if(node instanceof THREE.SkinnedMesh) armorSkins.push(node); });
+    expect(armorSkins).toHaveLength(2);
     expect(traveler.getObjectByName('human_male_heavy_gloves-preview')?.visible).toBe(true);
     expect(traveler.getObjectByName('human_male_heavy_boots-preview')?.visible).toBe(false);
-    expect(helmet.skeleton).toBe(base.skeleton);
-    expect(armor.skeleton).toBe(base.skeleton);
+    helmet.traverse(node => {
+      if (node instanceof THREE.SkinnedMesh) expect(node.skeleton).toBe(base.skeleton);
+    });
+    for(const skin of armorSkins) expect(skin.skeleton).toBe(base.skeleton);
     expect(ARMOR_SLOTS).toHaveLength(4);
 
     ctrl.reset();
