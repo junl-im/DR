@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { loadGltfTemplate, type GLTFTemplate } from './mesh-character';
 
-/** Preview-only clothing slots. Ownership, stats, and save files are untouched. */
+/** Preview-only armor slots. No ownership, statistics or save changes. */
 export type ArmorSlot = 'helmet' | 'body' | 'gloves' | 'boots';
 export type ArmorOutfit = 'traveler' | 'ranger' | 'knight';
 export type ArmorSelection = Record<ArmorSlot, ArmorOutfit>;
@@ -24,12 +24,25 @@ export interface ModularArmorController {
   snapshot(): ArmorSelection;
 }
 
-function findPart(root: THREE.Object3D, name: string): THREE.SkinnedMesh {
-  const part = root.getObjectByName(name);
-  if (!part || !(part instanceof THREE.SkinnedMesh)) {
-    throw new Error('V3 armor component missing or not skinned: ' + name);
+interface FoundPart {
+  node: THREE.Object3D;
+  meshes: THREE.SkinnedMesh[];
+}
+
+/** A multi-primitive glTF mesh may load as a Group of SkinnedMeshes
+ * (real System G6 medium armor has two primitives).
+ */
+function findPart(root: THREE.Object3D, name: string): FoundPart {
+  const node = root.getObjectByName(name);
+  if (!node) throw new Error('V3 armor component missing: ' + name);
+  const meshes: THREE.SkinnedMesh[] = [];
+  node.traverse(child => {
+    if (child instanceof THREE.SkinnedMesh) meshes.push(child);
+  });
+  if (meshes.length === 0) {
+    throw new Error('V3 armor component contains no skinned meshes: ' + name);
   }
-  return part;
+  return { node, meshes };
 }
 
 function assertCompatible(source: THREE.SkinnedMesh, target: THREE.SkinnedMesh): void {
@@ -53,10 +66,43 @@ function assertCompatible(source: THREE.SkinnedMesh, target: THREE.SkinnedMesh):
   }
 }
 
-/** Adds individually skinned equipment meshes to an existing V3 traveler rig.
- * All 3 source files have identical 43 joint bind matrices; validate again
- * at runtime before reusing geometry to avoid silent skin deformation.
- * The target skeleton remains the *only* animated skeleton.
+/** Copies a part's node hierarchy but rebinds every render mesh to one
+ * animated target rig. Models with multiple glTF primitives are preserved.
+ */
+function createBoundPart(source: THREE.Object3D, rig: THREE.SkinnedMesh): THREE.Group {
+  const bound = new THREE.Group();
+  bound.name = source.name + '-preview';
+  const copy = (node: THREE.Object3D): THREE.Object3D => {
+    let result: THREE.Object3D;
+    if (node instanceof THREE.SkinnedMesh) {
+      const mesh = new THREE.SkinnedMesh(node.geometry, node.material);
+      mesh.bindMode = rig.bindMode;
+      mesh.bind(rig.skeleton, rig.bindMatrix.clone());
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.frustumCulled = false;
+      result = mesh;
+    } else {
+      result = new THREE.Group();
+    }
+    result.name = node.name;
+    result.position.copy(node.position);
+    result.quaternion.copy(node.quaternion);
+    result.scale.copy(node.scale);
+    for (const child of node.children) {
+      // Skeleton is supplied by the active traveler rig; no duplicated bone tree.
+      if (!(child instanceof THREE.Bone)) result.add(copy(child));
+    }
+    return result;
+  };
+  bound.add(copy(source));
+  bound.visible = false;
+  return bound;
+}
+
+/** Adds per-slot skinned armor parts to an existing V3 traveler avatar.
+ * The target skeleton remains the only animated skeleton. Share source
+ * geometries/materials without mutating either template or save state.
  */
 export async function prepareModularArmor(
   travelerRoot: THREE.Object3D,
@@ -67,59 +113,43 @@ export async function prepareModularArmor(
     gloves: findPart(travelerRoot, PARTS.traveler.gloves!),
     boots: findPart(travelerRoot, PARTS.traveler.boots!),
   };
-  const reference = defaults.body;
-  const hair = findPart(travelerRoot, 'human_male_hair_1');
-  const attachParent = reference.parent;
+  const reference = defaults.body.meshes[0];
+  const hair = findPart(travelerRoot, 'human_male_hair_1').node;
+  const attachParent = defaults.body.node.parent;
   if (!attachParent) throw new Error('V3 base armature parent missing');
 
-  // Resolve and validate all sources before modifying the base character.
+  // Reject incompatible files before changing the live character.
   const [ranger, knight] = await Promise.all([
     load(MODEL_ROOT + 'ranger.glb'),
     load(MODEL_ROOT + 'knight.glb'),
   ]);
-  const sources: Record<'ranger' | 'knight', GLTFTemplate> = { ranger, knight };
-  const prepared = new Map<string, THREE.SkinnedMesh>();
-
+  const sources = { ranger, knight };
+  const prepared = new Map<string, THREE.Group>();
   for (const outfit of ['ranger', 'knight'] as const) {
     for (const slot of ARMOR_SLOTS) {
-      const name = PARTS[outfit][slot]!;
-      const source = findPart(sources[outfit].scene, name);
-      assertCompatible(source, reference);
-      // Share immutable geometry/material with the loaded template, but bind
-      // its own renderable to the live traveler skeleton, never a second rig.
-      const part = new THREE.SkinnedMesh(source.geometry, source.material);
-      part.name = name + '-preview';
-      part.position.copy(source.position);
-      part.quaternion.copy(source.quaternion);
-      part.scale.copy(source.scale);
-      part.bindMode = reference.bindMode;
-      part.bind(reference.skeleton, reference.bindMatrix.clone());
-      part.castShadow = true;
-      part.receiveShadow = true;
-      part.frustumCulled = false;
-      part.visible = false;
-      prepared.set(outfit + ':' + slot, part);
+      const component = findPart(sources[outfit].scene, PARTS[outfit][slot]!);
+      for (const mesh of component.meshes) assertCompatible(mesh, reference);
+      prepared.set(outfit + ':' + slot, createBoundPart(component.node, reference));
     }
   }
+  for (const part of prepared.values()) attachParent.add(part);
 
-  const defaultParts: Partial<Record<ArmorSlot, THREE.SkinnedMesh>> = defaults;
+  const defaultParts: Partial<Record<ArmorSlot, THREE.Object3D>> = {
+    body: defaults.body.node, gloves: defaults.gloves.node, boots: defaults.boots.node,
+  };
   const current: ArmorSelection = {
     helmet: 'traveler', body: 'traveler', gloves: 'traveler', boots: 'traveler',
   };
-  for (const part of prepared.values()) attachParent.add(part);
-
   const setPart = (slot: ArmorSlot, outfit: ArmorOutfit): void => {
     if (!ARMOR_SLOTS.includes(slot) || !ARMOR_OUTFITS.includes(outfit)) {
       throw new Error('Unknown V3 outfit or slot');
     }
     current[slot] = outfit;
-    const fallback = defaultParts[slot];
-    if (fallback) fallback.visible = outfit === 'traveler';
-    for (const candidate of ['ranger', 'knight'] as const) {
-      const part = prepared.get(candidate + ':' + slot)!;
-      part.visible = candidate === outfit;
+    const baseline = defaultParts[slot];
+    if (baseline) baseline.visible = outfit === 'traveler';
+    for (const variant of ['ranger', 'knight'] as const) {
+      prepared.get(variant + ':' + slot)!.visible = variant === outfit;
     }
-    // No bare-hair clipping through helmets; normal head/face stays visible.
     if (slot === 'helmet') hair.visible = outfit === 'traveler';
   };
   return {
