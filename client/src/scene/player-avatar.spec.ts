@@ -98,9 +98,11 @@ describe('createPlayerAvatar', () => {
     expect(avatar.group.rotation.y).toBeCloseTo(expected, 1);
   });
 
-  it('syncs weapon visual when Squire Sword is equipped', () => {
+  it('syncs weapon visual when Squire Sword is equipped after the rig is ready', async () => {
     const avatar = createPlayerAvatar({ mesh: stubMesh() });
     avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 2369 }, 0);
+    expect(syncWeaponVisual).not.toHaveBeenCalled();
+    await avatar.ready;
     expect(syncWeaponVisual).toHaveBeenCalledWith(
       expect.anything(),
       2369,
@@ -116,10 +118,25 @@ describe('createPlayerAvatar', () => {
     );
   });
 
-  it('syncs weapon detach when unequipped', () => {
+  it('syncs weapon detach when unequipped after the rig is ready', async () => {
     const avatar = createPlayerAvatar({ mesh: stubMesh() });
+    await avatar.ready;
     avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 2369 }, 0);
     avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 0 }, 16);
+    expect(syncWeaponVisual).toHaveBeenLastCalledWith(expect.anything(), 0, expect.any(Object));
+  });
+
+  it('keeps an unequip request made while the rig is loading', async () => {
+    let finish!: () => void;
+    const ready = new Promise<void>((resolve) => { finish = resolve; });
+    const mesh = stubMesh();
+    const avatar = createPlayerAvatar({ mesh: { ...mesh, ready } });
+    avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 2369 });
+    avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 0 });
+    expect(syncWeaponVisual).not.toHaveBeenCalled();
+    finish();
+    await avatar.ready;
+    expect(syncWeaponVisual).toHaveBeenCalledTimes(1);
     expect(syncWeaponVisual).toHaveBeenLastCalledWith(expect.anything(), 0, expect.any(Object));
   });
 
