@@ -79,3 +79,22 @@ describe('town supply transactions',()=>{
     s.dispatch({type:'buy-potion',quantity:5});expect(s.state.player.gold).toBe(100);expect(s.state.player.potions).toBe(999999);
   });
 });
+
+describe('equipment progression and compatibility',()=>{
+  it('migrates old saves without mutation and preserves explicitly unequipped saves',()=>{
+    const legacy=newSave('모험가',0);delete legacy.player.weaponEquipped;
+    expect(validateSave(legacy).player.weaponEquipped).toBe(true);expect(legacy.player.weaponEquipped).toBeUndefined();
+    legacy.player.weaponEquipped=false;expect(validateSave(legacy).player.weaponEquipped).toBe(false);
+    expect(()=>validateSave({...legacy,player:{...legacy.player,weaponEquipped:'false'}})).toThrow();
+  });
+  it('unequips without losing enhancement, changes actual damage and gates skills without spending MP',()=>{
+    const s=new LocalGameSession(newSave('모험가',0));s.state.player.weapon=2;
+    const m=s.mobs[0];m.x=s.state.player.x+1;m.z=s.state.player.z;m.hp=1000;m.maxHp=1000;
+    s.dispatch({type:'target',id:m.id});s.dispatch({type:'attack'});s.tick(.05);expect(m.hp).toBe(980);
+    s.dispatch({type:'unequip-weapon'});expect(s.attacking).toBe(false);expect(s.state.player.weapon).toBe(2);
+    const mp=s.state.player.mp;s.dispatch({type:'skill'});expect(s.state.player.mp).toBe(mp);expect(s.skillCooldown).toBe(0);expect(m.hp).toBe(980);
+    for(let i=0;i<17;i++)s.tick(.05);s.dispatch({type:'attack'});s.tick(.05);expect(m.hp).toBe(974);
+    const restored=new LocalGameSession(s.snapshot());expect(restored.state.player.weaponEquipped).toBe(false);expect(restored.state.player.weapon).toBe(2);
+    s.dispatch({type:'equip-weapon'});s.dispatch({type:'equip-weapon'});expect(s.state.player.weaponEquipped).toBe(true);expect(s.state.player.weapon).toBe(2);
+  });
+});

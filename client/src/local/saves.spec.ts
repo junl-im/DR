@@ -26,3 +26,8 @@ describe('IndexedDB persistence contract',()=>{
     await writeSave(legacy);const restored=await readSave();expect(restored?.player.gold).toBe(321);expect(restored?.player.weapon).toBe(2);expect(restored?.territory.garden).toBe(2);
   });
 });
+
+it('round trips unequipped enhancement without granting a duplicate item',async()=>{
+  const s=newSave('장비 복원',0);s.player.weapon=3;s.player.weaponEquipped=false;await writeSave(s);
+  const copy=await readSave();expect(copy?.player.weapon).toBe(3);expect(copy?.player.weaponEquipped).toBe(false);
+});
