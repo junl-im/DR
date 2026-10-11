@@ -105,29 +105,36 @@ function createBoundPart(source: THREE.Object3D, rig: THREE.SkinnedMesh): THREE.
  * geometries/materials without mutating either template or save state.
  */
 export async function prepareModularArmor(
-  travelerRoot: THREE.Object3D,
-  load: (url: string) => Promise<GLTFTemplate> = loadGltfTemplate
+  avatarRoot: THREE.Object3D,
+  load: (url: string) => Promise<GLTFTemplate> = loadGltfTemplate,
+  baseOutfit: ArmorOutfit = 'traveler'
 ): Promise<ModularArmorController> {
+  if (!ARMOR_OUTFITS.includes(baseOutfit)) throw new Error('Unsupported V3 base outfit');
+  const baseParts = PARTS[baseOutfit];
   const defaults = {
-    body: findPart(travelerRoot, PARTS.traveler.body!),
-    gloves: findPart(travelerRoot, PARTS.traveler.gloves!),
-    boots: findPart(travelerRoot, PARTS.traveler.boots!),
+    body: findPart(avatarRoot, baseParts.body!),
+    gloves: findPart(avatarRoot, baseParts.gloves!),
+    boots: findPart(avatarRoot, baseParts.boots!),
   };
+  const baseHelmet = baseParts.helmet ? findPart(avatarRoot, baseParts.helmet) : null;
   const reference = defaults.body.meshes[0];
-  const hair = findPart(travelerRoot, 'human_male_hair_1').node;
+  const hair = avatarRoot.getObjectByName('human_male_hair_1');
   const attachParent = defaults.body.node.parent;
   if (!attachParent) throw new Error('V3 base armature parent missing');
 
-  // Reject incompatible files before changing the live character.
-  const [ranger, knight] = await Promise.all([
-    load(MODEL_ROOT + 'ranger.glb'),
-    load(MODEL_ROOT + 'knight.glb'),
-  ]);
-  const sources = { ranger, knight };
+  const variants = ARMOR_OUTFITS.filter(outfit => outfit !== baseOutfit);
+  const sources = new Map<ArmorOutfit, GLTFTemplate>();
+  await Promise.all(variants.map(async outfit => {
+    sources.set(outfit, await load(MODEL_ROOT + outfit + '.glb'));
+  }));
   const prepared = new Map<string, THREE.Group>();
-  for (const outfit of ['ranger', 'knight'] as const) {
+  // Validate every mesh in every multi-primitive group before altering the live rig.
+  for (const outfit of variants) {
+    const template = sources.get(outfit)!;
     for (const slot of ARMOR_SLOTS) {
-      const component = findPart(sources[outfit].scene, PARTS[outfit][slot]!);
+      const name = PARTS[outfit][slot];
+      if (!name) continue; // Traveler has no helmet mesh.
+      const component = findPart(template.scene, name);
       for (const mesh of component.meshes) assertCompatible(mesh, reference);
       prepared.set(outfit + ':' + slot, createBoundPart(component.node, reference));
     }
@@ -135,10 +142,11 @@ export async function prepareModularArmor(
   for (const part of prepared.values()) attachParent.add(part);
 
   const defaultParts: Partial<Record<ArmorSlot, THREE.Object3D>> = {
-    body: defaults.body.node, gloves: defaults.gloves.node, boots: defaults.boots.node,
+    body: defaults.body.node, gloves: defaults.gloves.node,
+    boots: defaults.boots.node, ...(baseHelmet ? { helmet: baseHelmet.node } : {}),
   };
   const current: ArmorSelection = {
-    helmet: 'traveler', body: 'traveler', gloves: 'traveler', boots: 'traveler',
+    helmet:baseOutfit,body:baseOutfit,gloves:baseOutfit,boots:baseOutfit,
   };
   const setPart = (slot: ArmorSlot, outfit: ArmorOutfit): void => {
     if (!ARMOR_SLOTS.includes(slot) || !ARMOR_OUTFITS.includes(outfit)) {
@@ -146,11 +154,15 @@ export async function prepareModularArmor(
     }
     current[slot] = outfit;
     const baseline = defaultParts[slot];
-    if (baseline) baseline.visible = outfit === 'traveler';
-    for (const variant of ['ranger', 'knight'] as const) {
-      prepared.get(variant + ':' + slot)!.visible = variant === outfit;
+    if (baseline) baseline.visible = outfit === baseOutfit;
+    for (const variant of variants) {
+      const mesh = prepared.get(variant + ':' + slot);
+      if (mesh) mesh.visible = variant === outfit;
     }
-    if (slot === 'helmet') hair.visible = outfit === 'traveler';
+    if (slot === 'helmet' && hair) {
+      // Hide base traveler hair under a helmet. Other V3 bases have no hair.
+      hair.visible = outfit === 'traveler';
+    }
   };
   return {
     setPart,
