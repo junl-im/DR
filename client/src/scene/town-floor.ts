@@ -5,7 +5,7 @@ import type {SceneObjectSpec} from './village';
 export const TOWN_PAVING_PIXELS = 128;
 export function makePavingPixels(seed=20261012, size=TOWN_PAVING_PIXELS): Uint8Array {
   const data=new Uint8Array(size*size*4);
-  const stone=16, tile=8;
+  const stone=16;
   for(let y=0;y<size;y++) for(let x=0;x<size;x++){
     const col=Math.floor(x/stone),row=Math.floor(y/stone);
     const insetX=x%stone, insetY=y%stone;
