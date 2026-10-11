@@ -1,15 +1,16 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 import {ARMOR_LABELS, ARMOR_TIER_LABELS, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
+import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, type QuestProgress, type HuntKind } from './adventure-quests';
 
 export const GAME_VERSION = '0.5.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
 export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
-export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; kills: number }
+export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; quest?: QuestProgress; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
 export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number }
-export type Intent = { type: 'craft-armor' | 'equip-armor'; slot: ArmorSlot; tier: CraftedArmorTier } | { type:'unequip-armor'; slot: ArmorSlot } | { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'equip-weapon' | 'unequip-weapon' | 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
+export type Intent = {type:'claim-quest'} | { type: 'craft-armor' | 'equip-armor'; slot: ArmorSlot; tier: CraftedArmorTier } | { type:'unequip-armor'; slot: ArmorSlot } | { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'equip-weapon' | 'unequip-weapon' | 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
 export interface GameSession { readonly mode: 'local' | 'online'; dispatch(intent: Intent): void; tick(dt: number): void; snapshot(): Save }
 export const isWeaponEquipped = (p: Player) => p.weaponEquipped !== false;
 export const attackPower = (p: Player) => 4 + p.level * 2 + (isWeaponEquipped(p) ? 6 + p.weapon * 4 : 0);
@@ -17,7 +18,7 @@ export const maxHp = (p: Player) => 100 + (p.level - 1) * 18;
 export const xpNeeded = (p: Player) => 60 + (p.level - 1) * 30;
 export function newSave(name: string, classId: number): Save {
   return { schemaVersion: 1, gameVersion: GAME_VERSION, updatedAt: 0, seed: 20261011,
-    player: { name: name.trim().slice(0, 20) || '모험가', classId, x: 0, z: 0, hp: 100, mp: 60, level: 1, xp: 0, gold: 0, wood: 0, potions: 5, weapon: 0, weaponEquipped: true, armor: emptyArmor(), kills: 0 },
+    player: { name: name.trim().slice(0, 20) || '모험가', classId, x: 0, z: 0, hp: 100, mp: 60, level: 1, xp: 0, gold: 0, wood: 0, potions: 5, weapon: 0, weaponEquipped: true, armor: emptyArmor(), quest: initialQuest(), kills: 0 },
     territory: { hall: 1, garden: 0, stored: 0 } };
 }
 export function validateSave(raw: unknown): Save {
@@ -34,7 +35,7 @@ export function validateSave(raw: unknown): Save {
   if (p.level < 1 || p.level > 100 || p.hp > maxHp(p) || p.mp > 60 || p.weapon > 20 || p.xp >= xpNeeded(p)) throw new Error('캐릭터 성장 정보가 올바르지 않습니다.');
   if (!s.territory || !Number.isInteger(s.territory.hall) || s.territory.hall !== 1 || !Number.isInteger(s.territory.garden) || s.territory.garden < 0 || s.territory.garden > 5 || !Number.isFinite(s.territory.stored) || s.territory.stored < 0 || s.territory.stored > 120) throw new Error('영지 정보가 올바르지 않습니다.');
   if (p.weaponEquipped !== undefined && typeof p.weaponEquipped !== 'boolean') throw new Error('무기 장착 정보가 올바르지 않습니다.');
-  const copy=structuredClone(s);copy.player.weaponEquipped ??= true;copy.player.armor=validateArmor(p.armor);return copy;
+  const copy=structuredClone(s);copy.player.weaponEquipped ??= true;copy.player.armor=validateArmor(p.armor);copy.player.quest=validateQuest(p.quest);return copy;
 }
 
 export class LocalGameSession implements GameSession {
@@ -64,7 +65,11 @@ export class LocalGameSession implements GameSession {
     for (let i = 0; i < 12; i++) {
       const spot = snapToNearestWalkable(26 + (i % 4) * 11, -18 - Math.floor(i / 4) * 15);
       if (!spot) continue;
-      this.mobs.push({ id: `local-${i}`, npcId: i % 3 === 0 ? 20001 : 20003, name: i % 3 === 0 ? '잉크 슬라임' : '숲의 방랑자', ...spot, homeX: spot.x, homeZ: spot.z, hp: 45, maxHp: 45, respawn: 0, action: 0, actionSeq: 0, cooldown: 0 });
+      const elite=i===11;
+      const hp=elite?120:45;
+      this.mobs.push({ id:`local-${i}`, npcId:i%3===0?20001:20003,
+        name:elite?'숲의 정예 감시자':i%3===0?'잉크 슬라임':'숲의 방랑자',
+        ...spot,homeX:spot.x,homeZ:spot.z,hp,maxHp:hp,respawn:0,action:0,actionSeq:0,cooldown:0 });
     }
   }
   private random(): number { this.state.seed = (Math.imul(1664525, this.state.seed) + 1013904223) >>> 0; return this.state.seed / 4294967296; }
@@ -116,6 +121,23 @@ export class LocalGameSession implements GameSession {
       this.message = ARMOR_TIER_LABELS[tier] + ' ' + ARMOR_LABELS[slot] + ' 제작 완료';
       return;
     }
+    if (intent.type === 'claim-quest') {
+      const q=p.quest!;
+      const quest=activeQuest(q);
+      if(!quest){this.message='완료한 의뢰를 모두 정리했습니다.';return;}
+      if(!nearQuestBoard(p.x,p.z)){this.message='마을 모험 안내판에서 의뢰 보상을 수령하세요.';return;}
+      if(!canClaimQuest(q)){this.message='아직 의뢰 목표를 달성하지 못했습니다.';return;}
+      const {gold,wood,potions,fragments}=quest.reward;
+      if(p.gold+gold>1000000||p.wood+wood>1000000||
+         p.potions+potions>1000000||p.armor!.fragments+fragments>1000000) {
+        this.message='보관 한도를 초과해 보상을 수령할 수 없습니다.';return;
+      }
+      p.gold+=gold;p.wood+=wood;p.potions+=potions;p.armor!.fragments+=fragments;
+      q.stage++;q.progress=0;
+      this.message=quest.title+' 완료 · 골드 +'+gold+' · 목재 +'+wood+' · 물약 +'+potions+' · 파편 +'+fragments;
+      this.emit({kind:'loot',x:p.x,z:p.z,amount:gold,text:this.message});
+      return;
+    }
     if (intent.type === 'buy-potion') {
       const quantity=intent.quantity;
       if (!Number.isInteger(quantity) || quantity<1 || quantity>10) { this.message='구매 수량은 1~10개입니다.'; return; }
@@ -149,7 +171,7 @@ export class LocalGameSession implements GameSession {
   private damage(m: Mob, amount: number): void {
     const dealt=Math.min(m.hp,amount);m.hp -= dealt; this.message = `${m.name}에게 ${dealt} 피해`;this.emit({kind:'damage',x:m.x,z:m.z,amount:dealt,text:this.message});
     if (m.hp !== 0) return;
-    m.action = EntityAction.Die; m.actionSeq++; m.respawn = this.clock + 15;
+    m.action = EntityAction.Die; m.actionSeq++; m.respawn = this.clock + (m.name==='숲의 정예 감시자'?35:15);
     const p = this.state.player, gold = 8 + Math.floor(this.random() * 7);
     p.gold += gold; p.xp += 30; p.kills++; p.wood += 1;
     // Deterministic local progression: every 2nd actual kill earns one shard.
@@ -157,7 +179,9 @@ export class LocalGameSession implements GameSession {
     const earnedFragment=p.kills%2===0 && p.armor!.fragments<1000000;
     if(earnedFragment) p.armor!.fragments++;
     if (this.random() < .3) p.potions++;
-    this.message = `${m.name} 처치 · 경험치 +30 · 골드 +${gold}${earnedFragment?' · 방어구 파편 +1':''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
+    const kind:HuntKind=m.name==='숲의 정예 감시자'?'sentinel':m.npcId===20001?'slime':'wanderer';
+    const advanced=recordQuestKill(p.quest!,kind);
+    this.message = `${m.name} 처치 · 경험치 +30 · 골드 +${gold}${earnedFragment?' · 방어구 파편 +1':''}${advanced?' · '+questSummary(p.quest!):''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
     while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level} 달성! 체력과 마나가 회복되었습니다.`;this.emit({kind:'level',x:p.x,z:p.z,amount:p.level,text:this.message}); }
     if (p.level === 100) p.xp = Math.min(p.xp, xpNeeded(p) - 1);
     this.attacking = false; this.target = null;
