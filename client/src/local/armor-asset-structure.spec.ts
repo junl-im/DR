@@ -7,8 +7,10 @@ interface GlbMesh { name?: string }
 interface GlbDocument {
   nodes: GlbJoint[];
   meshes: GlbMesh[];
-  skins: Array<{ joints: number[] }>;
+  skins: Array<{ joints: number[]; inverseBindMatrices: number }>;
   animations?: Array<{ name?: string }>;
+  bufferViews: Array<{ byteOffset?: number; byteLength: number }>;
+  accessors: Array<{ bufferView: number; count: number; type: string }>;
 }
 const variants = {
   knight: ['human_male_heavy_armor', 'human_male_heavy_boots', 'human_male_heavy_gloves', 'human_male_heavy_helmet'],
@@ -40,6 +42,24 @@ describe('V3 character equipment source assets', () => {
     });
     expect(skeletons[1]).toEqual(skeletons[0]);
     expect(skeletons[2]).toEqual(skeletons[0]);
+  });
+
+  it('keeps identical inverse bind matrices across all 3 outfits', () => {
+    const bytesFor = (name: keyof typeof variants) => {
+      const bytes = readFileSync(resolve(__dirname, '../../public/models/characters/system-g6', name + '.glb'));
+      const doc = readGlb(name);
+      const accessor = doc.accessors[doc.skins[0].inverseBindMatrices];
+      expect(accessor.type).toBe('MAT4');
+      expect(accessor.count).toBe(43);
+      const view = doc.bufferViews[accessor.bufferView];
+      const binaryStart = 20 + bytes.readUInt32LE(12) + 8;
+      const from = binaryStart + (view.byteOffset ?? 0);
+      const length = 43 * 16 * 4;
+      expect(view.byteLength).toBeGreaterThanOrEqual(length);
+      return bytes.subarray(from, from + length).toString('hex');
+    };
+    expect(bytesFor('ranger')).toBe(bytesFor('traveler'));
+    expect(bytesFor('knight')).toBe(bytesFor('traveler'));
   });
 
   it.each(Object.entries(variants))('%s contains documented armor parts and five clips', (name, required) => {
