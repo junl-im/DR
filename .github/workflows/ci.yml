@@ -27,4 +27,12 @@ jobs:
         with:
           name: dream-library-web
           path: dist/client
+      - name: Package tracked game source for recovery
+        run: git archive --format=zip --output=dungeon-zero-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dungeon-zero-source
+          path: dungeon-zero-source.zip
+          compression-level: 0
+
 
