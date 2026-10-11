@@ -7,6 +7,7 @@ import {
   type AnimState,
 } from '@nj/game-core';
 import { createMeshCharacter, type MeshCharacter } from './creature/mesh-character';
+import { prepareModularArmor, ARMOR_SLOTS, type ArmorSelection, type ArmorOutfit, type ModularArmorController } from './creature/modular-armor';
 import { type PlayerManifestEntry, getPlayerManifestEntry } from './creature/player-manifest';
 import { createNameplate, type Nameplate } from './nameplate';
 import { getGameState } from '../test-hook';
@@ -27,6 +28,7 @@ export interface PlayerAvatarSync {
   action?: EntityAction;
   actionSeq?: number;
   equippedWeaponItemId?: number;
+  armorEquipped?: ArmorSelection;
 }
 
 export interface PlayerAvatar {
@@ -75,12 +77,31 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   group.add(character.object);
   const weaponState: WeaponVisualState = createWeaponVisualState();
   let requestedWeaponId = 0;
+  let requestedArmor: ArmorSelection = {helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'};
+  let armorController: ModularArmorController | null = null;
+  const applyArmor = (): void => {
+    if (!armorController) return;
+    const current = armorController.snapshot();
+    for (const slot of ARMOR_SLOTS) {
+      if (current[slot] !== requestedArmor[slot]) armorController.setPart(slot,requestedArmor[slot]);
+    }
+  };
   const ready = character.ready
-    .then(() => {
+    .then(async () => {
       syncWeaponVisual(character.object, requestedWeaponId, weaponState);
       group.remove(placeholder);
       placeholder.geometry.dispose();
       (placeholder.material as THREE.Material).dispose();
+      // Only V3 outfits share this rig; KayKit remains visually unchanged.
+      const v3 = entry.model.match(/\/system-g6\/(knight|ranger|traveler)\.glb$/);
+      if (v3) {
+        try {
+          armorController = await prepareModularArmor(character.object, undefined, v3[1] as ArmorOutfit);
+          applyArmor();
+        } catch (error) {
+          console.warn('optional modular armor visual could not load', error);
+        }
+      }
     })
     .catch(() => {
       /* mesh load failure is non-fatal for logic (e.g. unit tests with no server) */
@@ -126,6 +147,8 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
     if (typeof p.actionSeq === 'number') actionSeq = p.actionSeq;
 
     requestedWeaponId = p.equippedWeaponItemId ?? 0;
+    requestedArmor = p.armorEquipped ?? {helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'};
+    applyArmor();
     // Attachment must wait for the async GLB skeleton, not the placeholder.
     if (!group.children.includes(placeholder)) {
       syncWeaponVisual(character.object, requestedWeaponId, weaponState);
