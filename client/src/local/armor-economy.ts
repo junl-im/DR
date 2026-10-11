@@ -74,3 +74,9 @@ export function validateArmor(value: unknown): ArmorInventory {
   }
   return structuredClone(armor);
 }
+
+/** Serializable gameplay equipment -> V3 cosmetic fitting contract. */
+export function armorOutfitSelection(armor?: ArmorInventory): Record<ArmorSlot,'traveler'|'ranger'|'knight'> {
+  const equipped=readArmor(armor).equipped;
+  return Object.fromEntries(ARMOR_SLOTS.map(slot=>[slot,equipped[slot]===2?'knight':equipped[slot]===1?'ranger':'traveler'])) as Record<ArmorSlot,'traveler'|'ranger'|'knight'>;
+}
