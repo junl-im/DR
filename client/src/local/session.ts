@@ -1,14 +1,15 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
+import {ARMOR_SLOTS, ARMOR_LABELS, ARMOR_TIER_LABELS, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
 
 export const GAME_VERSION = '0.5.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
 export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
-export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; kills: number }
+export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
 export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number }
-export type Intent = { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'equip-weapon' | 'unequip-weapon' | 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
+export type Intent = { type: 'craft-armor' | 'equip-armor'; slot: ArmorSlot; tier: CraftedArmorTier } | { type:'unequip-armor'; slot: ArmorSlot } | { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'equip-weapon' | 'unequip-weapon' | 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
 export interface GameSession { readonly mode: 'local' | 'online'; dispatch(intent: Intent): void; tick(dt: number): void; snapshot(): Save }
 export const isWeaponEquipped = (p: Player) => p.weaponEquipped !== false;
 export const attackPower = (p: Player) => 4 + p.level * 2 + (isWeaponEquipped(p) ? 6 + p.weapon * 4 : 0);
@@ -16,7 +17,7 @@ export const maxHp = (p: Player) => 100 + (p.level - 1) * 18;
 export const xpNeeded = (p: Player) => 60 + (p.level - 1) * 30;
 export function newSave(name: string, classId: number): Save {
   return { schemaVersion: 1, gameVersion: GAME_VERSION, updatedAt: 0, seed: 20261011,
-    player: { name: name.trim().slice(0, 20) || '모험가', classId, x: 0, z: 0, hp: 100, mp: 60, level: 1, xp: 0, gold: 0, wood: 0, potions: 5, weapon: 0, weaponEquipped: true, kills: 0 },
+    player: { name: name.trim().slice(0, 20) || '모험가', classId, x: 0, z: 0, hp: 100, mp: 60, level: 1, xp: 0, gold: 0, wood: 0, potions: 5, weapon: 0, weaponEquipped: true, armor: emptyArmor(), kills: 0 },
     territory: { hall: 1, garden: 0, stored: 0 } };
 }
 export function validateSave(raw: unknown): Save {
@@ -33,7 +34,7 @@ export function validateSave(raw: unknown): Save {
   if (p.level < 1 || p.level > 100 || p.hp > maxHp(p) || p.mp > 60 || p.weapon > 20 || p.xp >= xpNeeded(p)) throw new Error('캐릭터 성장 정보가 올바르지 않습니다.');
   if (!s.territory || !Number.isInteger(s.territory.hall) || s.territory.hall !== 1 || !Number.isInteger(s.territory.garden) || s.territory.garden < 0 || s.territory.garden > 5 || !Number.isFinite(s.territory.stored) || s.territory.stored < 0 || s.territory.stored > 120) throw new Error('영지 정보가 올바르지 않습니다.');
   if (p.weaponEquipped !== undefined && typeof p.weaponEquipped !== 'boolean') throw new Error('무기 장착 정보가 올바르지 않습니다.');
-  const copy=structuredClone(s);copy.player.weaponEquipped ??= true;return copy;
+  const copy=structuredClone(s);copy.player.weaponEquipped ??= true;copy.player.armor=validateArmor(p.armor);return copy;
 }
 
 export class LocalGameSession implements GameSession {
@@ -83,6 +84,38 @@ export class LocalGameSession implements GameSession {
       p.weaponEquipped=equipped;this.attacking=false;
       this.message=equipped?`여행자의 무기 장착 · 공격력 ${attackPower(p)}`:`무기 해제 · 공격력 ${attackPower(p)}`;return;
     }
+    if (intent.type === 'craft-armor' || intent.type === 'equip-armor' || intent.type === 'unequip-armor') {
+      if (!isArmorSlot(intent.slot) ||
+          (intent.type !== 'unequip-armor' && !isCraftedArmorTier(intent.tier))) {
+        this.message = '알 수 없는 방어구 항목입니다.'; return;
+      }
+      const armor = p.armor!; // constructor validates and initializes old save data.
+      const slot = intent.slot;
+      if (intent.type === 'unequip-armor') {
+        if (!armor.equipped[slot]) {this.message='해제할 방어구가 없습니다.';return;}
+        armor.equipped[slot] = 0;
+        this.message = ARMOR_LABELS[slot] + ' 해제 · 방어력 ' + armorDefense(armor);
+        return;
+      }
+      const tier = intent.tier;
+      if (intent.type === 'equip-armor') {
+        if (!ownsArmor(armor,slot,tier)) {this.message='보유하지 않은 방어구입니다.';return;}
+        if (armor.equipped[slot]===tier) {this.message='이미 착용한 방어구입니다.';return;}
+        armor.equipped[slot] = tier;
+        this.message = ARMOR_TIER_LABELS[tier] + ' ' + ARMOR_LABELS[slot] + ' 착용 · 방어력 ' + armorDefense(armor);
+        return;
+      }
+      if (!canUsePotionShop(p)) {this.message='제작은 마을 보급 상점 근처에서 할 수 있습니다.';return;}
+      if (ownsArmor(armor,slot,tier)) {this.message='이미 보유한 방어구입니다.';return;}
+      const cost=armorCraftCost(tier);
+      if(p.gold<cost.gold || p.wood<cost.wood || armor.fragments<cost.fragments) {
+        this.message='재료 부족 · 골드 '+cost.gold+' · 목재 '+cost.wood+' · 파편 '+cost.fragments;return;
+      }
+      p.gold-=cost.gold; p.wood-=cost.wood; armor.fragments-=cost.fragments;
+      armor.owned[slot] |= armorBit(tier);
+      this.message = ARMOR_TIER_LABELS[tier] + ' ' + ARMOR_LABELS[slot] + ' 제작 완료';
+      return;
+    }
     if (intent.type === 'buy-potion') {
       const quantity=intent.quantity;
       if (!Number.isInteger(quantity) || quantity<1 || quantity>10) { this.message='구매 수량은 1~10개입니다.'; return; }
@@ -119,6 +152,9 @@ export class LocalGameSession implements GameSession {
     m.action = EntityAction.Die; m.actionSeq++; m.respawn = this.clock + 15;
     const p = this.state.player, gold = 8 + Math.floor(this.random() * 7);
     p.gold += gold; p.xp += 30; p.kills++; p.wood += 1;
+    // Deterministic local progression: every 2nd actual kill earns one shard.
+    // No extra PRNG calls, preserving previous gold/potion RNG sequences.
+    if(p.kills%2===0 && p.armor!.fragments<1000000) p.armor!.fragments++;
     if (this.random() < .3) p.potions++;
     this.message = `${m.name} 처치 · 경험치 +30 · 골드 +${gold}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
     while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level} 달성! 체력과 마나가 회복되었습니다.`;this.emit({kind:'level',x:p.x,z:p.z,amount:p.level,text:this.message}); }
@@ -141,7 +177,7 @@ export class LocalGameSession implements GameSession {
     for (const m of this.mobs) {
       if (!m.hp) { if (this.clock >= m.respawn) { m.hp = m.maxHp; m.x = m.homeX; m.z = m.homeZ; m.action = 0; m.actionSeq++; } continue; }
       if (Math.hypot(m.x - p.x, m.z - p.z) < 3.5 && Math.hypot(p.x, p.z) > 24 && this.clock >= m.cooldown) {
-        const taken=Math.min(p.hp,7);p.hp -= taken;this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
+        const taken=Math.min(p.hp,Math.max(1,7-armorDefense(p.armor)));p.hp -= taken;this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
         if (!p.hp) { const lost = Math.min(p.gold, 5); p.gold -= lost; this.dispatch({ type: 'recall' }); this.message = `쓰러졌습니다. 마을에서 회복했습니다. 골드 -${lost}`; break; }
       } else if (this.clock >= m.cooldown - .8) m.action = 0;
     }
