@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TERRAIN_CONFIG } from '@nj/game-core';
 import { buildVillage, type SceneObjectSpec } from './village';
+import { createVillagePaving } from './town-floor';
 import { scatterProps } from './scatter';
 import {
   getBuildingPropEntry,
@@ -119,7 +120,7 @@ export async function placeVillageEnvironment(
   let buildingUsedPrimitive = false;
   for (const spec of villageSpecs) {
     if (spec.kind === 'ground') {
-      const ground=addBoxPrimitive(spec);ground.name='village-ground';scene.add(ground);
+      const ground=createVillagePaving(spec);scene.add(ground);
       continue;
     }
 
