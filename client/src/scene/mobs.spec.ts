@@ -101,6 +101,19 @@ describe('mobs visual mapping', () => {
     expect(group.position.z).toBe(6);
   });
 
+  it('shows lightweight elite aura only on the reserved local sentinel',()=>{
+    const scene={add:()=>undefined,remove:()=>undefined};
+    const map:MobMeshMap=new Map();
+    const instances=createMobInstanceMap();
+    const base={npcId:20003,x:0,y:0,z:0,hp:120,maxHp:120};
+    syncMobVisual(map,instances,{id:'local-11',...base},scene as never);
+    syncMobVisual(map,instances,{id:'local-10',...base,hp:45,maxHp:45},scene as never);
+    const aura=map.get('local-11')?.getObjectByName('elite-sentinel-aura');
+    expect(aura).toBeInstanceOf(THREE.Mesh);
+    expect(aura?.userData['decorative']).toBe(true);
+    expect((aura as THREE.Mesh).castShadow).toBe(false);
+    expect(map.get('local-10')?.getObjectByName('elite-sentinel-aura')).toBeUndefined();
+  });
   it('uses manifest hpBarYOffset for mapped npcIds', () => {
     const scene = { add: () => undefined, remove: () => undefined };
     const map: MobMeshMap = new Map();
