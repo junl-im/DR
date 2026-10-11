@@ -182,6 +182,20 @@ function ensureMobInstance(
   const entry = getCreatureEntry(state.npcId);
   const hpBarYOffset = entry?.hpBarYOffset ?? DEFAULT_HP_BAR_Y_OFFSET;
   const group = createMobGroup(state.id, hpBarYOffset);
+  // Decorative-only elite aura. The existing licensed wanderer rig and
+  // gameplay collider stay unchanged; no shadow or extra light is needed.
+  if(state.id==='local-11' && state.npcId===20003) {
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(.72,.045,6,36),
+      new THREE.MeshBasicMaterial({color:0xd6a85c,transparent:true,opacity:.8,
+        depthWrite:false,side:THREE.DoubleSide})
+    );
+    ring.name='elite-sentinel-aura';
+    ring.rotation.x=Math.PI/2;
+    ring.position.y=.11;
+    ring.userData['decorative']=true;
+    group.add(ring);
+  }
   scene.add(group);
   map.set(state.id, group);
 
