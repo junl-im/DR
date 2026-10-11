@@ -6,7 +6,7 @@ vi.mock('./mesh-character', () => ({
 }));
 
 import { loadGltfTemplate } from './mesh-character';
-import { createWeaponVisualState, syncWeaponVisual } from './weapon-visual';
+import { createWeaponVisualState, syncWeaponVisual, findWeaponHand } from './weapon-visual';
 
 function buildCharacter(handName: string): { root: THREE.Group; hand: THREE.Bone } {
   const root = new THREE.Group();
@@ -62,6 +62,58 @@ describe('starter sword visual rig attachment', () => {
     await inFlight;
     expect(state.equippedItemId).toBe(0);
     expect(state.prop).toBeNull();
+  });
+
+
+  it.each(['handslot.r', 'handslot_r', 'handslotr', 'palm_R'])(
+    'resolves original and converted hand node naming: %s',
+    (handName) => {
+      const { root } = buildCharacter(handName);
+      expect(findWeaponHand(root, 'handslotr')).toBe(handName);
+    }
+  );
+
+  it('rejects an out-of-order first equip after unequip and re-equip the same item', async () => {
+    const requests: Array<(value: { scene: THREE.Group; animations: THREE.AnimationClip[] }) => void> = [];
+    vi.mocked(loadGltfTemplate).mockImplementation(() => new Promise((resolve) => { requests.push(resolve); }));
+    const { root, hand } = buildCharacter('palm_R');
+    const state = createWeaponVisualState();
+    syncWeaponVisual(root, 2369, state);
+    const stale = state.loading;
+    syncWeaponVisual(root, 0, state);
+    syncWeaponVisual(root, 2369, state);
+    const current = state.loading;
+    const newProp = new THREE.Group();
+    newProp.name = 'current-model';
+    requests[1]({ scene: newProp, animations: [] });
+    await current;
+    const attached = state.prop;
+    expect(attached).not.toBeNull();
+    expect(attached?.parent).toBe(hand);
+    const staleProp = new THREE.Group();
+    staleProp.name = 'stale-model';
+    requests[0]({ scene: staleProp, animations: [] });
+    await stale;
+    expect(state.prop).toBe(attached);
+    expect(hand.children.filter(child => child.name === 'weapon-2369')).toHaveLength(1);
+  });
+
+  it('ignores loading errors for an unequipped stale weapon', async () => {
+    let rejectPending!: (error: Error) => void;
+    vi.mocked(loadGltfTemplate).mockImplementationOnce(
+      () => new Promise((_resolve, reject) => { rejectPending = reject; })
+    );
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const state = createWeaponVisualState();
+    const { root } = buildCharacter('palm_R');
+    syncWeaponVisual(root, 2369, state);
+    const stale = state.loading;
+    syncWeaponVisual(root, 0, state);
+    rejectPending(new Error('obsolete request'));
+    await stale;
+    expect(spy).not.toHaveBeenCalled();
+    expect(state.equippedItemId).toBe(0);
+    spy.mockRestore();
   });
 
   it('does not endlessly reload an incompatible skeleton every frame', async () => {
