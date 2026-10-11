@@ -60,9 +60,27 @@ fs.mkdirSync(out,{recursive:true});
     await game.waitForTimeout(1200);
     if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error('Mobile game horizontal overflow');
     await game.screenshot({path:out+'/game-saved-armor-mobile.png',fullPage:true});
+    // Actual local combat progression: 3 qualifying slime kills, each through
+    // target/skill/damage, then claim once at the nearby village quest board.
+    await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__;
+      for(const idx of [0,3,6]){
+        const m=s.mobs[idx];
+        m.x=s.state.player.x+1;m.z=s.state.player.z;m.hp=1;
+        s.state.player.mp=60;
+        s.dispatch({type:'target',id:m.id});
+        s.dispatch({type:'skill'});
+        for(let j=0;j<81;j++)s.tick(.05);
+      }
+    });
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.quest?.progress===3);
+    await game.locator('#quest-journal').click();
+    await game.locator('#quest-claim').click();
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.quest?.stage===1);
+    await game.screenshot({path:out+'/game-quest-claimed-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:6,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:7,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
