@@ -140,7 +140,7 @@ function mountHud() {
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
-<section class="quest card"><h2>초보 사냥</h2><div id="quest-progress"></div><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section>
+<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section>
 <div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span>FIXED VIEW</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
 <div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
@@ -151,6 +151,7 @@ function mountHud() {
   panel.addEventListener('pointermove',e=>{if(!drag)return;panel.style.left=Math.max(0,Math.min(innerWidth-panel.offsetWidth,drag.left+e.clientX-drag.x))+'px';panel.style.top=Math.max(0,Math.min(innerHeight-panel.offsetHeight,drag.top+e.clientY-drag.y))+'px';panel.style.right='auto';});
   panel.addEventListener('pointerup',()=>{drag=undefined;});panel.addEventListener('pointercancel',()=>{drag=undefined;});
   window.addEventListener('resize',()=>{panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';});
+  $('#quest-journal').onclick=()=>showPanel('help');
   $('#hunt-guide').onclick=()=>{
     const p=session.state.player;
     const m=session.mobs.filter(m=>m.hp>0).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];
@@ -171,7 +172,7 @@ function updateHud() {
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
   $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=`${questSummary(validateQuest(p.quest))} · 총 처치 ${p.kills}`;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
-  $('#target').hidden=!m; if(m) $('#target').textContent=`${m.name} · HP ${m.hp} / ${m.maxHp}`;
+  $('#target').hidden=!m; $('#target').classList.toggle('elite-target',!!m&&m.name==='숲의 정예 감시자'); if(m) $('#target').textContent=`${m.name==='숲의 정예 감시자'?'정예 · ':''}${m.name} · HP ${m.hp} / ${m.maxHp}`;
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
   toast(session.message);
   if(!$('#panel').hidden) inventoryWindow?.refresh();
