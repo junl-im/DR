@@ -1,0 +1,92 @@
+import { describe, expect, it } from 'vitest';
+import * as THREE from 'three';
+import {
+  ARMOR_SLOTS, prepareModularArmor, type ArmorOutfit,
+} from './modular-armor';
+import type { GLTFTemplate } from './mesh-character';
+
+const names = Array.from({ length: 43 }, (_, i) =>
+  i === 0 ? 'root' : i === 32 ? 'palm_R' : 'joint_' + i
+);
+const nameByOutfit = {
+  traveler: ['human_male_hair_1', 'human_male_hands_default', 'human_male_head_default',
+    'human_male_light_armor_2', 'human_male_light_boots_2'],
+  ranger: ['human_male_head_default','human_male_medium_armor','human_male_medium_boots',
+    'human_male_medium_gloves','human_male_medium_helmet'],
+  knight: ['human_male_head_default','human_male_heavy_armor','human_male_heavy_boots',
+    'human_male_heavy_gloves','human_male_heavy_helmet'],
+};
+
+function buildRig(outfit: ArmorOutfit, mismatch = false): THREE.Group {
+  const group = new THREE.Group();
+  const bones = names.map((name, i) => {
+    const bone = new THREE.Bone();
+    bone.name = mismatch && i === 20 ? 'incompatible_bone' : name;
+    return bone;
+  });
+  const skeleton = new THREE.Skeleton(bones);
+  for (const name of nameByOutfit[outfit]) {
+    const mesh = new THREE.SkinnedMesh(
+      new THREE.BoxGeometry(0.2, 0.2, 0.2),
+      new THREE.MeshBasicMaterial()
+    );
+    mesh.name = name;
+    mesh.bind(skeleton, new THREE.Matrix4());
+    group.add(mesh);
+  }
+  return group;
+}
+const source = (root: THREE.Group): GLTFTemplate => ({ scene: root, animations: [] });
+
+describe('four-slot modular armor visual fitting', () => {
+  it('mixes individual skinned parts on the existing traveler skeleton', async () => {
+    const traveler = buildRig('traveler');
+    const load = async (url: string) => source(buildRig(url.includes('ranger') ? 'ranger' : 'knight'));
+    const ctrl = await prepareModularArmor(traveler, load);
+    const base = traveler.getObjectByName('human_male_light_armor_2') as THREE.SkinnedMesh;
+    const hair = traveler.getObjectByName('human_male_hair_1') as THREE.SkinnedMesh;
+
+    ctrl.setPart('helmet', 'knight');
+    ctrl.setPart('body', 'ranger');
+    ctrl.setPart('gloves', 'knight');
+    ctrl.setPart('boots', 'traveler');
+
+    expect(ctrl.snapshot()).toEqual({helmet:'knight',body:'ranger',gloves:'knight',boots:'traveler'});
+    expect(hair.visible).toBe(false);
+    expect(base.visible).toBe(false);
+    const helmet = traveler.getObjectByName('human_male_heavy_helmet-preview') as THREE.SkinnedMesh;
+    const armor = traveler.getObjectByName('human_male_medium_armor-preview') as THREE.SkinnedMesh;
+    expect(helmet.visible).toBe(true);
+    expect(armor.visible).toBe(true);
+    expect(traveler.getObjectByName('human_male_heavy_gloves-preview')?.visible).toBe(true);
+    expect(traveler.getObjectByName('human_male_heavy_boots-preview')?.visible).toBe(false);
+    expect(helmet.skeleton).toBe(base.skeleton);
+    expect(armor.skeleton).toBe(base.skeleton);
+    expect(ARMOR_SLOTS).toHaveLength(4);
+
+    ctrl.reset();
+    expect(ctrl.snapshot()).toEqual({helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'});
+    expect(hair.visible).toBe(true);
+    expect(base.visible).toBe(true);
+    expect(helmet.visible).toBe(false);
+  });
+
+  it('does not attach incompatible outfit geometry', async () => {
+    const traveler = buildRig('traveler');
+    const before = traveler.children.length;
+    await expect(prepareModularArmor(traveler, async url =>
+      source(buildRig(url.includes('ranger') ? 'ranger' : 'knight', url.includes('knight')))
+    )).rejects.toThrow('skeleton joint name/order mismatch');
+    expect(traveler.children.length).toBe(before);
+  });
+
+  it('refuses invalid slots without changing snapshot', async () => {
+    const traveler = buildRig('traveler');
+    const ctrl = await prepareModularArmor(traveler, async url =>
+      source(buildRig(url.includes('ranger') ? 'ranger' : 'knight'))
+    );
+    const prev = ctrl.snapshot();
+    expect(() => ctrl.setPart('shield' as never, 'knight')).toThrow('Unknown');
+    expect(ctrl.snapshot()).toEqual(prev);
+  });
+});
