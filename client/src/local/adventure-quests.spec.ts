@@ -80,6 +80,18 @@ describe('village quest board',()=>{
     s.dispatch({type:'skill'});
     expect(s.state.player.gold).toBe(initialGold);
   });
+  it('caps elite drops at save limits without creating invalid cloud/local saves',()=>{
+    const s=new LocalGameSession(newSave('포화 한도',0));
+    s.state.player.gold=999999;s.state.player.wood=999999;
+    s.state.player.potions=1000000;s.state.player.armor!.fragments=999999;
+    const m=s.mobs[11];m.x=s.state.player.x+1;m.z=s.state.player.z;m.hp=1;
+    s.dispatch({type:'target',id:m.id});s.dispatch({type:'skill'});
+    expect(s.state.player.gold).toBe(1000000);
+    expect(s.state.player.wood).toBe(1000000);
+    expect(s.state.player.potions).toBe(1000000);
+    expect(s.state.player.armor!.fragments).toBeLessThanOrEqual(1000000);
+    expect(()=>validateSave(s.snapshot())).not.toThrow();
+  });
   it('does not award overflowing gold, materials or potions',()=>{
     const s=new LocalGameSession(newSave('한도 확인',0));
     s.state.player.quest={stage:0,progress:3};
