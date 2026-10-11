@@ -39,6 +39,7 @@ import {
   type NpcMeshMap,
 } from './npc-renderer';
 import { createPlayerAvatar } from './player-avatar';
+import type { ArmorSelection } from './creature/modular-armor';
 import type { AnimationClip } from '@nj/game-core';
 import { EntityAction } from '@nj/game-core';
 import { buildEnvironmentScene } from './environment-renderer';
@@ -82,7 +83,8 @@ export interface GameRenderer {
     actionSeq?: number,
     equippedWeaponItemId?: number,
     classId?: number,
-    sex?: number
+    sex?: number,
+    armorEquipped?: ArmorSelection
   ) => void;
   setLocalPlayerName: (name: string) => void;
   getCurrentAnimationClip: () => AnimationClip;
@@ -310,13 +312,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     actionSeq = 0,
     equippedWeaponItemId = 0,
     classId = 0,
-    sex = 0
+    sex = 0,
+    armorEquipped?: ArmorSelection
   ): void => {
     ensureLocalAvatar(classId, sex);
     localPosition.x = x;
     localPosition.y = y;
     localPosition.z = z;
-    playerAvatar.sync({ x, y, z, action, actionSeq, equippedWeaponItemId });
+    playerAvatar.sync({ x, y, z, action, actionSeq, equippedWeaponItemId, armorEquipped });
     currentAnimationClip = playerAvatar.update(0);
     const cullDx = x - lastCullX;
     const cullDz = z - lastCullZ;
