@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 /** Local prototype palette: generated texture and village roads, no external art. */
-export function applyClassicScene(scene: THREE.Scene): void {
+export function applyClassicScene(scene: THREE.Scene): {tick:()=>void} {
   scene.background = new THREE.Color('#aaa995');
   scene.fog = new THREE.Fog('#aaa995', 100, 230);
   let seed = 9713;
@@ -25,7 +25,8 @@ export function applyClassicScene(scene: THREE.Scene): void {
     for (let i = 0; i < positions.count; i++) {
       const x = positions.getX(i), z = positions.getZ(i);
       const lane = Math.min(Math.abs(x), Math.abs(z));
-      const roadWeight = Math.max(0, Math.min(1, (4 - lane) / 2)) * Math.max(0, Math.min(1, (32 - Math.hypot(x, z)) / 8));
+      const radius=Math.hypot(x,z);
+      const roadWeight = Math.max(Math.max(0,Math.min(1,(11-radius)/4)), Math.max(0, Math.min(1, (4 - lane) / 2)) * Math.max(0, Math.min(1, (32 - radius) / 8)));
       const color = grass.clone().lerp(road, roadWeight);
       color.toArray(colors, i * 3);
     }
@@ -33,5 +34,7 @@ export function applyClassicScene(scene: THREE.Scene): void {
     object.material.color.set('#ffffff'); object.material.map = texture;
     object.material.vertexColors = true; object.material.flatShading = false; object.material.needsUpdate = true;
   });
+  let groundHandled=false;
+  return {tick(){if(groundHandled)return;const ground=scene.getObjectByName('village-ground');if(ground){ground.visible=false;groundHandled=true;}}};
 }
 

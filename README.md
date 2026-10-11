@@ -32,3 +32,7 @@ Firestore 규칙은 Java 21과 Firebase CLI 설치 후 `firebase emulators:exec 
 기반: [tech-leads-club/nj-mmo](https://github.com/tech-leads-club/nj-mmo), commit `7bba7272386357b8d5c19dd82906d13bd49f1bb9`. MIT 라이선스와 원본 자산 고지를 보존합니다. `docs/asset-inventory.json`은 포함 파일의 해시와 모델 정보를, `docs/glb-header-repairs.json`은 NPC 14개 파일의 헤더 복구 내역을 기록합니다. 코드 라이선스와 개별 자산 라이선스는 별개이며, 원본 IP 문구·전체 자산 출처 검수는 정식 공개 전 남은 작업입니다.
 
 현재는 첫 프로토타입입니다. Google 실제 계정 로그인·교차 기기 저장, 장시간 모바일 성능과 모든 저장 공간 오류 경로는 추가 검증 대상입니다.
+
+## 0.2.0 업데이트
+
+마을 광장의 평면 패치를 지형에 이어지는 길로 바꾸고 수풀과 장비·영지·모험 안내판을 추가했습니다. 전투 피해/회복 숫자, 강타 쿨다운, 숫자 경험치와 안전/전투 지역 표시를 지원합니다. 처치 보상과 레벨업이 동시에 발생해도 시스템 기록에 모두 남습니다. 새 자산은 코드로 생성하며 추가 다운로드가 없습니다. 기존 schemaVersion1 저장을 그대로 읽습니다.

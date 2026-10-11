@@ -21,4 +21,8 @@ describe('IndexedDB persistence contract',()=>{
     await expect(readSave()).rejects.toThrow();const backup=await readSave('backup');await writeSave(backup!);
     expect((await readSave())?.player.name).toBe('정상 백업');expect((await readSave('backup'))?.player.name).toBe('정상 백업');
   });
+  it('opens a previous 0.1.0 save without resetting progress',async()=>{
+    const legacy=newSave('기존 모험가',18);legacy.gameVersion='0.1.0';legacy.player.gold=321;legacy.player.weapon=2;legacy.territory.garden=2;
+    await writeSave(legacy);const restored=await readSave();expect(restored?.player.gold).toBe(321);expect(restored?.player.weapon).toBe(2);expect(restored?.territory.garden).toBe(2);
+  });
 });

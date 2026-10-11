@@ -119,7 +119,7 @@ export async function placeVillageEnvironment(
   let buildingUsedPrimitive = false;
   for (const spec of villageSpecs) {
     if (spec.kind === 'ground') {
-      scene.add(addBoxPrimitive(spec));
+      const ground=addBoxPrimitive(spec);ground.name='village-ground';scene.add(ground);
       continue;
     }
 

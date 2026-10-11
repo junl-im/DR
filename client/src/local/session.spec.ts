@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { LocalGameSession, newSave, validateSave, maxHp } from './session';
-describe('Dream Library local progression contract', () => {
+describe('Dungeon zero local progression contract', () => {
   it('replays the same intents deterministically and rejects unbounded time', () => {
     const a = new LocalGameSession(newSave('여행자', 0)), b = new LocalGameSession(newSave('여행자', 0));
     a.dispatch({type:'move',x:8,z:4}); b.dispatch({type:'move',x:8,z:4});
@@ -46,5 +46,18 @@ describe('Dream Library local progression contract', () => {
     expect(()=>validateSave({...good,player:{...good.player,gold:-1}})).toThrow();
     expect(()=>validateSave({...good,player:{...good.player,classId:999}})).toThrow();
     expect(()=>validateSave({...good,player:{...good.player,x:NaN}})).toThrow();
+  });
+  it('emits actual damage and both loot and level events without persisting presentation events',()=>{
+    const s=new LocalGameSession(newSave('모험가',0));s.state.player.xp=30;
+    const m=s.mobs[0];m.x=s.state.player.x+2;m.z=s.state.player.z;m.hp=1;
+    s.dispatch({type:'target',id:m.id});s.dispatch({type:'skill'});
+    const events=s.drainEvents();expect(events.map(e=>e.kind)).toEqual(['damage','loot','level']);expect(events[0].amount).toBe(1);expect(events[2].amount).toBe(2);
+    expect(s.drainEvents()).toEqual([]);expect(new LocalGameSession(s.snapshot()).drainEvents()).toEqual([]);
+  });
+  it('enforces skill cooldown before spending more MP or applying another hit',()=>{
+    const s=new LocalGameSession(newSave('모험가',0)),m=s.mobs[0];m.x=s.state.player.x+2;m.z=s.state.player.z;
+    s.dispatch({type:'target',id:m.id});s.dispatch({type:'skill'});s.drainEvents();const hp=m.hp,mp=s.state.player.mp;
+    s.dispatch({type:'skill'});expect(m.hp).toBe(hp);expect(s.state.player.mp).toBe(mp);expect(s.drainEvents()).toEqual([]);expect(s.skillCooldown).toBe(4);
+    for(let i=0;i<81;i++)s.tick(.05);expect(s.skillCooldown).toBe(0);s.dispatch({type:'skill'});expect(m.hp).toBe(0);
   });
 });

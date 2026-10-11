@@ -1,6 +1,8 @@
 import './local.css';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
+import { TOWN_SIGNS, buildTownDetails } from './town';
+import { createCombatFeedback } from './feedback';
 import * as THREE from 'three';
 import { snapEntityY, EntityAction } from '@nj/game-core';
 import { createRenderer, type GameRenderer } from '../scene/renderer';
@@ -61,7 +63,8 @@ async function enter(state: Save) {
   try {
     session = new LocalGameSession(state);
     game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:{x:26,y:34,z:26},cameraFov:38,lockCamera:true});
-    applyClassicScene(game.scene);
+    const classicScene=applyClassicScene(game.scene);
+    buildTownDetails(game.scene);
     game.renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(max-width: 700px)').matches ? 1.1 : 1.5));
     game.renderer.shadowMap.enabled = !matchMedia('(max-width: 700px)').matches;
     game.setLocalPlayerName(session.state.player.name);
@@ -69,6 +72,8 @@ async function enter(state: Save) {
     game.setMoveIntentHandler(i => session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }));
     game.setMobTargetHandler(id => { session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
     const canvas = game.renderer.domElement;
+    const feedback=createCombatFeedback(root,game.camera,canvas);
+    mountTownSigns();
     let pointerStart: { x: number; y: number } | null = null;
     canvas.addEventListener('pointerdown', e => { pointerStart = {x:e.clientX,y:e.clientY}; });
     canvas.addEventListener('pointerup', e => { if (pointerStart && Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)<12) game.handleClick(e); pointerStart=null; });
@@ -88,7 +93,7 @@ async function enter(state: Save) {
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
       while(accumulator>=.05) { session.tick(.05); accumulator-=.05; }
-      syncScene(); game.tick(Math.min(elapsed,.05)); game.render();
+      syncScene(); game.tick(Math.min(elapsed,.05));classicScene.tick();const events=session.drainEvents();feedback.push(events);for(const event of events){addLog(event.text);if(event.text===session.message)lastLog=event.text;}feedback.tick(elapsed);positionTownSigns(); game.render();
       uiTime+=elapsed; if(uiTime>.15) { updateHud(); uiTime=0; }
       requestAnimationFrame(frame);
     }
@@ -119,11 +124,11 @@ function syncScene() {
 }
 function mountHud() {
   root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="저장과 설정 열기">☰</button></header>
-<section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div></section>
+<section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
 <section class="quest card"><h2>초보 사냥</h2><div id="quest-progress"></div><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section>
-<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span>FIXED VIEW</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small>2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
+<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span>FIXED VIEW</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
 <div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
@@ -142,6 +147,9 @@ function updateHud() {
   $('#player-name').textContent=p.name; $('#level').textContent=`Lv. ${p.level}`;
   $('#hp').textContent=`${p.hp} / ${maxHp(p)}`; $('#mp').textContent=`${p.mp} / 60`;
   $('#hp-bar').style.width=`${p.hp/maxHp(p)*100}%`; $('#mp-bar').style.width=`${p.mp/60*100}%`; $('#xp-bar').style.width=`${p.xp/xpNeeded(p)*100}%`;
+  $('#xp-caption').textContent=`EXP ${p.xp} / ${xpNeeded(p)}`;
+  $('.chapter strong').textContent=Math.hypot(p.x,p.z)<=24?'시작의 마을 · 안전 지역':'동쪽 사냥터 · 전투 지역';
+  const skillButton=root.querySelector<HTMLButtonElement>('[data-intent="skill"]')!;$('#skill-cooldown').textContent=session.skillCooldown>.05?`${session.skillCooldown.toFixed(1)}s`:'2';skillButton.classList.toggle('cooling',session.skillCooldown>.05);skillButton.style.setProperty('--remaining',`${session.skillCooldown/4*100}%`);skillButton.title=`강타 · MP 12${session.skillCooldown>.05?' · 재사용 대기 중':''}`;
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood);
   $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=`처치 ${p.kills} · 레벨 ${p.level} · 정원 ${session.state.territory.garden}단계`;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
@@ -149,10 +157,16 @@ function updateHud() {
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
   toast(session.message);
 }
+const signPoint=new THREE.Vector3();
+function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(Math.hypot(session.state.player.x-sign.x,session.state.player.z-sign.z)>12){session.message='안내판 가까이 이동해주세요.';updateHud();return;}showPanel(sign.panel);};layer.append(button);}root.append(layer);}
+function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
-function showPanel(kind:'estate'|'inventory'|'save') {
+function showPanel(kind:'estate'|'inventory'|'save'|'help') {
   $('#panel').hidden=false;
-  if(kind==='estate') {
+  if(kind==='help') {
+    $('#panel-content').innerHTML='<span class="eyebrow">모험 안내</span><h2>시작의 마을</h2><p>땅을 클릭하여 이동합니다. 동쪽 사냥터에서 몬스터를 선택하고 1 키로 공격하세요.</p><p>2 강타 · 3 물약 · R 마을 귀환<br>마을 반경 안에서는 체력이 회복됩니다.</p><p>처치 보상으로 장비를 강화하고 목재를 모아 영지 정원을 건설할 수 있습니다.</p><button id="help-hunt">사냥터로 출발</button><small>여행은 15초마다 기기에 저장됩니다.</small>';
+    $('#help-hunt').onclick=()=>{$('#panel').hidden=true;$('#hunt-guide').click();};
+  } else if(kind==='estate') {
     const t=session.state.territory;
     $('#panel-content').innerHTML=`<span class="eyebrow">MY LITTLE TERRITORY</span><h2>영지 정원</h2><p>목재를 모아 정원을 가꾸면<br>플레이하는 동안 골드가 자랍니다.</p><div class="estate-illustration">♧ <span>✦</span> ♧</div><div class="stat-line">정원 단계 <b>${t.garden} / 5</b></div><div class="stat-line">수확 가능한 골드 <b>${Math.floor(t.stored)}</b></div><button id="gather">목재 채집 +3 · 마을 근처</button><button id="garden" class="primary">정원 ${t.garden?'확장':'건설'} · 목재 ${12+t.garden*6}</button><button id="collect">골드 수확</button><small>생산량은 최대 120개까지 보관됩니다.</small>`;
     panelAction('gather','gather','estate'); panelAction('garden','garden','estate'); panelAction('collect','collect','estate');

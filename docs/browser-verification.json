@@ -5,7 +5,7 @@
   "overflow": false,
   "before": {
     "schemaVersion": 1,
-    "gameVersion": "0.1.0",
+    "gameVersion": "0.2.0",
     "updatedAt": 0,
     "seed": 2855072631,
     "player": {
@@ -31,8 +31,8 @@
   },
   "after": {
     "schemaVersion": 1,
-    "gameVersion": "0.1.0",
-    "updatedAt": 1791729260218,
+    "gameVersion": "0.2.0",
+    "updatedAt": 1791730007027,
     "seed": 2855072631,
     "player": {
       "name": "모험가",
@@ -52,7 +52,7 @@
     "territory": {
       "hall": 1,
       "garden": 1,
-      "stored": 0.26875000000000004
+      "stored": 0.31874999999999987
     }
   },
   "verified": [

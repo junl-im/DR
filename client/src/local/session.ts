@@ -1,6 +1,7 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 
-export const GAME_VERSION = '0.1.0';
+export const GAME_VERSION = '0.2.0';
+export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
 export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
 export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number }
@@ -38,6 +39,10 @@ export class LocalGameSession implements GameSession {
   action = EntityAction.None;
   actionSeq = 0;
   message = '시작의 마을에 도착했습니다. 몬스터를 선택하고 사냥을 시작하세요.';
+  private events: GameEvent[] = [];
+  drainEvents(): GameEvent[] { return this.events.splice(0); }
+  private emit(event: GameEvent): void { this.events.push(event); if(this.events.length>128)this.events.shift(); }
+  get skillCooldown(): number { return Math.max(0,this.skillAt-this.clock); }
   private movement: PathMoveState;
   private clock = 0;
   private attackAt = 0;
@@ -73,11 +78,11 @@ export class LocalGameSession implements GameSession {
       const m = this.mobs.find(m => m.id === this.target && m.hp > 0);
       if (!m) this.message = '먼저 몬스터를 선택하세요.';
       else if (Math.hypot(m.x - p.x, m.z - p.z) > 12) this.message = '스킬 사거리가 닿지 않습니다.';
-      else if (this.clock < this.skillAt) this.message = '별빛 참격을 준비하고 있습니다.';
+      else if (this.clock < this.skillAt) this.message = '강타를 준비하고 있습니다.';
       else if (p.mp < 12) this.message = '마나가 부족합니다.';
       else { p.mp -= 12; this.skillAt = this.clock + 4; this.action = EntityAction.Cast; this.actionSeq++; this.actionUntil = this.clock + .7; this.damage(m, 27 + p.weapon * 4 + p.level * 3); }
     }
-    if (intent.type === 'potion') { if (p.potions && p.hp < maxHp(p)) { p.potions--; p.hp = Math.min(maxHp(p), p.hp + 55); this.message = '회복 물약을 사용했습니다.'; } else this.message = '물약이 없거나 체력이 가득 찼습니다.'; }
+    if (intent.type === 'potion') { if (p.potions && p.hp < maxHp(p)) { const healed=Math.min(55,maxHp(p)-p.hp);p.potions--; p.hp += healed;this.emit({kind:'heal',x:p.x,z:p.z,amount:healed,text:`회복 +${healed}`}); this.message = '회복 물약을 사용했습니다.'; } else this.message = '물약이 없거나 체력이 가득 찼습니다.'; }
     if (intent.type === 'recall') { p.x = 0; p.z = 0; p.hp = maxHp(p); p.mp = 60; this.movement = createPathMoveState(); this.attacking = false; this.target = null; this.message = '안전한 마을로 귀환했습니다.'; }
     if (intent.type === 'upgrade') { const cost = 20 * (p.weapon + 1); if (p.weapon >= 20) this.message = '최고 강화 단계입니다.'; else if (p.gold < cost) this.message = `강화에는 골드 ${cost}개가 필요합니다.`; else { p.gold -= cost; p.weapon++; this.message = `여행자의 무기를 +${p.weapon}로 강화했습니다.`; } }
     if (intent.type === 'gather') { if (Math.hypot(p.x, p.z) > 24) this.message = '채집은 마을 주변에서 할 수 있습니다.'; else if (this.clock < this.attackAt) this.message = '잠시 후 다시 채집하세요.'; else { p.wood += 3; this.attackAt = this.clock + 2; this.message = '마을 주변에서 목재 3개를 모았습니다.'; } }
@@ -85,14 +90,14 @@ export class LocalGameSession implements GameSession {
     if (intent.type === 'collect') { const t = this.state.territory, amount = Math.floor(t.stored + 1e-9); p.gold += amount; t.stored = Math.max(0, t.stored - amount); this.message = amount ? `정원에서 골드 ${amount}개를 수확했습니다.` : '정원이 생산 중입니다.'; }
   }
   private damage(m: Mob, amount: number): void {
-    m.hp = Math.max(0, m.hp - amount); this.message = `${m.name}에게 ${amount} 피해`;
+    const dealt=Math.min(m.hp,amount);m.hp -= dealt; this.message = `${m.name}에게 ${dealt} 피해`;this.emit({kind:'damage',x:m.x,z:m.z,amount:dealt,text:this.message});
     if (m.hp !== 0) return;
     m.action = EntityAction.Die; m.actionSeq++; m.respawn = this.clock + 15;
     const p = this.state.player, gold = 8 + Math.floor(this.random() * 7);
     p.gold += gold; p.xp += 30; p.kills++; p.wood += 1;
     if (this.random() < .3) p.potions++;
-    this.message = `${m.name} 처치 · 경험치 +30 · 골드 +${gold}`;
-    while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level}! 마을의 골드가 깨어납니다.`; }
+    this.message = `${m.name} 처치 · 경험치 +30 · 골드 +${gold}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
+    while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level} 달성! 체력과 마나가 회복되었습니다.`;this.emit({kind:'level',x:p.x,z:p.z,amount:p.level,text:this.message}); }
     if (p.level === 100) p.xp = Math.min(p.xp, xpNeeded(p) - 1);
     this.attacking = false; this.target = null;
   }
@@ -112,7 +117,7 @@ export class LocalGameSession implements GameSession {
     for (const m of this.mobs) {
       if (!m.hp) { if (this.clock >= m.respawn) { m.hp = m.maxHp; m.x = m.homeX; m.z = m.homeZ; m.action = 0; m.actionSeq++; } continue; }
       if (Math.hypot(m.x - p.x, m.z - p.z) < 3.5 && Math.hypot(p.x, p.z) > 24 && this.clock >= m.cooldown) {
-        p.hp = Math.max(0, p.hp - 7); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
+        const taken=Math.min(p.hp,7);p.hp -= taken;this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
         if (!p.hp) { const lost = Math.min(p.gold, 5); p.gold -= lost; this.dispatch({ type: 'recall' }); this.message = `쓰러졌습니다. 마을에서 회복했습니다. 골드 -${lost}`; break; }
       } else if (this.clock >= m.cooldown - .8) m.action = 0;
     }
