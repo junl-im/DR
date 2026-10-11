@@ -12,3 +12,6 @@
 /* Visual-only 3D fitting access: no equipment is granted from this link. */
 .panel.inventory-panel .armor-preview-link{display:block;margin:10px auto 4px;padding:8px 6px;max-width:160px;border:1px solid #947f53;background:linear-gradient(135deg,#343b2b,#20271e);color:#e7cf9c;text-decoration:none;text-align:center;font-size:10px;line-height:1.4}
 .panel.inventory-panel .armor-preview-link:focus-visible{outline:2px solid #f0d991;outline-offset:2px}
+
+/* Phase 0.6: real armor, economy and four-slot controls. */
+.armor-crafting{margin:12px 3px 0;border-top:1px solid #746649;padding-top:12px}.armor-crafting h3{margin:0 0 6px!important;text-align:left;font-size:12px!important;color:#ead3a2}.armor-crafting small{display:block;line-height:1.5;color:#b7aa83}.armor-slot-row{display:grid;grid-template-columns:32px 1fr;gap:5px;align-items:center;margin:8px 0;padding:7px 2px;border-bottom:1px solid #383f31;font-size:10px}.armor-slot-row>b{color:#e0c99a}.armor-slot-row>span{color:#9eae92}.armor-slot-row button{padding:6px 3px;min-height:30px;font-size:10px}.armor-slot-row button:disabled{opacity:.48}@media(max-width:550px){.armor-slot-row{grid-template-columns:1fr 1fr}.armor-slot-row button{min-height:36px;font-size:9px}}
