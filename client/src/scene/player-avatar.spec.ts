@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as THREE from 'three';
 import { EntityAction } from '@nj/game-core';
 
+const { fakeArmorSetPart } = vi.hoisted(() => ({ fakeArmorSetPart: vi.fn() }));
+vi.mock('./creature/modular-armor', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./creature/modular-armor')>();
+  return {...actual,prepareModularArmor:vi.fn(async () => ({
+    setPart:fakeArmorSetPart,
+    reset:vi.fn(),
+    snapshot:()=>({helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'}),
+  }))};
+});
+
 vi.mock('./creature/mesh-character', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./creature/mesh-character')>();
   return {
@@ -24,6 +34,7 @@ import {
 } from './player-avatar';
 import { createMeshCharacter, type MeshCharacter } from './creature/mesh-character';
 import { initGameState, setMobs, setTargetMobId } from '../test-hook';
+import {ART_TRIALS} from '../local/art-trial';
 import { syncWeaponVisual } from './creature/weapon-visual';
 
 vi.mock('./creature/weapon-visual', async (importOriginal) => {
@@ -51,6 +62,7 @@ describe('createPlayerAvatar', () => {
     setTargetMobId(null);
     vi.mocked(syncWeaponVisual).mockClear();
     vi.mocked(createMeshCharacter).mockClear();
+    fakeArmorSetPart.mockClear();
   });
 
   it('enters move on a server step and coasts to idle after movement stops', () => {
@@ -108,6 +120,20 @@ describe('createPlayerAvatar', () => {
       2369,
       expect.any(Object)
     );
+  });
+
+
+  it('replays armor slots after a V3 rig finishes loading', async () => {
+    const avatar=createPlayerAvatar({mesh:stubMesh(),manifest:ART_TRIALS.traveler});
+    avatar.sync({x:0,y:0,z:0,armorEquipped:{
+      helmet:'knight',body:'ranger',gloves:'traveler',boots:'knight',
+    }});
+    expect(fakeArmorSetPart).not.toHaveBeenCalled();
+    await avatar.ready;
+    expect(fakeArmorSetPart).toHaveBeenCalledWith('helmet','knight');
+    expect(fakeArmorSetPart).toHaveBeenCalledWith('body','ranger');
+    expect(fakeArmorSetPart).toHaveBeenCalledWith('boots','knight');
+    expect(fakeArmorSetPart).not.toHaveBeenCalledWith('gloves','traveler');
   });
 
   it('loads Rogue_Hooded.glb for classId 31', () => {
