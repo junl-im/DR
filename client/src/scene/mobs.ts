@@ -185,6 +185,13 @@ function ensureMobInstance(
   // Decorative-only elite aura. The existing licensed wanderer rig and
   // gameplay collider stay unchanged; no shadow or extra light is needed.
   if((state.id==='local-11'||state.id==='dungeon-2-0') && state.npcId===20003) {
+    // Retain the same two HP-bar planes, but make elite status legible from
+    // the fixed isometric camera without introducing extra draw calls.
+    const bar=group.getObjectByName('hpBar');
+    const fill=group.getObjectByName('hpFill') as THREE.Mesh|undefined;
+    if(bar)bar.scale.set(1.28,1.18,1);
+    if(fill && fill.material instanceof THREE.MeshBasicMaterial)
+      fill.material.color.setHex(0xffc15a);
     const ring=new THREE.Mesh(
       new THREE.TorusGeometry(.72,.045,6,36),
       new THREE.MeshBasicMaterial({color:0xd6a85c,transparent:true,opacity:.8,
