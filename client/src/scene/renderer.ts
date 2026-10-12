@@ -47,6 +47,7 @@ import { buildFieldGroundCover, disposeFieldGroundCover } from './field-detail';
 import { disposeVillageFacades } from './village-facade';
 import { disposeVillageRoads } from './village-roads';
 import { disposeVillageRooflines } from './village-roofline';
+import { disposeVillageEdge } from './village-edge';
 import { selectMobNearScreenTap } from './mobile-target-assist';
 import type { AudioManager } from '../audio/audio-manager';
 
@@ -226,6 +227,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
       disposeVillageFacades(scene);
       disposeVillageRoads(scene);
       disposeVillageRooflines(scene);
+      disposeVillageEdge(scene);
       return;
     }
     setEnvironment({ ...envResult, loaded: true });
@@ -726,6 +728,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     disposeVillageFacades(scene);
     disposeVillageRoads(scene);
     disposeVillageRooflines(scene);
+    disposeVillageEdge(scene);
     playerAvatar.dispose?.();
     clearPathPreview();
     disposeFieldGroundCover(fieldCover);
