@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import {
-  ARMOR_SLOTS, prepareModularArmor, type ArmorOutfit,
+  ARMOR_SLOTS, prepareModularArmor, armorSurfaceFinish, type ArmorOutfit,
 } from './modular-armor';
 import type { GLTFTemplate } from './mesh-character';
 
@@ -50,6 +50,20 @@ function buildRig(outfit: ArmorOutfit, mismatch = false): THREE.Group {
 const source = (root: THREE.Group): GLTFTemplate => ({ scene: root, animations: [] });
 
 describe('four-slot modular armor visual fitting', () => {
+  it('separates metal/roughness per equipped model without mutating the shared GLB texture',()=>{
+    const texture=new THREE.Texture();
+    const source=new THREE.MeshStandardMaterial({map:texture,metalness:0,roughness:1});
+    const heavy=armorSurfaceFinish(source,'knight') as THREE.MeshStandardMaterial;
+    const medium=armorSurfaceFinish(source,'ranger') as THREE.MeshStandardMaterial;
+    expect(source.metalness).toBe(0);
+    expect(source.roughness).toBe(1);
+    expect(heavy).not.toBe(source);
+    expect(heavy.map).toBe(texture);
+    expect(heavy.metalness).toBeGreaterThan(medium.metalness);
+    expect(heavy.roughness).toBeLessThan(source.roughness);
+    expect(medium.map).toBe(texture);
+  });
+
   it('mixes individual skinned parts on the existing traveler skeleton', async () => {
     const traveler = buildRig('traveler');
     const load = async (url: string) => source(buildRig(url.includes('ranger') ? 'ranger' : 'knight'));
