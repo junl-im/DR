@@ -184,7 +184,7 @@ function ensureMobInstance(
   const group = createMobGroup(state.id, hpBarYOffset);
   // Decorative-only elite aura. The existing licensed wanderer rig and
   // gameplay collider stay unchanged; no shadow or extra light is needed.
-  if(state.id==='local-11' && state.npcId===20003) {
+  if((state.id==='local-11'||state.id==='dungeon-2-0') && state.npcId===20003) {
     const ring=new THREE.Mesh(
       new THREE.TorusGeometry(.72,.045,6,36),
       new THREE.MeshBasicMaterial({color:0xd6a85c,transparent:true,opacity:.8,
