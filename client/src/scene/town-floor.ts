@@ -5,7 +5,7 @@ import type {SceneObjectSpec} from './village';
 export const TOWN_PAVING_PIXELS = 256;
 export function makePavingPixels(seed=20261012, size=TOWN_PAVING_PIXELS): Uint8Array {
   const data=new Uint8Array(size*size*4);
-  const stone=24;
+  const stone=16;
   for(let y=0;y<size;y++)for(let x=0;x<size;x++){
     const row=Math.floor(y/stone),rowY=y%stone;
     const stagger=(row%2)*(stone/2);
@@ -15,7 +15,7 @@ export function makePavingPixels(seed=20261012, size=TOWN_PAVING_PIXELS): Uint8A
     // than long uninterrupted checkerboard grout seams.
     const edge=Math.min(insetX,stone-insetX-1,rowY,stone-rowY-1);
     const corner=Math.min(insetX,stone-insetX-1)+Math.min(rowY,stone-rowY-1);
-    const grout=edge<2||corner<7;
+    const grout=edge<2||corner<5;
     const blockHash=(Math.imul(col*29+row*131+seed,1103515245)>>>10)&255;
     const grain=((Math.imul(x*91+y*47+seed,1664525)>>>16)&15)-7;
     const chip=((Math.imul(x*137+y*311+seed,22695477)>>>23)&7);
