@@ -13,7 +13,7 @@ export const TOWN_SIGNS = [
 
 /**
  * Art-only dressing. No world collision boxes, no navigation changes and no
- * extra scene click targets: gameplay still raycasts mobs and terrain.
+ * collision targets. Local facility UI picking is handled by town-interaction.
  * Keep the existing sign anchors aligned with the existing interaction overlays.
  */
 export function buildTownDetails(scene: THREE.Scene): void {

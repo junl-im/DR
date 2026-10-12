@@ -1,3 +1,6 @@
+## HUD/town interaction update — 2026-10-13
+User prioritised HUD and facility clicking over new content. Baseline main fe76f8d. See docs/hud-town/README.md; final merge/deployment status is recorded in Notion.
+
 ## Quest/auto-hunt update — 2026-10-13
 Based on main ac71822. Quest-only hunt priority with completion stop, objective finder and waiting/blocked feedback. See docs/quest-hunt/README.md and browser-report.json; no save/reward/schema change. Final PR/merge/deploy evidence is in Notion master.
 

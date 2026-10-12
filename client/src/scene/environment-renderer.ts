@@ -144,10 +144,12 @@ export async function placeVillageEnvironment(
         // primitive fallback, so drop to ground (spec.y − height/2) for meshes.
         prop.position.set(spec.x, spec.y - spec.height / 2, spec.z);
         prop.userData.renderKind = 'mesh';
+        prop.userData.townBuilding = buildingSlot-1;
         scene.add(prop);
       } else {
         const mesh = addBoxPrimitive(spec);
         mesh.userData.renderKind = 'primitive';
+        mesh.userData.townBuilding = buildingSlot-1;
         scene.add(mesh);
         buildingUsedPrimitive = true;
       }

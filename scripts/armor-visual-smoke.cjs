@@ -129,7 +129,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.keyboard.press('Tab');
     const nextTabTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
     if(!nextTabTarget || tabTarget===nextTabTarget)throw new Error('Tab cycling stuck at one target');
-    await game.locator('#next-target').click();
+    await game.locator('#hunt-tools summary').first().click();await game.locator('#next-target').click();
     const buttonTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
     if(!buttonTarget||buttonTarget===nextTabTarget)
       throw new Error('Mobile next-target button did not cycle to another monster');
