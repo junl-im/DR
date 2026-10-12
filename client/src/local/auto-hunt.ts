@@ -1,16 +1,26 @@
-import type {LocalGameSession,Mob} from './session';
+import {maxHp,type LocalGameSession,type Mob} from './session';
 
 export const AUTO_HUNT_RADIUS=28;
+export const AUTO_HUNT_RADII=[12,20,28] as const;
+export const AUTO_POTION_THRESHOLDS=[0,.35,.5,.65] as const;
 export const AUTO_HUNT_STOP_HP_RATIO=.22;
+export const AUTO_POTION_COOLDOWN_S=5;
 export const TAB_TARGET_RADIUS=75;
+export type HuntPriority='nearest'|'weakest'|'normal-only';
+export type HuntStopReason='manual'|'low-hp'|'range'|'zone-change';
 
+function distance(ax:number,az:number,bx:number,bz:number):number{
+  return Math.hypot(ax-bx,az-bz);
+}
+
+/** Tab cycles actual living mobs in the current play zone, never corpse / next dungeon wave. */
 export function selectableMobs(session:LocalGameSession,radius=TAB_TARGET_RADIUS):Mob[] {
   const p=session.state.player,inside=!!p.dungeon?.inside;
   return session.mobs.filter(m=>
     m.hp>0 && m.id.startsWith('dungeon-')===inside &&
-    Math.hypot(m.x-p.x,m.z-p.z)<=radius
+    distance(m.x,m.z,p.x,p.z)<=radius
   ).sort((a,b)=>{
-    const da=Math.hypot(a.x-p.x,a.z-p.z),db=Math.hypot(b.x-p.x,b.z-p.z);
+    const da=distance(a.x,a.z,p.x,p.z),db=distance(b.x,b.z,p.x,p.z);
     return da-db||a.id.localeCompare(b.id);
   });
 }
@@ -22,43 +32,90 @@ export function nextTabTarget(session:LocalGameSession):string|null {
   return mobs[(current+1)%mobs.length].id;
 }
 
+const elite=(m:Mob):boolean=>
+  m.name==='숲의 정예 감시자'||m.name==='폐허의 파수꾼';
+
+/**
+ * Session-scoped, explicitly opt-in assistance; never persisted or networked.
+ * Delegates all moving/damage/cooldown to LocalGameSession.tick/dispatch.
+ */
 export class AutoHuntController {
   enabled=false;
-  private anchor:{x:number;z:number}|null=null;
+  radius:typeof AUTO_HUNT_RADII[number]=AUTO_HUNT_RADIUS;
+  priority:HuntPriority='nearest';
+  potionThreshold:typeof AUTO_POTION_THRESHOLDS[number]=0;
+  stopReason:HuntStopReason|null=null;
+  private anchor:{x:number;z:number;inside:boolean}|null=null;
   private lastTarget:string|null=null;
+  private potionCooldown=0;
   constructor(
     private readonly session:LocalGameSession,
     private readonly onTarget:(id:string|null)=>void,
   ){}
-  setEnabled(value:boolean):boolean{
-    this.enabled=!!value && this.session.state.player.hp>0;
+  configure(options:{
+    radius?:number;
+    priority?:HuntPriority;
+    potionThreshold?:number;
+  }):void{
+    if(options.radius!==undefined){
+      if(!AUTO_HUNT_RADII.some(r=>r===options.radius))throw new RangeError('Invalid auto hunt radius');
+      this.radius=options.radius as typeof AUTO_HUNT_RADII[number];
+    }
+    if(options.priority!==undefined){
+      if(!(['nearest','weakest','normal-only'] as string[]).includes(options.priority))throw new RangeError('Invalid target priority');
+      this.priority=options.priority;
+    }
+    if(options.potionThreshold!==undefined){
+      if(!AUTO_POTION_THRESHOLDS.some(t=>t===options.potionThreshold))throw new RangeError('Invalid auto potion threshold');
+      this.potionThreshold=options.potionThreshold as typeof AUTO_POTION_THRESHOLDS[number];
+    }
+  }
+  setEnabled(value:boolean,reason:HuntStopReason='manual'):boolean{
     const p=this.session.state.player;
-    this.anchor=this.enabled?{x:p.x,z:p.z}:null;
+    this.enabled=!!value && p.hp>0;
+    this.anchor=this.enabled?{x:p.x,z:p.z,inside:!!p.dungeon?.inside}:null;
     this.lastTarget=null;
+    this.potionCooldown=0;
+    this.stopReason=this.enabled?null:reason;
     if(!this.enabled&&this.session.attacking)this.session.dispatch({type:'attack'});
     return this.enabled;
   }
-  tick():void {
-    if(!this.enabled||!this.anchor)return;
-    const s=this.session,p=s.state.player;
-    if(!p.hp || p.hp/Math.max(1,100+(p.level-1)*18)<AUTO_HUNT_STOP_HP_RATIO ||
-      Math.hypot(p.x-this.anchor.x,p.z-this.anchor.z)>AUTO_HUNT_RADIUS+.5){
-      this.setEnabled(false);return;
+  tick(dt=.05):void {
+    if(!this.enabled||!this.anchor||!Number.isFinite(dt)||dt<=0||dt>.25)return;
+    const s=this.session,p=s.state.player,inside=!!p.dungeon?.inside;
+    if(inside!==this.anchor.inside){this.setEnabled(false,'zone-change');return;}
+    if(distance(p.x,p.z,this.anchor.x,this.anchor.z)>this.radius+.5){
+      this.setEnabled(false,'range');return;
     }
-    const inside=!!p.dungeon?.inside;
-    const valid=(m:Mob)=>m.hp>0 && m.id.startsWith('dungeon-')===inside &&
-      Math.hypot(m.x-this.anchor!.x,m.z-this.anchor!.z)<=AUTO_HUNT_RADIUS &&
-      Math.hypot(m.x-p.x,m.z-p.z)<=AUTO_HUNT_RADIUS;
+    const hpRatio=p.hp/Math.max(1,maxHp(p));
+    if(!p.hp||hpRatio<AUTO_HUNT_STOP_HP_RATIO){
+      this.setEnabled(false,'low-hp');return;
+    }
+
+    // User must explicitly enable this: potions are finite/save-backed items.
+    this.potionCooldown=Math.max(0,this.potionCooldown-dt);
+    if(this.potionThreshold>0 && hpRatio<=this.potionThreshold &&
+       this.potionCooldown===0 && p.potions>0 && p.hp<maxHp(p)){
+      s.dispatch({type:'potion'});
+      this.potionCooldown=AUTO_POTION_COOLDOWN_S;
+    }
+
+    const valid=(m:Mob):boolean=>m.hp>0&&m.id.startsWith('dungeon-')===inside&&
+      distance(m.x,m.z,this.anchor!.x,this.anchor!.z)<=this.radius&&
+      distance(m.x,m.z,p.x,p.z)<=this.radius&&
+      (this.priority!=='normal-only'||!elite(m));
     const current=s.mobs.find(m=>m.id===s.target&&valid(m));
-    const next=current??selectableMobs(s,AUTO_HUNT_RADIUS)
-      .filter(valid).sort((a,b)=>
-        Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z)||a.id.localeCompare(b.id))[0];
+    const others=selectableMobs(s,this.radius).filter(valid);
+    if(this.priority==='weakest')others.sort((a,b)=>
+      a.hp/a.maxHp-b.hp/b.maxHp||
+      distance(a.x,a.z,p.x,p.z)-distance(b.x,b.z,p.x,p.z)||a.id.localeCompare(b.id));
+    const next=current??others[0];
     if(!next){
       if(s.attacking)s.dispatch({type:'attack'});
       this.lastTarget=null;
       return;
     }
-    if(s.target!==next.id || this.lastTarget!==next.id){
+    if(s.target!==next.id||this.lastTarget!==next.id){
       s.dispatch({type:'target',id:next.id});
       this.onTarget(next.id);
       this.lastTarget=next.id;
