@@ -135,6 +135,7 @@ export interface GameRenderer {
   setMoveIntentHandler: (handler: (intent: MovementIntent) => void) => void;
   setMobTargetHandler: (handler: (mobId: string) => void) => void;
   rotateCamera: (deltaYaw: number) => void;
+  setCameraFraming: (offset:{x:number;y:number;z:number},fov:number) => void;
   setVfxTargetMobId: (mobId: string | null) => void;
   syncPlayerVfx: (snapshot: {
     hp: number;
@@ -287,6 +288,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   const CULL_MOVE_THRESHOLD_SQ = 4;
 
   let cameraYaw = 0;
+  let activeCameraOffset={...(options.cameraOffset ?? DEFAULT_CAMERA_OFFSET)};
   const updateCamera = (): void => {
     applyTo(
       {
@@ -294,11 +296,19 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
         lookAt: (target) => camera.lookAt(target.x, target.y, target.z),
       },
       { x: localPosition.x, y: localPosition.y, z: localPosition.z },
-      options.cameraOffset ?? DEFAULT_CAMERA_OFFSET,
+      activeCameraOffset,
       cameraYaw
     );
   };
 
+  const setCameraFraming=(offset:{x:number;y:number;z:number},fov:number):void=>{
+    if(![offset.x,offset.y,offset.z,fov].every(Number.isFinite))return;
+    if(offset.x<=0||offset.z<=0||offset.y<=0||fov<30||fov>55)return;
+    activeCameraOffset={...offset};
+    camera.fov=fov;
+    camera.updateProjectionMatrix();
+    updateCamera();
+  };
   const rotateCamera = (deltaYaw: number): void => {
     if (options.lockCamera) return;
     cameraYaw = (cameraYaw + deltaYaw) % (Math.PI * 2);
@@ -716,6 +726,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     setMoveIntentHandler,
     setMobTargetHandler,
     rotateCamera,
+    setCameraFraming,
     setVfxTargetMobId,
     syncPlayerVfx,
     syncMobVfx,
