@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {resolveModelAssetUrl} from './model-asset-url';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export interface StaticPropTemplate {
@@ -28,12 +29,13 @@ export function loadGltfStaticTemplate(
   url: string,
   loader: GLTFLoader = new GLTFLoader()
 ): Promise<StaticPropTemplate> {
-  const cached = templateCache.get(url);
+  const resolvedUrl=resolveModelAssetUrl(url);
+  const cached = templateCache.get(resolvedUrl);
   if (cached) return cached;
 
   const promise = new Promise<StaticPropTemplate>((resolve, reject) => {
     loader.load(
-      url,
+      resolvedUrl,
       (gltf) => {
         const scene = gltf.scene as THREE.Group;
         scene.traverse((node) => {
@@ -48,7 +50,10 @@ export function loadGltfStaticTemplate(
       (err) => reject(err instanceof Error ? err : new Error(String(err)))
     );
   });
-  templateCache.set(url, promise);
+  templateCache.set(resolvedUrl, promise);
+  void promise.catch(()=>{
+    if(templateCache.get(resolvedUrl)===promise)templateCache.delete(resolvedUrl);
+  });
   return promise;
 }
 
