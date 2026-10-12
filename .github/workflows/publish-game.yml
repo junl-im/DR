@@ -1,0 +1,106 @@
+name: Dungeon zero verified publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dungeon-zero-publish-main
+  cancel-in-progress: false
+
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NX_DAEMON: 'false'
+      VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+      VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify combat, progression, content and rendering contract
+        run: |
+          npm run test:core
+          npm run test:client
+          npm run typecheck
+          npm run check:assets
+      - name: Build Firebase-root static site
+        run: |
+          npm run build:firebase
+          test -s dist/client/index.html
+          test -s dist/client/art-lab.html
+          test -s dist/client/models/props/environment/Building_0.glb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dungeon-zero-firebase-live-site
+          path: dist/client
+          if-no-files-found: error
+          retention-days: 14
+      - name: Build GitHub Pages site with /DR/ asset base
+        run: |
+          npm run build:github
+          test -s dist/client/index.html
+          test -s dist/client/models/props/environment/Building_0.glb
+          grep -q '/DR/assets/' dist/client/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/client
+
+  deploy-pages:
+    needs: verify-and-package
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - name: Publish tested main to GitHub Pages
+        id: pages
+        uses: actions/deploy-pages@v4
+
+  deploy-firebase-hosting:
+    needs: verify-and-package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment:
+      name: firebase-hosting
+      url: https://dream-library-b732a.web.app
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify existing Firebase service account is configured
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::Firebase Hosting secret FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A is missing. GitHub Pages can still publish. Configure this secret to enable the existing Firebase Hosting target."
+            exit 1
+          fi
+          echo "Firebase deployment credentials present"
+      - uses: actions/download-artifact@v4
+        with:
+          name: dungeon-zero-firebase-live-site
+          path: dist/client
+      - name: Publish Hosting ONLY (no Firestore rules or data changes)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A }}
+          channelId: live
+          projectId: dream-library-b732a
