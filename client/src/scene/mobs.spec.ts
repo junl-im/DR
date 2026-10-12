@@ -16,13 +16,14 @@ import {
   FAR_ANIM_INTERVAL_MS,
   clearMobTemplateLoadsForTest,
   attachGoblinClubForTest,
+  resolveMobVisualEntry,
   type MobMeshMap,
   type MobVisualState,
 } from './mobs';
 import { clearGltfTemplateCache, KAYKIT_CLIP_MAP } from './creature/mesh-character';
 import { KAYKIT_RIGHT_HAND_BONE } from './creature/weapon-manifest';
 import { findBoneByName } from './creature/attachment';
-import { createMobAvatar } from './mob-avatar';
+import { createMobAvatar, type MobAvatar } from './mob-avatar';
 
 describe('mobs visual mapping', () => {
   afterEach(() => {
@@ -99,6 +100,55 @@ describe('mobs visual mapping', () => {
     expect(map.get('mob-a')).toBe(group);
     expect(group.position.x).toBe(4);
     expect(group.position.z).toBe(6);
+  });
+
+  it('shows lightweight elite aura only on the reserved local sentinel',()=>{
+    const scene={add:()=>undefined,remove:()=>undefined};
+    const map:MobMeshMap=new Map();
+    const instances=createMobInstanceMap();
+    const base={npcId:20003,x:0,y:0,z:0,hp:120,maxHp:120};
+    syncMobVisual(map,instances,{id:'local-11',...base},scene as never);
+    syncMobVisual(map,instances,{id:'local-10',...base,hp:45,maxHp:45},scene as never);
+    const aura=map.get('local-11')?.getObjectByName('elite-sentinel-aura');
+    expect(aura).toBeInstanceOf(THREE.Mesh);
+    expect(aura?.userData['decorative']).toBe(true);
+    expect((aura as THREE.Mesh).castShadow).toBe(false);
+    const elite=map.get('local-11')!,normal=map.get('local-10')!;
+    const eliteBar=elite.getObjectByName('hpBar')!;
+    const normalBar=normal.getObjectByName('hpBar')!;
+    expect(eliteBar.scale.x).toBeGreaterThan(normalBar.scale.x);
+    const material=(elite.getObjectByName('hpFill') as THREE.Mesh).material as THREE.MeshBasicMaterial;
+    expect(material.color.getHex()).toBe(0xffc15a);
+    expect(map.get('local-10')?.getObjectByName('elite-sentinel-aura')).toBeUndefined();
+  });
+  it('gives only the final dungeon boss a distinct licensed model and non-pickable warning silhouette', () => {
+    // Gameplay still reports the same npcId for damage, drops, and save checkpoints.
+    const ordinary = resolveMobVisualEntry('dungeon-1-0', 20003)!;
+    const boss = resolveMobVisualEntry('dungeon-2-0', 20003)!;
+    expect(ordinary.model).toBe('/models/monsters/Goblin.glb');
+    expect(boss.model).toBe('/models/monsters/OrcCaptain.glb');
+    expect(boss.scale).toBeGreaterThan(ordinary.scale);
+    expect(resolveMobVisualEntry('local-11', 20003)?.model).toBe(ordinary.model);
+    expect(resolveMobVisualEntry('dungeon-2-0', 99999)).toBeNull();
+
+    const scene = { add: () => undefined, remove: () => undefined };
+    const map: MobMeshMap = new Map();
+    const instances = createMobInstanceMap();
+    const state = { npcId: 20003, x: -88, y: 1, z: -68, hp: 180, maxHp: 180 };
+    syncMobVisual(map, instances, { id: 'dungeon-2-0', ...state }, scene as never);
+    syncMobVisual(map, instances, { id: 'dungeon-1-0', ...state }, scene as never);
+    expect(mobStateToVisual({ id: 'dungeon-2-0', ...state }).npcId).toBe(20003);
+    expect(getMobHpBarYOffset(instances, 'dungeon-2-0')).toBe(boss.hpBarYOffset);
+    expect(getMobHpBarYOffset(instances, 'dungeon-1-0')).toBe(ordinary.hpBarYOffset);
+    const final = map.get('dungeon-2-0')!;
+    const aura = final.getObjectByName('dungeon-boss-aura') as THREE.Mesh;
+    expect(aura).toBeInstanceOf(THREE.Mesh);
+    expect(aura.userData['decorative']).toBe(true);
+    expect(new THREE.Raycaster().intersectObject(aura)).toEqual([]);
+    expect(final.getObjectByName('hpBar')?.scale.x).toBe(1.6);
+    const fill = final.getObjectByName('hpFill') as THREE.Mesh;
+    expect((fill.material as THREE.MeshBasicMaterial).color.getHex()).toBe(0xff6b58);
+    expect(map.get('dungeon-1-0')?.getObjectByName('dungeon-boss-aura')).toBeUndefined();
   });
 
   it('uses manifest hpBarYOffset for mapped npcIds', () => {
@@ -329,6 +379,34 @@ describe('mobs visual mapping', () => {
       expect(instances.get('goblin-1')?.clubProp).not.toBeNull();
     });
     expect(instances.get('gremlin-1')?.clubProp).toBeNull();
+  });
+
+  it('does not attach an obsolete club to a reused mob ID after a dungeon wave', async () => {
+    let release!: (template: {scene:THREE.Group;animations:THREE.AnimationClip[]})=>void;
+    const delayed=new Promise<{scene:THREE.Group;animations:THREE.AnimationClip[]}>(resolve=>{release=resolve;});
+    const spy=vi.spyOn(await import('./creature/mesh-character'),'loadGltfTemplate')
+      .mockReturnValueOnce(delayed);
+    const instances=createMobInstanceMap();
+    const retiredAvatar={group:new THREE.Group()} as unknown as MobAvatar;
+    const replacementAvatar={group:new THREE.Group()} as unknown as MobAvatar;
+    const mobId='dungeon-1-0';
+    const initial={
+      group:createMobGroup(mobId),avatar:retiredAvatar,
+      usesCapsule:false,hpBarYOffset:1.65,pendingRemovalAtMs:null,
+      currentClip:'idle',clubProp:null,animAccumMs:0,
+    };
+    instances.set(mobId,initial);
+    attachGoblinClubForTest(instances,mobId,20003,retiredAvatar);
+    // Identical ID, different avatar instance: the old promise must not attach.
+    instances.set(mobId,{...initial,avatar:replacementAvatar});
+    release({scene:new THREE.Group(),animations:[]});
+    await delayed;
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(instances.get(mobId)?.clubProp).toBeNull();
+    expect(retiredAvatar.group.children).toHaveLength(0);
+    expect(replacementAvatar.group.children).toHaveLength(0);
+    spy.mockRestore();
   });
 
   it('clones a distinct club object per Goblin instance', async () => {

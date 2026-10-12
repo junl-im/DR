@@ -7,11 +7,14 @@ import {
   type AnimState,
 } from '@nj/game-core';
 import { createMeshCharacter, type MeshCharacter } from './creature/mesh-character';
+import { createContactMark, disposeContactMark } from './contact-mark';
+import { prepareModularArmor, ARMOR_SLOTS, type ArmorSelection, type ArmorOutfit, type ModularArmorController } from './creature/modular-armor';
 import { type PlayerManifestEntry, getPlayerManifestEntry } from './creature/player-manifest';
 import { createNameplate, type Nameplate } from './nameplate';
 import { getGameState } from '../test-hook';
 import {
   createWeaponVisualState,
+  disposeWeaponVisual,
   syncWeaponVisual,
   type WeaponVisualState,
 } from './creature/weapon-visual';
@@ -27,6 +30,7 @@ export interface PlayerAvatarSync {
   action?: EntityAction;
   actionSeq?: number;
   equippedWeaponItemId?: number;
+  armorEquipped?: ArmorSelection;
 }
 
 export interface PlayerAvatar {
@@ -36,6 +40,7 @@ export interface PlayerAvatar {
   /** Show/update the floating name label above the avatar's head. */
   setName: (name: string) => void;
   ready: Promise<void>;
+  dispose: () => void;
 }
 
 function yawFromDirection(dx: number, dz: number): number {
@@ -52,6 +57,8 @@ export interface PlayerAvatarOptions {
 export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAvatar {
   const group = new THREE.Group();
   group.name = 'player-avatar';
+  const contactMark=createContactMark();
+  group.add(contactMark);
 
   const classId = options.classId ?? 0;
   const entry = options.manifest ?? getPlayerManifestEntry(classId);
@@ -73,11 +80,36 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
       clipMap: entry.clipMap,
     });
   group.add(character.object);
+  const weaponState: WeaponVisualState = createWeaponVisualState();
+  let requestedWeaponId = 0;
+  let requestedArmor: ArmorSelection = {helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'};
+  let armorController: ModularArmorController | null = null;
+  let disposed=false;
+  const applyArmor = (): void => {
+    if (!armorController) return;
+    const current = armorController.snapshot();
+    for (const slot of ARMOR_SLOTS) {
+      if (current[slot] !== requestedArmor[slot]) armorController.setPart(slot,requestedArmor[slot]);
+    }
+  };
   const ready = character.ready
-    .then(() => {
+    .then(async () => {
+      if(disposed)return;
+      syncWeaponVisual(character.object, requestedWeaponId, weaponState);
       group.remove(placeholder);
       placeholder.geometry.dispose();
       (placeholder.material as THREE.Material).dispose();
+      // Only V3 outfits share this rig; KayKit remains visually unchanged.
+      const v3 = entry.model.match(/\/system-g6\/(knight|ranger|traveler)\.glb$/);
+      if (v3) {
+        try {
+          armorController = await prepareModularArmor(character.object, undefined, v3[1] as ArmorOutfit);
+          if(disposed){armorController.dispose?.();armorController=null;return;}
+          applyArmor();
+        } catch (error) {
+          console.warn('optional modular armor visual could not load', error);
+        }
+      }
     })
     .catch(() => {
       /* mesh load failure is non-fatal for logic (e.g. unit tests with no server) */
@@ -91,8 +123,6 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   let action = EntityAction.None;
   let actionSeq = 0;
   let initialized = false;
-  const weaponState: WeaponVisualState = createWeaponVisualState();
-
   let nameplate: Nameplate | null = null;
   const setName = (name: string): void => {
     const trimmed = (name ?? '').trim();
@@ -106,6 +136,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   };
 
   const sync = (p: PlayerAvatarSync, nowMs = performance.now()): void => {
+    if(disposed)return;
     if (!initialized) {
       prevX = p.x;
       prevZ = p.z;
@@ -124,7 +155,13 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
     if (typeof p.action === 'number') action = p.action;
     if (typeof p.actionSeq === 'number') actionSeq = p.actionSeq;
 
-    syncWeaponVisual(character.object, p.equippedWeaponItemId ?? 0, weaponState);
+    requestedWeaponId = p.equippedWeaponItemId ?? 0;
+    requestedArmor = p.armorEquipped ?? {helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'};
+    applyArmor();
+    // Attachment must wait for the async GLB skeleton, not the placeholder.
+    if (!group.children.includes(placeholder)) {
+      syncWeaponVisual(character.object, requestedWeaponId, weaponState);
+    }
 
     group.position.set(p.x, p.y - feetOffsetY, p.z);
     prevX = p.x;
@@ -132,6 +169,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   };
 
   const update = (dt: number, nowMs = performance.now()): AnimationClip => {
+    if(disposed)return 'idle';
     const locomotion: 'idle' | 'move' =
       nowMs - lastMoveMs <= MOVE_COAST_MS ? 'move' : 'idle';
     const stepped = stepAnimation(animState, { action, actionSeq, locomotion, nowMs });
@@ -153,7 +191,20 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
     return clip;
   };
 
-  return { group, sync, update, setName, ready };
+  const dispose=():void=>{
+    if(disposed)return;
+    disposed=true;
+    disposeWeaponVisual(weaponState);
+    armorController?.dispose?.();
+    armorController=null;
+    disposeContactMark(contactMark);
+    if(group.children.includes(placeholder)){
+      group.remove(placeholder);
+      placeholder.geometry.dispose();
+      (placeholder.material as THREE.Material).dispose();
+    }
+  };
+  return { group, sync, update, setName, ready, dispose };
 }
 
 export function computeFacingYaw(

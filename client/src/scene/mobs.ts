@@ -128,6 +128,15 @@ export function createMobGroup(mobId: string, hpBarYOffset = DEFAULT_HP_BAR_Y_OF
   return group;
 }
 
+/** Select a visual rig without changing the NPC's combat identity or save data.
+ * The first-dungeon final boss uses an already bundled CC0 Orc Captain rather
+ * than looking identical to the preceding Goblin guards.
+ */
+export function resolveMobVisualEntry(mobId: string, npcId: number) {
+  if (mobId === 'dungeon-2-0' && npcId === 20003) return getCreatureEntry(20098);
+  return getCreatureEntry(npcId);
+}
+
 function getOrLoadTemplate(model: string) {
   let pending = templateLoads.get(model);
   if (!pending) {
@@ -147,13 +156,15 @@ function attachGoblinClub(
   npcId: number,
   avatar: MobAvatar
 ): void {
-  if (npcId !== 20003) return;
+  if (npcId !== 20003 || mobId === 'dungeon-2-0') return;
 
   loadGltfTemplate(GOBLIN_CLUB_ATTACHMENT.model)
     .then((clubTemplate) => {
-      if (!instances.has(mobId)) return;
-      const live = instances.get(mobId)!;
-      if (live.clubProp) return;
+      // The same mob ID may be reused after a wave/scene replacement.
+      // A delayed GLB must never attach to a retired avatar or mark its
+      // replacement as equipped.
+      const live = instances.get(mobId);
+      if (!live || live.avatar !== avatar || live.clubProp) return;
       const club = clubTemplate.scene.clone(true);
       club.name = 'goblin-club';
       if (
@@ -179,9 +190,32 @@ function ensureMobInstance(
   let instance = instances.get(state.id);
   if (instance) return instance;
 
-  const entry = getCreatureEntry(state.npcId);
+  const entry = resolveMobVisualEntry(state.id, state.npcId);
   const hpBarYOffset = entry?.hpBarYOffset ?? DEFAULT_HP_BAR_Y_OFFSET;
   const group = createMobGroup(state.id, hpBarYOffset);
+  // Decorative-only elite aura. The existing licensed wanderer rig and
+  // gameplay collider stay unchanged; no shadow or extra light is needed.
+  const isDungeonBoss = state.id === 'dungeon-2-0' && state.npcId === 20003;
+  if((state.id==='local-11'||isDungeonBoss) && state.npcId===20003) {
+    // Retain the same two HP-bar planes, but make elite status legible from
+    // the fixed isometric camera without introducing extra draw calls.
+    const bar=group.getObjectByName('hpBar');
+    const fill=group.getObjectByName('hpFill') as THREE.Mesh|undefined;
+    if(bar)bar.scale.set(isDungeonBoss ? 1.6 : 1.28,1.18,1);
+    if(fill && fill.material instanceof THREE.MeshBasicMaterial)
+      fill.material.color.setHex(isDungeonBoss ? 0xff6b58 : 0xffc15a);
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(isDungeonBoss ? 1.1 : .72,.045,6,36),
+      new THREE.MeshBasicMaterial({color:isDungeonBoss ? 0xd94b44 : 0xd6a85c,transparent:true,opacity:.8,
+        depthWrite:false,side:THREE.DoubleSide})
+    );
+    ring.name=isDungeonBoss ? 'dungeon-boss-aura' : 'elite-sentinel-aura';
+    ring.raycast=()=>{};
+    ring.rotation.x=Math.PI/2;
+    ring.position.y=.11;
+    ring.userData['decorative']=true;
+    group.add(ring);
+  }
   scene.add(group);
   map.set(state.id, group);
 

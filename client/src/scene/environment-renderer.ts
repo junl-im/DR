@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TERRAIN_CONFIG } from '@nj/game-core';
 import { buildVillage, type SceneObjectSpec } from './village';
+import { createVillagePaving } from './town-floor';
+import { buildVillageFacades } from './village-facade';
+import { buildVillageRoads } from './village-roads';
+import { buildVillageRooflines } from './village-roofline';
 import { scatterProps } from './scatter';
 import {
   getBuildingPropEntry,
@@ -119,7 +123,7 @@ export async function placeVillageEnvironment(
   let buildingUsedPrimitive = false;
   for (const spec of villageSpecs) {
     if (spec.kind === 'ground') {
-      const ground=addBoxPrimitive(spec);ground.name='village-ground';scene.add(ground);
+      const ground=createVillagePaving(spec);scene.add(ground);
       continue;
     }
 
@@ -173,6 +177,11 @@ export async function placeVillageEnvironment(
     result.buildings.renderKind = 'primitive';
   }
 
+  // Per-building architectural dressing is purely cosmetic and is created
+  // after the existing source GLBs / primitive fallbacks are placed.
+  buildVillageFacades(scene, villageSpecs);
+  buildVillageRoads(scene, villageSpecs);
+  buildVillageRooflines(scene, villageSpecs);
   return result;
 }
 

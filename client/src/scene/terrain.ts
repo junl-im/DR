@@ -14,7 +14,7 @@ export type { TerrainData };
 export { TERRAIN_CONFIG, sampleHeight };
 
 /** Grass texture pixel dimensions (square, zero-asset, generated at runtime). */
-export const GRASS_TEXTURE_SIZE_PX = 64;
+export const GRASS_TEXTURE_SIZE_PX = 128;
 /** World-space size (m) of one tile of the repeating grass texture. */
 export const GRASS_TILE_SIZE_M = 8;
 
@@ -54,6 +54,12 @@ function buildGrassTexture(THREE_NS: typeof THREE, seed: number): THREE.DataText
   );
   texture.wrapS = THREE_NS.RepeatWrapping;
   texture.wrapT = THREE_NS.RepeatWrapping;
+  // Generated pixels are already sRGB. Decode once to linear before lighting,
+  // and avoid multiplied green tint that used to darken the entire field.
+  texture.colorSpace = THREE_NS.SRGBColorSpace;
+  texture.magFilter = THREE_NS.LinearFilter;
+  texture.minFilter = THREE_NS.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
   texture.needsUpdate = true;
   return texture;
 }
@@ -81,7 +87,7 @@ export function createTerrainMesh(
   geometry.computeBoundingSphere();
 
   const material = new THREE_NS.MeshLambertMaterial({
-    color: 0x4a7c3f,
+    color: 0xffffff, // neutral tint: texture already contains the final green palette
     flatShading: true,
     side: THREE_NS.DoubleSide,
     map: buildGrassTexture(THREE_NS, terrain.seed),

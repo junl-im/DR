@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as THREE from 'three';
 import { EntityAction } from '@nj/game-core';
 
+const { fakeArmorSetPart } = vi.hoisted(() => ({ fakeArmorSetPart: vi.fn() }));
+vi.mock('./creature/modular-armor', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./creature/modular-armor')>();
+  return {...actual,prepareModularArmor:vi.fn(async () => ({
+    setPart:fakeArmorSetPart,
+    reset:vi.fn(),
+    snapshot:()=>({helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'}),
+  }))};
+});
+
 vi.mock('./creature/mesh-character', async (importOriginal) => {
   const actual = await importOriginal<typeof import('./creature/mesh-character')>();
   return {
@@ -24,6 +34,7 @@ import {
 } from './player-avatar';
 import { createMeshCharacter, type MeshCharacter } from './creature/mesh-character';
 import { initGameState, setMobs, setTargetMobId } from '../test-hook';
+import {ART_TRIALS} from '../local/art-trial';
 import { syncWeaponVisual } from './creature/weapon-visual';
 
 vi.mock('./creature/weapon-visual', async (importOriginal) => {
@@ -51,6 +62,7 @@ describe('createPlayerAvatar', () => {
     setTargetMobId(null);
     vi.mocked(syncWeaponVisual).mockClear();
     vi.mocked(createMeshCharacter).mockClear();
+    fakeArmorSetPart.mockClear();
   });
 
   it('enters move on a server step and coasts to idle after movement stops', () => {
@@ -98,14 +110,30 @@ describe('createPlayerAvatar', () => {
     expect(avatar.group.rotation.y).toBeCloseTo(expected, 1);
   });
 
-  it('syncs weapon visual when Squire Sword is equipped', () => {
+  it('syncs weapon visual when Squire Sword is equipped after the rig is ready', async () => {
     const avatar = createPlayerAvatar({ mesh: stubMesh() });
     avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 2369 }, 0);
+    expect(syncWeaponVisual).not.toHaveBeenCalled();
+    await avatar.ready;
     expect(syncWeaponVisual).toHaveBeenCalledWith(
       expect.anything(),
       2369,
       expect.any(Object)
     );
+  });
+
+
+  it('replays armor slots after a V3 rig finishes loading', async () => {
+    const avatar=createPlayerAvatar({mesh:stubMesh(),manifest:ART_TRIALS.traveler});
+    avatar.sync({x:0,y:0,z:0,armorEquipped:{
+      helmet:'knight',body:'ranger',gloves:'traveler',boots:'knight',
+    }});
+    expect(fakeArmorSetPart).not.toHaveBeenCalled();
+    await avatar.ready;
+    expect(fakeArmorSetPart).toHaveBeenCalledWith('helmet','knight');
+    expect(fakeArmorSetPart).toHaveBeenCalledWith('body','ranger');
+    expect(fakeArmorSetPart).toHaveBeenCalledWith('boots','knight');
+    expect(fakeArmorSetPart).not.toHaveBeenCalledWith('gloves','traveler');
   });
 
   it('loads Rogue_Hooded.glb for classId 31', () => {
@@ -116,10 +144,25 @@ describe('createPlayerAvatar', () => {
     );
   });
 
-  it('syncs weapon detach when unequipped', () => {
+  it('syncs weapon detach when unequipped after the rig is ready', async () => {
     const avatar = createPlayerAvatar({ mesh: stubMesh() });
+    await avatar.ready;
     avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 2369 }, 0);
     avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 0 }, 16);
+    expect(syncWeaponVisual).toHaveBeenLastCalledWith(expect.anything(), 0, expect.any(Object));
+  });
+
+  it('keeps an unequip request made while the rig is loading', async () => {
+    let finish!: () => void;
+    const ready = new Promise<void>((resolve) => { finish = resolve; });
+    const mesh = stubMesh();
+    const avatar = createPlayerAvatar({ mesh: { ...mesh, ready } });
+    avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 2369 });
+    avatar.sync({ x: 0, y: 0, z: 0, equippedWeaponItemId: 0 });
+    expect(syncWeaponVisual).not.toHaveBeenCalled();
+    finish();
+    await avatar.ready;
+    expect(syncWeaponVisual).toHaveBeenCalledTimes(1);
     expect(syncWeaponVisual).toHaveBeenLastCalledWith(expect.anything(), 0, expect.any(Object));
   });
 

@@ -39,9 +39,15 @@ import {
   type NpcMeshMap,
 } from './npc-renderer';
 import { createPlayerAvatar } from './player-avatar';
+import type { ArmorSelection } from './creature/modular-armor';
 import type { AnimationClip } from '@nj/game-core';
 import { EntityAction } from '@nj/game-core';
 import { buildEnvironmentScene } from './environment-renderer';
+import { buildFieldGroundCover, disposeFieldGroundCover } from './field-detail';
+import { disposeVillageFacades } from './village-facade';
+import { disposeVillageRoads } from './village-roads';
+import { disposeVillageRooflines } from './village-roofline';
+import { selectMobNearScreenTap } from './mobile-target-assist';
 import type { AudioManager } from '../audio/audio-manager';
 
 const WORLD_SEED = TERRAIN_CONFIG.seed;
@@ -82,7 +88,8 @@ export interface GameRenderer {
     actionSeq?: number,
     equippedWeaponItemId?: number,
     classId?: number,
-    sex?: number
+    sex?: number,
+    armorEquipped?: ArmorSelection
   ) => void;
   setLocalPlayerName: (name: string) => void;
   getCurrentAnimationClip: () => AnimationClip;
@@ -133,6 +140,7 @@ export interface GameRenderer {
   setMoveIntentHandler: (handler: (intent: MovementIntent) => void) => void;
   setMobTargetHandler: (handler: (mobId: string) => void) => void;
   rotateCamera: (deltaYaw: number) => void;
+  setCameraFraming?: (offset:{x:number;y:number;z:number},fov:number) => void;
   setVfxTargetMobId: (mobId: string | null) => void;
   syncPlayerVfx: (snapshot: {
     hp: number;
@@ -206,8 +214,20 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   const terrainData = generateTerrain(WORLD_SEED, TERRAIN_OPTS);
   const terrainMesh = createTerrainMesh(THREE, terrainData);
   scene.add(terrainMesh);
+  // Procedural cover was previously implemented but not mounted. One-time
+  // attachment only; 3 GPU instanced batches, no gameplay raycasts/collision.
+  const fieldCover = buildFieldGroundCover(scene);
 
+  let environmentDisposed=false;
   void buildEnvironmentScene({ scene, terrainData }).then((envResult) => {
+    // Environment loading may resolve after the host changes screens.
+    // The cosmetic facade geometry must not survive a retired renderer.
+    if(environmentDisposed){
+      disposeVillageFacades(scene);
+      disposeVillageRoads(scene);
+      disposeVillageRooflines(scene);
+      return;
+    }
     setEnvironment({ ...envResult, loaded: true });
   });
 
@@ -222,6 +242,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     activeClassId = classId;
     activeSex = sex;
     scene.remove(playerAvatar.group);
+    playerAvatar.dispose?.();
     playerAvatar = createPlayerAvatar({ classId, sex, manifest:options.playerManifest });
     // Re-apply the name label after the avatar is rebuilt for a class/sex change.
     if (localPlayerName) playerAvatar.setName(localPlayerName);
@@ -284,6 +305,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   const CULL_MOVE_THRESHOLD_SQ = 4;
 
   let cameraYaw = 0;
+  let activeCameraOffset={...(options.cameraOffset ?? DEFAULT_CAMERA_OFFSET)};
   const updateCamera = (): void => {
     applyTo(
       {
@@ -291,11 +313,19 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
         lookAt: (target) => camera.lookAt(target.x, target.y, target.z),
       },
       { x: localPosition.x, y: localPosition.y, z: localPosition.z },
-      options.cameraOffset ?? DEFAULT_CAMERA_OFFSET,
+      activeCameraOffset,
       cameraYaw
     );
   };
 
+  const setCameraFraming=(offset:{x:number;y:number;z:number},fov:number):void=>{
+    if(![offset.x,offset.y,offset.z,fov].every(Number.isFinite))return;
+    if(offset.x<=0||offset.z<=0||offset.y<=0||fov<30||fov>55)return;
+    activeCameraOffset={...offset};
+    camera.fov=fov;
+    camera.updateProjectionMatrix();
+    updateCamera();
+  };
   const rotateCamera = (deltaYaw: number): void => {
     if (options.lockCamera) return;
     cameraYaw = (cameraYaw + deltaYaw) % (Math.PI * 2);
@@ -310,13 +340,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     actionSeq = 0,
     equippedWeaponItemId = 0,
     classId = 0,
-    sex = 0
+    sex = 0,
+    armorEquipped?: ArmorSelection
   ): void => {
     ensureLocalAvatar(classId, sex);
     localPosition.x = x;
     localPosition.y = y;
     localPosition.z = z;
-    playerAvatar.sync({ x, y, z, action, actionSeq, equippedWeaponItemId });
+    playerAvatar.sync({ x, y, z, action, actionSeq, equippedWeaponItemId, armorEquipped });
     currentAnimationClip = playerAvatar.update(0);
     const cullDx = x - lastCullX;
     const cullDz = z - lastCullZ;
@@ -648,11 +679,22 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
       const mobHits = raycaster.intersectObjects(mobGroups, true);
       if (mobHits.length > 0) {
         const mobId = findMobId(mobHits[0].object);
-        if (mobId) {
+        if (mobId && (mobSnapshots.get(mobId)?.hp??0)>0) {
           mobTargetHandler?.(mobId);
           return;
         }
       }
+      const touch = 'pointerType' in ev && ev.pointerType==='touch';
+      const mobId=selectMobNearScreenTap({
+        mobs:[...mobSnapshots.values()].filter(m=>mobMeshes.has(m.id)).map(m=>({
+          id:m.id,x:m.x,y:m.y,z:m.z,hp:m.hp,
+          barY:mobMeshes.get(m.id)?.getObjectByName('hpBar')?.position.y,
+        })),
+        camera,tapX:ev.clientX-rect.left,tapY:ev.clientY-rect.top,
+        canvasWidth:rect.width,canvasHeight:rect.height,
+        playerX:localPosition.x,playerZ:localPosition.z,touch,
+      });
+      if(mobId){mobTargetHandler?.(mobId);return;}
     }
 
     let hits = raycaster.intersectObject(terrainMesh, false);
@@ -680,7 +722,13 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   };
 
   const dispose = (): void => {
+    environmentDisposed=true;
+    disposeVillageFacades(scene);
+    disposeVillageRoads(scene);
+    disposeVillageRooflines(scene);
+    playerAvatar.dispose?.();
     clearPathPreview();
+    disposeFieldGroundCover(fieldCover);
     audioManager?.dispose();
     audioManager = null;
     vfxManager.dispose();
@@ -711,6 +759,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     setMoveIntentHandler,
     setMobTargetHandler,
     rotateCamera,
+    setCameraFraming,
     setVfxTargetMobId,
     syncPlayerVfx,
     syncMobVfx,

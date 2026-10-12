@@ -100,6 +100,23 @@ describe('renderer', () => {
     vi.useRealTimers();
   });
 
+  it('mounts and tears down noninteractive instanced field vegetation in the live scene',async()=>{
+    const game=await createRenderer(document.createElement('canvas'));
+    const root=game.scene.getObjectByName('dungeon-zero-field-cover') as THREE.Group;
+    expect(root).toBeInstanceOf(THREE.Group);
+    expect(root.children).toHaveLength(3);
+    const grass=root.getObjectByName('field-grass-tufts') as THREE.InstancedMesh;
+    const flowers=root.getObjectByName('field-wildflowers') as THREE.InstancedMesh;
+    expect(grass.count).toBe(480);
+    expect(flowers.count).toBe(96);
+    const raycaster=new THREE.Raycaster();
+    expect(raycaster.intersectObject(grass)).toEqual([]);
+    const disposeSpy=vi.spyOn(grass.geometry,'dispose');
+    game.dispose();
+    expect(game.scene.getObjectByName('dungeon-zero-field-cover')).toBeUndefined();
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('calls vfxManager.tick on each frame tick', async () => {
     const canvas = document.createElement('canvas');
     const game = await createRenderer(canvas);
@@ -184,6 +201,24 @@ describe('renderer', () => {
       const canvas = document.createElement('canvas');
       await expect(createRenderer(canvas)).resolves.toBeDefined();
     });
+  });
+
+  it('changes the locked camera frame without changing avatar position or FOV safety limits',async()=>{
+    const game=await createRenderer(document.createElement('canvas'),{
+      lockCamera:true,cameraOffset:{x:26,y:34,z:26},cameraFov:38,
+    });
+    game.syncLocalPlayer(20,4,10,0,0,0,0,0);
+    const before=game.camera.position.clone();
+    game.setCameraFraming?.({x:21,y:28,z:21},38);
+    expect(game.camera.position.x).toBeCloseTo(41);
+    expect(game.camera.position.y).toBeCloseTo(32);
+    expect(game.camera.position.z).toBeCloseTo(31);
+    expect(game.camera.fov).toBe(38);
+    expect(game.camera.position.distanceTo(before)).toBeGreaterThan(1);
+    const framed=game.camera.position.clone();
+    game.setCameraFraming?.({x:0,y:-8,z:0},90);
+    expect(game.camera.position.equals(framed)).toBe(true);
+    expect(game.camera.fov).toBe(38);
   });
 
   describe('VFU-03/04: shadow frustum follows the local player', () => {
