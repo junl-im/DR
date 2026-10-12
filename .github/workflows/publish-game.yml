@@ -86,18 +86,24 @@ jobs:
       FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A }}
     steps:
       - uses: actions/checkout@v4
-      - name: Verify existing Firebase service account is configured
+      - name: Check Firebase deploy prerequisite
+        id: firebase-credentials
         run: |
           if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::Firebase Hosting secret FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A is missing. GitHub Pages can still publish. Configure this secret to enable the existing Firebase Hosting target."
-            exit 1
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Firebase Hosting NOT deployed: configure repository secret FIREBASE_SERVICE_ACCOUNT_DREAM_LIBRARY_B732A and re-run the workflow."
+            echo "### Firebase Hosting: PENDING — missing GitHub service-account Secret" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "Firebase Hosting service-account Secret is configured"
           fi
-          echo "Firebase deployment credentials present"
       - uses: actions/download-artifact@v4
+        if: steps.firebase-credentials.outputs.available == 'true'
         with:
           name: dungeon-zero-firebase-live-site
           path: dist/client
       - name: Publish Hosting ONLY (no Firestore rules or data changes)
+        if: steps.firebase-credentials.outputs.available == 'true'
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
