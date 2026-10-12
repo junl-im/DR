@@ -158,6 +158,8 @@ fs.mkdirSync(out,{recursive:true});
     await game.waitForTimeout(300);
     if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))
       throw new Error('Village facade preview overflowed mobile viewport');
+    if(!await game.locator('#quality-info').isVisible())
+      throw new Error('Mobile GPU FPS / draw-call indicator must remain visible');
     await game.locator('#auto-config summary').click();
     if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))
       throw new Error('Expanded mobile auto-hunt options overflowed the viewport');
