@@ -39,6 +39,7 @@ export function createRuinAtmosphere(scene:THREE.Scene,mobile=false) {
       light.name='ruin-torch-light-'+i;
       light.position.y=1.8;
       light.castShadow=false;
+      light.intensity=0;
       group.add(light);lights.push(light);
     }
     root.add(group);
@@ -52,7 +53,7 @@ export function createRuinAtmosphere(scene:THREE.Scene,mobile=false) {
       active=value;root.visible=value;
       // Children belong to a hidden parent; disabling intensity as well
       // prevents offscreen lighting work on some Three.js renderer versions.
-      lights.forEach((light,i)=>{light.intensity=value?(mobile?18:20):0;});
+      lights.forEach(light=>{light.intensity=value?(mobile?18:20):0;});
     },
     get active(){return active;},
     dispose() {
