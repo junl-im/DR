@@ -11,10 +11,10 @@ export interface Nameplate {
   dispose: () => void;
 }
 
-const CANVAS_W = 256;
-const CANVAS_H = 64;
+const CANVAS_W = 512;
+const CANVAS_H = 128;
 /** Sprite height in world units; width is derived from the canvas aspect. */
-const WORLD_HEIGHT = 0.5;
+const WORLD_HEIGHT = 0.9;
 const DEFAULT_Y = 2.1;
 
 export interface NameplateOptions {
@@ -51,15 +51,15 @@ export function createNameplate(text: string, options: NameplateOptions = {}): N
   const draw = (value: string): void => {
     if (!ctx) return;
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.font = 'bold 30px sans-serif';
+    ctx.font = 'bold 57px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     // Dark outline keeps the name legible over any terrain/sky color.
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 10;
     ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-    ctx.strokeText(value, CANVAS_W / 2, CANVAS_H / 2);
+    ctx.strokeText(value, CANVAS_W / 2, CANVAS_H / 2, CANVAS_W - 32);
     ctx.fillStyle = options.color ?? '#ffffff';
-    ctx.fillText(value, CANVAS_W / 2, CANVAS_H / 2);
+    ctx.fillText(value, CANVAS_W / 2, CANVAS_H / 2, CANVAS_W - 32);
     texture.needsUpdate = true;
   };
 

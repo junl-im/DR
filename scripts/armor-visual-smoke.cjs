@@ -115,6 +115,22 @@ fs.mkdirSync(out,{recursive:true});
     if(villageState.buildings.count!==5||villageState.peaceZone.count!==1)
       throw new Error('Village environment stats changed '+JSON.stringify(villageState));
     await game.waitForTimeout(400);
+    // Keyboard target cycle and accessible toggle work in the live Vite game.
+    await game.keyboard.press('Tab');
+    const tabTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
+    if(!tabTarget)throw new Error('Tab did not select a visible living monster');
+    await game.keyboard.press('Tab');
+    const nextTabTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
+    if(!nextTabTarget || tabTarget===nextTabTarget)throw new Error('Tab cycling stuck at one target');
+    await game.keyboard.press('h');
+    if(await game.locator('#auto-hunt').getAttribute('aria-pressed')!=='true')
+      throw new Error('H did not enable auto hunt');
+    await game.screenshot({path:out+'/village-auto-hunt-desktop.png',fullPage:true});
+    await game.locator('#auto-hunt').click();
+    if(await game.locator('#auto-hunt').getAttribute('aria-pressed')!=='false')
+      throw new Error('Auto hunt button did not disable the mode');
+    if(await game.evaluate(()=>window.__DREAM_SESSION__.attacking))
+      throw new Error('Turning off auto hunt did not stop active combat');
     await game.screenshot({path:out+'/village-facades-desktop.png',fullPage:true});
     await game.setViewportSize({width:390,height:844});
     await game.waitForTimeout(300);
@@ -261,7 +277,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,errors,bad,screenshots:24,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,errors,bad,screenshots:25,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

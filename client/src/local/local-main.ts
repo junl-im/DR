@@ -11,6 +11,7 @@ import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
+import {AutoHuntController,nextTabTarget} from './auto-hunt';
 import { fixedFrameForViewport } from './fixed-framing';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
@@ -28,6 +29,7 @@ const $ = <T extends HTMLElement = HTMLElement>(selector: string) => root.queryS
 const requestedArt = new URLSearchParams(location.search).get('art') ?? 'original';
 let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'original';
 let session: LocalGameSession;
+let autoHunt:AutoHuntController|undefined;
 let game: GameRenderer;
 let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
 let ruinAtmosphere:ReturnType<typeof createRuinAtmosphere>|undefined;
@@ -97,8 +99,21 @@ async function enter(state: Save) {
     game.renderer.shadowMap.enabled=!mobile;
     game.setLocalPlayerName(session.state.player.name);
     mountHud();
-    game.setMoveIntentHandler(i => session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }));
-    game.setMobTargetHandler(id => { session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
+    autoHunt=new AutoHuntController(session,id=>game.setVfxTargetMobId(id));
+    const syncAutoButton=()=>{
+      const button=root.querySelector<HTMLButtonElement>('#auto-hunt');
+      if(!button)return;
+      button.textContent=autoHunt?.enabled?'자동사냥 ON':'자동사냥 OFF';
+      button.setAttribute('aria-pressed',String(!!autoHunt?.enabled));
+      button.classList.toggle('active',!!autoHunt?.enabled);
+    };
+    root.querySelector<HTMLButtonElement>('#auto-hunt')!.onclick=()=>{
+      autoHunt!.setEnabled(!autoHunt!.enabled);
+      syncAutoButton();
+    };
+    const manualStop=()=>{if(autoHunt?.enabled){autoHunt.setEnabled(false);syncAutoButton();}};
+    game.setMoveIntentHandler(i => { manualStop();session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }); });
+    game.setMobTargetHandler(id => { manualStop();session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
     const canvas = game.renderer.domElement;
     const feedback=createCombatFeedback(root,game.camera,canvas);
     mountTownSigns();
@@ -123,10 +138,12 @@ async function enter(state: Save) {
     window.addEventListener('resize', resizeViewport);
     window.addEventListener('keydown', e => {
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
-      if(e.key==='Escape') { $('#panel').hidden=true; return; }
+      if(e.key==='Escape') { manualStop(); $('#panel').hidden=true; return; }
+      if(e.key==='Tab'){e.preventDefault();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
+      if(e.key.toLowerCase()==='h'){e.preventDefault();autoHunt!.setEnabled(!autoHunt!.enabled);syncAutoButton();updateHud();return;}
       if(e.key.toLowerCase()==='i') { e.preventDefault();showPanel('inventory');return; }
       const keys: Record<string, Intent['type']> = { ' ': 'attack', '1':'attack', '2':'skill', '3':'potion', 'r':'recall' };
-      if(keys[e.key]) { e.preventDefault(); session.dispatch({type:keys[e.key]} as Intent); }
+      if(keys[e.key]) { e.preventDefault(); manualStop();session.dispatch({type:keys[e.key]} as Intent); }
 
     });
     setConnected(false); setReady(true);
@@ -134,7 +151,8 @@ async function enter(state: Save) {
     let last=performance.now(), accumulator=0, uiTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
-      while(accumulator>=.05) { session.tick(.05); accumulator-=.05; }
+      while(accumulator>=.05) { autoHunt?.tick();session.tick(.05); accumulator-=.05; }
+      syncAutoButton();
       const perf=quality.sample(elapsed);
       if(perf.changed) {
         game.renderer.setPixelRatio(perf.dpr);
@@ -181,8 +199,8 @@ function mountHud() {
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
-<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
-<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
+<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button><button id="auto-hunt" type="button" aria-pressed="false" title="H 키로 자동사냥 켜기·끄기">자동사냥 OFF</button></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
+<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
 <div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
