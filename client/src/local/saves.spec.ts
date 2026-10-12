@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readSave, writeSave } from './saves';
 import { newSave } from './session';
 beforeEach(async()=>{await new Promise<void>((resolve,reject)=>{const r=indexedDB.deleteDatabase('dream-library-local-v1');r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);});});
@@ -58,4 +58,14 @@ it('preserves claimed quest stages in IndexedDB and migrates legacy missing ques
   expect(migrated?.schemaVersion).toBe(1);
   expect(migrated?.player.quest).toEqual({stage:0,progress:0});
   expect((await readSave('backup'))?.player.quest).toEqual({stage:1,progress:2});
+});
+
+it('aborts the full transaction on a synchronous current-slot write failure and allows retry',async()=>{
+ const first=newSave('저장 보호',0);first.player.gold=11;await writeSave(first);
+ const next=newSave('종료 저장',0);next.player.gold=43;
+ const original=IDBObjectStore.prototype.put;
+ const spy=vi.spyOn(IDBObjectStore.prototype,'put').mockImplementation(function(this:IDBObjectStore,value:unknown,key?:IDBValidKey){if(key==='current')throw new DOMException('quota fixture','QuotaExceededError');return original.call(this,value,key);});
+ try{await expect(writeSave(next)).rejects.toThrow('quota fixture');}finally{spy.mockRestore();}
+ expect((await readSave())?.player.gold).toBe(11);expect(await readSave('backup')).toBeNull();
+ await writeSave(next);expect((await readSave())?.player.gold).toBe(43);expect((await readSave('backup'))?.player.gold).toBe(11);
 });

@@ -1,3 +1,6 @@
+## Mobile fullscreen/back/Kakao — 2026-10-13
+See docs/mobile-shell/README.md. Based on main f8ab0f5. Real-device system bars and Kakao external-app launching remain unverified; final PR/CI/deploy status is in Notion.
+
 ## HUD/town interaction update — 2026-10-13
 User prioritised HUD and facility clicking over new content. Baseline main fe76f8d. See docs/hud-town/README.md; final merge/deployment status is recorded in Notion.
 
