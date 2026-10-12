@@ -52,6 +52,41 @@ fs.mkdirSync(out,{recursive:true});
     const displacement=Math.hypot(...poseB.tip.map((n,i)=>n-poseA.tip[i]));
     if(displacement<0.005)throw new Error('Animation scrub did not move sword tip: '+JSON.stringify({poseA,poseB}));
     await page.screenshot({path:out+'/v3-weapon-attack-frozen-60pc-desktop.png',fullPage:true});
+    // Inspect the *same* frozen attack pose from several true camera axes.
+    // These are the hand/gauntlet seam close-ups missing from full-body QA.
+    await page.locator('#inspect-focus').selectOption('hands');
+    await page.locator('#inspect-angle').selectOption('front');
+    await page.waitForTimeout(150);
+    const cameraFront=await page.evaluate(()=>window.__CAMERA_LAB__.read());
+    if(cameraFront.focus!=='hands'||cameraFront.angle!=='front' ||
+      Math.hypot(...cameraFront.target.map((v,i)=>v-poseB.hand[i]))>1e-3)
+      throw new Error('Front wrist camera not tracking animated hand '+JSON.stringify({cameraFront,poseB}));
+    await page.locator('#models').screenshot({path:out+'/v3-hand-front-attack-frozen.png'});
+    await page.locator('#inspect-angle').selectOption('side');
+    await page.waitForTimeout(150);
+    const cameraSide=await page.evaluate(()=>window.__CAMERA_LAB__.read());
+    if(cameraSide.position[0]<=cameraSide.target[0])
+      throw new Error('Side camera failed to rotate to positive X '+JSON.stringify(cameraSide));
+    await page.locator('#models').screenshot({path:out+'/v3-hand-side-attack-frozen.png'});
+    await page.locator('#inspect-angle').selectOption('back');
+    await page.waitForTimeout(150);
+    const cameraBack=await page.evaluate(()=>window.__CAMERA_LAB__.read());
+    if(cameraBack.position[2]>=cameraBack.target[2])
+      throw new Error('Back camera failed to rotate to negative Z '+JSON.stringify(cameraBack));
+    await page.locator('#models').screenshot({path:out+'/v3-hand-back-attack-frozen.png'});
+    await page.locator('#inspect-focus').selectOption('feet');
+    await page.locator('#inspect-angle').selectOption('side');
+    await page.waitForTimeout(150);
+    await page.locator('#models').screenshot({path:out+'/v3-boot-side-attack-frozen.png'});
+    await page.locator('#inspect-focus').selectOption('head');
+    await page.locator('#inspect-angle').selectOption('front');
+    await page.waitForTimeout(150);
+    await page.locator('#models').screenshot({path:out+'/v3-helmet-front-attack-frozen.png'});
+    if(JSON.stringify(await page.evaluate(()=>window.__ARMOR_LAB__.read()))!==JSON.stringify(selection))
+      throw new Error('Preview camera unexpectedly mutated four-slot armor selection');
+    await page.locator('#inspect-focus').selectOption('full');
+    await page.locator('#inspect-angle').selectOption('three-quarter');
+
     await page.locator('#pose-resume').click();
     if(await page.evaluate(()=>window.__POSE_LAB__.paused))
       throw new Error('Pose resume did not restart animation');
@@ -214,7 +249,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement},errors,bad,screenshots:17,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},errors,bad,screenshots:22,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
