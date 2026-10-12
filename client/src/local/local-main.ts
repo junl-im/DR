@@ -11,6 +11,7 @@ import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
+import { fixedFrameForViewport } from './fixed-framing';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -82,7 +83,8 @@ async function enter(state: Save) {
   root.querySelectorAll<HTMLButtonElement>('.entry button').forEach(b => b.disabled = true);
   try {
     session = new LocalGameSession(state);
-    game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:{x:26,y:34,z:26},cameraFov:38,lockCamera:true,playerManifest:ART_TRIALS[artTrial]});
+    const fixedFrame=fixedFrameForViewport(innerWidth);
+    game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:fixedFrame.offset,cameraFov:fixedFrame.fov,lockCamera:true,playerManifest:ART_TRIALS[artTrial]});
     const classicScene=applyClassicScene(game.scene);
     buildTownDetails(game.scene);
     buildFirstDungeonArt(game.scene);
