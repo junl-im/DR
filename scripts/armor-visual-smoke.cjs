@@ -26,6 +26,13 @@ fs.mkdirSync(out,{recursive:true});
     await page.locator('#animation').selectOption('attack');
     await page.waitForTimeout(250);
     await page.screenshot({path:out+'/v3-mixed-armor-attack.png',fullPage:true});
+    await page.locator('#animation').selectOption('cast');
+    await page.waitForTimeout(250);
+    await page.screenshot({path:out+'/v3-mixed-armor-cast-desktop.png',fullPage:true});
+    await page.locator('#animation').selectOption('move');
+    await page.waitForTimeout(350);
+    await page.screenshot({path:out+'/v3-mixed-armor-run-desktop.png',fullPage:true});
+    await page.locator('#animation').selectOption('attack');
     await page.setViewportSize({width:390,height:844});
     await page.waitForTimeout(200);
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error('Mobile horizontal overflow');
@@ -96,7 +103,11 @@ fs.mkdirSync(out,{recursive:true});
     await game.locator('#dungeon-enter').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.inside===true);
     await game.locator('#panel-close').click();
-    await game.waitForTimeout(1200);
+    await game.setViewportSize({width:1440,height:900});
+    await game.waitForTimeout(850);
+    await game.screenshot({path:out+'/ruin-entry-desktop-lit.png',fullPage:true});
+    await game.setViewportSize({width:390,height:844});
+    await game.waitForTimeout(400);
     await game.screenshot({path:out+'/ruin-entry-mobile.png',fullPage:true});
     const dungeonKill=async id=>{
       await game.evaluate(mobId=>{
@@ -173,7 +184,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:12,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:15,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
