@@ -5,6 +5,7 @@ import { buildVillage, type SceneObjectSpec } from './village';
 import { createVillagePaving } from './town-floor';
 import { buildVillageFacades } from './village-facade';
 import { buildVillageRoads } from './village-roads';
+import { buildVillageRooflines } from './village-roofline';
 import { scatterProps } from './scatter';
 import {
   getBuildingPropEntry,
@@ -180,6 +181,7 @@ export async function placeVillageEnvironment(
   // after the existing source GLBs / primitive fallbacks are placed.
   buildVillageFacades(scene, villageSpecs);
   buildVillageRoads(scene, villageSpecs);
+  buildVillageRooflines(scene, villageSpecs);
   return result;
 }
 
