@@ -113,6 +113,23 @@ fs.mkdirSync(out,{recursive:true});
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.kills===1);
     await game.locator('#menu').click();
     await game.locator('#save-now').click();
+    // Save is asynchronous. Reloading immediately races the IndexedDB write.
+    // Wait for the persisted checkpoint, not an unrelated status label.
+    await game.waitForFunction(async()=>{
+      const db=await new Promise((resolve,reject)=>{
+        const request=indexedDB.open('dream-library-local-v1',1);
+        request.onsuccess=()=>resolve(request.result);
+        request.onerror=()=>reject(request.error);
+      });
+      try {
+        const saved=await new Promise((resolve,reject)=>{
+          const request=db.transaction('saves').objectStore('saves').get('current');
+          request.onsuccess=()=>resolve(request.result);
+          request.onerror=()=>reject(request.error);
+        });
+        return saved?.player?.dungeon?.inside===true&&saved.player.dungeon.kills===1;
+      }finally{db.close();}
+    },null,{timeout:30000,polling:250});
     await game.reload({waitUntil:'domcontentloaded'});
     await game.locator('#continue').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.inside===true && window.__DREAM_SESSION__?.state?.player?.dungeon?.kills===1,null,{timeout:90000});
