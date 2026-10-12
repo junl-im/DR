@@ -31,6 +31,9 @@ describe('low-power rendering policy',()=>{
     expect(q.sample(Number.NaN,1.3).changed).toBe(false);
     expect(q.sample(30,0).changed).toBe(false);
     q.sample(60,.9);q.sample(60,.9);
+    // Even at 60 FPS, sustained DPR <1.0 means the GPU budget is low.
+    expect(q.enabled).toBe(false);
+    for(let i=0;i<4;i++)q.sample(60,1.2);
     expect(q.enabled).toBe(true);
   });
 });
