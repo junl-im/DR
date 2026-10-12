@@ -40,3 +40,9 @@
   .quest .auto-config-fields select{font-size:12px;min-height:32px}
   .quest #auto-status{font-size:9px}
 }
+
+
+/* In-game performance feedback must remain visible on actual narrow phones. */
+@media(max-width:550px){
+ #quality-info{display:block!important;font-size:8px;white-space:nowrap;max-width:190px;overflow:hidden;text-overflow:ellipsis;text-align:right}
+}
