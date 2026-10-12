@@ -1,18 +1,20 @@
 import * as THREE from 'three';
 import { snapEntityY, FEET_OFFSET } from '@nj/game-core';
 import { POTION_SHOP } from './session';
+import { DUNGEON_GATE } from './first-dungeon';
 
 export const TOWN_SIGNS = [
   {id:'shop',name:'마을 보급 상점',x:POTION_SHOP.x,z:POTION_SHOP.z,panel:'shop' as const},
   {id:'equipment',name:'장비 정비 안내',x:7,z:-3,panel:'inventory' as const},
   {id:'garden',name:'영지 관리 안내',x:-7,z:3,panel:'estate' as const},
   {id:'journey',name:'모험 안내판',x:-2,z:4,panel:'help' as const},
+  {id:'dungeon',name:'폐허의 관문',x:DUNGEON_GATE.x,z:DUNGEON_GATE.z,panel:'dungeon' as const},
 ];
 
 /**
  * Art-only dressing. No world collision boxes, no navigation changes and no
  * extra scene click targets: gameplay still raycasts mobs and terrain.
- * Keep the four sign anchors aligned with the existing interaction overlays.
+ * Keep the existing sign anchors aligned with the existing interaction overlays.
  */
 export function buildTownDetails(scene: THREE.Scene): void {
   if (scene.getObjectByName('dungeon-zero-town-details')) return;
