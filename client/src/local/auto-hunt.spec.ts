@@ -129,6 +129,21 @@ describe('Tab target and local auto hunt',()=>{
   expect(auto.stopReason).toBe('low-hp');
   expect(s.state.player.potions).toBe(5);
  });
+ it('stopping a hunting chase also clears the pending movement path',()=>{
+  const save=newSave('path control',0);
+  save.player.x=34;save.player.z=-24;
+  const s=new LocalGameSession(save);
+  const auto=new AutoHuntController(s,()=>{});
+  auto.setEnabled(true);
+  auto.tick();
+  s.tick(.05);
+  const x=s.state.player.x,z=s.state.player.z;
+  auto.setEnabled(false);
+  for(let i=0;i<4;i++)s.tick(.05);
+  expect(s.state.player.x).toBeCloseTo(x,5);
+  expect(s.state.player.z).toBeCloseTo(z,5);
+  expect(s.attacking).toBe(false);
+ });
  it('has no effect on persisted schema and stops all attacks when disabled',()=>{
   const {s}=setup();
   const original=s.snapshot().schemaVersion;
