@@ -96,6 +96,7 @@ describe('Tab target and local auto hunt',()=>{
   expect(s.state.player.potions).toBe(2);
   expect(s.state.player.hp).toBe(97);
   s.state.player.hp=40;
+  auto.setEnabled(false);auto.setEnabled(true); // must not reset consumable cooldown
   auto.tick();
   expect(s.state.player.potions).toBe(2);
   for(let i=0;i<105;i++)auto.tick();
