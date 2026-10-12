@@ -1,6 +1,24 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { LocalGameSession, newSave, validateSave, maxHp } from './session';
 describe('Dungeon zero local progression contract', () => {
+  it('limits repeated failed A* combat chase retries without changing player speed or saves',()=>{
+    const save=newSave('추격 테스트',0);
+    save.player.x=34;save.player.z=-24;
+    const s=new LocalGameSession(save);
+    const mob=s.mobs.find(m=>m.hp>0)!;
+    mob.x=s.state.player.x+9;mob.z=s.state.player.z;
+    s.dispatch({type:'target',id:mob.id});
+    s.dispatch({type:'attack'});
+    const move=vi.spyOn(s as unknown as {move:(x:number,z:number)=>void},'move')
+      .mockImplementation(()=>{}); // simulate a completely blocked goal
+    for(let i=0;i<10;i++)s.tick(.05);
+    expect(move).toHaveBeenCalledTimes(1);
+    for(let i=0;i<5;i++)s.tick(.05);
+    expect(move).toHaveBeenCalledTimes(2);
+    expect(s.attacking).toBe(true);
+    expect(s.snapshot()).not.toHaveProperty('chaseRetryAt');
+  });
+
   it('replays the same intents deterministically and rejects unbounded time', () => {
     const a = new LocalGameSession(newSave('여행자', 0)), b = new LocalGameSession(newSave('여행자', 0));
     a.dispatch({type:'move',x:8,z:4}); b.dispatch({type:'move',x:8,z:4});
