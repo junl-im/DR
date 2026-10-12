@@ -7,6 +7,7 @@ import { armorOutfitSelection, armorDefense } from './armor-economy';
 import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest } from './adventure-quests';
 import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
+import { buildFieldGroundCover } from '../scene/field-detail';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -80,6 +81,7 @@ async function enter(state: Save) {
     const classicScene=applyClassicScene(game.scene);
     buildTownDetails(game.scene);
     buildFirstDungeonArt(game.scene);
+    buildFieldGroundCover(game.scene);
     game.renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(max-width: 700px)').matches ? 1.1 : 1.5));
     game.renderer.shadowMap.enabled = !matchMedia('(max-width: 700px)').matches;
     game.setLocalPlayerName(session.state.player.name);
