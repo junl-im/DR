@@ -145,6 +145,27 @@ fs.mkdirSync(out,{recursive:true});
     await next();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.wave===2);
     await game.screenshot({path:out+'/ruin-boss-mobile.png',fullPage:true});
+    // Verify both real boss tells are visible and use the right radius.
+    await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__,p=s.state.player;
+      const boss=s.mobs.find(m=>m.id==='dungeon-2-0');
+      boss.x=p.x+1;boss.z=p.z;boss.cooldown=0;
+      s.tick(.05);
+    });
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.bossThreat?.move==='aimed-strike');
+    await game.waitForFunction(()=>document.querySelector('#boss-warning')?.hidden===false);
+    await game.screenshot({path:out+'/ruin-boss-aimed-warning-mobile.png',fullPage:true});
+    await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__,p=s.state.player,b=s.mobs.find(m=>m.id==='dungeon-2-0');
+      // Move the boss away so the first cast is safely dodged.
+      b.x=p.x+9;b.z=p.z;
+      for(let i=0;i<26;i++)s.tick(.05);
+      b.x=p.x+1;b.z=p.z;b.cooldown=0;
+      s.tick(.05);
+    });
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.bossThreat?.move==='ground-sweep');
+    await game.waitForFunction(()=>document.querySelector('#boss-warning')?.textContent.includes('원형 휩쓸기'));
+    await game.screenshot({path:out+'/ruin-boss-sweep-warning-mobile.png',fullPage:true});
     await dungeonKill('dungeon-2-0');
     await game.locator('#dungeon-journal').click();
     await game.locator('#dungeon-claim').click();
@@ -152,7 +173,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:10,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:12,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
