@@ -125,8 +125,10 @@ async function enter(state: Save) {
     resizeViewport();
     window.addEventListener('resize', resizeViewport);
     window.addEventListener('keydown', e => {
-      if ((e.target as HTMLElement).closest('input,select,textarea,[contenteditable="true"]') || e.repeat) return;
-      if(e.key==='Tab' && !(e.target as HTMLElement).closest('button,a')) {e.preventDefault(); selectNextTarget();return;}
+      const focused=e.target instanceof HTMLElement?e.target:null;
+      if (focused?.closest('input,select,textarea,[contenteditable="true"]') || e.repeat) return;
+      // Preserve keyboard focus navigation when any interactive UI has focus.
+      if(e.key==='Tab' && !focused?.closest('button,a,[tabindex]')) {e.preventDefault(); selectNextTarget();return;}
       if(e.key==='F6'){e.preventDefault(); toggleAutoHunt();return;}
       if(e.key==='Escape') { $('#panel').hidden=true; return; }
       if(e.key.toLowerCase()==='i') { e.preventDefault();showPanel('inventory');return; }
