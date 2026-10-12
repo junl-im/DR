@@ -1,16 +1,17 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 import {ARMOR_LABELS, ARMOR_TIER_LABELS, awardEliteArmorPiece, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
 import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, type QuestProgress, type HuntKind } from './adventure-quests';
+import {bossDamage,bossHit,bossRadius,bossWarningLabel,bossWindup,selectBossMove,type BossMove,type BossThreat} from './boss-pattern';
 import { DUNGEON_ARENA, DUNGEON_GATE, DUNGEON_RADIUS, DUNGEON_WAVES, DUNGEON_REWARD, emptyDungeon, validateDungeon, dungeonWaveDone, dungeonBossDone, nearDungeonGate, type DungeonProgress } from './first-dungeon';
 
-export const GAME_VERSION = '0.7.0';
+export const GAME_VERSION = '0.8.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
 export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
 export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; quest?: QuestProgress; dungeon?: DungeonProgress; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
-export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number; windup?: number; aimX?: number; aimZ?: number }
+export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number; windup?: number; aimX?: number; aimZ?: number; bossMove?: BossMove; bossCasts?: number }
 export type Intent = {type:'enter-dungeon'|'advance-dungeon'|'claim-dungeon'|'leave-dungeon'} | {type:'claim-quest'} | { type: 'craft-armor' | 'equip-armor'; slot: ArmorSlot; tier: CraftedArmorTier } | { type:'unequip-armor'; slot: ArmorSlot } | { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'equip-weapon' | 'unequip-weapon' | 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
 export interface GameSession { readonly mode: 'local' | 'online'; dispatch(intent: Intent): void; tick(dt: number): void; snapshot(): Save }
 export const isWeaponEquipped = (p: Player) => p.weaponEquipped !== false;
@@ -96,9 +97,20 @@ export class LocalGameSession implements GameSession {
       });
     }
   }
-  get bossWarning(): string {
-    const m=this.mobs.find(m=>m.windup!==undefined&&m.windup>this.clock);
-    return m?'⚠ '+m.name+' 공격 예고 · 이동해서 피하세요!':'';
+  get bossThreat():BossThreat|null {
+    const m=this.mobs.find(m=>m.hp>0 && (m.id.startsWith('dungeon-')===this.state.player.dungeon!.inside) &&
+      m.windup!==undefined && m.windup>this.clock);
+    if(!m)return null;
+    const move=m.bossMove??'aimed-strike';
+    return {
+      name:m.name,move,x:move==='ground-sweep'?m.x:(m.aimX??m.x),
+      z:move==='ground-sweep'?m.z:(m.aimZ??m.z),
+      seconds:Math.max(0,m.windup!-this.clock),radius:bossRadius(move),
+    };
+  }
+  get bossWarning():string {
+    const threat=this.bossThreat;
+    return threat?bossWarningLabel(threat):'';
   }
   private random(): number { this.state.seed = (Math.imul(1664525, this.state.seed) + 1013904223) >>> 0; return this.state.seed / 4294967296; }
   snapshot(): Save { return structuredClone({ ...this.state, gameVersion: GAME_VERSION }); }
@@ -295,20 +307,23 @@ export class LocalGameSession implements GameSession {
           m.windup=0;
           m.cooldown=this.clock+2.8;
           m.action=EntityAction.Attack;m.actionSeq++;
-          // Snapshot-directed strike: stepping outside the indicated area avoids it.
-          if(distance<8&&Math.hypot((m.aimX??p.x)-p.x,(m.aimZ??p.z)-p.z)<=2.3){
-            const taken=Math.min(p.hp,Math.max(1,16-armorDefense(p.armor)));
+          const move=m.bossMove??'aimed-strike';
+          if(bossHit(move,m.x,m.z,m.aimX??p.x,m.aimZ??p.z,p.x,p.z)) {
+            const taken=Math.min(p.hp,Math.max(1,bossDamage(move)-armorDefense(p.armor)));
             p.hp-=taken;
-            this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:'정예 강타 피해 '+taken});
-            this.message=m.name+'의 강타에 '+taken+' 피해를 입었습니다.';
+            const label=move==='ground-sweep'?'파수꾼 휩쓸기':'정예 강타';
+            this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:label+' 피해 '+taken});
+            this.message=m.name+'의 공격에 '+taken+' 피해를 입었습니다.';
             if(!p.hp){const lost=Math.min(p.gold,5);p.gold-=lost;this.dispatch({type:'recall'});this.message='정예에게 쓰러졌습니다. 마을 귀환 · 골드 -'+lost;break;}
           } else {
             this.message=m.name+'의 예고 공격을 회피했습니다.';
           }
         } else if(!m.windup && distance<7 && this.clock>=m.cooldown && (p.dungeon!.inside||Math.hypot(p.x,p.z)>24)){
-          m.windup=this.clock+1.25;
+          m.bossMove=selectBossMove(m.name,m.bossCasts??0);
+          m.bossCasts=(m.bossCasts??0)+1;
+          m.windup=this.clock+bossWindup(m.bossMove);
           m.aimX=p.x;m.aimZ=p.z;m.action=EntityAction.Cast;m.actionSeq++;
-          this.message='⚠ '+m.name+'이 강타를 준비합니다. 표시된 위치에서 벗어나세요!';
+          this.message=m.name+'이 '+(m.bossMove==='ground-sweep'?'원형 휩쓸기':'위치 지정 강타')+'를 준비합니다!';
         } else if(!m.windup&&this.clock>=m.cooldown-.8)m.action=EntityAction.None;
         continue;
       }
