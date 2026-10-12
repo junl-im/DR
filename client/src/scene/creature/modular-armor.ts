@@ -69,13 +69,29 @@ function assertCompatible(source: THREE.SkinnedMesh, target: THREE.SkinnedMesh):
 /** Copies a part's node hierarchy but rebinds every render mesh to one
  * animated target rig. Models with multiple glTF primitives are preserved.
  */
-function createBoundPart(source: THREE.Object3D, rig: THREE.SkinnedMesh): THREE.Group {
+/** Surface variants retain the supplied GLB textures and normal maps.
+ * Clone PBR materials: changing the active armor must never mutate the cached
+ * GLB source or another character's outfit. */
+export function armorSurfaceFinish(material:THREE.Material,outfit:ArmorOutfit):THREE.Material {
+  const cloned=material.clone();
+  if(cloned instanceof THREE.MeshStandardMaterial) {
+    const metal=outfit==='knight'?.34:outfit==='ranger'?.16:.03;
+    cloned.metalness=Math.max(cloned.metalness,metal);
+    cloned.roughness=Math.min(.96,Math.max(.52,cloned.roughness));
+    cloned.needsUpdate=true;
+  }
+  return cloned;
+}
+function createBoundPart(source: THREE.Object3D, rig: THREE.SkinnedMesh, outfit:ArmorOutfit): THREE.Group {
   const bound = new THREE.Group();
   bound.name = source.name + '-preview';
   const copy = (node: THREE.Object3D): THREE.Object3D => {
     let result: THREE.Object3D;
     if (node instanceof THREE.SkinnedMesh) {
-      const mesh = new THREE.SkinnedMesh(node.geometry, node.material);
+      const material=Array.isArray(node.material)
+        ? node.material.map(m=>armorSurfaceFinish(m,outfit))
+        : armorSurfaceFinish(node.material,outfit);
+      const mesh = new THREE.SkinnedMesh(node.geometry, material);
       mesh.bindMode = rig.bindMode;
       mesh.bind(rig.skeleton, rig.bindMatrix.clone());
       mesh.castShadow = true;
@@ -136,7 +152,7 @@ export async function prepareModularArmor(
       if (!name) continue; // Traveler has no helmet mesh.
       const component = findPart(template.scene, name);
       for (const mesh of component.meshes) assertCompatible(mesh, reference);
-      prepared.set(outfit + ':' + slot, createBoundPart(component.node, reference));
+      prepared.set(outfit + ':' + slot, createBoundPart(component.node, reference, outfit));
     }
   }
   for (const part of prepared.values()) attachParent.add(part);
