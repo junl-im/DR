@@ -13,6 +13,7 @@ import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
 import {AutoHuntController,nextTabTarget,type HuntPriority} from './auto-hunt';
 import {createAdaptiveShadowGovernor} from './render-budget';
+import {nameplateScreenPoint} from './screen-name-anchor';
 import { fixedFrameForViewport } from './fixed-framing';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
@@ -293,14 +294,11 @@ function positionPlayerOverheadName():void{
   if(!label||!sprite){if(label)label.hidden=true;return;}
   sprite.visible=false;
   sprite.getWorldPosition(overheadPoint).project(game.camera);
-  const canvas=game.renderer.domElement.getBoundingClientRect();
-  const visible=overheadPoint.z>=-1&&overheadPoint.z<=1&&
-    Math.abs(overheadPoint.x)<.96&&Math.abs(overheadPoint.y)<.96;
-  label.hidden=!visible;
-  if(!visible)return;
-  const x=Math.round(canvas.left+(overheadPoint.x+1)*canvas.width/2);
-  const y=Math.round(canvas.top+(1-overheadPoint.y)*canvas.height/2);
-  const left=x+'px',top=y+'px';
+  const bounds=game.renderer.domElement.getBoundingClientRect();
+  const pixel=nameplateScreenPoint(overheadPoint,bounds);
+  label.hidden=!pixel;
+  if(!pixel)return;
+  const left=pixel.x+'px',top=pixel.y+'px';
   if(label.style.left!==left)label.style.left=left;
   if(label.style.top!==top)label.style.top=top;
 }
