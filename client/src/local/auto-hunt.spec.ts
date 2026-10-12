@@ -157,11 +157,11 @@ describe('Tab target and local auto hunt',()=>{
   // Simulate a pathfinding stall by ticking automation while the player
   // remains immobile behind an obstruction. No free mob damage is emitted.
   for(let i=0;i<55;i++)auto.tick(.05);
-  expect(s.target).toBeNull();
-  expect(s.attacking).toBe(false);
+  // Once the unreachable mob is skipped, the next tick can immediately
+  // acquire another target. The null callback proves stale VFX was cleared.
   expect(selected).toContain(null);
-  auto.tick(.05);
   expect(s.target).not.toBe(initial);
+  expect(s.target).not.toBeNull();
   expect(s.attacking).toBe(true);
   expect(auto.enabled).toBe(true);
   expect(s.snapshot()).not.toHaveProperty('unreachableUntil');
