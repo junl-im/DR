@@ -38,6 +38,7 @@ export interface PlayerAvatar {
   /** Show/update the floating name label above the avatar's head. */
   setName: (name: string) => void;
   ready: Promise<void>;
+  dispose: () => void;
 }
 
 function yawFromDirection(dx: number, dz: number): number {
@@ -79,6 +80,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   let requestedWeaponId = 0;
   let requestedArmor: ArmorSelection = {helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'};
   let armorController: ModularArmorController | null = null;
+  let disposed=false;
   const applyArmor = (): void => {
     if (!armorController) return;
     const current = armorController.snapshot();
@@ -88,6 +90,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   };
   const ready = character.ready
     .then(async () => {
+      if(disposed)return;
       syncWeaponVisual(character.object, requestedWeaponId, weaponState);
       group.remove(placeholder);
       placeholder.geometry.dispose();
@@ -97,6 +100,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
       if (v3) {
         try {
           armorController = await prepareModularArmor(character.object, undefined, v3[1] as ArmorOutfit);
+          if(disposed){armorController.dispose?.();armorController=null;return;}
           applyArmor();
         } catch (error) {
           console.warn('optional modular armor visual could not load', error);
@@ -128,6 +132,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   };
 
   const sync = (p: PlayerAvatarSync, nowMs = performance.now()): void => {
+    if(disposed)return;
     if (!initialized) {
       prevX = p.x;
       prevZ = p.z;
@@ -160,6 +165,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   };
 
   const update = (dt: number, nowMs = performance.now()): AnimationClip => {
+    if(disposed)return 'idle';
     const locomotion: 'idle' | 'move' =
       nowMs - lastMoveMs <= MOVE_COAST_MS ? 'move' : 'idle';
     const stepped = stepAnimation(animState, { action, actionSeq, locomotion, nowMs });
@@ -181,7 +187,18 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
     return clip;
   };
 
-  return { group, sync, update, setName, ready };
+  const dispose=():void=>{
+    if(disposed)return;
+    disposed=true;
+    armorController?.dispose?.();
+    armorController=null;
+    if(group.children.includes(placeholder)){
+      group.remove(placeholder);
+      placeholder.geometry.dispose();
+      (placeholder.material as THREE.Material).dispose();
+    }
+  };
+  return { group, sync, update, setName, ready, dispose };
 }
 
 export function computeFacingYaw(
