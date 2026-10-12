@@ -75,10 +75,12 @@ describe('Village plaza road and front-door visual plan',()=>{
     const aq=new THREE.Quaternion(),bq=new THREE.Quaternion();
     const as=new THREE.Vector3(),bs=new THREE.Vector3();
     a.decompose(ap,aq,as);b.decompose(bp,bq,bs);
-    expect(as.x).toBeGreaterThanOrEqual(.90);
-    expect(as.x).toBeLessThanOrEqual(1.05);
-    expect(as.z).toBeGreaterThanOrEqual(.90);
-    expect(as.z).toBeLessThanOrEqual(1.05);
+    // setMatrixAt stores Float32 values. Tolerate only its 1e-6
+    // rounding, not meaningful departures from the intended .90–1.05 range.
+    for(const n of [as.x,as.z]){
+      expect(n).toBeGreaterThanOrEqual(.90-1e-6);
+      expect(n).toBeLessThanOrEqual(1.05+1e-6);
+    }
     const values=new Set<number>();
     for(let i=0;i<Math.min(mesh.count,50);i++){
       mesh.getMatrixAt(i,a);
