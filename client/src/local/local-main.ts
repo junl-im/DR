@@ -11,6 +11,7 @@ import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
+import {createAutoHunt, nextTargetId} from './auto-hunt';
 import { fixedFrameForViewport } from './fixed-framing';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
@@ -28,6 +29,7 @@ const $ = <T extends HTMLElement = HTMLElement>(selector: string) => root.queryS
 const requestedArt = new URLSearchParams(location.search).get('art') ?? 'original';
 let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'original';
 let session: LocalGameSession;
+let autoHunt:ReturnType<typeof createAutoHunt>|undefined;
 let game: GameRenderer;
 let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
 let ruinAtmosphere:ReturnType<typeof createRuinAtmosphere>|undefined;
@@ -83,6 +85,7 @@ async function enter(state: Save) {
   root.querySelectorAll<HTMLButtonElement>('.entry button').forEach(b => b.disabled = true);
   try {
     session = new LocalGameSession(state);
+    autoHunt = createAutoHunt(session);
     const fixedFrame=fixedFrameForViewport(innerWidth);
     game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:fixedFrame.offset,cameraFov:fixedFrame.fov,lockCamera:true,playerManifest:ART_TRIALS[artTrial]});
     const classicScene=applyClassicScene(game.scene);
@@ -97,8 +100,8 @@ async function enter(state: Save) {
     game.renderer.shadowMap.enabled=!mobile;
     game.setLocalPlayerName(session.state.player.name);
     mountHud();
-    game.setMoveIntentHandler(i => session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }));
-    game.setMobTargetHandler(id => { session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
+    game.setMoveIntentHandler(i => {autoHunt?.stop(); session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ });});
+    game.setMobTargetHandler(id => {autoHunt?.stop(); session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
     const canvas = game.renderer.domElement;
     const feedback=createCombatFeedback(root,game.camera,canvas);
     mountTownSigns();
@@ -122,11 +125,15 @@ async function enter(state: Save) {
     resizeViewport();
     window.addEventListener('resize', resizeViewport);
     window.addEventListener('keydown', e => {
-      if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
+      const focused=e.target instanceof HTMLElement?e.target:null;
+      if (focused?.closest('input,select,textarea,[contenteditable="true"]') || e.repeat) return;
+      // Preserve keyboard focus navigation when any interactive UI has focus.
+      if(e.key==='Tab' && !focused?.closest('button,a,[tabindex]')) {e.preventDefault(); selectNextTarget();return;}
+      if(e.key==='F6'){e.preventDefault(); toggleAutoHunt();return;}
       if(e.key==='Escape') { $('#panel').hidden=true; return; }
       if(e.key.toLowerCase()==='i') { e.preventDefault();showPanel('inventory');return; }
       const keys: Record<string, Intent['type']> = { ' ': 'attack', '1':'attack', '2':'skill', '3':'potion', 'r':'recall' };
-      if(keys[e.key]) { e.preventDefault(); session.dispatch({type:keys[e.key]} as Intent); }
+      if(keys[e.key]) { e.preventDefault(); autoHunt?.stop();session.dispatch({type:keys[e.key]} as Intent); }
 
     });
     setConnected(false); setReady(true);
@@ -134,7 +141,11 @@ async function enter(state: Save) {
     let last=performance.now(), accumulator=0, uiTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
-      while(accumulator>=.05) { session.tick(.05); accumulator-=.05; }
+      while(accumulator>=.05) {
+        const autoNotice=autoHunt?.tick(.05,document.hidden);
+        if(autoNotice)toast(autoNotice);
+        session.tick(.05); accumulator-=.05;
+      }
       const perf=quality.sample(elapsed);
       if(perf.changed) {
         game.renderer.setPixelRatio(perf.dpr);
@@ -181,10 +192,10 @@ function mountHud() {
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
-<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
-<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
+<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button><div class="hunt-controls"><button id="next-mob" title="다음 몬스터 대상 선택 (Tab)">다음 타깃 <small>Tab</small></button><button id="auto-hunt" aria-pressed="false" title="일반 필드 자동사냥 켜기/끄기 (F6)">자동사냥 OFF <small>F6</small></button></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
+<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">Tab 다음 타깃 · F6 자동사냥 · 수동 조작 시 OFF</p></div>
 <div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
-  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
+  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{autoHunt?.stop();session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
   const panel=$('#panel');let drag:{x:number;y:number;left:number;top:number}|undefined;
@@ -194,7 +205,10 @@ function mountHud() {
   window.addEventListener('resize',()=>{panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';});
   $('#quest-journal').onclick=()=>showPanel('help');
   $('#dungeon-journal').onclick=()=>showPanel('dungeon');
+  $('#next-mob').onclick=()=>selectNextTarget();
+  $('#auto-hunt').onclick=()=>toggleAutoHunt();
   $('#hunt-guide').onclick=()=>{
+    autoHunt?.stop();
     const p=session.state.player;
     const m=session.mobs.filter(m=>m.hp>0 && (session.state.player.dungeon!.inside===m.id.startsWith('dungeon-'))).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];
     if(m) { session.dispatch({type:'target',id:m.id}); game.setVfxTargetMobId(m.id); session.dispatch({type:'attack'}); }
@@ -217,6 +231,8 @@ function updateHud() {
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
   $('#target').hidden=!m; $('#target').classList.toggle('elite-target',!!m&&m.name==='숲의 정예 감시자'); if(m) $('#target').textContent=`${m.name==='숲의 정예 감시자'?'정예 · ':''}${m.name} · HP ${m.hp} / ${m.maxHp}`;
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
+  const huntButton=root.querySelector<HTMLButtonElement>('#auto-hunt');
+  if(huntButton){huntButton.setAttribute('aria-pressed',String(Boolean(autoHunt?.enabled)));huntButton.classList.toggle('active',Boolean(autoHunt?.enabled));huntButton.innerHTML=autoHunt?.enabled?'자동사냥 ON <small>F6</small>':'자동사냥 OFF <small>F6</small>';}
   toast(session.message);
   if(!$('#panel').hidden) inventoryWindow?.refresh();
 }
@@ -224,6 +240,19 @@ const signPoint=new THREE.Vector3();
 function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(Math.hypot(session.state.player.x-sign.x,session.state.player.z-sign.z)>12){session.message='안내판 가까이 이동해주세요.';updateHud();return;}showPanel(sign.panel);};layer.append(button);}root.append(layer);}
 function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=session.state.player.dungeon!.inside||signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
+function selectNextTarget():void {
+  autoHunt?.stop();
+  const p=session.state.player;
+  const id=nextTargetId(session.mobs,p,Boolean(p.dungeon?.inside),session.target);
+  if(!id){toast('사거리 안에 선택할 몬스터가 없습니다.');return;}
+  session.dispatch({type:'target',id});
+  game.setVfxTargetMobId(id);
+  updateHud();
+}
+function toggleAutoHunt():void {
+  const result=autoHunt?.toggle();
+  if(result){toast(result.message);updateHud();}
+}
 function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
   $('#panel').hidden=false;
   inventoryWindow=undefined;
@@ -250,7 +279,7 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
       ['dungeon-claim','claim-dungeon'],['dungeon-leave','leave-dungeon']
     ] as const) {
       $('#'+id)?.addEventListener('click',()=>{
-        session.dispatch({type});
+        autoHunt?.stop(); session.dispatch({type});
         const result=session.message;lastLog=result;showPanel('dungeon');
         $('#dungeon-status').textContent=result;updateHud();void save();
       });

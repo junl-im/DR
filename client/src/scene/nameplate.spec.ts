@@ -12,6 +12,20 @@ describe('createNameplate', () => {
     expect(plate.sprite.scale.x).toBeGreaterThan(plate.sprite.scale.y);
   });
 
+  it('shows names larger and sharper than the original tiny 256x64 sprite',()=>{
+    const plate=createNameplate('이름이 긴 모험가');
+    const material=plate.sprite.material as THREE.SpriteMaterial;
+    const canvas=(material.map as THREE.CanvasTexture).image as HTMLCanvasElement;
+    expect(canvas.width).toBeGreaterThanOrEqual(512);
+    expect(canvas.height).toBeGreaterThanOrEqual(128);
+    expect(plate.sprite.scale.y).toBeGreaterThanOrEqual(1.15);
+    expect(plate.sprite.position.y).toBeGreaterThanOrEqual(2.6);
+    expect(plate.sprite.userData['decorative']).toBe(true);
+    const raycaster=new THREE.Raycaster();
+    expect(raycaster.intersectObject(plate.sprite)).toEqual([]);
+    plate.dispose();
+  });
+
   it('renders above other geometry (no depth clipping by the body mesh)', () => {
     const plate = createNameplate('Hero');
     const material = plate.sprite.material as THREE.SpriteMaterial;
