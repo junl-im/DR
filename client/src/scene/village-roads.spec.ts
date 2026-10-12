@@ -65,6 +65,30 @@ describe('Village plaza road and front-door visual plan',()=>{
     }
   });
 
+  it('uses beveled non-uniform weathered slabs rather than identical sharp square boxes',()=>{
+    const root=buildVillageRoads(new THREE.Scene(),village);
+    const mesh=instanced(root,'village-road-cobbles');
+    expect(mesh.geometry).toBeInstanceOf(THREE.ExtrudeGeometry);
+    const a=new THREE.Matrix4(),b=new THREE.Matrix4();
+    mesh.getMatrixAt(0,a);mesh.getMatrixAt(1,b);
+    const ap=new THREE.Vector3(),bp=new THREE.Vector3();
+    const aq=new THREE.Quaternion(),bq=new THREE.Quaternion();
+    const as=new THREE.Vector3(),bs=new THREE.Vector3();
+    a.decompose(ap,aq,as);b.decompose(bp,bq,bs);
+    expect(as.x).toBeGreaterThanOrEqual(.90);
+    expect(as.x).toBeLessThanOrEqual(1.05);
+    expect(as.z).toBeGreaterThanOrEqual(.90);
+    expect(as.z).toBeLessThanOrEqual(1.05);
+    const values=new Set<number>();
+    for(let i=0;i<Math.min(mesh.count,50);i++){
+      mesh.getMatrixAt(i,a);
+      a.decompose(ap,aq,as);
+      values.add(Number(as.x.toFixed(4)));
+    }
+    expect(values.size).toBeGreaterThan(3);
+    expect(mesh.instanceColor).not.toBeNull();
+  });
+
   it('releases owned GPU meshes but preserves terrain, buildings and route planning',()=>{
     const scene=new THREE.Scene();
     const house=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshBasicMaterial());
