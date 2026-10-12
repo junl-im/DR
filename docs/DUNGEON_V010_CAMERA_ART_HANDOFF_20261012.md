@@ -15,7 +15,7 @@ The verified 1440x900 dungeon screenshot showed that player, goblins and armor w
 - `first-dungeon-art.spec.ts` enforces 20 instanced wall fragments, raycast bypass and finite transforms. The old draw-count test still applies.
 - The original 16 screenshots/Chromium software WebGL suite (equipment grip, attack/cast/run poses, 3 dungeon waves, IndexedDB save/reload and final boss, mobile viewport) is preserved and will be rerun on the **final commit** before declaring this version tested.
 - Zoom is not a replacement for actual-device touch/FPS/battery profiling or frame-by-frame examination of armor/glove/boot clipping and weapon pivot offsets.
-- New framing is fixed at initial entry; a runtime breakpoint resize currently changes viewport aspect, not the camera offset, so cross-breakpoint resizing remains a follow-up.
+- Resize/orientation transitions across the 700px breakpoint switch between desktop/mobile camera offsets through an optional, validated renderer API. The projection aspect is updated first, and the camera preserves its locked diagonal. Unit tests cover live reframing and invalid request rejection.
 - Next steps: inspect the fresh desktop and mobile screenshots against v0.9.0, tune framing conservatively if combat visibility suffers; then assess measured V3 glove/weapon clipping and mobile real hardware performance.
 
 Keep this handoff as source-truth alongside GitHub CI and the signed Drive ZIP snapshot. Do not publish or merge until all gates pass.
