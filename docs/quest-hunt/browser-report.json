@@ -1,0 +1,59 @@
+{
+  "reports": [
+    {
+      "width": 1440,
+      "before": {
+        "quest": {
+          "stage": 0,
+          "progress": 3
+        },
+        "kills": 1,
+        "gold": 11
+      },
+      "claimed": {
+        "quest": {
+          "stage": 1,
+          "progress": 0
+        },
+        "gold": 39
+      },
+      "restored": {
+        "quest": {
+          "stage": 1,
+          "progress": 0
+        },
+        "gold": 39
+      },
+      "errors": [],
+      "bad": []
+    },
+    {
+      "width": 390,
+      "before": {
+        "quest": {
+          "stage": 0,
+          "progress": 3
+        },
+        "kills": 1,
+        "gold": 11
+      },
+      "claimed": {
+        "quest": {
+          "stage": 1,
+          "progress": 0
+        },
+        "gold": 39
+      },
+      "restored": {
+        "quest": {
+          "stage": 1,
+          "progress": 0
+        },
+        "gold": 39
+      },
+      "errors": [],
+      "bad": []
+    }
+  ],
+  "limits": "Controlled final-kill fixture; software Chromium, not physical Android performance."
+}

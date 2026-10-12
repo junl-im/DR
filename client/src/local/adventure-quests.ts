@@ -45,3 +45,11 @@ export const QUEST_BOARD={x:-2,z:4,radius:12} as const;
 export function nearQuestBoard(x:number,z:number):boolean{
   return Number.isFinite(x)&&Number.isFinite(z)&&Math.hypot(x-QUEST_BOARD.x,z-QUEST_BOARD.z)<=QUEST_BOARD.radius;
 }
+
+/** Only field kills can satisfy the village hunt objectives. */
+export function matchesQuestTarget(m:{id:string;name:string;npcId:number},target:HuntKind):boolean{
+ if(m.id.startsWith('dungeon-'))return false;
+ if(target==='sentinel')return m.name==='숲의 정예 감시자';
+ if(m.name==='숲의 정예 감시자')return false;
+ return target==='slime'?m.npcId===20001:m.npcId!==20001;
+}

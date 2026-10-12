@@ -4,7 +4,7 @@ import './local.css';
 import { ART_TRIALS } from './art-trial';
 import { equippedWeaponVisualId } from './equipment-visual';
 import { armorOutfitSelection, armorDefense } from './armor-economy';
-import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest } from './adventure-quests';
+import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest, matchesQuestTarget } from './adventure-quests';
 import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
 import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
@@ -12,7 +12,7 @@ import { buildFieldGroundCover } from '../scene/field-detail';
 import {preloadMobVisualTemplates} from '../scene/mobs';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
-import {AutoHuntController,nextTabTarget,type HuntPriority} from './auto-hunt';
+import {AutoHuntController,nextTabTarget,selectableMobs,type HuntPriority} from './auto-hunt';
 import {findBossDodgeDestination} from './boss-dodge';
 import {createAdaptiveShadowGovernor} from './render-budget';
 import {nameplateScreenPoint} from './screen-name-anchor';
@@ -122,7 +122,10 @@ async function enter(state: Save) {
         const progress=autoHunt?.progress;
         const elapsed=progress?.seconds??0;
         const duration=`${Math.floor(elapsed/60)}:${String(elapsed%60).padStart(2,'0')}`;
-        const message=enabled?`사냥 중 · ${autoHunt?.radius}m · ${autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
+        const message=enabled?`${autoHunt?.activity==='waiting'?'범위 안 대상 대기':autoHunt?.activity==='blocked'?'막힌 경로 우회 대기':'사냥 중'} · ${autoHunt?.radius}m · ${autoHunt?.priority==='quest'?'현재 의뢰 대상':autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
+          reason==='quest-ready'?'의뢰 목표 달성 · 자동사냥 중단 · 마을에서 보상을 받으세요.':
+          reason==='quest-complete'?'마을 의뢰를 모두 완료했습니다. 다른 사냥 기준을 선택하세요.':
+          reason==='quest-unavailable'?'마을 의뢰 사냥은 필드에서만 사용할 수 있습니다.':
           reason==='low-hp'?'체력이 부족해 자동사냥이 중단되었습니다.':
           reason==='range'?'설정한 사냥 범위를 벗어나 자동 중단되었습니다.':
           reason==='zone-change'?'필드·던전 전환으로 자동 중단되었습니다.':'';
@@ -250,10 +253,10 @@ function mountHud() {
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
-<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button><button id="next-target" type="button" title="Tab 키와 동일한 다음 몬스터 선택">다음 타깃 · Tab</button><button id="auto-hunt" type="button" aria-pressed="false" title="H 키로 자동사냥 켜기·끄기">자동사냥 OFF</button>
+<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="quest-target">의뢰 대상 찾기</button><button id="hunt-guide">가까운 몬스터 찾기</button><button id="next-target" type="button" title="Tab 키와 동일한 다음 몬스터 선택">다음 타깃 · Tab</button><button id="auto-hunt" type="button" aria-pressed="false" title="H 키로 자동사냥 켜기·끄기">자동사냥 OFF</button>
  <details id="auto-config"><summary>자동사냥 설정</summary><div class="auto-config-fields">
  <label for="auto-radius">사냥 반경<select id="auto-radius"><option value="12">12m</option><option value="20">20m</option><option value="28" selected>28m</option></select></label>
- <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option></select></label>
+ <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option><option value="quest">현재 의뢰 대상 · 정예 포함</option></select></label>
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
  </div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section><button id="boss-dodge" type="button" title="Q 키 · 기존 이동 속도로 공격 예고 범위 벗어나기" hidden>회피 · Q</button>
 <div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
@@ -275,6 +278,17 @@ function mountHud() {
     if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}
     updateHud();
   };
+  $('#quest-target').onclick=()=>{
+    if(autoHunt?.enabled)autoHunt.setEnabled(false);
+    const p=session.state.player,q=p.quest!,quest=activeQuest(q);
+    if(!quest){session.message='마을 의뢰를 모두 완료했습니다.';updateHud();return;}
+    if(canClaimQuest(q)){session.message='의뢰 목표 달성 · 마을 모험 안내판에서 보상을 받으세요.';updateHud();return;}
+    const target=selectableMobs(session).find(m=>matchesQuestTarget(m,quest.target));
+    if(!target){session.message='75m 안에 살아있는 의뢰 대상이 없습니다. 필드 위치와 재출현을 확인하세요.';updateHud();return;}
+    session.dispatch({type:'target',id:target.id});game.setVfxTargetMobId(target.id);
+    const distance=Math.round(Math.hypot(target.x-p.x,target.z-p.z));
+    session.message=target.name+' · 거리 '+distance+'m · '+(distance>(autoHunt?.radius??28)?'공격으로 접근하거나 대상 근처에서 의뢰 자동사냥을 켜세요.':'공격 또는 의뢰 자동사냥을 선택하세요.');updateHud();
+  };
   $('#hunt-guide').onclick=()=>{
     if(autoHunt?.enabled)autoHunt.setEnabled(false);
     const p=session.state.player;
@@ -295,7 +309,7 @@ function updateHud() {
   $('.chapter strong').textContent=p.dungeon!.inside?'폐허의 시련 · '+DUNGEON_WAVES[p.dungeon!.wave].title:Math.hypot(p.x,p.z)<=24?'시작의 마을 · 안전 지역':'동쪽 사냥터 · 전투 지역';
   const skillButton=root.querySelector<HTMLButtonElement>('[data-intent="skill"]')!;$('#skill-cooldown').textContent=session.skillCooldown>.05?`${session.skillCooldown.toFixed(1)}s`:'2';skillButton.classList.toggle('cooling',session.skillCooldown>.05);skillButton.style.setProperty('--remaining',`${session.skillCooldown/4*100}%`);skillButton.title=`${isWeaponEquipped(p)?'강타 · MP 12':'강타 · 무기 장착 필요'}${session.skillCooldown>.05?' · 재사용 대기 중':''}`;
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
-  $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):`${questSummary(validateQuest(p.quest))} · 총 처치 ${p.kills}`;
+  $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):`${questSummary(validateQuest(p.quest))} · ${canClaimQuest(p.quest!)?'목표 달성 · 마을 보상 수령':activeQuest(p.quest!)?.description??'폐허의 시련에 도전하세요.'}`;
   const warning=session.bossWarning;$('#boss-warning').hidden=!warning;$('#boss-warning').textContent=warning;
   $('#boss-dodge').hidden=!warning;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
@@ -380,9 +394,10 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
       <p role="status" id="quest-status"></p>
       <p>땅을 클릭해 이동 · 동쪽 사냥터에서 몬스터를 선택하고 1 키로 공격하세요.</p>
       <p>2 강타 · 3 물약 · R 귀환 · 마을 주변에서는 체력이 회복됩니다.</p>
-      <button id="help-hunt">사냥터로 출발</button>
+      <button id="help-quest-target">의뢰 대상 찾기</button><button id="help-hunt">가까운 몬스터 사냥</button>
       <small>의뢰 보상은 마을 모험 안내판 근처에서 1번만 수령할 수 있습니다.</small>`;
     $('#quest-claim')?.addEventListener('click',()=>{session.dispatch({type:'claim-quest'});const result=session.message;lastLog=result;showPanel('help');$('#quest-status').textContent=result;updateHud();void save();});
+    $('#help-quest-target').onclick=()=>{$('#panel').hidden=true;$('#quest-target').click();};
     $('#help-hunt').onclick=()=>{$('#panel').hidden=true;$('#hunt-guide').click();};
   } else if(kind==='estate') {
     const t=session.state.territory;
