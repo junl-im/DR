@@ -112,6 +112,12 @@ describe('mobs visual mapping', () => {
     expect(aura).toBeInstanceOf(THREE.Mesh);
     expect(aura?.userData['decorative']).toBe(true);
     expect((aura as THREE.Mesh).castShadow).toBe(false);
+    const elite=map.get('local-11')!,normal=map.get('local-10')!;
+    const eliteBar=elite.getObjectByName('hpBar')!;
+    const normalBar=normal.getObjectByName('hpBar')!;
+    expect(eliteBar.scale.x).toBeGreaterThan(normalBar.scale.x);
+    const material=(elite.getObjectByName('hpFill') as THREE.Mesh).material as THREE.MeshBasicMaterial;
+    expect(material.color.getHex()).toBe(0xffc15a);
     expect(map.get('local-10')?.getObjectByName('elite-sentinel-aura')).toBeUndefined();
   });
   it('uses manifest hpBarYOffset for mapped npcIds', () => {
