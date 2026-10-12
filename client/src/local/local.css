@@ -24,7 +24,7 @@
 
 /* Auto-hunt preferences: compact, accessible and initially collapsed. */
 .quest #auto-hunt.active{border-color:#d6bd70;color:#f5e3af;background:linear-gradient(#596440,#292e22)}
-.quest #auto-config{margin-top:5px;color:#e4d6ac;font-size:10px}
+.quest #auto-config{margin-top:5px;color:#e4d6ac;font-size:10px;pointer-events:auto}
 .quest #auto-config summary{cursor:pointer;user-select:none;border:1px solid #645d49;padding:5px 7px;background:#20251ddd;list-style-position:inside}
 .quest #auto-config summary:focus-visible{outline:2px solid #e8ce83;outline-offset:2px}
 .quest #auto-config[open]{background:#181f17f5;padding:3px;border:1px solid #817451}
