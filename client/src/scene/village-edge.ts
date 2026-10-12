@@ -28,7 +28,7 @@ export function planVillageEdge(specs:readonly SceneObjectSpec[]):VillageEdgePla
   for(let side=0;side<4;side++){
     for(let i=0;i<steps;i++){
       const along=(i+.5)/steps*2-1;
-      const a=side<2?ground.x+along*(halfW-1.1):ground.z+along*(halfD-1.1);
+      const a=side<2?ground.z+along*(halfD-1.1):ground.x+along*(halfW-1.1);
       const outside=side%2===0?1:-1;
       // north and south shop approaches stay free of decorative edging.
       if(side>=2&&Math.abs(a-ground.x)<2.4)continue;
