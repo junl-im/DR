@@ -8,6 +8,7 @@ import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest
 import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
 import { buildFieldGroundCover } from '../scene/field-detail';
+import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -25,6 +26,7 @@ const requestedArt = new URLSearchParams(location.search).get('art') ?? 'origina
 let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'original';
 let session: LocalGameSession;
 let game: GameRenderer;
+let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
 let saveTask: Promise<void> | undefined;
 let replacingSave = false;
 let cloud: typeof import('./cloud') | undefined;
@@ -82,6 +84,7 @@ async function enter(state: Save) {
     buildTownDetails(game.scene);
     buildFirstDungeonArt(game.scene);
     buildFieldGroundCover(game.scene);
+    threatVisual=createBossThreatVisual(game.scene);
     game.renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(max-width: 700px)').matches ? 1.1 : 1.5));
     game.renderer.shadowMap.enabled = !matchMedia('(max-width: 700px)').matches;
     game.setLocalPlayerName(session.state.player.name);
@@ -123,6 +126,7 @@ async function enter(state: Save) {
 }
 function syncScene() {
   const p=session.state.player, y=snapEntityY(p.x,p.z);
+  threatVisual?.update(session.bossThreat);
   setPlayer({...getGameState().player,...p,y,powerStrikeCooldownEndMs:0});
   game.syncLocalPlayer(p.x,y,p.z,session.action,session.actionSeq,equippedWeaponVisualId(p),p.classId,0,armorOutfitSelection(p.armor));
   game.syncPlayerVfx({hp:p.hp,level:p.level,action:session.action,actionSeq:session.actionSeq,x:p.x,y,z:p.z});
