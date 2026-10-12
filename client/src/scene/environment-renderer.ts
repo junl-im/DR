@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { TERRAIN_CONFIG } from '@nj/game-core';
 import { buildVillage, type SceneObjectSpec } from './village';
 import { createVillagePaving } from './town-floor';
+import { buildVillageFacades } from './village-facade';
 import { scatterProps } from './scatter';
 import {
   getBuildingPropEntry,
@@ -174,6 +175,9 @@ export async function placeVillageEnvironment(
     result.buildings.renderKind = 'primitive';
   }
 
+  // Per-building architectural dressing is purely cosmetic and is created
+  // after the existing source GLBs / primitive fallbacks are placed.
+  buildVillageFacades(scene, villageSpecs);
   return result;
 }
 
