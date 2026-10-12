@@ -72,6 +72,12 @@ describe('placeVillageEnvironment', () => {
     expect(rooflines.children).toHaveLength(5);
     expect((rooflines.getObjectByName('village-roof-shingles') as THREE.InstancedMesh).count).toBe(192);
     expect((rooflines.getObjectByName('village-roof-finials') as THREE.InstancedMesh).count).toBe(5);
+    const villageEdge=scene.getObjectByName('dungeon-zero-village-edge') as THREE.Group;
+    expect(villageEdge).toBeInstanceOf(THREE.Group);
+    expect(villageEdge.children).toHaveLength(2);
+    expect((villageEdge.getObjectByName('village-edge-gravel') as THREE.InstancedMesh).count).toBeGreaterThan(110);
+    expect((villageEdge.getObjectByName('village-edge-grass') as THREE.InstancedMesh).count).toBeGreaterThan(110);
+    expect(villageEdge.children.every(c=>c.userData['decorative']===true)).toBe(true);
     expect((streets.getObjectByName('village-road-cobbles') as THREE.InstancedMesh).count).toBeGreaterThan(100);
     expect(facade.children.every(c=>c.userData['decorative']===true)).toBe(true);
 
@@ -120,6 +126,7 @@ describe('placeVillageEnvironment', () => {
     expect((roads.getObjectByName('village-door-steps') as THREE.InstancedMesh).count).toBe(5);
     expect((scene.getObjectByName('dungeon-zero-village-rooflines')!
       .getObjectByName('village-roof-finials') as THREE.InstancedMesh).count).toBe(5);
+    expect(scene.getObjectByName('dungeon-zero-village-edge')?.children).toHaveLength(2);
     const facade=scene.getObjectByName('dungeon-zero-village-facades')!;
     expect((facade.getObjectByName('facade-plaques') as THREE.InstancedMesh).count).toBe(5);
   });
