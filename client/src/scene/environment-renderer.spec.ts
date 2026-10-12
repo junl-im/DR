@@ -63,6 +63,11 @@ describe('placeVillageEnvironment', () => {
     expect(facade.children).toHaveLength(5);
     expect((facade.getObjectByName('facade-plaques') as THREE.InstancedMesh).count).toBe(5);
     expect((facade.getObjectByName('facade-lanterns') as THREE.InstancedMesh).count).toBe(10);
+    const streets=scene.getObjectByName('dungeon-zero-village-roads') as THREE.Group;
+    expect(streets).toBeInstanceOf(THREE.Group);
+    expect(streets.children).toHaveLength(2);
+    expect((streets.getObjectByName('village-door-steps') as THREE.InstancedMesh).count).toBe(5);
+    expect((streets.getObjectByName('village-road-cobbles') as THREE.InstancedMesh).count).toBeGreaterThan(100);
     expect(facade.children.every(c=>c.userData['decorative']===true)).toBe(true);
 
     const buildingSpecs = buildVillage({ seed: 42, sampleHeight: terrain.sampleHeight }).filter(
@@ -106,6 +111,8 @@ describe('placeVillageEnvironment', () => {
     const primitives = scene.children.filter((c) => c.userData.renderKind === 'primitive');
     expect(primitives.length).toBe(1);
     // A missing house GLB must not remove its storefront ornaments.
+    const roads=scene.getObjectByName('dungeon-zero-village-roads')!;
+    expect((roads.getObjectByName('village-door-steps') as THREE.InstancedMesh).count).toBe(5);
     const facade=scene.getObjectByName('dungeon-zero-village-facades')!;
     expect((facade.getObjectByName('facade-plaques') as THREE.InstancedMesh).count).toBe(5);
   });
