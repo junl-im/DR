@@ -18,8 +18,8 @@ describe('createNameplate', () => {
     const canvas=(material.map as THREE.CanvasTexture).image as HTMLCanvasElement;
     expect(canvas.width).toBeGreaterThanOrEqual(512);
     expect(canvas.height).toBeGreaterThanOrEqual(128);
-    expect(plate.sprite.scale.y).toBeGreaterThanOrEqual(.8);
-    expect(plate.sprite.position.y).toBeGreaterThanOrEqual(2.3);
+    expect(plate.sprite.scale.y).toBeGreaterThanOrEqual(1.15);
+    expect(plate.sprite.position.y).toBeGreaterThanOrEqual(2.6);
     plate.dispose();
   });
 
