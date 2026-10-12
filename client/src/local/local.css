@@ -79,3 +79,16 @@
  #boss-dodge{top:103px;min-height:44px;min-width:120px;font-size:13px}
  .boss-warning{padding:5px 8px;max-width:65vw}
 }
+
+
+/* Keep the selected monster's HP separate from the right-side quest controls
+ * on narrow screens. Before this the target appeared on top of a quest button.
+ * The left-side target is above the scene but does not block center combat.
+ */
+@media(max-width:550px){
+  .target,.target.elite-target{
+    top:86px;left:8px;right:auto;transform:none;
+    width:145px;min-width:0;max-width:calc(100vw - 165px);
+    font-size:10px;white-space:normal;overflow-wrap:anywhere;z-index:4;
+  }
+}
