@@ -13,7 +13,7 @@ export function buildFirstDungeonArt(scene:THREE.Scene):THREE.Group {
   const dark=new THREE.MeshStandardMaterial({color:0x282b30,roughness:.94});
   const rune=new THREE.MeshStandardMaterial({color:0x8eb8c3,emissive:0x3b7384,emissiveIntensity:.8});
   const add=(parent:THREE.Object3D,geo:THREE.BufferGeometry,mat:THREE.Material,x:number,y:number,z:number,cast=true)=>{
-    const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=cast;m.receiveShadow=true;m.userData['decorative']=true;parent.add(m);return m;
+    const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=cast;m.receiveShadow=true;m.userData['decorative']=true;m.raycast=()=>{};parent.add(m);return m;
   };
 
   const gate=new THREE.Group();gate.name='ruin-entry-gate';
@@ -45,7 +45,7 @@ export function buildFirstDungeonArt(scene:THREE.Scene):THREE.Group {
     tiles.setMatrixAt(index++,transform);
   }
   tiles.instanceMatrix.needsUpdate=true;
-  tiles.userData['decorative']=true;arena.add(tiles);
+  tiles.userData['decorative']=true;tiles.raycast=()=>{};arena.add(tiles);
   const pillarGeo=new THREE.CylinderGeometry(.6,.8,5.5,6);
   for(const [x,z] of [[-10,-10],[10,-10],[-10,10],[10,10]]){
     const y=snapEntityY(DUNGEON_ARENA.x+x,DUNGEON_ARENA.z+z)-FEET_OFFSET;
