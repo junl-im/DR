@@ -145,6 +145,44 @@ describe('Tab target and local auto hunt',()=>{
   expect(s.state.player.z).toBeCloseTo(z,5);
   expect(s.attacking).toBe(false);
  });
+ it('abandons an immobilized unreachable mob and attempts a different living target',()=>{
+  const {s}=setup();
+  const selected:Array<string|null>=[];
+  const auto=new AutoHuntController(s,id=>selected.push(id));
+  auto.setEnabled(true);
+  auto.tick(.05);
+  const initial=s.target;
+  expect(initial).not.toBeNull();
+  expect(s.attacking).toBe(true);
+  // Simulate a pathfinding stall by ticking automation while the player
+  // remains immobile behind an obstruction. No free mob damage is emitted.
+  for(let i=0;i<55;i++)auto.tick(.05);
+  expect(s.target).toBeNull();
+  expect(s.attacking).toBe(false);
+  expect(selected).toContain(null);
+  auto.tick(.05);
+  expect(s.target).not.toBe(initial);
+  expect(s.attacking).toBe(true);
+  expect(auto.enabled).toBe(true);
+  expect(s.snapshot()).not.toHaveProperty('unreachableUntil');
+ });
+ it('does not mark a melee-range target as stuck, and walking progress resets watchdog',()=>{
+  const {s,mobs}=setup();
+  for(const m of mobs){m.hp=0;}
+  const one=mobs[0];one.hp=one.maxHp;one.x=s.state.player.x+1;one.z=s.state.player.z;
+  const auto=new AutoHuntController(s,()=>{});
+  auto.setEnabled(true);
+  for(let i=0;i<80;i++)auto.tick(.05);
+  expect(s.target).toBe(one.id);
+  expect(s.attacking).toBe(true);
+  one.x=s.state.player.x+9;
+  for(let i=0;i<35;i++){
+    if(i===25)s.state.player.x+=.2;
+    auto.tick(.05);
+  }
+  expect(auto.enabled).toBe(true);
+  expect(s.target).toBe(one.id);
+ });
  it('has no effect on persisted schema and stops all attacks when disabled',()=>{
   const {s}=setup();
   const original=s.snapshot().schemaVersion;
