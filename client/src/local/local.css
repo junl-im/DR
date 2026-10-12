@@ -97,7 +97,7 @@
 @media(max-width:550px),(pointer:coarse){
  .top #menu{width:44px;height:44px;flex-shrink:0}
  .actions button{min-height:44px}
- .quest{top:60px;max-height:max(100px,calc(100dvh - var(--dock) - 100px));overflow-y:auto;overscroll-behavior:contain;pointer-events:auto;scrollbar-width:thin}
+ .quest{z-index:5;top:60px;max-height:max(100px,calc(100dvh - var(--dock) - 100px));overflow-y:auto;overscroll-behavior:contain;pointer-events:auto;scrollbar-width:thin}
  .quest button,.quest #auto-hunt,.quest #quest-journal,.quest #dungeon-journal,.quest #hunt-guide,.quest #next-target{min-height:44px}
  .quest #auto-config summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
  .quest #auto-config[open]{min-width:0}
