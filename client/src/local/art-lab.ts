@@ -31,7 +31,7 @@ const views=entries.map(entry=>{
    for(const clip of ['idle','move','attack','cast','die'] as const) {
      clipDurations[clip]=template.animations.find(a=>a.name===entry.clipMap[clip])?.duration??0;
    }
-   character.play('idle');character.setTime(0);character.object.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(character.object),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());character.object.position.y-=box.min.y;updateInspectionCamera(character.object,camera);card.querySelector('p')!.textContent='대기 · 동일 조명 · 실제 GLB';return {name:entry.displayName,model:entry.model,height:size.y};});
+   character.play('idle');character.setTime(0);character.object.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(character.object),size=box.getSize(new THREE.Vector3());character.object.position.y-=box.min.y;updateInspectionCamera(character.object,camera);card.querySelector('p')!.textContent='대기 · 동일 조명 · 실제 GLB';return {name:entry.displayName,model:entry.model,height:size.y};});
  return {renderer,scene,camera,character,ready,card,weaponState,clipDurations};
 });
 function refreshInspectionCameras():void {
