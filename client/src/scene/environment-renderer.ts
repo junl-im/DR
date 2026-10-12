@@ -6,6 +6,7 @@ import { createVillagePaving } from './town-floor';
 import { buildVillageFacades } from './village-facade';
 import { buildVillageRoads } from './village-roads';
 import { buildVillageRooflines } from './village-roofline';
+import { buildVillageEdge } from './village-edge';
 import { scatterProps } from './scatter';
 import {
   getBuildingPropEntry,
@@ -182,6 +183,7 @@ export async function placeVillageEnvironment(
   buildVillageFacades(scene, villageSpecs);
   buildVillageRoads(scene, villageSpecs);
   buildVillageRooflines(scene, villageSpecs);
+  buildVillageEdge(scene,villageSpecs,terrainData.sampleHeight);
   return result;
 }
 
