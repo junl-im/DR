@@ -15,6 +15,17 @@ export function createWeaponVisualState(): WeaponVisualState {
   return { equippedItemId: 0, prop: null, loading: null, requestVersion: 0 };
 }
 
+/** Invalidate late asset requests when the owning avatar is replaced.
+ * GLTF cached geometry/materials are not owned by the equipped prop.
+ */
+export function disposeWeaponVisual(state:WeaponVisualState):void {
+  ++state.requestVersion;
+  if(state.prop)detachProp(state.prop);
+  state.prop=null;
+  state.loading=null;
+  state.equippedItemId=0;
+}
+
 const RIGHT_HAND_CANDIDATES = [
   'handslotr',    // KayKit name found in some runtime conversions
   'handslot.r',   // original GLB node name
