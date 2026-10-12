@@ -111,6 +111,13 @@ fs.mkdirSync(out,{recursive:true});
     await game.locator('#start').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.armor!==undefined,null,{timeout:90000});
     await game.waitForFunction(()=>window.__GAME_STATE__?.environment?.loaded===true,null,{timeout:90000});
+    await game.waitForFunction(()=>{
+      const label=document.querySelector('#player-overhead-name');
+      return label&&!label.hidden&&label.textContent?.trim().length>0;
+    },null,{timeout:15000});
+    const desktopFont=await game.locator('#player-overhead-name').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+    if(desktopFont<15)throw new Error('Desktop overhead name is still too small: '+desktopFont);
+    await game.screenshot({path:out+'/readable-name-desktop.png',fullPage:true});
     const villageState=await game.evaluate(()=>window.__GAME_STATE__.environment);
     if(villageState.buildings.count!==5||villageState.peaceZone.count!==1)
       throw new Error('Village environment stats changed '+JSON.stringify(villageState));
@@ -156,6 +163,15 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/village-facades-desktop.png',fullPage:true});
     await game.setViewportSize({width:390,height:844});
     await game.waitForTimeout(300);
+    const mobileName=await game.locator('#player-overhead-name').evaluate(el=>({
+      hidden:el.hidden,font:parseFloat(getComputedStyle(el).fontSize),
+      name:el.textContent,
+      rect:el.getBoundingClientRect().toJSON(),
+    }));
+    if(mobileName.hidden||mobileName.font<14||!mobileName.name?.trim() ||
+      mobileName.rect.width<20||mobileName.rect.height<14)
+      throw new Error('Mobile overhead name not legible '+JSON.stringify(mobileName));
+    await game.screenshot({path:out+'/readable-name-mobile.png',fullPage:true});
     if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))
       throw new Error('Village facade preview overflowed mobile viewport');
     if(!await game.locator('#quality-info').isVisible())
@@ -306,7 +322,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,errors,bad,screenshots:27,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,desktopFont,mobileName,errors,bad,screenshots:29,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
