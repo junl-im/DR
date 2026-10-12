@@ -52,6 +52,10 @@ function freezePose():void {
   const fraction=Number(poseSlider.value)/100;
   for(const view of views) {
     const duration=view.clipDurations[selected]??0;
+    // One-shot clips may have stopped during live preview. Re-arm the exact
+    // action before seeking, otherwise a finished attack stays in bind pose.
+    view.character.play(selected==='idle'?'move':'idle');
+    view.character.play(selected);
     if(duration>0) view.character.setTime(duration*fraction);
     view.character.object.updateMatrixWorld(true);
   }
