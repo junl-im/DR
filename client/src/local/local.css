@@ -14,3 +14,9 @@
 #quest-claim:disabled{cursor:not-allowed;opacity:.53}
 #quest-detail{font-variant-numeric:tabular-nums}
 @media(max-width:550px){.quest #quest-journal,.quest #hunt-guide{min-height:27px}.quest #quest-progress{font-size:8px}.target.elite-target{max-width:48vw;white-space:normal}}
+
+/* First-dungeon and elite combat readability, no layout overlays outside combat. */
+.boss-warning{position:absolute;top:46px;left:50%;transform:translateX(-50%);z-index:5;max-width:min(85vw,410px);background:#34220ddb;color:#ffe1a0;border:1px solid #d6a85c;border-radius:3px;padding:8px 12px;text-align:center;font-size:12px;box-shadow:0 3px 20px #0008;pointer-events:none}
+#dungeon-journal{border-color:#a88e64;color:#ddc9a0}
+#dungeon-enter:disabled,#dungeon-next:disabled,#dungeon-claim:disabled{opacity:.5}
+@media(max-width:550px){.boss-warning{top:55px;font-size:10px}.quest #dungeon-journal{font-size:9px;min-height:30px}}
