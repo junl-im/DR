@@ -11,7 +11,8 @@ import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
-import {AutoHuntController,nextTabTarget} from './auto-hunt';
+import {AutoHuntController,nextTabTarget,type HuntPriority} from './auto-hunt';
+import {createAdaptiveShadowGovernor} from './render-budget';
 import { fixedFrameForViewport } from './fixed-framing';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
@@ -95,22 +96,45 @@ async function enter(state: Save) {
     const mobile=matchMedia('(max-width: 700px)').matches;
     ruinAtmosphere=createRuinAtmosphere(game.scene,mobile);
     const quality=createResolutionGovernor(devicePixelRatio,mobile);
+    const shadowBudget=createAdaptiveShadowGovernor(mobile);
     game.renderer.setPixelRatio(quality.dpr);
-    game.renderer.shadowMap.enabled=!mobile;
+    game.renderer.shadowMap.enabled=shadowBudget.enabled;
     game.setLocalPlayerName(session.state.player.name);
     mountHud();
     autoHunt=new AutoHuntController(session,id=>game.setVfxTargetMobId(id));
     const syncAutoButton=()=>{
       const button=root.querySelector<HTMLButtonElement>('#auto-hunt');
       if(!button)return;
-      button.textContent=autoHunt?.enabled?'자동사냥 ON':'자동사냥 OFF';
-      button.setAttribute('aria-pressed',String(!!autoHunt?.enabled));
-      button.classList.toggle('active',!!autoHunt?.enabled);
+      const enabled=!!autoHunt?.enabled;
+      const buttonText=enabled?'자동사냥 ON':'자동사냥 OFF';
+      if(button.textContent!==buttonText)button.textContent=buttonText;
+      const pressed=String(enabled);
+      if(button.getAttribute('aria-pressed')!==pressed)button.setAttribute('aria-pressed',pressed);
+      button.classList.toggle('active',enabled);
+      const status=root.querySelector<HTMLElement>('#auto-status');
+      if(status){
+        const reason=autoHunt?.stopReason;
+        const message=enabled?`사냥 중 · ${autoHunt?.radius}m · ${autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'}`:
+          reason==='low-hp'?'체력이 부족해 자동사냥이 중단되었습니다.':
+          reason==='range'?'설정한 사냥 범위를 벗어나 자동 중단되었습니다.':
+          reason==='zone-change'?'필드·던전 전환으로 자동 중단되었습니다.':'';
+        if(status.textContent!==message)status.textContent=message;
+      }
     };
     root.querySelector<HTMLButtonElement>('#auto-hunt')!.onclick=()=>{
       autoHunt!.setEnabled(!autoHunt!.enabled);
       syncAutoButton();
     };
+    const readHuntOptions=()=>{
+      autoHunt!.configure({
+        radius:Number($<HTMLSelectElement>('#auto-radius').value),
+        priority:$<HTMLSelectElement>('#auto-priority').value as HuntPriority,
+        potionThreshold:Number($<HTMLSelectElement>('#auto-potion').value),
+      });
+      syncAutoButton();
+    };
+    for(const id of ['#auto-radius','#auto-priority','#auto-potion'])
+      $(id).addEventListener('change',readHuntOptions);
     const manualStop=()=>{if(autoHunt?.enabled){autoHunt.setEnabled(false);syncAutoButton();}};
     game.setMoveIntentHandler(i => { manualStop();session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }); });
     game.setMobTargetHandler(id => { manualStop();session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
@@ -148,16 +172,20 @@ async function enter(state: Save) {
     });
     setConnected(false); setReady(true);
     Object.assign(window, { __DREAM_SESSION__:session, __DREAM_SAVE__:save });
-    let last=performance.now(), accumulator=0, uiTime=0;
+    let last=performance.now(), accumulator=0, uiTime=0,shadowTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
-      while(accumulator>=.05) { autoHunt?.tick();session.tick(.05); accumulator-=.05; }
+      while(accumulator>=.05) { autoHunt?.tick(.05);session.tick(.05); accumulator-=.05; }
       syncAutoButton();
       const perf=quality.sample(elapsed);
-      if(perf.changed) {
-        game.renderer.setPixelRatio(perf.dpr);
+      if(perf.changed)game.renderer.setPixelRatio(perf.dpr);
+      shadowTime+=elapsed;
+      if(shadowTime>=2.5){
+        shadowTime=0;
+        const decision=shadowBudget.sample(perf.fps,perf.dpr);
+        if(decision.changed)game.renderer.shadowMap.enabled=decision.enabled;
         const label=root.querySelector<HTMLElement>('#quality-info');
-        if(label) label.textContent='AUTO '+perf.dpr.toFixed(2)+'×';
+        if(label)label.textContent=`AUTO ${Math.round(perf.fps)} FPS · ${perf.dpr.toFixed(2)}× · ${game.renderer.info.render.calls} calls`;
       }
       syncScene(); game.tick(Math.min(elapsed,.05));classicScene.tick();const events=session.drainEvents();feedback.push(events);for(const event of events){addLog(event.text);if(event.text===session.message)lastLog=event.text;}feedback.tick(elapsed);positionTownSigns(); game.render();
       uiTime+=elapsed; if(uiTime>.15) { updateHud(); uiTime=0; }
@@ -165,7 +193,7 @@ async function enter(state: Save) {
     }
     syncScene(); updateHud(); requestAnimationFrame(frame);
     await save(); setInterval(()=>void save(),15000);
-    document.addEventListener('visibilitychange',()=>{ if(document.hidden) void save(); });
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden){manualStop();void save();} });
   } catch(e) { if(entryStatus?.isConnected) { entryStatus.textContent=`입장 실패: ${errorText(e)}`; root.querySelectorAll<HTMLButtonElement>('.entry button').forEach(b=>b.disabled=false); } else toast(`입장 실패: ${errorText(e)}`); }
 }
 function syncScene() {
@@ -199,10 +227,15 @@ function mountHud() {
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
-<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button><button id="auto-hunt" type="button" aria-pressed="false" title="H 키로 자동사냥 켜기·끄기">자동사냥 OFF</button></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
+<section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button><button id="auto-hunt" type="button" aria-pressed="false" title="H 키로 자동사냥 켜기·끄기">자동사냥 OFF</button>
+ <details id="auto-config"><summary>자동사냥 설정</summary><div class="auto-config-fields">
+ <label for="auto-radius">사냥 반경<select id="auto-radius"><option value="12">12m</option><option value="20">20m</option><option value="28" selected>28m</option></select></label>
+ <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option></select></label>
+ <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
+ </div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
 <div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
 <div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
-  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
+  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
   const panel=$('#panel');let drag:{x:number;y:number;left:number;top:number}|undefined;
@@ -213,6 +246,7 @@ function mountHud() {
   $('#quest-journal').onclick=()=>showPanel('help');
   $('#dungeon-journal').onclick=()=>showPanel('dungeon');
   $('#hunt-guide').onclick=()=>{
+    if(autoHunt?.enabled)autoHunt.setEnabled(false);
     const p=session.state.player;
     const m=session.mobs.filter(m=>m.hp>0 && (session.state.player.dungeon!.inside===m.id.startsWith('dungeon-'))).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];
     if(m) { session.dispatch({type:'target',id:m.id}); game.setVfxTargetMobId(m.id); session.dispatch({type:'attack'}); }
@@ -249,6 +283,7 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
   $('#panel').classList.toggle('inventory-panel',kind==='inventory');
   $('#panel').setAttribute('aria-label',kind==='inventory'?'장비와 소지품':'게임 메뉴');
   if(kind==='dungeon') {
+    if(autoHunt?.enabled)autoHunt.setEnabled(false);
     const p=session.state.player,d=p.dungeon!,wave=DUNGEON_WAVES[d.wave];
     const ready=dungeonWaveDone(d),boss=dungeonBossDone(d),unlocked=p.quest!.stage===3;
     $('#panel-content').innerHTML=`<span class="eyebrow">첫 번째 던전 · 시작의 마을</span><h2>폐허의 시련</h2>
