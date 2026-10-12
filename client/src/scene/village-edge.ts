@@ -90,10 +90,10 @@ export function buildVillageEdge(
       const height=mesh===stone?ground.y+ground.height/2+.005:sampleHeight(item.x,item.z);
       if(!Number.isFinite(height))throw new Error('Invalid village edge terrain height');
       const variation=(hash(i,mesh===stone?3:7)%11)/20;
-      position.set(item.x,height+(mesh===stone?.105:.27),item.z);
+      position.set(item.x,height+(mesh===stone ? .105 : .27),item.z);
       rotation.setFromAxisAngle(up,item.turn);
       const factor=.78+variation;
-      scale.set(factor,mesh===stone?.65+variation*.3:factor,factor);
+      scale.set(factor,mesh===stone ? .65+variation*.3 : factor,factor);
       matrix.compose(position,rotation,scale);
       mesh.setMatrixAt(i,matrix);
       mesh.setColorAt(i,new THREE.Color(colors[item.shade]));
