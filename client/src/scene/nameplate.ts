@@ -14,8 +14,8 @@ export interface Nameplate {
 const CANVAS_W = 512;
 const CANVAS_H = 128;
 /** Sprite height in world units; width is derived from the canvas aspect. */
-const WORLD_HEIGHT = 0.82;
-const DEFAULT_Y = 2.35;
+const WORLD_HEIGHT = 1.18;
+const DEFAULT_Y = 2.62;
 
 export interface NameplateOptions {
   /** Local-space height above the avatar group origin. */
@@ -51,7 +51,7 @@ export function createNameplate(text: string, options: NameplateOptions = {}): N
   const draw = (value: string): void => {
     if (!ctx) return;
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.font = '800 61px "Noto Sans KR", sans-serif';
+    ctx.font = '900 84px "Noto Sans KR", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     // Dark outline keeps the name legible over any terrain/sky color.
