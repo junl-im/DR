@@ -92,3 +92,19 @@
     font-size:10px;white-space:normal;overflow-wrap:anywhere;z-index:4;
   }
 }
+
+/* Finger-sized controls; bound the quest tray above the action dock. */
+@media(max-width:550px),(pointer:coarse){
+ .top #menu{width:44px;height:44px;flex-shrink:0}
+ .actions button{min-height:44px}
+ .quest{z-index:5;top:60px;max-height:max(100px,calc(100dvh - var(--dock) - 100px));overflow-y:auto;overscroll-behavior:contain;pointer-events:auto;scrollbar-width:thin}
+ .quest button,.quest #auto-hunt,.quest #quest-journal,.quest #dungeon-journal,.quest #hunt-guide,.quest #next-target{min-height:44px}
+ .quest #auto-config summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+ .quest #auto-config[open]{min-width:0}
+ .quest .auto-config-fields select{min-height:44px;height:44px}
+ .target,.target.elite-target{pointer-events:none}
+}
+@media(max-width:550px){
+ .wallet{height:36px;bottom:6px}
+ .actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+}

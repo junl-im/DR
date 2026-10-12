@@ -5,6 +5,7 @@ on:
       - 'client/**'
       - 'scripts/armor-visual-smoke.cjs'
       - 'scripts/monster-live-smoke.cjs'
+      - 'scripts/mobile-review.cjs'
       - '.github/workflows/visual-proof.yml'
   workflow_dispatch:
 permissions:
@@ -41,6 +42,8 @@ jobs:
         run: node scripts/armor-visual-smoke.cjs
       - name: Prove live Firebase-root monster rigs (desktop and mobile)
         run: MONSTER_QA_VARIANT=firebase-root MONSTER_BASE_URL=http://127.0.0.1:4300/ node scripts/monster-live-smoke.cjs
+      - name: Verify mobile touch controls at 320px, 390px and landscape
+        run: node scripts/mobile-review.cjs
       - name: Rebuild GitHub Pages /DR/ production assets
         run: npm run build:github
       - name: Start built /DR/ Pages preview
@@ -65,4 +68,10 @@ jobs:
         with:
           name: dungeon-zero-webgl-evidence
           path: artifacts/armor-visual-proof
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-mobile-touch-evidence
+          path: artifacts/mobile-review-proof
           if-no-files-found: warn

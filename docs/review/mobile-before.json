@@ -1,0 +1,266 @@
+[
+  {
+    "width": 390,
+    "height": 844,
+    "overflow": false,
+    "controls": [
+      {
+        "id": "menu",
+        "width": 34,
+        "height": 30
+      },
+      {
+        "id": "quest-journal",
+        "width": 133,
+        "height": 27
+      },
+      {
+        "id": "dungeon-journal",
+        "width": 133,
+        "height": 30
+      },
+      {
+        "id": "hunt-guide",
+        "width": 133,
+        "height": 27
+      },
+      {
+        "id": "next-target",
+        "width": 133,
+        "height": 23
+      },
+      {
+        "id": "auto-hunt",
+        "width": 133,
+        "height": 30
+      },
+      {
+        "id": "SUMMARY",
+        "width": 133,
+        "height": 27
+      },
+      {
+        "id": "auto-radius",
+        "width": 125,
+        "height": 32
+      },
+      {
+        "id": "auto-priority",
+        "width": 125,
+        "height": 32
+      },
+      {
+        "id": "auto-potion",
+        "width": 125,
+        "height": 32
+      },
+      {
+        "id": "attack",
+        "width": 78.65625,
+        "height": 41
+      },
+      {
+        "id": "skill",
+        "width": 78.671875,
+        "height": 41
+      },
+      {
+        "id": "potion",
+        "width": 78.65625,
+        "height": 41
+      },
+      {
+        "id": "recall",
+        "width": 78.65625,
+        "height": 41
+      },
+      {
+        "id": "estate",
+        "width": 78.671875,
+        "height": 41
+      },
+      {
+        "id": "inventory",
+        "width": 78.65625,
+        "height": 41
+      }
+    ],
+    "errors": []
+  },
+  {
+    "width": 320,
+    "height": 568,
+    "overflow": false,
+    "controls": [
+      {
+        "id": "menu",
+        "width": 34,
+        "height": 30
+      },
+      {
+        "id": "quest-journal",
+        "width": 133,
+        "height": 27
+      },
+      {
+        "id": "dungeon-journal",
+        "width": 133,
+        "height": 30
+      },
+      {
+        "id": "hunt-guide",
+        "width": 133,
+        "height": 27
+      },
+      {
+        "id": "next-target",
+        "width": 133,
+        "height": 23
+      },
+      {
+        "id": "auto-hunt",
+        "width": 133,
+        "height": 30
+      },
+      {
+        "id": "SUMMARY",
+        "width": 133,
+        "height": 27
+      },
+      {
+        "id": "auto-radius",
+        "width": 125,
+        "height": 32
+      },
+      {
+        "id": "auto-priority",
+        "width": 125,
+        "height": 32
+      },
+      {
+        "id": "auto-potion",
+        "width": 125,
+        "height": 32
+      },
+      {
+        "id": "attack",
+        "width": 54.796875,
+        "height": 41
+      },
+      {
+        "id": "skill",
+        "width": 54.796875,
+        "height": 41
+      },
+      {
+        "id": "potion",
+        "width": 56.40625,
+        "height": 41
+      },
+      {
+        "id": "recall",
+        "width": 54.796875,
+        "height": 41
+      },
+      {
+        "id": "estate",
+        "width": 54.796875,
+        "height": 41
+      },
+      {
+        "id": "inventory",
+        "width": 56.40625,
+        "height": 41
+      }
+    ],
+    "errors": []
+  },
+  {
+    "width": 844,
+    "height": 390,
+    "overflow": false,
+    "controls": [
+      {
+        "id": "menu",
+        "width": 34,
+        "height": 30
+      },
+      {
+        "id": "quest-journal",
+        "width": 162,
+        "height": 23
+      },
+      {
+        "id": "dungeon-journal",
+        "width": 162,
+        "height": 23
+      },
+      {
+        "id": "hunt-guide",
+        "width": 162,
+        "height": 23
+      },
+      {
+        "id": "next-target",
+        "width": 162,
+        "height": 23
+      },
+      {
+        "id": "auto-hunt",
+        "width": 162,
+        "height": 23
+      },
+      {
+        "id": "SUMMARY",
+        "width": 162,
+        "height": 27
+      },
+      {
+        "id": "auto-radius",
+        "width": 154,
+        "height": 30
+      },
+      {
+        "id": "auto-priority",
+        "width": 154,
+        "height": 30
+      },
+      {
+        "id": "auto-potion",
+        "width": 154,
+        "height": 30
+      },
+      {
+        "id": "attack",
+        "width": 54.328125,
+        "height": 64
+      },
+      {
+        "id": "skill",
+        "width": 54.328125,
+        "height": 64
+      },
+      {
+        "id": "potion",
+        "width": 54.328125,
+        "height": 64
+      },
+      {
+        "id": "recall",
+        "width": 54.34375,
+        "height": 64
+      },
+      {
+        "id": "estate",
+        "width": 54.328125,
+        "height": 64
+      },
+      {
+        "id": "inventory",
+        "width": 54.328125,
+        "height": 64
+      }
+    ],
+    "errors": []
+  }
+]
