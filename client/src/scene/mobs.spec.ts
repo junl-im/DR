@@ -23,7 +23,7 @@ import {
 import { clearGltfTemplateCache, KAYKIT_CLIP_MAP } from './creature/mesh-character';
 import { KAYKIT_RIGHT_HAND_BONE } from './creature/weapon-manifest';
 import { findBoneByName } from './creature/attachment';
-import { createMobAvatar } from './mob-avatar';
+import { createMobAvatar, type MobAvatar } from './mob-avatar';
 
 describe('mobs visual mapping', () => {
   afterEach(() => {
@@ -387,8 +387,8 @@ describe('mobs visual mapping', () => {
     const spy=vi.spyOn(await import('./creature/mesh-character'),'loadGltfTemplate')
       .mockReturnValueOnce(delayed);
     const instances=createMobInstanceMap();
-    const retiredAvatar={group:new THREE.Group()} as never;
-    const replacementAvatar={group:new THREE.Group()} as never;
+    const retiredAvatar={group:new THREE.Group()} as unknown as MobAvatar;
+    const replacementAvatar={group:new THREE.Group()} as unknown as MobAvatar;
     const mobId='dungeon-1-0';
     const initial={
       group:createMobGroup(mobId),avatar:retiredAvatar,
