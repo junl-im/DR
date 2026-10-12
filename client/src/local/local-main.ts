@@ -7,6 +7,7 @@ import { armorOutfitSelection, armorDefense } from './armor-economy';
 import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest } from './adventure-quests';
 import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
+import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
@@ -87,6 +88,7 @@ async function enter(state: Save) {
     buildFieldGroundCover(game.scene);
     threatVisual=createBossThreatVisual(game.scene);
     const mobile=matchMedia('(max-width: 700px)').matches;
+    const atmosphere=createRuinAtmosphere(game.scene,mobile);
     const quality=createResolutionGovernor(devicePixelRatio,mobile);
     game.renderer.setPixelRatio(quality.dpr);
     game.renderer.shadowMap.enabled=!mobile;
@@ -135,6 +137,7 @@ async function enter(state: Save) {
 }
 function syncScene() {
   const p=session.state.player, y=snapEntityY(p.x,p.z);
+  atmosphere.setActive(p.dungeon!.inside);
   threatVisual?.update(session.bossThreat);
   setPlayer({...getGameState().player,...p,y,powerStrikeCooldownEndMs:0});
   game.syncLocalPlayer(p.x,y,p.z,session.action,session.actionSeq,equippedWeaponVisualId(p),p.classId,0,armorOutfitSelection(p.armor));
