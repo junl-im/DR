@@ -81,15 +81,42 @@ export function buildVillageRoads(scene:THREE.Scene,specs:readonly SceneObjectSp
   if(!ground){scene.add(root);return root;}
   const plan=planVillageRoads(specs);
   const y=ground.y+ground.height/2+.033;
-  const shades=[0xb5aa94,0xc0b5a0,0xaba48f,0xc2b8a7,0xa89b86];
+  const shades=[0xb5aa94,0xc0b5a0,0xaba48f,0xc2b8a7,0xa89b86,0x959b82,0x9fa38f];
   const matrix=new THREE.Matrix4();
   const pos=new THREE.Vector3(),rot=new THREE.Quaternion(),scale=new THREE.Vector3();
-  const stones=makeInstanced('village-road-cobbles',new THREE.BoxGeometry(.87,.065,.87),plan.stones.length);
+  // Chamfered and weathered slab geometry, shared across all instances.
+  // The bevel is baked once; each slab varies deterministically in rotation,
+  // width, length and color, rather than producing a uniform checkerboard.
+  const silhouette=new THREE.Shape();
+  silhouette.moveTo(-.37,-.44);
+  silhouette.lineTo(.37,-.44);
+  silhouette.lineTo(.44,-.37);
+  silhouette.lineTo(.44,.37);
+  silhouette.lineTo(.37,.44);
+  silhouette.lineTo(-.37,.44);
+  silhouette.lineTo(-.44,.37);
+  silhouette.lineTo(-.44,-.37);
+  silhouette.closePath();
+  const cobbleGeo=new THREE.ExtrudeGeometry(silhouette,{
+    depth:.042,bevelEnabled:true,bevelThickness:.013,bevelSize:.022,
+    bevelSegments:1,curveSegments:1,steps:1,
+  });
+  cobbleGeo.rotateX(-Math.PI/2);
+  cobbleGeo.translate(0,-.026,0);
+  const stones=makeInstanced('village-road-cobbles',cobbleGeo,plan.stones.length);
   for(let i=0;i<plan.stones.length;i++){
     const p=plan.stones[i];
-    pos.set(p.x,y,p.z);scale.set(1,1,1);rot.identity();
+    const hash=gridHash(p.x,p.z);
+    const turn=((hash>>>7)%19-9)*.006;
+    const scaleX=.90+(hash%17)*.009;
+    const scaleZ=.90+((hash>>>12)%17)*.009;
+    const offsetX=((hash>>>16)%9-4)*.018;
+    const offsetZ=((hash>>>20)%9-4)*.018;
+    pos.set(p.x+offsetX,y-.005+(hash%3)*.005,p.z+offsetZ);
+    scale.set(scaleX,1,scaleZ);
+    rot.setFromAxisAngle(new THREE.Vector3(0,1,0),turn);
     matrix.compose(pos,rot,scale);stones.setMatrixAt(i,matrix);
-    stones.setColorAt(i,new THREE.Color(shades[p.shade]));
+    stones.setColorAt(i,new THREE.Color(shades[hash%shades.length]));
   }
   stones.instanceMatrix.needsUpdate=true;
   if(stones.instanceColor)stones.instanceColor.needsUpdate=true;
