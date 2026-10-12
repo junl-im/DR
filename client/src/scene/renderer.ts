@@ -135,7 +135,7 @@ export interface GameRenderer {
   setMoveIntentHandler: (handler: (intent: MovementIntent) => void) => void;
   setMobTargetHandler: (handler: (mobId: string) => void) => void;
   rotateCamera: (deltaYaw: number) => void;
-  setCameraFraming: (offset:{x:number;y:number;z:number},fov:number) => void;
+  setCameraFraming?: (offset:{x:number;y:number;z:number},fov:number) => void;
   setVfxTargetMobId: (mobId: string | null) => void;
   syncPlayerVfx: (snapshot: {
     hp: number;
