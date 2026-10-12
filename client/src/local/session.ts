@@ -1,16 +1,17 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 import {ARMOR_LABELS, ARMOR_TIER_LABELS, awardEliteArmorPiece, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
 import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, type QuestProgress, type HuntKind } from './adventure-quests';
+import { DUNGEON_ARENA, DUNGEON_GATE, DUNGEON_RADIUS, DUNGEON_WAVES, DUNGEON_REWARD, emptyDungeon, validateDungeon, dungeonWaveDone, dungeonBossDone, nearDungeonGate, type DungeonProgress } from './first-dungeon';
 
-export const GAME_VERSION = '0.6.0';
+export const GAME_VERSION = '0.7.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
 export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
-export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; quest?: QuestProgress; kills: number }
+export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; quest?: QuestProgress; dungeon?: DungeonProgress; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
-export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number }
-export type Intent = {type:'claim-quest'} | { type: 'craft-armor' | 'equip-armor'; slot: ArmorSlot; tier: CraftedArmorTier } | { type:'unequip-armor'; slot: ArmorSlot } | { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'equip-weapon' | 'unequip-weapon' | 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
+export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number; windup?: number; aimX?: number; aimZ?: number }
+export type Intent = {type:'enter-dungeon'|'advance-dungeon'|'claim-dungeon'|'leave-dungeon'} | {type:'claim-quest'} | { type: 'craft-armor' | 'equip-armor'; slot: ArmorSlot; tier: CraftedArmorTier } | { type:'unequip-armor'; slot: ArmorSlot } | { type: 'buy-potion'; quantity: number } | { type: 'move'; x: number; z: number } | { type: 'target'; id: string } | { type: 'equip-weapon' | 'unequip-weapon' | 'attack' | 'skill' | 'potion' | 'recall' | 'upgrade' | 'gather' | 'garden' | 'collect' };
 export interface GameSession { readonly mode: 'local' | 'online'; dispatch(intent: Intent): void; tick(dt: number): void; snapshot(): Save }
 export const isWeaponEquipped = (p: Player) => p.weaponEquipped !== false;
 export const attackPower = (p: Player) => 4 + p.level * 2 + (isWeaponEquipped(p) ? 6 + p.weapon * 4 : 0);
@@ -18,7 +19,7 @@ export const maxHp = (p: Player) => 100 + (p.level - 1) * 18;
 export const xpNeeded = (p: Player) => 60 + (p.level - 1) * 30;
 export function newSave(name: string, classId: number): Save {
   return { schemaVersion: 1, gameVersion: GAME_VERSION, updatedAt: 0, seed: 20261011,
-    player: { name: name.trim().slice(0, 20) || '모험가', classId, x: 0, z: 0, hp: 100, mp: 60, level: 1, xp: 0, gold: 0, wood: 0, potions: 5, weapon: 0, weaponEquipped: true, armor: emptyArmor(), quest: initialQuest(), kills: 0 },
+    player: { name: name.trim().slice(0, 20) || '모험가', classId, x: 0, z: 0, hp: 100, mp: 60, level: 1, xp: 0, gold: 0, wood: 0, potions: 5, weapon: 0, weaponEquipped: true, armor: emptyArmor(), quest: initialQuest(), dungeon: emptyDungeon(), kills: 0 },
     territory: { hall: 1, garden: 0, stored: 0 } };
 }
 export function validateSave(raw: unknown): Save {
@@ -35,7 +36,7 @@ export function validateSave(raw: unknown): Save {
   if (p.level < 1 || p.level > 100 || p.hp > maxHp(p) || p.mp > 60 || p.weapon > 20 || p.xp >= xpNeeded(p)) throw new Error('캐릭터 성장 정보가 올바르지 않습니다.');
   if (!s.territory || !Number.isInteger(s.territory.hall) || s.territory.hall !== 1 || !Number.isInteger(s.territory.garden) || s.territory.garden < 0 || s.territory.garden > 5 || !Number.isFinite(s.territory.stored) || s.territory.stored < 0 || s.territory.stored > 120) throw new Error('영지 정보가 올바르지 않습니다.');
   if (p.weaponEquipped !== undefined && typeof p.weaponEquipped !== 'boolean') throw new Error('무기 장착 정보가 올바르지 않습니다.');
-  const copy=structuredClone(s);copy.player.weaponEquipped ??= true;copy.player.armor=validateArmor(p.armor);copy.player.quest=validateQuest(p.quest);return copy;
+  const copy=structuredClone(s);copy.player.weaponEquipped ??= true;copy.player.armor=validateArmor(p.armor);copy.player.quest=validateQuest(p.quest);copy.player.dungeon=validateDungeon(p.dungeon);return copy;
 }
 
 export class LocalGameSession implements GameSession {
@@ -71,11 +72,39 @@ export class LocalGameSession implements GameSession {
         name:elite?'숲의 정예 감시자':i%3===0?'잉크 슬라임':'숲의 방랑자',
         ...spot,homeX:spot.x,homeZ:spot.z,hp,maxHp:hp,respawn:0,action:0,actionSeq:0,cooldown:0 });
     }
+    if(this.state.player.dungeon!.inside) {
+      const portal=snapToNearestWalkable(DUNGEON_ARENA.x,DUNGEON_ARENA.z);
+      if(portal){this.state.player.x=portal.x;this.state.player.z=portal.z;}
+      this.movement=createPathMoveState(this.state.player.x,snapEntityY(this.state.player.x,this.state.player.z),this.state.player.z);
+      this.spawnDungeonWave();
+    }
+  }
+  private spawnDungeonWave(): void {
+    this.mobs=this.mobs.filter(m=>!m.id.startsWith('dungeon-'));
+    const d=this.state.player.dungeon!;
+    if(!d.inside)return;
+    const center=this.state.player;
+    const remaining=DUNGEON_WAVES[d.wave].enemies;
+    for(let i=d.kills;i<remaining.length;i++) {
+      const enemy=remaining[i];
+      const x=center.x+(-3+i*6),z=center.z-7;
+      const spot=snapToNearestWalkable(x,z)??{x,z};
+      this.mobs.push({
+        id:'dungeon-'+d.wave+'-'+i,npcId:enemy.npcId,name:enemy.name,
+        x:spot.x,z:spot.z,homeX:spot.x,homeZ:spot.z,hp:enemy.hp,maxHp:enemy.hp,
+        respawn:0,action:0,actionSeq:0,cooldown:0,
+      });
+    }
+  }
+  get bossWarning(): string {
+    const m=this.mobs.find(m=>m.windup!==undefined&&m.windup>this.clock);
+    return m?'⚠ '+m.name+' 공격 예고 · 이동해서 피하세요!':'';
   }
   private random(): number { this.state.seed = (Math.imul(1664525, this.state.seed) + 1013904223) >>> 0; return this.state.seed / 4294967296; }
   snapshot(): Save { return structuredClone({ ...this.state, gameVersion: GAME_VERSION }); }
   private move(x: number, z: number): void {
     if (!Number.isFinite(x) || !Number.isFinite(z) || Math.abs(x) > 315 || Math.abs(z) > 315) return;
+    if(this.state.player.dungeon!.inside && Math.hypot(x-this.state.player.x,z-this.state.player.z)>DUNGEON_RADIUS) {this.message='던전 회랑 밖으로는 이동할 수 없습니다.';return;}
     const to = snapToNearestWalkable(x, z); if (!to) { this.message = '그곳으로 이동할 수 없습니다.'; return; }
     const path = findPath(this.state.player, to);
     if (!path.length && Math.hypot(to.x - this.state.player.x, to.z - this.state.player.z) > 2) { this.message = '이동 경로를 찾을 수 없습니다.'; return; }
@@ -83,6 +112,50 @@ export class LocalGameSession implements GameSession {
   }
   dispatch(intent: Intent): void {
     const p = this.state.player;
+    if(intent.type==='enter-dungeon') {
+      const d=p.dungeon!;
+      if(d.inside){this.message='이미 던전 안입니다.';return;}
+      if(p.quest!.stage<3){this.message='마을 의뢰 3개를 마쳐야 봉인이 풀립니다.';return;}
+      if(!nearDungeonGate(p.x,p.z)){this.message='마을의 폐허 관문 앞으로 이동하세요.';return;}
+      const entry=snapToNearestWalkable(DUNGEON_ARENA.x,DUNGEON_ARENA.z);
+      if(!entry){this.message='던전 진입 지점이 준비되지 않았습니다.';return;}
+      d.inside=true;d.wave=0;d.kills=0;
+      p.x=entry.x;p.z=entry.z;this.movement=createPathMoveState(entry.x,snapEntityY(entry.x,entry.z),entry.z);
+      this.target=null;this.attacking=false;this.spawnDungeonWave();
+      this.message='폐허의 시련 · 1구역에 진입했습니다.';return;
+    }
+    if(intent.type==='leave-dungeon') {
+      if(!p.dungeon!.inside){this.message='던전 밖입니다.';return;}
+      p.dungeon!.inside=false;p.dungeon!.wave=0;p.dungeon!.kills=0;
+      this.mobs=this.mobs.filter(m=>!m.id.startsWith('dungeon-'));
+      p.x=DUNGEON_GATE.x;p.z=DUNGEON_GATE.z;
+      this.movement=createPathMoveState(p.x,snapEntityY(p.x,p.z),p.z);
+      this.target=null;this.attacking=false;this.message='폐허의 시련에서 나왔습니다.';return;
+    }
+    if(intent.type==='advance-dungeon') {
+      const d=p.dungeon!;
+      if(!d.inside||!dungeonWaveDone(d)||d.wave>=DUNGEON_WAVES.length-1) {
+        this.message='먼저 현재 구역의 적을 모두 쓰러뜨리세요.';return;
+      }
+      d.wave++;d.kills=0;this.target=null;this.attacking=false;this.spawnDungeonWave();
+      this.message=DUNGEON_WAVES[d.wave].title+' · 다음 구역 개방';return;
+    }
+    if(intent.type==='claim-dungeon') {
+      const d=p.dungeon!;
+      if(!dungeonBossDone(d)){this.message='파수꾼을 처치해야 보상을 획득합니다.';return;}
+      const {gold,wood,fragments}=DUNGEON_REWARD;
+      if(d.clears>=1000000||p.gold+gold>1000000||p.wood+wood>1000000||
+         p.armor!.fragments+fragments>1000000){this.message='보관 한도를 초과하여 보상을 받을 수 없습니다.';return;}
+      p.gold+=gold;p.wood+=wood;p.armor!.fragments+=fragments;d.clears++;
+      d.inside=false;d.wave=0;d.kills=0;
+      this.mobs=this.mobs.filter(m=>!m.id.startsWith('dungeon-'));
+      p.x=DUNGEON_GATE.x;p.z=DUNGEON_GATE.z;
+      this.movement=createPathMoveState(p.x,snapEntityY(p.x,p.z),p.z);
+      this.attacking=false;this.target=null;
+      this.message='폐허의 시련 정복! 골드 +'+gold+' · 목재 +'+wood+' · 파편 +'+fragments;
+      this.emit({kind:'loot',x:p.x,z:p.z,amount:gold,text:this.message});
+      return;
+    }
     if (intent.type === 'equip-weapon' || intent.type === 'unequip-weapon') {
       const equipped=intent.type==='equip-weapon';
       if(isWeaponEquipped(p)===equipped){this.message=equipped?'이미 무기를 장착했습니다.':'이미 무기를 해제했습니다.';return;}
@@ -150,7 +223,7 @@ export class LocalGameSession implements GameSession {
       return;
     }
     if (intent.type === 'move') { this.attacking = false; this.move(intent.x, intent.z); }
-    if (intent.type === 'target') { this.target = this.mobs.some(m => m.id === intent.id && m.hp > 0) ? intent.id : null; this.attacking = false; }
+    if (intent.type === 'target') { this.target = this.mobs.some(m => m.id === intent.id && m.hp > 0 && (p.dungeon!.inside===m.id.startsWith('dungeon-'))) ? intent.id : null; this.attacking = false; }
     if (intent.type === 'attack') { this.attacking = !this.attacking; if (!this.target) { this.attacking = false; this.message = '먼저 몬스터를 선택하세요.'; } }
     if (intent.type === 'skill') {
       const m = this.mobs.find(m => m.id === this.target && m.hp > 0);
@@ -162,7 +235,7 @@ export class LocalGameSession implements GameSession {
       else { p.mp -= 12; this.skillAt = this.clock + 4; this.action = EntityAction.Cast; this.actionSeq++; this.actionUntil = this.clock + .7; this.damage(m, 27 + p.weapon * 4 + p.level * 3); }
     }
     if (intent.type === 'potion') { if (p.potions && p.hp < maxHp(p)) { const healed=Math.min(55,maxHp(p)-p.hp);p.potions--; p.hp += healed;this.emit({kind:'heal',x:p.x,z:p.z,amount:healed,text:`회복 +${healed}`}); this.message = '회복 물약을 사용했습니다.'; } else this.message = '물약이 없거나 체력이 가득 찼습니다.'; }
-    if (intent.type === 'recall') { p.x = 0; p.z = 0; p.hp = maxHp(p); p.mp = 60; this.movement = createPathMoveState(); this.attacking = false; this.target = null; this.message = '안전한 마을로 귀환했습니다.'; }
+    if (intent.type === 'recall') { if(p.dungeon!.inside){p.dungeon!.inside=false;p.dungeon!.wave=0;p.dungeon!.kills=0;this.mobs=this.mobs.filter(m=>!m.id.startsWith('dungeon-'));} p.x = 0; p.z = 0; p.hp = maxHp(p); p.mp = 60; this.movement = createPathMoveState(); this.attacking = false; this.target = null; this.message = '안전한 마을로 귀환했습니다.'; }
     if (intent.type === 'upgrade') { const cost = 20 * (p.weapon + 1); if (p.weapon >= 20) this.message = '최고 강화 단계입니다.'; else if (p.gold < cost) this.message = `강화에는 골드 ${cost}개가 필요합니다.`; else { p.gold -= cost; p.weapon++; this.message = `여행자의 무기를 +${p.weapon}로 강화했습니다.`; } }
     if (intent.type === 'gather') { if (Math.hypot(p.x, p.z) > 24) this.message = '채집은 마을 주변에서 할 수 있습니다.'; else if (this.clock < this.attackAt) this.message = '잠시 후 다시 채집하세요.'; else { p.wood += 3; this.attackAt = this.clock + 2; this.message = '마을 주변에서 목재 3개를 모았습니다.'; } }
     if (intent.type === 'garden') { const t = this.state.territory, cost = 12 + t.garden * 6; if (t.garden >= 5) this.message = '정원은 최고 단계입니다.'; else if (p.wood < cost) this.message = `정원 확장에는 목재 ${cost}개가 필요합니다.`; else { p.wood -= cost; t.garden++; this.message = '영지 정원을 확장했습니다. 플레이 중 골드를 생산합니다.'; } }
@@ -171,7 +244,11 @@ export class LocalGameSession implements GameSession {
   private damage(m: Mob, amount: number): void {
     const dealt=Math.min(m.hp,amount);m.hp -= dealt; this.message = `${m.name}에게 ${dealt} 피해`;this.emit({kind:'damage',x:m.x,z:m.z,amount:dealt,text:this.message});
     if (m.hp !== 0) return;
-    m.action = EntityAction.Die; m.actionSeq++; m.respawn = this.clock + (m.name==='숲의 정예 감시자'?35:15);
+    if(m.id.startsWith('dungeon-') && this.state.player.dungeon!.inside) {
+      const d=this.state.player.dungeon!;
+      if(m.id.startsWith('dungeon-'+d.wave+'-')) d.kills=Math.min(DUNGEON_WAVES[d.wave].enemies.length,d.kills+1);
+    }
+    m.action = EntityAction.Die; m.actionSeq++; m.respawn = m.id.startsWith('dungeon-')?Number.POSITIVE_INFINITY:this.clock + (m.name==='숲의 정예 감시자'?35:15);
     const p = this.state.player, elite=m.name==='숲의 정예 감시자';
     const gold = Math.min(1000000-p.gold,(8 + Math.floor(this.random() * 7)) + (elite?18:0));
     p.gold += gold; p.xp += elite?75:30;
@@ -207,6 +284,7 @@ export class LocalGameSession implements GameSession {
     this.movement = stepAlongPath(this.movement, null, dt, 9);
     p.x = this.movement.x; p.z = this.movement.z;
     for (const m of this.mobs) {
+      if(m.id.startsWith('dungeon-')!==p.dungeon!.inside)continue;
       if (!m.hp) { if (this.clock >= m.respawn) { m.hp = m.maxHp; m.x = m.homeX; m.z = m.homeZ; m.action = 0; m.actionSeq++; } continue; }
       if (Math.hypot(m.x - p.x, m.z - p.z) < 3.5 && Math.hypot(p.x, p.z) > 24 && this.clock >= m.cooldown) {
         const taken=Math.min(p.hp,Math.max(1,7-armorDefense(p.armor)));p.hp -= taken;this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
