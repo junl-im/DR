@@ -43,6 +43,7 @@ import type { ArmorSelection } from './creature/modular-armor';
 import type { AnimationClip } from '@nj/game-core';
 import { EntityAction } from '@nj/game-core';
 import { buildEnvironmentScene } from './environment-renderer';
+import { selectMobNearScreenTap } from './mobile-target-assist';
 import type { AudioManager } from '../audio/audio-manager';
 
 const WORLD_SEED = TERRAIN_CONFIG.seed;
@@ -667,6 +668,17 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
           return;
         }
       }
+      const touch = 'pointerType' in ev && ev.pointerType==='touch';
+      const mobId=selectMobNearScreenTap({
+        mobs:[...mobSnapshots.values()].filter(m=>mobMeshes.has(m.id)).map(m=>({
+          id:m.id,x:m.x,y:m.y,z:m.z,hp:m.hp,
+          barY:mobMeshes.get(m.id)?.getObjectByName('hpBar')?.position.y,
+        })),
+        camera,tapX:ev.clientX-rect.left,tapY:ev.clientY-rect.top,
+        canvasWidth:rect.width,canvasHeight:rect.height,
+        playerX:localPosition.x,playerZ:localPosition.z,touch,
+      });
+      if(mobId){mobTargetHandler?.(mobId);return;}
     }
 
     let hits = raycaster.intersectObject(terrainMesh, false);
