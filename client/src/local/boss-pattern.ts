@@ -21,6 +21,6 @@ export function bossHit(move:BossMove,bossX:number,bossZ:number,aimX:number,aimZ
 }
 export function bossWarningLabel(threat:BossThreat):string {
   return threat.move==='ground-sweep'
-    ? '⚠ '+threat.name+' · 원형 휩쓸기 '+threat.seconds.toFixed(1)+'초! 범위 밖으로 이동하세요!'
-    : '⚠ '+threat.name+' · 목표 지점 강타 '+threat.seconds.toFixed(1)+'초! 표시된 곳에서 벗어나세요!';
+    ? '⚠ '+threat.name+' 공격 예고 · 원형 휩쓸기 '+threat.seconds.toFixed(1)+'초! 범위 밖으로 이동하세요!'
+    : '⚠ '+threat.name+' 공격 예고 · 목표 지점 강타 '+threat.seconds.toFixed(1)+'초! 표시된 곳에서 벗어나세요!';
 }
