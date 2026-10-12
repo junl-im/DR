@@ -137,11 +137,26 @@ export function resolveMobVisualEntry(mobId: string, npcId: number) {
   return getCreatureEntry(npcId);
 }
 
+/** Preload unique combat rigs for an opening scene. Slow/failed downloads still
+ * leave the immediate, noninteractive capsule fallback visible.
+ */
+export async function preloadMobVisualTemplates(mobs:readonly {id:string;npcId:number}[]):Promise<void>{
+  const models=new Set<string>();
+  for(const mob of mobs){
+    const entry=resolveMobVisualEntry(mob.id,mob.npcId);
+    if(entry)models.add(entry.model);
+  }
+  await Promise.allSettled([...models].map(model=>getOrLoadTemplate(model)));
+}
+
 function getOrLoadTemplate(model: string) {
   let pending = templateLoads.get(model);
   if (!pending) {
     pending = loadGltfTemplate(model);
     templateLoads.set(model, pending);
+    void pending.catch(()=>{
+      if(templateLoads.get(model)===pending)templateLoads.delete(model);
+    });
   }
   return pending;
 }
@@ -236,8 +251,9 @@ function ensureMobInstance(
   if (entry) {
     getOrLoadTemplate(entry.model)
       .then((template) => {
-        if (!instances.has(state.id)) return;
-        const current = instances.get(state.id)!;
+        const current = instances.get(state.id);
+        // Same monster id can have a newer instance after culling or respawn.
+        if (current !== instance) return;
         if (!hasCapsuleBody(current.group)) return;
 
         const avatar = createMobAvatar({ entry, template });
