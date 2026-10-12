@@ -1,3 +1,6 @@
+## Quest/auto-hunt update — 2026-10-13
+Based on main ac71822. Quest-only hunt priority with completion stop, objective finder and waiting/blocked feedback. See docs/quest-hunt/README.md and browser-report.json; no save/reward/schema change. Final PR/merge/deploy evidence is in Notion master.
+
 ## Latest resume — 2026-10-13
 Canonical baseline is main b3837e0 (PR #12), superseding older pending implementation/deployment notes below. Resume audit and priorities: docs/review/RESUME_20261012.md. Current PR #13 improves mobile touch targets, bounded quest scrolling and wallet/sign overlap. Use latest origin/main for subsequent work; device FPS/heat and cross-device Google save are still unverified.
 

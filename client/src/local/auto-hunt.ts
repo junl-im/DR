@@ -1,3 +1,4 @@
+import {activeQuest,canClaimQuest,matchesQuestTarget} from './adventure-quests';
 import {maxHp,type LocalGameSession,type Mob} from './session';
 
 export const AUTO_HUNT_RADIUS=28;
@@ -8,8 +9,8 @@ export const AUTO_POTION_COOLDOWN_S=5;
 export const AUTO_STUCK_TIMEOUT_S=2.5;
 export const AUTO_STUCK_RETRY_S=12;
 export const TAB_TARGET_RADIUS=75;
-export type HuntPriority='nearest'|'weakest'|'normal-only';
-export type HuntStopReason='manual'|'low-hp'|'range'|'zone-change';
+export type HuntPriority='nearest'|'weakest'|'normal-only'|'quest';
+export type HuntStopReason='manual'|'low-hp'|'range'|'zone-change'|'quest-ready'|'quest-complete'|'quest-unavailable';
 export interface HuntProgress {seconds:number;kills:number;gold:number}
 
 function distance(ax:number,az:number,bx:number,bz:number):number{
@@ -44,6 +45,7 @@ const elite=(m:Mob):boolean=>
  */
 export class AutoHuntController {
   enabled=false;
+  activity:'idle'|'hunting'|'waiting'|'blocked'='idle';
   radius:typeof AUTO_HUNT_RADII[number]=AUTO_HUNT_RADIUS;
   priority:HuntPriority='nearest';
   potionThreshold:typeof AUTO_POTION_THRESHOLDS[number]=0;
@@ -72,7 +74,7 @@ export class AutoHuntController {
       this.radius=options.radius as typeof AUTO_HUNT_RADII[number];
     }
     if(options.priority!==undefined){
-      if(!(['nearest','weakest','normal-only'] as string[]).includes(options.priority))throw new RangeError('Invalid target priority');
+      if(!(['nearest','weakest','normal-only','quest'] as string[]).includes(options.priority))throw new RangeError('Invalid target priority');
       this.priority=options.priority;
     }
     if(options.potionThreshold!==undefined){
@@ -120,6 +122,13 @@ export class AutoHuntController {
       this.setEnabled(false,'low-hp');return;
     }
 
+    const quest=this.priority==='quest'?activeQuest(p.quest!):null;
+    if(this.priority==='quest'){
+      if(inside){this.setEnabled(false,'quest-unavailable');return;}
+      if(!quest){this.setEnabled(false,'quest-complete');return;}
+      if(canClaimQuest(p.quest!)){this.setEnabled(false,'quest-ready');return;}
+    }
+
     // User must explicitly enable this: potions are finite/save-backed items.
     this.potionCooldown=Math.max(0,this.potionCooldown-dt);
     if(this.potionThreshold>0 && hpRatio<=this.potionThreshold &&
@@ -132,6 +141,7 @@ export class AutoHuntController {
       distance(m.x,m.z,this.anchor!.x,this.anchor!.z)<=this.radius&&
       distance(m.x,m.z,p.x,p.z)<=this.radius&&
       (this.priority!=='normal-only'||!elite(m)) &&
+      (this.priority!=='quest'||!!quest&&matchesQuestTarget(m,quest.target)) &&
       (this.unreachableUntil.get(m.id)??0)<=this.elapsed;
     const current=s.mobs.find(m=>m.id===s.target&&valid(m));
     const others=selectableMobs(s,this.radius).filter(valid);
@@ -140,6 +150,7 @@ export class AutoHuntController {
       distance(a.x,a.z,p.x,p.z)-distance(b.x,b.z,p.x,p.z)||a.id.localeCompare(b.id));
     const next=current??others[0];
     if(!next){
+      this.activity=[...this.unreachableUntil.values()].some(until=>until>this.elapsed)?'blocked':'waiting';
       // The last mob may have died while a chase waypoint was still queued.
       // Waiting for respawn must never keep walking toward a corpse or leave
       // a stale target highlight on the screen.
@@ -161,6 +172,7 @@ export class AutoHuntController {
       this.lastWalkPos={x:p.x,z:p.z};
       this.stuckSeconds=0;
     }
+    this.activity='hunting';
     const dist=distance(next.x,next.z,p.x,p.z);
     if(dist>2.8 && this.lastWalkPos){
       if(distance(p.x,p.z,this.lastWalkPos.x,this.lastWalkPos.z)>=.15){
@@ -172,6 +184,7 @@ export class AutoHuntController {
       if(this.stuckSeconds>=AUTO_STUCK_TIMEOUT_S){
         // This mob is blocked/unreachable. Do not pathfind to it every frame.
         // Retry after a short cooldown, allowing other living mobs in range.
+        this.activity='blocked';
         this.unreachableUntil.set(next.id,this.elapsed+AUTO_STUCK_RETRY_S);
         s.stopMovement();
         s.dispatch({type:'target',id:''});

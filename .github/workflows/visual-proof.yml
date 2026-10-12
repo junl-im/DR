@@ -6,6 +6,7 @@ on:
       - 'scripts/armor-visual-smoke.cjs'
       - 'scripts/monster-live-smoke.cjs'
       - 'scripts/mobile-review.cjs'
+      - 'scripts/quest-hunt-smoke.cjs'
       - '.github/workflows/visual-proof.yml'
   workflow_dispatch:
 permissions:
@@ -44,6 +45,8 @@ jobs:
         run: MONSTER_QA_VARIANT=firebase-root MONSTER_BASE_URL=http://127.0.0.1:4300/ node scripts/monster-live-smoke.cjs
       - name: Verify mobile touch controls at 320px, 390px and landscape
         run: node scripts/mobile-review.cjs
+      - name: Verify quest target hunting, completion stop and reward persistence
+        run: node scripts/quest-hunt-smoke.cjs
       - name: Rebuild GitHub Pages /DR/ production assets
         run: npm run build:github
       - name: Start built /DR/ Pages preview
@@ -74,4 +77,11 @@ jobs:
         with:
           name: dungeon-zero-mobile-touch-evidence
           path: artifacts/mobile-review-proof
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-quest-hunt-evidence
+          path: artifacts/quest-hunt-proof
           if-no-files-found: warn
