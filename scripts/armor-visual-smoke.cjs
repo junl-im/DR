@@ -312,6 +312,29 @@ fs.mkdirSync(out,{recursive:true});
       throw new Error('Boss dodge touch area is smaller than 44px: '+JSON.stringify(dodgeSize));
     await game.screenshot({path:out+'/ruin-boss-manual-dodge-control-mobile.png',fullPage:true});
     await game.screenshot({path:out+'/ruin-boss-aimed-warning-mobile.png',fullPage:true});
+    // Real Playwright mobile-layout button click must trigger the ordinary
+    // movement/path system and survive the full cast without losing HP.
+    const aimedBefore=await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__,p=s.state.player;
+      const boss=s.mobs.find(m=>m.id==='dungeon-2-0');
+      boss.windup=s.clock+1.65; // controlled timing fixture, original hit logic
+      boss.aimX=p.x;boss.aimZ=p.z;
+      return{x:p.x,z:p.z,hp:p.hp,aimX:boss.aimX,aimZ:boss.aimZ};
+    });
+    await game.locator('#boss-dodge').click();
+    await game.waitForFunction(start=>{
+      const p=window.__DREAM_SESSION__?.state.player;
+      return p && Math.hypot(p.x-start.x,p.z-start.z)>1.2;
+    },aimedBefore,{timeout:4000,polling:40});
+    await game.waitForFunction(()=>!window.__DREAM_SESSION__?.bossThreat,null,{timeout:5500});
+    const aimedAfter=await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__,p=s.state.player;
+      return{x:p.x,z:p.z,hp:p.hp,message:s.message};
+    });
+    if(aimedAfter.hp!==aimedBefore.hp ||
+       Math.hypot(aimedAfter.x-aimedBefore.aimX,aimedAfter.z-aimedBefore.aimZ)<=2.3)
+      throw new Error('Real mobile boss dodge click did not escape damage: '+JSON.stringify({aimedBefore,aimedAfter}));
+    await game.screenshot({path:out+'/ruin-boss-aimed-dodged-mobile.png',fullPage:true});
     await game.evaluate(()=>{
       const s=window.__DREAM_SESSION__,p=s.state.player,b=s.mobs.find(m=>m.id==='dungeon-2-0');
       // Move the boss away so the first cast is safely dodged.
@@ -323,6 +346,25 @@ fs.mkdirSync(out,{recursive:true});
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.bossThreat?.move==='ground-sweep');
     await game.waitForFunction(()=>document.querySelector('#boss-warning')?.textContent.includes('원형 휩쓸기'));
     await game.screenshot({path:out+'/ruin-boss-sweep-warning-mobile.png',fullPage:true});
+    const sweepBefore=await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__,p=s.state.player,b=s.mobs.find(m=>m.id==='dungeon-2-0');
+      b.windup=s.clock+2.1; // controlled mobile keyboard test on normal hit zone
+      return{x:p.x,z:p.z,hp:p.hp,bossX:b.x,bossZ:b.z};
+    });
+    await game.keyboard.press('q');
+    await game.waitForFunction(start=>{
+      const p=window.__DREAM_SESSION__?.state.player;
+      return p && Math.hypot(p.x-start.x,p.z-start.z)>1.2;
+    },sweepBefore,{timeout:4000,polling:40});
+    await game.waitForFunction(()=>!window.__DREAM_SESSION__?.bossThreat,null,{timeout:5500});
+    const sweepAfter=await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__,p=s.state.player;
+      return{x:p.x,z:p.z,hp:p.hp,message:s.message};
+    });
+    if(sweepAfter.hp!==sweepBefore.hp||
+       Math.hypot(sweepAfter.x-sweepBefore.bossX,sweepAfter.z-sweepBefore.bossZ)<=5.5)
+      throw new Error('Real Q-key sweep dodge did not escape damage: '+JSON.stringify({sweepBefore,sweepAfter}));
+    await game.screenshot({path:out+'/ruin-boss-sweep-dodged-mobile.png',fullPage:true});
     await dungeonKill('dungeon-2-0');
     await game.locator('#dungeon-journal').click();
     await game.locator('#dungeon-claim').click();
@@ -330,7 +372,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,desktopFont,mobileName,dodgeSize,errors,bad,screenshots:30,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,desktopFont,mobileName,dodgeSize,aimedBefore,aimedAfter,sweepBefore,sweepAfter,errors,bad,screenshots:32,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
