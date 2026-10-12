@@ -56,6 +56,7 @@ export class LocalGameSession implements GameSession {
   private movement: PathMoveState;
   private clock = 0;
   private attackAt = 0;
+  private chaseRetryAt = 0;
   private skillAt = 0;
   private actionUntil = 0;
   private regen = 0;
@@ -130,6 +131,7 @@ export class LocalGameSession implements GameSession {
   stopMovement():void{
     const p=this.state.player;
     this.attacking=false;
+    this.chaseRetryAt=0;
     this.movement=createPathMoveState(p.x,snapEntityY(p.x,p.z),p.z);
   }
 
@@ -246,8 +248,8 @@ export class LocalGameSession implements GameSession {
       return;
     }
     if (intent.type === 'move') { this.attacking = false; this.move(intent.x, intent.z); }
-    if (intent.type === 'target') { this.target = this.mobs.some(m => m.id === intent.id && m.hp > 0 && (p.dungeon!.inside===m.id.startsWith('dungeon-'))) ? intent.id : null; this.attacking = false; }
-    if (intent.type === 'attack') { this.attacking = !this.attacking; if (!this.target) { this.attacking = false; this.message = '먼저 몬스터를 선택하세요.'; } }
+    if (intent.type === 'target') { this.target = this.mobs.some(m => m.id === intent.id && m.hp > 0 && (p.dungeon!.inside===m.id.startsWith('dungeon-'))) ? intent.id : null; this.attacking = false; this.chaseRetryAt=0; }
+    if (intent.type === 'attack') { this.attacking = !this.attacking; if(this.attacking)this.chaseRetryAt=0; if (!this.target) { this.attacking = false; this.message = '먼저 몬스터를 선택하세요.'; } }
     if (intent.type === 'skill') {
       const m = this.mobs.find(m => m.id === this.target && m.hp > 0);
       if (!isWeaponEquipped(p)) this.message = '강타를 사용하려면 무기를 장착하세요.';
@@ -301,7 +303,7 @@ export class LocalGameSession implements GameSession {
     if (this.clock >= this.actionUntil) this.action = EntityAction.None;
     const target = this.mobs.find(m => m.id === this.target && m.hp > 0);
     if (this.attacking && target) {
-      if (Math.hypot(p.x - target.x, p.z - target.z) > 2.8) { if (this.movement.waypointIndex >= this.movement.waypoints.length) this.move(target.x, target.z); }
+      if (Math.hypot(p.x - target.x, p.z - target.z) > 2.8) { if (this.movement.waypointIndex >= this.movement.waypoints.length && this.clock >= this.chaseRetryAt) { this.chaseRetryAt=this.clock+.6; this.move(target.x, target.z); } }
       else { this.movement = createPathMoveState(p.x, snapEntityY(p.x, p.z), p.z); if (this.clock >= this.attackAt) { this.attackAt = this.clock + .8; this.action = EntityAction.Attack; this.actionSeq++; this.actionUntil = this.clock + .5; this.damage(target, attackPower(p)); } }
     }
     this.movement = stepAlongPath(this.movement, null, dt, 9);

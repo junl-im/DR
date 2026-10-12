@@ -12,6 +12,7 @@ import { buildFieldGroundCover } from '../scene/field-detail';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
 import {AutoHuntController,nextTabTarget,type HuntPriority} from './auto-hunt';
+import {findBossDodgeDestination} from './boss-dodge';
 import {createAdaptiveShadowGovernor} from './render-budget';
 import {nameplateScreenPoint} from './screen-name-anchor';
 import { fixedFrameForViewport } from './fixed-framing';
@@ -164,6 +165,7 @@ async function enter(state: Save) {
     window.addEventListener('keydown', e => {
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
       if(e.key==='Escape') { manualStop(); $('#panel').hidden=true; return; }
+      if(e.key.toLowerCase()==='q'){e.preventDefault();dodgeBossAttack();return;}
       if(e.key==='Tab'){e.preventDefault();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
       if(e.key.toLowerCase()==='h'){e.preventDefault();autoHunt!.setEnabled(!autoHunt!.enabled);syncAutoButton();updateHud();return;}
       if(e.key.toLowerCase()==='i') { e.preventDefault();showPanel('inventory');return; }
@@ -223,6 +225,16 @@ function syncScene() {
     } game.scene.add(garden);
   }
 }
+function dodgeBossAttack():void {
+  if(autoHunt?.enabled)autoHunt.setEnabled(false);
+  const p=session.state.player;
+  const destination=findBossDodgeDestination(session.bossThreat,p,!!p.dungeon?.inside);
+  if(destination)session.dispatch({type:'move',x:destination.x,z:destination.z});
+  else session.message=session.bossThreat
+    ?'회피 경로가 없거나 공격까지 시간이 부족합니다. 직접 이동하세요.'
+    :'정예 몬스터가 공격을 준비할 때 사용할 수 있습니다.';
+  updateHud();
+}
 function mountHud() {
   root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="저장과 설정 열기">☰</button></header>
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
@@ -233,7 +245,7 @@ function mountHud() {
  <label for="auto-radius">사냥 반경<select id="auto-radius"><option value="12">12m</option><option value="20">20m</option><option value="28" selected>28m</option></select></label>
  <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option></select></label>
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
- </div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
+ </div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section><button id="boss-dodge" type="button" title="Q 키 · 기존 이동 속도로 공격 예고 범위 벗어나기" hidden>회피 · Q</button>
 <div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
 <div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
@@ -244,6 +256,7 @@ function mountHud() {
   panel.addEventListener('pointermove',e=>{if(!drag)return;panel.style.left=Math.max(0,Math.min(innerWidth-panel.offsetWidth,drag.left+e.clientX-drag.x))+'px';panel.style.top=Math.max(0,Math.min(innerHeight-panel.offsetHeight,drag.top+e.clientY-drag.y))+'px';panel.style.right='auto';});
   panel.addEventListener('pointerup',()=>{drag=undefined;});panel.addEventListener('pointercancel',()=>{drag=undefined;});
   window.addEventListener('resize',()=>{panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';});
+  $('#boss-dodge').onclick=dodgeBossAttack;
   $('#quest-journal').onclick=()=>showPanel('help');
   $('#dungeon-journal').onclick=()=>showPanel('dungeon');
   $('#next-target').onclick=()=>{
@@ -274,6 +287,7 @@ function updateHud() {
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
   $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):`${questSummary(validateQuest(p.quest))} · 총 처치 ${p.kills}`;
   const warning=session.bossWarning;$('#boss-warning').hidden=!warning;$('#boss-warning').textContent=warning;
+  $('#boss-dodge').hidden=!warning;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
   $('#target').hidden=!m; $('#target').classList.toggle('elite-target',!!m&&m.name==='숲의 정예 감시자'); if(m) $('#target').textContent=`${m.name==='숲의 정예 감시자'?'정예 · ':''}${m.name} · HP ${m.hp} / ${m.maxHp}`;
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);

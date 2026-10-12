@@ -303,6 +303,14 @@ fs.mkdirSync(out,{recursive:true});
     });
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.bossThreat?.move==='aimed-strike');
     await game.waitForFunction(()=>document.querySelector('#boss-warning')?.hidden===false);
+    if(!await game.locator('#boss-dodge').isVisible())
+      throw new Error('Q/mobile dodge control was not revealed during boss windup');
+    const dodgeSize=await game.locator('#boss-dodge').evaluate(el=>({
+      w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height
+    }));
+    if(dodgeSize.w<44||dodgeSize.h<44)
+      throw new Error('Boss dodge touch area is smaller than 44px: '+JSON.stringify(dodgeSize));
+    await game.screenshot({path:out+'/ruin-boss-manual-dodge-control-mobile.png',fullPage:true});
     await game.screenshot({path:out+'/ruin-boss-aimed-warning-mobile.png',fullPage:true});
     await game.evaluate(()=>{
       const s=window.__DREAM_SESSION__,p=s.state.player,b=s.mobs.find(m=>m.id==='dungeon-2-0');
@@ -322,7 +330,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,desktopFont,mobileName,errors,bad,screenshots:29,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,desktopFont,mobileName,dodgeSize,errors,bad,screenshots:30,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
