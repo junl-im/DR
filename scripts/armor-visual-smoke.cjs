@@ -122,6 +122,10 @@ fs.mkdirSync(out,{recursive:true});
     await game.keyboard.press('Tab');
     const nextTabTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
     if(!nextTabTarget || tabTarget===nextTabTarget)throw new Error('Tab cycling stuck at one target');
+    await game.locator('#next-target').click();
+    const buttonTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
+    if(!buttonTarget||buttonTarget===nextTabTarget)
+      throw new Error('Mobile next-target button did not cycle to another monster');
     await game.keyboard.press('h');
     if(await game.locator('#auto-hunt').getAttribute('aria-pressed')!=='true')
       throw new Error('H did not enable auto hunt');
@@ -300,7 +304,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,errors,bad,screenshots:27,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,errors,bad,screenshots:27,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
