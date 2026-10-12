@@ -16,6 +16,7 @@ import {
   FAR_ANIM_INTERVAL_MS,
   clearMobTemplateLoadsForTest,
   attachGoblinClubForTest,
+  resolveMobVisualEntry,
   type MobMeshMap,
   type MobVisualState,
 } from './mobs';
@@ -120,6 +121,36 @@ describe('mobs visual mapping', () => {
     expect(material.color.getHex()).toBe(0xffc15a);
     expect(map.get('local-10')?.getObjectByName('elite-sentinel-aura')).toBeUndefined();
   });
+  it('gives only the final dungeon boss a distinct licensed model and non-pickable warning silhouette', () => {
+    // Gameplay still reports the same npcId for damage, drops, and save checkpoints.
+    const ordinary = resolveMobVisualEntry('dungeon-1-0', 20003)!;
+    const boss = resolveMobVisualEntry('dungeon-2-0', 20003)!;
+    expect(ordinary.model).toBe('/models/monsters/Goblin.glb');
+    expect(boss.model).toBe('/models/monsters/OrcCaptain.glb');
+    expect(boss.scale).toBeGreaterThan(ordinary.scale);
+    expect(resolveMobVisualEntry('local-11', 20003)?.model).toBe(ordinary.model);
+    expect(resolveMobVisualEntry('dungeon-2-0', 99999)).toBeNull();
+
+    const scene = { add: () => undefined, remove: () => undefined };
+    const map: MobMeshMap = new Map();
+    const instances = createMobInstanceMap();
+    const state = { npcId: 20003, x: -88, y: 1, z: -68, hp: 180, maxHp: 180 };
+    syncMobVisual(map, instances, { id: 'dungeon-2-0', ...state }, scene as never);
+    syncMobVisual(map, instances, { id: 'dungeon-1-0', ...state }, scene as never);
+    expect(mobStateToVisual({ id: 'dungeon-2-0', ...state }).npcId).toBe(20003);
+    expect(getMobHpBarYOffset(instances, 'dungeon-2-0')).toBe(boss.hpBarYOffset);
+    expect(getMobHpBarYOffset(instances, 'dungeon-1-0')).toBe(ordinary.hpBarYOffset);
+    const final = map.get('dungeon-2-0')!;
+    const aura = final.getObjectByName('dungeon-boss-aura') as THREE.Mesh;
+    expect(aura).toBeInstanceOf(THREE.Mesh);
+    expect(aura.userData['decorative']).toBe(true);
+    expect(new THREE.Raycaster().intersectObject(aura)).toEqual([]);
+    expect(final.getObjectByName('hpBar')?.scale.x).toBe(1.6);
+    const fill = final.getObjectByName('hpFill') as THREE.Mesh;
+    expect((fill.material as THREE.MeshBasicMaterial).color.getHex()).toBe(0xff6b58);
+    expect(map.get('dungeon-1-0')?.getObjectByName('dungeon-boss-aura')).toBeUndefined();
+  });
+
   it('uses manifest hpBarYOffset for mapped npcIds', () => {
     const scene = { add: () => undefined, remove: () => undefined };
     const map: MobMeshMap = new Map();
