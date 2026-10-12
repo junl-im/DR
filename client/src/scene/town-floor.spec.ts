@@ -21,7 +21,7 @@ describe('village stone paving',()=>{
     const material=mesh.material as THREE.MeshStandardMaterial;
     expect(material.color.getHex()).toBe(0xffffff);
     expect(material.map?.colorSpace).toBe(THREE.SRGBColorSpace);
-    expect(material.map?.image.width).toBe(256);
+    expect((material.map?.image as {width:number}).width).toBe(256);
     expect(material.map?.minFilter).toBe(THREE.LinearMipmapLinearFilter);
   });
 });
