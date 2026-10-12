@@ -286,6 +286,30 @@ export class LocalGameSession implements GameSession {
     for (const m of this.mobs) {
       if(m.id.startsWith('dungeon-')!==p.dungeon!.inside)continue;
       if (!m.hp) { if (this.clock >= m.respawn) { m.hp = m.maxHp; m.x = m.homeX; m.z = m.homeZ; m.action = 0; m.actionSeq++; } continue; }
+      const elite=m.name==='숲의 정예 감시자'||m.name==='폐허의 파수꾼';
+      if(elite) {
+        const distance=Math.hypot(m.x-p.x,m.z-p.z);
+        if(m.windup && this.clock>=m.windup) {
+          m.windup=0;
+          m.cooldown=this.clock+2.8;
+          m.action=EntityAction.Attack;m.actionSeq++;
+          // Snapshot-directed strike: stepping outside the indicated area avoids it.
+          if(distance<8&&Math.hypot((m.aimX??p.x)-p.x,(m.aimZ??p.z)-p.z)<=2.3){
+            const taken=Math.min(p.hp,Math.max(1,16-armorDefense(p.armor)));
+            p.hp-=taken;
+            this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:'정예 강타 피해 '+taken});
+            this.message=m.name+'의 강타에 '+taken+' 피해를 입었습니다.';
+            if(!p.hp){const lost=Math.min(p.gold,5);p.gold-=lost;this.dispatch({type:'recall'});this.message='정예에게 쓰러졌습니다. 마을 귀환 · 골드 -'+lost;break;}
+          } else {
+            this.message=m.name+'의 예고 공격을 회피했습니다.';
+          }
+        } else if(!m.windup && distance<7 && this.clock>=m.cooldown && (p.dungeon!.inside||Math.hypot(p.x,p.z)>24)){
+          m.windup=this.clock+1.25;
+          m.aimX=p.x;m.aimZ=p.z;m.action=EntityAction.Cast;m.actionSeq++;
+          this.message='⚠ '+m.name+'이 강타를 준비합니다. 표시된 위치에서 벗어나세요!';
+        } else if(!m.windup&&this.clock>=m.cooldown-.8)m.action=EntityAction.None;
+        continue;
+      }
       if (Math.hypot(m.x - p.x, m.z - p.z) < 3.5 && Math.hypot(p.x, p.z) > 24 && this.clock >= m.cooldown) {
         const taken=Math.min(p.hp,Math.max(1,7-armorDefense(p.armor)));p.hp -= taken;this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
         if (!p.hp) { const lost = Math.min(p.gold, 5); p.gold -= lost; this.dispatch({ type: 'recall' }); this.message = `쓰러졌습니다. 마을에서 회복했습니다. 골드 -${lost}`; break; }
