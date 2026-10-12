@@ -15,6 +15,14 @@ describe('licensed/procedural first-dungeon environment',()=>{
     expect(chamber.position.z).toBe(DUNGEON_ARENA.z);
     const tiles=root.getObjectByName('ruin-cracked-paving') as THREE.InstancedMesh;
     expect(tiles.count).toBe(196);
+    const walls=root.getObjectByName('ruin-wall-fragments') as THREE.InstancedMesh;
+    expect(walls.count).toBe(20);
+    expect(walls.castShadow).toBe(false);
+    expect(walls.userData['decorative']).toBe(true);
+    expect(new THREE.Raycaster().intersectObject(walls)).toEqual([]);
+    const instanceTransform=new THREE.Matrix4();
+    walls.getMatrixAt(0,instanceTransform);
+    expect(instanceTransform.elements.every(Number.isFinite)).toBe(true);
     // Instance colors and geometry provide low-cost visual variation without
     // extra draw calls or renderer-wide material mutations.
     expect(tiles.instanceColor).not.toBeNull();
