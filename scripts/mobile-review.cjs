@@ -7,7 +7,7 @@ const out='artifacts/mobile-review-proof';fs.mkdirSync(out,{recursive:true});
  for(const [width,height] of [[390,844],[320,568],[844,390]]){
   const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto((process.env.MOBILE_BASE_URL||'http://127.0.0.1:4300/')+'?art=traveler');await page.locator('#start').click();await page.waitForFunction(()=>window.__DREAM_SESSION__,null,{timeout:60000});
-  await page.locator('#next-target').tap();await page.waitForFunction(()=>window.__DREAM_SESSION__.target);
+  await page.locator('#hunt-tools summary').first().tap();await page.locator('#next-target').tap();await page.waitForFunction(()=>window.__DREAM_SESSION__.target);
   await page.locator('#auto-config summary').tap();await page.locator('#auto-radius').selectOption('12');await page.locator('#auto-priority').selectOption('weakest');
   await expect(page.locator('#auto-potion')).toHaveValue('0');
   await page.locator('#auto-hunt').tap();await expect(page.locator('#auto-hunt')).toHaveAttribute('aria-pressed','true');

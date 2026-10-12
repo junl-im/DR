@@ -1,0 +1,9 @@
+# HUD and town interaction — 2026-10-13
+
+Baseline main fe76f8d (PR14). User explicitly prioritised HUD/UI over new quests and requested clicking an entire dungeon entrance and other facilities.
+
+Bronze/slate HUD and window surfaces, readable text, aligned dock, shared inventory styling. Hunting helpers are collapsed initially; auto-hunt status remains visible outside the collapsed group. Existing keyboard shortcuts and controls are preserved. This is a first interface pass, not completion of the Elbera-level world-art target.
+
+Local canvas pointer taps pick full world-space bounds of the dungeon gate, service signs and building roots. The portal opening between pillars is included. Buildings open the nearest non-dungeon service anchor's existing panel. UI opening stops automatic hunting and queued movement. Signs use the same flow. Entry, quest unlock, purchase and crafting rules stay in LocalGameSession; clicking never teleports, grants rewards or bypasses proximity. Dungeon interiors bypass town picking. Original online rendering/interaction is unchanged. No new assets, save schema, rules or backend changes.
+
+96 local tests passed with maxWorkers=1, including gate opening/pillar hits, building hit, hidden-object and empty-ground cases. Initial parallel browser+unit run timed out; sequential rerun passed unchanged test timeouts. Typecheck and build passed. Mobile touch review at 320x568,390x844,844x390: no overflow or selected-target overlap, 44px controls; quest combat/claim/save/reload passes at1440/390. New hud-town browser flow taps three actual canvas points below the dungeon label at both1440/390: all open the dungeon panel while locked entry remains disabled. Shop and inventory open; page errors empty. Software Chromium, not physical Android performance. CI additionally runs the HUD facility flow and archives screenshots.
