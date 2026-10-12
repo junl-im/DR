@@ -43,6 +43,7 @@ import type { ArmorSelection } from './creature/modular-armor';
 import type { AnimationClip } from '@nj/game-core';
 import { EntityAction } from '@nj/game-core';
 import { buildEnvironmentScene } from './environment-renderer';
+import { buildFieldGroundCover, disposeFieldGroundCover } from './field-detail';
 import { selectMobNearScreenTap } from './mobile-target-assist';
 import type { AudioManager } from '../audio/audio-manager';
 
@@ -210,6 +211,9 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   const terrainData = generateTerrain(WORLD_SEED, TERRAIN_OPTS);
   const terrainMesh = createTerrainMesh(THREE, terrainData);
   scene.add(terrainMesh);
+  // Procedural cover was previously implemented but not mounted. One-time
+  // attachment only; 3 GPU instanced batches, no gameplay raycasts/collision.
+  const fieldCover = buildFieldGroundCover(scene);
 
   void buildEnvironmentScene({ scene, terrainData }).then((envResult) => {
     setEnvironment({ ...envResult, loaded: true });
@@ -708,6 +712,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   const dispose = (): void => {
     playerAvatar.dispose?.();
     clearPathPreview();
+    disposeFieldGroundCover(fieldCover);
     audioManager?.dispose();
     audioManager = null;
     vfxManager.dispose();
