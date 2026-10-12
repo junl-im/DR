@@ -4,6 +4,7 @@ import { TERRAIN_CONFIG } from '@nj/game-core';
 import { buildVillage, type SceneObjectSpec } from './village';
 import { createVillagePaving } from './town-floor';
 import { buildVillageFacades } from './village-facade';
+import { buildVillageRoads } from './village-roads';
 import { scatterProps } from './scatter';
 import {
   getBuildingPropEntry,
@@ -178,6 +179,7 @@ export async function placeVillageEnvironment(
   // Per-building architectural dressing is purely cosmetic and is created
   // after the existing source GLBs / primitive fallbacks are placed.
   buildVillageFacades(scene, villageSpecs);
+  buildVillageRoads(scene, villageSpecs);
   return result;
 }
 
