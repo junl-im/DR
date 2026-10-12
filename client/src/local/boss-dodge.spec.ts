@@ -2,11 +2,43 @@ import {describe,expect,it} from 'vitest';
 import {bossHit,type BossThreat} from './boss-pattern';
 import {findBossDodgeDestination} from './boss-dodge';
 import {DUNGEON_ARENA,DUNGEON_RADIUS} from './first-dungeon';
+import {LocalGameSession,newSave} from './session';
 
 const identitySnap=(x:number,z:number)=>({x,z});
 const directRoute=(_from:{x:number;z:number},to:{x:number;z:number})=>[to];
 
 describe('manual dodge from real elite attack warning',()=>{
+
+ function realGuardianFight(sweep:boolean){
+   const save=newSave('회피 검증',0);
+   save.player.quest={stage:3,progress:0};
+   save.player.dungeon={inside:true,wave:2,kills:0,clears:0};
+   const s=new LocalGameSession(save),p=s.state.player;
+   const boss=s.mobs.find(m=>m.id==='dungeon-2-0')!;
+   boss.x=p.x+1;boss.z=p.z;boss.cooldown=0;
+   if(sweep)boss.bossCasts=1;
+   s.tick(.05);
+   expect(s.bossThreat?.move).toBe(sweep?'ground-sweep':'aimed-strike');
+   return {s,boss};
+ }
+ for(const sweep of [false,true]){
+   it('actually walks out of '+(sweep?'sweep':'aimed')+' damage using original game movement and hit logic',()=>{
+     const {s,boss}=realGuardianFight(sweep);
+     const p=s.state.player,hp=p.hp,start={x:p.x,z:p.z};
+     const threat=s.bossThreat!;
+     const destination=findBossDodgeDestination(threat,p,true);
+     expect(destination).not.toBeNull();
+     // No direct state mutation; only the same player MOVE intent as world taps.
+     s.dispatch({type:'move',x:destination!.x,z:destination!.z});
+     for(let i=0;i<Math.ceil((threat.seconds+.15)/.05);i++)s.tick(.05);
+     expect(Math.hypot(p.x-start.x,p.z-start.z)).toBeGreaterThan(1);
+     expect(Math.hypot(p.x-destination!.x,p.z-destination!.z)).toBeLessThan(2);
+     expect(p.hp).toBe(hp);
+     expect(s.bossThreat).toBeNull();
+     expect(s.snapshot().schemaVersion).toBe(1);
+   });
+ }
+
  it('walks just beyond a targeted blast instead of teleporting/invulnerability',()=>{
   const t:BossThreat={name:'정예',move:'aimed-strike',x:0,z:0,radius:2.3,seconds:1.25};
   const player={x:.2,z:0};
