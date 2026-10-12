@@ -131,11 +131,34 @@ fs.mkdirSync(out,{recursive:true});
       throw new Error('Auto hunt button did not disable the mode');
     if(await game.evaluate(()=>window.__DREAM_SESSION__.attacking))
       throw new Error('Turning off auto hunt did not stop active combat');
+    // Real UI option changes must affect the session controller without
+    // changing saved player stats or auto-starting background potion use.
+    await game.locator('#auto-config summary').click();
+    await game.locator('#auto-radius').selectOption('12');
+    await game.locator('#auto-priority').selectOption('normal-only');
+    await game.locator('#auto-potion').selectOption('0.5');
+    await game.locator('#auto-hunt').click();
+    if(await game.locator('#auto-hunt').getAttribute('aria-pressed')!=='true')
+      throw new Error('Options prevented auto hunt activation');
+    await game.waitForFunction(()=>document.querySelector('#auto-status')?.textContent.includes('12m'));
+    await game.screenshot({path:out+'/village-auto-settings-desktop.png',fullPage:true});
+    await game.locator('#auto-hunt').click();
+    await game.locator('#auto-radius').selectOption('28');
+    await game.locator('#auto-priority').selectOption('nearest');
+    await game.locator('#auto-potion').selectOption('0');
+    await game.locator('#auto-config summary').click();
+    if(await game.evaluate(()=>window.__DREAM_SESSION__.attacking))
+      throw new Error('Turning off configured auto hunt kept attacking');
     await game.screenshot({path:out+'/village-facades-desktop.png',fullPage:true});
     await game.setViewportSize({width:390,height:844});
     await game.waitForTimeout(300);
     if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))
       throw new Error('Village facade preview overflowed mobile viewport');
+    await game.locator('#auto-config summary').click();
+    if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))
+      throw new Error('Expanded mobile auto-hunt options overflowed the viewport');
+    await game.screenshot({path:out+'/village-auto-settings-mobile.png',fullPage:true});
+    await game.locator('#auto-config summary').click();
     await game.screenshot({path:out+'/village-facades-mobile.png',fullPage:true});
     await game.setViewportSize({width:1440,height:900});
     await game.evaluate(()=>{
@@ -277,7 +300,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,errors,bad,screenshots:25,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,errors,bad,screenshots:27,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
