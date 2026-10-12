@@ -49,6 +49,7 @@ import { disposeVillageRoads } from './village-roads';
 import { disposeVillageRooflines } from './village-roofline';
 import { disposeVillageEdge } from './village-edge';
 import { selectMobNearScreenTap } from './mobile-target-assist';
+import {useMultisampleAntialiasing} from '../local/render-budget';
 import type { AudioManager } from '../audio/audio-manager';
 
 const WORLD_SEED = TERRAIN_CONFIG.seed;
@@ -178,7 +179,14 @@ function findMobId(object: THREE.Object3D): string | null {
 }
 
 export async function createRenderer(canvas: HTMLCanvasElement, options: { cameraOffset?: { x: number; y: number; z: number }; cameraFov?: number; lockCamera?: boolean; playerManifest?: PlayerManifestEntry } = {}): Promise<GameRenderer> {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  // Mobile devices benefit more from fill-rate savings than framebuffer MSAA.
+  // Keep high-quality antialiasing for wide desktop pointer-driven play.
+  const coarsePointer=typeof window.matchMedia==='function' &&
+    window.matchMedia('(pointer: coarse)').matches;
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias:useMultisampleAntialiasing(window.innerWidth,coarsePointer),
+  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;

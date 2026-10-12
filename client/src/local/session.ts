@@ -124,6 +124,15 @@ export class LocalGameSession implements GameSession {
     if (!path.length && Math.hypot(to.x - this.state.player.x, to.z - this.state.player.z) > 2) { this.message = '이동 경로를 찾을 수 없습니다.'; return; }
     this.movement = { ...this.movement, targetX: to.x, targetZ: to.z, waypoints: path, waypointIndex: 0 };
   }
+  /** Cancel any outstanding chase/path immediately when automation is stopped.
+   * This is transient movement state; save schema and inventory remain untouched.
+   */
+  stopMovement():void{
+    const p=this.state.player;
+    this.attacking=false;
+    this.movement=createPathMoveState(p.x,snapEntityY(p.x,p.z),p.z);
+  }
+
   dispatch(intent: Intent): void {
     const p = this.state.player;
     if(intent.type==='enter-dungeon') {
