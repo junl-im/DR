@@ -116,7 +116,10 @@ async function enter(state: Save) {
       const status=root.querySelector<HTMLElement>('#auto-status');
       if(status){
         const reason=autoHunt?.stopReason;
-        const message=enabled?`사냥 중 · ${autoHunt?.radius}m · ${autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'}`:
+        const progress=autoHunt?.progress;
+        const elapsed=progress?.seconds??0;
+        const duration=`${Math.floor(elapsed/60)}:${String(elapsed%60).padStart(2,'0')}`;
+        const message=enabled?`사냥 중 · ${autoHunt?.radius}m · ${autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
           reason==='low-hp'?'체력이 부족해 자동사냥이 중단되었습니다.':
           reason==='range'?'설정한 사냥 범위를 벗어나 자동 중단되었습니다.':
           reason==='zone-change'?'필드·던전 전환으로 자동 중단되었습니다.':'';

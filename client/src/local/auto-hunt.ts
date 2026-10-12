@@ -10,6 +10,7 @@ export const AUTO_STUCK_RETRY_S=12;
 export const TAB_TARGET_RADIUS=75;
 export type HuntPriority='nearest'|'weakest'|'normal-only';
 export type HuntStopReason='manual'|'low-hp'|'range'|'zone-change';
+export interface HuntProgress {seconds:number;kills:number;gold:number}
 
 function distance(ax:number,az:number,bx:number,bz:number):number{
   return Math.hypot(ax-bx,az-bz);
@@ -51,6 +52,9 @@ export class AutoHuntController {
   private lastTarget:string|null=null;
   private potionCooldown=0;
   private elapsed=0;
+  private startedAt=0;
+  private startKills=0;
+  private startGold=0;
   private stuckSeconds=0;
   private lastWalkPos:{x:number;z:number}|null=null;
   private readonly unreachableUntil=new Map<string,number>();
@@ -76,6 +80,12 @@ export class AutoHuntController {
       this.potionThreshold=options.potionThreshold as typeof AUTO_POTION_THRESHOLDS[number];
     }
   }
+  /** Transient hunt telemetry; totals reset each time the user enables hunting. */
+  get progress():HuntProgress{
+    const p=this.session.state.player;
+    return {seconds:Math.max(0,Math.floor(this.elapsed-this.startedAt)),
+      kills:Math.max(0,p.kills-this.startKills),gold:Math.max(0,p.gold-this.startGold)};
+  }
   setEnabled(value:boolean,reason:HuntStopReason='manual'):boolean{
     const p=this.session.state.player;
     const wasEnabled=this.enabled;
@@ -85,6 +95,13 @@ export class AutoHuntController {
     this.stuckSeconds=0;
     this.lastWalkPos=null;
     this.unreachableUntil.clear();
+    if(this.enabled){
+      this.startedAt=this.elapsed;
+      this.startKills=p.kills;
+      this.startGold=p.gold;
+      // A previously queued manual path must not move the new patrol anchor.
+      if(!wasEnabled)this.session.stopMovement();
+    }
     // Cooldown survives OFF/ON toggling: no consumable spam exploit.
     this.stopReason=this.enabled?null:reason;
     if(!this.enabled&&wasEnabled)this.session.stopMovement();
@@ -123,7 +140,14 @@ export class AutoHuntController {
       distance(a.x,a.z,p.x,p.z)-distance(b.x,b.z,p.x,p.z)||a.id.localeCompare(b.id));
     const next=current??others[0];
     if(!next){
-      if(s.attacking)s.dispatch({type:'attack'});
+      // The last mob may have died while a chase waypoint was still queued.
+      // Waiting for respawn must never keep walking toward a corpse or leave
+      // a stale target highlight on the screen.
+      if(this.lastTarget!==null||s.target!==null||s.attacking){
+        s.stopMovement();
+        if(s.target!==null)s.dispatch({type:'target',id:''});
+        this.onTarget(null);
+      }
       this.lastTarget=null;
       this.lastWalkPos=null;
       this.stuckSeconds=0;
