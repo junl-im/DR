@@ -160,9 +160,11 @@ function attachGoblinClub(
 
   loadGltfTemplate(GOBLIN_CLUB_ATTACHMENT.model)
     .then((clubTemplate) => {
-      if (!instances.has(mobId)) return;
-      const live = instances.get(mobId)!;
-      if (live.clubProp) return;
+      // The same mob ID may be reused after a wave/scene replacement.
+      // A delayed GLB must never attach to a retired avatar or mark its
+      // replacement as equipped.
+      const live = instances.get(mobId);
+      if (!live || live.avatar !== avatar || live.clubProp) return;
       const club = clubTemplate.scene.clone(true);
       club.name = 'goblin-club';
       if (
