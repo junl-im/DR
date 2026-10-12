@@ -29,6 +29,7 @@ let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'origina
 let session: LocalGameSession;
 let game: GameRenderer;
 let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
+let ruinAtmosphere:ReturnType<typeof createRuinAtmosphere>|undefined;
 let saveTask: Promise<void> | undefined;
 let replacingSave = false;
 let cloud: typeof import('./cloud') | undefined;
@@ -88,7 +89,7 @@ async function enter(state: Save) {
     buildFieldGroundCover(game.scene);
     threatVisual=createBossThreatVisual(game.scene);
     const mobile=matchMedia('(max-width: 700px)').matches;
-    const atmosphere=createRuinAtmosphere(game.scene,mobile);
+    ruinAtmosphere=createRuinAtmosphere(game.scene,mobile);
     const quality=createResolutionGovernor(devicePixelRatio,mobile);
     game.renderer.setPixelRatio(quality.dpr);
     game.renderer.shadowMap.enabled=!mobile;
@@ -137,7 +138,7 @@ async function enter(state: Save) {
 }
 function syncScene() {
   const p=session.state.player, y=snapEntityY(p.x,p.z);
-  atmosphere.setActive(p.dungeon!.inside);
+  ruinAtmosphere?.setActive(p.dungeon!.inside);
   threatVisual?.update(session.bossThreat);
   setPlayer({...getGameState().player,...p,y,powerStrikeCooldownEndMs:0});
   game.syncLocalPlayer(p.x,y,p.z,session.action,session.actionSeq,equippedWeaponVisualId(p),p.classId,0,armorOutfitSelection(p.armor));
