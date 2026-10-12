@@ -14,6 +14,7 @@ import { createNameplate, type Nameplate } from './nameplate';
 import { getGameState } from '../test-hook';
 import {
   createWeaponVisualState,
+  disposeWeaponVisual,
   syncWeaponVisual,
   type WeaponVisualState,
 } from './creature/weapon-visual';
@@ -193,6 +194,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
   const dispose=():void=>{
     if(disposed)return;
     disposed=true;
+    disposeWeaponVisual(weaponState);
     armorController?.dispose?.();
     armorController=null;
     disposeContactMark(contactMark);
