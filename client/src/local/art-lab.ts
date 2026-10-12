@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import {createMeshCharacter, KAYKIT_CLIP_MAP} from '../scene/creature/mesh-character';
+import {createMeshCharacter, loadGltfTemplate, KAYKIT_CLIP_MAP} from '../scene/creature/mesh-character';
 import {ART_TRIALS} from './art-trial';
 import type {AnimationClip} from '@nj/game-core';
-import { createWeaponVisualState, syncWeaponVisual } from '../scene/creature/weapon-visual';
+import { createWeaponVisualState, findWeaponHand, syncWeaponVisual } from '../scene/creature/weapon-visual';
+import { sampleWeaponGrip } from '../scene/creature/grip-diagnostics';
 import { prepareModularArmor, type ModularArmorController, type ArmorSlot, type ArmorOutfit } from '../scene/creature/modular-armor';
 
 const entries=[{displayName:'현재 모델 · Knight',model:'/models/characters/Knight.glb',scale:1,clipMap:KAYKIT_CLIP_MAP},...Object.values(ART_TRIALS)];
@@ -13,11 +14,54 @@ const views=entries.map(entry=>{
  scene.add(new THREE.HemisphereLight('#fff3d8','#35402e',2));const sun=new THREE.DirectionalLight('#fff0ce',3);sun.position.set(3,5,4);scene.add(sun);const rim=new THREE.DirectionalLight('#9ac4db',1.6);rim.position.set(-3,2,-2);scene.add(rim);
  const character=createMeshCharacter(entry.model,{scale:entry.scale,clipMap:entry.clipMap});scene.add(character.object);
  const weaponState=createWeaponVisualState();
+ const clipDurations:Partial<Record<AnimationClip,number>>={};
  const resize=()=>{const rect=canvas.getBoundingClientRect();renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(canvas);resize();
- const ready=character.ready.then(()=>{character.play('idle');character.setTime(0);character.object.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(character.object),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());character.object.position.y-=box.min.y;camera.position.set(center.x+size.y*.9,size.y*.58,size.y*2.6);camera.lookAt(center.x,size.y*.52,0);card.querySelector('p')!.textContent='대기 · 동일 조명 · 실제 GLB';return {name:entry.displayName,model:entry.model,height:size.y};});
- return {renderer,scene,camera,character,ready,card,weaponState};
+ const ready=character.ready.then(async()=>{
+   // Read the real GLB clip lengths, not guessed seconds per animation.
+   const template=await loadGltfTemplate(entry.model);
+   for(const clip of ['idle','move','attack','cast','die'] as const) {
+     clipDurations[clip]=template.animations.find(a=>a.name===entry.clipMap[clip])?.duration??0;
+   }
+   character.play('idle');character.setTime(0);character.object.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(character.object),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());character.object.position.y-=box.min.y;camera.position.set(center.x+size.y*.9,size.y*.58,size.y*2.6);camera.lookAt(center.x,size.y*.52,0);card.querySelector('p')!.textContent='대기 · 동일 조명 · 실제 GLB';return {name:entry.displayName,model:entry.model,height:size.y};});
+ return {renderer,scene,camera,character,ready,card,weaponState,clipDurations};
 });
-let selected:AnimationClip='idle';function play(){for(const view of views){view.character.play(selected==='idle'?'move':'idle');view.character.play(selected);view.character.setTime(0);view.card.querySelector('p')!.textContent=`${selected} · 실제 GLB 애니메이션`;}}
+let selected:AnimationClip='idle';
+let poseFrozen=false;
+const poseSlider=document.querySelector<HTMLInputElement>('#pose-progress')!;
+const poseStatus=document.querySelector<HTMLElement>('#pose-status')!;
+const poseDiagnostics=document.querySelector<HTMLElement>('#pose-diagnostics')!;
+function sampleSelectedPose() {
+  const index=selectedGripIndex();
+  const view=views[index];
+  const handName=findWeaponHand(view.character.object,'handslotr');
+  const sample=handName?sampleWeaponGrip(view.character.object,view.weaponState.prop,handName):null;
+  const rounded=(tuple:THREE.Vector3Tuple)=>tuple.map(n=>Number(n.toFixed(4)));
+  return {
+    model:entries[index].displayName,clip:selected,
+    clipDurationSeconds:Number((view.clipDurations[selected]??0).toFixed(4)),
+    frozen:poseFrozen,percent:Number(poseSlider.value),handBone:handName,
+    ...(sample?{hand:rounded(sample.hand),hilt:rounded(sample.hilt),tip:rounded(sample.tip),
+      gripGap:Number(sample.gripGap.toFixed(4)),bladeLength:Number(sample.bladeLength.toFixed(4))}:{hand:null,hilt:null,tip:null,gripGap:null,bladeLength:null}),
+  };
+}
+function updatePoseDiagnostics():void {
+  poseDiagnostics.textContent=JSON.stringify(sampleSelectedPose(),null,2);
+}
+function freezePose():void {
+  poseFrozen=true;
+  const fraction=Number(poseSlider.value)/100;
+  for(const view of views) {
+    const duration=view.clipDurations[selected]??0;
+    if(duration>0) view.character.setTime(duration*fraction);
+    view.character.object.updateMatrixWorld(true);
+  }
+  poseStatus.textContent=`정지 ${poseSlider.value}% · 실제 GLB 프레임`;
+  updatePoseDiagnostics();
+}
+poseSlider.addEventListener('input',freezePose);
+document.querySelector<HTMLButtonElement>('#pose-resume')!.onclick=()=>play();
+Object.assign(window,{__POSE_LAB__:{read:sampleSelectedPose,get paused(){return poseFrozen;}}});
+function play(){poseFrozen=false;poseStatus.textContent='원본 애니메이션 재생 중';for(const view of views){view.character.play(selected==='idle'?'move':'idle');view.character.play(selected);view.character.setTime(0);view.card.querySelector('p')!.textContent=`${selected} · 실제 GLB 애니메이션`;}}
 document.querySelector<HTMLSelectElement>('#animation')!.onchange=e=>{selected=(e.target as HTMLSelectElement).value as AnimationClip;play();};document.querySelector<HTMLButtonElement>('#replay')!.onclick=play;
 const weaponToggle=document.querySelector<HTMLInputElement>('#weapon-visual')!;
 weaponToggle.onchange=()=>{
@@ -66,7 +110,7 @@ function applyGrip(index: number): void {
     THREE.MathUtils.degToRad(pose.rz)
   );
   prop.scale.setScalar(pose.scale);
-  if (index===selectedGripIndex()) updateGripReadout();
+  if (index===selectedGripIndex()) {updateGripReadout();updatePoseDiagnostics();}
 }
 for (const input of gripInputs) {
   input.addEventListener('input',()=>{
@@ -75,7 +119,7 @@ for (const input of gripInputs) {
     applyGrip(selectedGripIndex());
   });
 }
-gripModel.addEventListener('change',updateGripReadout);
+gripModel.addEventListener('change',()=>{updateGripReadout();updatePoseDiagnostics();});
 document.querySelector<HTMLButtonElement>('#grip-reset')!.onclick=()=>{
   gripSettings[selectedGripIndex()] = newGripPose();
   applyGrip(selectedGripIndex());
@@ -138,6 +182,11 @@ document.querySelector<HTMLButtonElement>('#armor-reset')!.onclick=()=>{
 // __ART_LAB__ and are tested independently of optional modular fitting.
 void armorReady;
 
-Promise.all(views.map(v=>v.ready)).then(models=>Object.assign(window,{__ART_LAB__:{ready:true,models}}));
-let last=performance.now();function tick(now:number){const dt=Math.min(.05,(now-last)/1000);last=now;for(const v of views){v.character.update(dt);v.renderer.render(v.scene,v.camera);}requestAnimationFrame(tick);}requestAnimationFrame(tick);
+Promise.all(views.map(v=>v.ready)).then(models=>{
+  poseSlider.disabled=false;
+  poseStatus.textContent='원본 애니메이션 재생 중 · 슬라이더로 프레임 고정';
+  updatePoseDiagnostics();
+  Object.assign(window,{__ART_LAB__:{ready:true,models}});
+});
+let last=performance.now();function tick(now:number){const dt=Math.min(.05,(now-last)/1000);last=now;for(const v of views){if(!poseFrozen)v.character.update(dt);v.renderer.render(v.scene,v.camera);}requestAnimationFrame(tick);}requestAnimationFrame(tick);
 
