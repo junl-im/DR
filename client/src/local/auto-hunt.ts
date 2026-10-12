@@ -5,6 +5,8 @@ export const AUTO_HUNT_RADII=[12,20,28] as const;
 export const AUTO_POTION_THRESHOLDS=[0,.35,.5,.65] as const;
 export const AUTO_HUNT_STOP_HP_RATIO=.22;
 export const AUTO_POTION_COOLDOWN_S=5;
+export const AUTO_STUCK_TIMEOUT_S=2.5;
+export const AUTO_STUCK_RETRY_S=12;
 export const TAB_TARGET_RADIUS=75;
 export type HuntPriority='nearest'|'weakest'|'normal-only';
 export type HuntStopReason='manual'|'low-hp'|'range'|'zone-change';
@@ -48,6 +50,10 @@ export class AutoHuntController {
   private anchor:{x:number;z:number;inside:boolean}|null=null;
   private lastTarget:string|null=null;
   private potionCooldown=0;
+  private elapsed=0;
+  private stuckSeconds=0;
+  private lastWalkPos:{x:number;z:number}|null=null;
+  private readonly unreachableUntil=new Map<string,number>();
   constructor(
     private readonly session:LocalGameSession,
     private readonly onTarget:(id:string|null)=>void,
@@ -76,6 +82,9 @@ export class AutoHuntController {
     this.enabled=!!value && p.hp>0;
     this.anchor=this.enabled?{x:p.x,z:p.z,inside:!!p.dungeon?.inside}:null;
     this.lastTarget=null;
+    this.stuckSeconds=0;
+    this.lastWalkPos=null;
+    this.unreachableUntil.clear();
     // Cooldown survives OFF/ON toggling: no consumable spam exploit.
     this.stopReason=this.enabled?null:reason;
     if(!this.enabled&&wasEnabled)this.session.stopMovement();
@@ -83,6 +92,7 @@ export class AutoHuntController {
   }
   tick(dt=.05):void {
     if(!this.enabled||!this.anchor||!Number.isFinite(dt)||dt<=0||dt>.25)return;
+    this.elapsed+=dt;
     const s=this.session,p=s.state.player,inside=!!p.dungeon?.inside;
     if(inside!==this.anchor.inside){this.setEnabled(false,'zone-change');return;}
     if(distance(p.x,p.z,this.anchor.x,this.anchor.z)>this.radius+.5){
@@ -104,7 +114,8 @@ export class AutoHuntController {
     const valid=(m:Mob):boolean=>m.hp>0&&m.id.startsWith('dungeon-')===inside&&
       distance(m.x,m.z,this.anchor!.x,this.anchor!.z)<=this.radius&&
       distance(m.x,m.z,p.x,p.z)<=this.radius&&
-      (this.priority!=='normal-only'||!elite(m));
+      (this.priority!=='normal-only'||!elite(m)) &&
+      (this.unreachableUntil.get(m.id)??0)<=this.elapsed;
     const current=s.mobs.find(m=>m.id===s.target&&valid(m));
     const others=selectableMobs(s,this.radius).filter(valid);
     if(this.priority==='weakest')others.sort((a,b)=>
@@ -114,12 +125,41 @@ export class AutoHuntController {
     if(!next){
       if(s.attacking)s.dispatch({type:'attack'});
       this.lastTarget=null;
+      this.lastWalkPos=null;
+      this.stuckSeconds=0;
       return;
     }
     if(s.target!==next.id||this.lastTarget!==next.id){
+      s.stopMovement(); // eliminate the old mob's pending chase waypoints
       s.dispatch({type:'target',id:next.id});
       this.onTarget(next.id);
       this.lastTarget=next.id;
+      this.lastWalkPos={x:p.x,z:p.z};
+      this.stuckSeconds=0;
+    }
+    const dist=distance(next.x,next.z,p.x,p.z);
+    if(dist>2.8 && this.lastWalkPos){
+      if(distance(p.x,p.z,this.lastWalkPos.x,this.lastWalkPos.z)>=.15){
+        this.stuckSeconds=0;
+        this.lastWalkPos={x:p.x,z:p.z};
+      }else{
+        this.stuckSeconds+=dt;
+      }
+      if(this.stuckSeconds>=AUTO_STUCK_TIMEOUT_S){
+        // This mob is blocked/unreachable. Do not pathfind to it every frame.
+        // Retry after a short cooldown, allowing other living mobs in range.
+        this.unreachableUntil.set(next.id,this.elapsed+AUTO_STUCK_RETRY_S);
+        s.stopMovement();
+        s.dispatch({type:'target',id:''});
+        this.onTarget(null);
+        this.lastTarget=null;
+        this.lastWalkPos=null;
+        this.stuckSeconds=0;
+        return;
+      }
+    }else{
+      this.stuckSeconds=0;
+      this.lastWalkPos={x:p.x,z:p.z};
     }
     if(!s.attacking)s.dispatch({type:'attack'});
   }
