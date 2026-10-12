@@ -1,0 +1,28 @@
+name: Dungeon zero HUD UI asset acquisition proof
+on:
+  pull_request:
+    paths:
+      - 'scripts/research/collect-ui-packs.py'
+      - 'docs/research/ui-hud-intake/**'
+      - '.github/workflows/ui-asset-intake.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-intake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install preview dependencies
+        run: python3 -m pip install --disable-pip-version-check --quiet --break-system-packages pillow
+      - name: Download and audit licensed HUD UI sources
+        run: python3 scripts/research/collect-ui-packs.py
+      - name: Upload exact original sources, attribution and preview
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-ui-original-assets-20261013
+          path: artifacts/dungeon-zero-ui-intake/
+          retention-days: 30
+          if-no-files-found: error
