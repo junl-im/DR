@@ -6,7 +6,7 @@ vi.mock('./mesh-character', () => ({
 }));
 
 import { loadGltfTemplate } from './mesh-character';
-import { createWeaponVisualState, syncWeaponVisual, findWeaponHand } from './weapon-visual';
+import { createWeaponVisualState, disposeWeaponVisual, syncWeaponVisual, findWeaponHand } from './weapon-visual';
 
 function buildCharacter(handName: string): { root: THREE.Group; hand: THREE.Bone } {
   const root = new THREE.Group();
@@ -46,6 +46,27 @@ describe('starter sword visual rig attachment', () => {
     syncWeaponVisual(root, 0, state);
     expect(state.prop).toBeNull();
     expect(hand.children.some((child) => child.name === 'weapon-2369')).toBe(false);
+  });
+
+  it('drops the old weapon during avatar disposal and rejects delayed GLB attachment',async()=>{
+    let finish!: (value:{scene:THREE.Group;animations:THREE.AnimationClip[]})=>void;
+    vi.mocked(loadGltfTemplate).mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));
+    const {root,hand}=buildCharacter('palm_R');
+    const state=createWeaponVisualState();
+    syncWeaponVisual(root,2369,state);
+    const pending=state.loading;
+    disposeWeaponVisual(state);
+    finish({scene:new THREE.Group(),animations:[]});
+    await pending;
+    expect(state.prop).toBeNull();
+    expect(hand.children.filter(node=>node.name.startsWith('weapon-'))).toHaveLength(0);
+    // Disposing a settled, actually attached prop must release only the prop.
+    syncWeaponVisual(root,2369,state);
+    await state.loading;
+    expect(state.prop?.parent).toBe(hand);
+    disposeWeaponVisual(state);
+    expect(state.prop).toBeNull();
+    expect(hand.children.filter(node=>node.name.startsWith('weapon-'))).toHaveLength(0);
   });
 
   it('does not reattach a stale sword when unequipped before loading finishes', async () => {
