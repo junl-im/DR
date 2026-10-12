@@ -59,6 +59,30 @@ export function buildFirstDungeonArt(scene:THREE.Scene):THREE.Group {
   const bossRune=add(arena,new THREE.TorusGeometry(4,.095,6,52),rune,0,
     snapEntityY(DUNGEON_ARENA.x,DUNGEON_ARENA.z-6)-FEET_OFFSET+.11,-6,false);
   bossRune.rotation.x=-Math.PI/2;bossRune.name='ruin-boss-sigil';
+  // Instanced shattered stones around the outer perimeter. The central
+  // corridor and boss arena remain unobstructed; no collision or raycast.
+  const debris=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.42,0),stone,48);
+  debris.name='ruin-perimeter-rubble';
+  debris.castShadow=false;debris.receiveShadow=true;
+  debris.userData['decorative']=true;debris.raycast=()=>{};
+  const rubbleMatrix=new THREE.Matrix4();
+  const rubbleQuat=new THREE.Quaternion();
+  const rubbleScale=new THREE.Vector3();
+  for(let i=0;i<48;i++){
+    const edge=i%4;
+    const along=-11+(Math.floor(i/4)%12)*2;
+    const offset=.35+(i%3)*.19;
+    const x=edge===0?-12+offset:edge===1?12-offset:along;
+    const z=edge===2?-12+offset:edge===3?12-offset:along;
+    const y=snapEntityY(DUNGEON_ARENA.x+x,DUNGEON_ARENA.z+z)-FEET_OFFSET+.18;
+    rubbleQuat.setFromAxisAngle(new THREE.Vector3(0,1,0),i*1.618);
+    const scale=.55+(i%5)*.12;
+    rubbleScale.set(scale,scale*.46,scale*.88);
+    rubbleMatrix.compose(new THREE.Vector3(x,y,z),rubbleQuat,rubbleScale);
+    debris.setMatrixAt(i,rubbleMatrix);
+  }
+  debris.instanceMatrix.needsUpdate=true;
+  arena.add(debris);
   root.add(arena);
   scene.add(root);
   return root;
