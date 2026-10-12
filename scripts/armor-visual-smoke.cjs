@@ -110,6 +110,18 @@ fs.mkdirSync(out,{recursive:true});
     await game.goto('http://127.0.0.1:4300/?art=traveler',{waitUntil:'domcontentloaded',timeout:60000});
     await game.locator('#start').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.armor!==undefined,null,{timeout:90000});
+    await game.waitForFunction(()=>window.__GAME_STATE__?.environment?.loaded===true,null,{timeout:90000});
+    const villageState=await game.evaluate(()=>window.__GAME_STATE__.environment);
+    if(villageState.buildings.count!==5||villageState.peaceZone.count!==1)
+      throw new Error('Village environment stats changed '+JSON.stringify(villageState));
+    await game.waitForTimeout(400);
+    await game.screenshot({path:out+'/village-facades-desktop.png',fullPage:true});
+    await game.setViewportSize({width:390,height:844});
+    await game.waitForTimeout(300);
+    if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))
+      throw new Error('Village facade preview overflowed mobile viewport');
+    await game.screenshot({path:out+'/village-facades-mobile.png',fullPage:true});
+    await game.setViewportSize({width:1440,height:900});
     await game.evaluate(()=>{
       const p=window.__DREAM_SESSION__.state.player;
       p.gold=40;p.wood=5;p.armor.fragments=4;
@@ -249,7 +261,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},errors,bad,screenshots:22,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,errors,bad,screenshots:24,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
