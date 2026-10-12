@@ -76,7 +76,7 @@ export class AutoHuntController {
     this.enabled=!!value && p.hp>0;
     this.anchor=this.enabled?{x:p.x,z:p.z,inside:!!p.dungeon?.inside}:null;
     this.lastTarget=null;
-    this.potionCooldown=0;
+    // Cooldown survives OFF/ON toggling: no consumable spam exploit.
     this.stopReason=this.enabled?null:reason;
     if(!this.enabled&&wasEnabled)this.session.stopMovement();
     return this.enabled;
