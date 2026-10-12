@@ -100,6 +100,23 @@ describe('renderer', () => {
     vi.useRealTimers();
   });
 
+  it('mounts and tears down noninteractive instanced field vegetation in the live scene',async()=>{
+    const game=await createRenderer(document.createElement('canvas'));
+    const root=game.scene.getObjectByName('dungeon-zero-field-cover') as THREE.Group;
+    expect(root).toBeInstanceOf(THREE.Group);
+    expect(root.children).toHaveLength(3);
+    const grass=root.getObjectByName('field-grass-tufts') as THREE.InstancedMesh;
+    const flowers=root.getObjectByName('field-wildflowers') as THREE.InstancedMesh;
+    expect(grass.count).toBe(480);
+    expect(flowers.count).toBe(96);
+    const raycaster=new THREE.Raycaster();
+    expect(raycaster.intersectObject(grass)).toEqual([]);
+    const disposeSpy=vi.spyOn(grass.geometry,'dispose');
+    game.dispose();
+    expect(game.scene.getObjectByName('dungeon-zero-field-cover')).toBeUndefined();
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('calls vfxManager.tick on each frame tick', async () => {
     const canvas = document.createElement('canvas');
     const game = await createRenderer(canvas);
