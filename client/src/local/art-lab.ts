@@ -4,8 +4,17 @@ import {ART_TRIALS} from './art-trial';
 import type {AnimationClip} from '@nj/game-core';
 import { createWeaponVisualState, findWeaponHand, syncWeaponVisual } from '../scene/creature/weapon-visual';
 import { sampleWeaponGrip } from '../scene/creature/grip-diagnostics';
+import {applyInspectionCamera,frameInspectionCamera,type InspectionAngle,type InspectionFocus} from '../scene/creature/art-inspection-camera';
 import { prepareModularArmor, type ModularArmorController, type ArmorSlot, type ArmorOutfit } from '../scene/creature/modular-armor';
 
+const inspectAngle=document.querySelector<HTMLSelectElement>('#inspect-angle')!;
+const inspectFocus=document.querySelector<HTMLSelectElement>('#inspect-focus')!;
+const inspectZoom=document.querySelector<HTMLInputElement>('#inspect-zoom')!;
+const inspectZoomValue=document.querySelector<HTMLOutputElement>('#inspect-zoom-value')!;
+function updateInspectionCamera(root:THREE.Object3D,camera:THREE.PerspectiveCamera):void {
+  applyInspectionCamera(camera,frameInspectionCamera(
+    root,inspectAngle.value as InspectionAngle,inspectFocus.value as InspectionFocus,Number(inspectZoom.value)));
+}
 const entries=[{displayName:'현재 모델 · Knight',model:'/models/characters/Knight.glb',scale:1,clipMap:KAYKIT_CLIP_MAP},...Object.values(ART_TRIALS)];
 const views=entries.map(entry=>{
  const card=document.createElement('article');card.innerHTML='<h2></h2><canvas></canvas><p>모델 읽는 중…</p>';card.querySelector('h2')!.textContent=entry.displayName;document.querySelector('#models')!.append(card);
@@ -22,9 +31,30 @@ const views=entries.map(entry=>{
    for(const clip of ['idle','move','attack','cast','die'] as const) {
      clipDurations[clip]=template.animations.find(a=>a.name===entry.clipMap[clip])?.duration??0;
    }
-   character.play('idle');character.setTime(0);character.object.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(character.object),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());character.object.position.y-=box.min.y;camera.position.set(center.x+size.y*.9,size.y*.58,size.y*2.6);camera.lookAt(center.x,size.y*.52,0);card.querySelector('p')!.textContent='대기 · 동일 조명 · 실제 GLB';return {name:entry.displayName,model:entry.model,height:size.y};});
+   character.play('idle');character.setTime(0);character.object.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(character.object),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());character.object.position.y-=box.min.y;updateInspectionCamera(character.object,camera);card.querySelector('p')!.textContent='대기 · 동일 조명 · 실제 GLB';return {name:entry.displayName,model:entry.model,height:size.y};});
  return {renderer,scene,camera,character,ready,card,weaponState,clipDurations};
 });
+function refreshInspectionCameras():void {
+  for(const view of views) {
+    // A model still loading has no bounds. Its ready callback will frame it.
+    if (view.character.object.children.length>0) updateInspectionCamera(view.character.object,view.camera);
+  }
+}
+function readCameraInspection() {
+  const index=Number(document.querySelector<HTMLSelectElement>('#grip-model')!.value);
+  const view=views[index];
+  const frame=frameInspectionCamera(view.character.object,
+    inspectAngle.value as InspectionAngle,inspectFocus.value as InspectionFocus,Number(inspectZoom.value));
+  return {model:entries[index].displayName,angle:inspectAngle.value,focus:inspectFocus.value,
+    zoom:Number(inspectZoom.value),position:frame.position.toArray(),target:frame.target.toArray()};
+}
+for(const input of [inspectAngle,inspectFocus,inspectZoom]) {
+  input.addEventListener('input',()=>{
+    inspectZoomValue.textContent=Number(inspectZoom.value).toFixed(1)+'×';
+    refreshInspectionCameras();
+  });
+}
+Object.assign(window,{__CAMERA_LAB__:{read:readCameraInspection}});
 let selected:AnimationClip='idle';
 let poseFrozen=false;
 const poseSlider=document.querySelector<HTMLInputElement>('#pose-progress')!;
@@ -60,6 +90,7 @@ function freezePose():void {
     view.character.object.updateMatrixWorld(true);
   }
   poseStatus.textContent=`정지 ${poseSlider.value}% · 실제 GLB 프레임`;
+  if(inspectFocus.value==='hands')refreshInspectionCameras();
   updatePoseDiagnostics();
 }
 poseSlider.addEventListener('input',freezePose);
