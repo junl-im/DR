@@ -186,6 +186,24 @@ describe('renderer', () => {
     });
   });
 
+  it('changes the locked camera frame without changing avatar position or FOV safety limits',async()=>{
+    const game=await createRenderer(document.createElement('canvas'),{
+      lockCamera:true,cameraOffset:{x:26,y:34,z:26},cameraFov:38,
+    });
+    game.syncLocalPlayer(20,4,10,0,0,0,0,0);
+    const before=game.camera.position.clone();
+    game.setCameraFraming?.({x:21,y:28,z:21},38);
+    expect(game.camera.position.x).toBeCloseTo(41);
+    expect(game.camera.position.y).toBeCloseTo(32);
+    expect(game.camera.position.z).toBeCloseTo(31);
+    expect(game.camera.fov).toBe(38);
+    expect(game.camera.position.distanceTo(before)).toBeGreaterThan(1);
+    const framed=game.camera.position.clone();
+    game.setCameraFraming?.({x:0,y:-8,z:0},90);
+    expect(game.camera.position.equals(framed)).toBe(true);
+    expect(game.camera.fov).toBe(38);
+  });
+
   describe('VFU-03/04: shadow frustum follows the local player', () => {
     function getSun(game: Awaited<ReturnType<typeof createRenderer>>): THREE.DirectionalLight {
       const sun = game.scene.children.find(
