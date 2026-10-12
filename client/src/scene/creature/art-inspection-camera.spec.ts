@@ -9,7 +9,15 @@ function character() {
   const hand=new THREE.Bone();
   hand.name='palm_R';
   hand.position.set(.6,1.35,.18);
-  const mesh=new THREE.SkinnedMesh(new THREE.BoxGeometry(.2,.2,.2),new THREE.MeshBasicMaterial());
+  const geometry=new THREE.BoxGeometry(.2,.2,.2);
+  const vertices=geometry.attributes.position.count;
+  // Box3 in modern Three.js skins all vertices when computing skinned
+  // bounds; a real GLB supplies these two attributes.
+  geometry.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(new Uint16Array(vertices*4),4));
+  const weights=new Float32Array(vertices*4);
+  for(let i=0;i<vertices;i++)weights[i*4]=1;
+  geometry.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));
+  const mesh=new THREE.SkinnedMesh(geometry,new THREE.MeshBasicMaterial());
   mesh.bind(new THREE.Skeleton([hand]));
   root.add(body,hand,mesh);
   return {root,hand};
