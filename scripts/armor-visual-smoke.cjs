@@ -30,6 +30,32 @@ fs.mkdirSync(out,{recursive:true});
     await page.waitForTimeout(1000);
     if(!await page.locator('#weapon-visual').isChecked())throw new Error('Weapon grip preview not enabled');
     await page.screenshot({path:out+'/v3-mixed-armor-weapon-attack-desktop.png',fullPage:true});
+    // Freeze a *real* frame of the shared GLB attack clip and inspect sword
+    // versus animated palm_R in world space, rather than relying on time 0.
+    await page.locator('#grip-model').selectOption('3');
+    await page.waitForFunction(()=>{
+      const r=window.__POSE_LAB__?.read();
+      return r && r.handBone==='palm_R' && r.hilt && r.tip && r.clipDurationSeconds>0;
+    },null,{timeout:30000});
+    await page.locator('#pose-progress').evaluate(el=>{
+      el.value='10';el.dispatchEvent(new Event('input',{bubbles:true}));
+    });
+    const poseA=await page.evaluate(()=>window.__POSE_LAB__.read());
+    await page.locator('#pose-progress').evaluate(el=>{
+      el.value='60';el.dispatchEvent(new Event('input',{bubbles:true}));
+    });
+    const poseB=await page.evaluate(()=>window.__POSE_LAB__.read());
+    if(!poseB.frozen || poseB.percent!==60 || !poseB.hand || !poseB.hilt ||
+      poseB.bladeLength<0.2 || poseB.bladeLength>2 ||
+      !Number.isFinite(poseB.gripGap) || poseB.gripGap>0.02)
+      throw new Error('Weapon pose diagnostic failed '+JSON.stringify(poseB));
+    const displacement=Math.hypot(...poseB.tip.map((n,i)=>n-poseA.tip[i]));
+    if(displacement<0.005)throw new Error('Animation scrub did not move sword tip: '+JSON.stringify({poseA,poseB}));
+    await page.screenshot({path:out+'/v3-weapon-attack-frozen-60pc-desktop.png',fullPage:true});
+    await page.locator('#pose-resume').click();
+    if(await page.evaluate(()=>window.__POSE_LAB__.paused))
+      throw new Error('Pose resume did not restart animation');
+
     await page.locator('#animation').selectOption('cast');
     await page.waitForTimeout(250);
     await page.screenshot({path:out+'/v3-mixed-armor-cast-desktop.png',fullPage:true});
@@ -188,7 +214,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:16,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement},errors,bad,screenshots:17,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
