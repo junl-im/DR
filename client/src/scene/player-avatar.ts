@@ -7,6 +7,7 @@ import {
   type AnimState,
 } from '@nj/game-core';
 import { createMeshCharacter, type MeshCharacter } from './creature/mesh-character';
+import { createContactMark, disposeContactMark } from './contact-mark';
 import { prepareModularArmor, ARMOR_SLOTS, type ArmorSelection, type ArmorOutfit, type ModularArmorController } from './creature/modular-armor';
 import { type PlayerManifestEntry, getPlayerManifestEntry } from './creature/player-manifest';
 import { createNameplate, type Nameplate } from './nameplate';
@@ -55,6 +56,8 @@ export interface PlayerAvatarOptions {
 export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAvatar {
   const group = new THREE.Group();
   group.name = 'player-avatar';
+  const contactMark=createContactMark();
+  group.add(contactMark);
 
   const classId = options.classId ?? 0;
   const entry = options.manifest ?? getPlayerManifestEntry(classId);
@@ -192,6 +195,7 @@ export function createPlayerAvatar(options: PlayerAvatarOptions = {}): PlayerAva
     disposed=true;
     armorController?.dispose?.();
     armorController=null;
+    disposeContactMark(contactMark);
     if(group.children.includes(placeholder)){
       group.remove(placeholder);
       placeholder.geometry.dispose();
