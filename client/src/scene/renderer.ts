@@ -224,7 +224,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     activeClassId = classId;
     activeSex = sex;
     scene.remove(playerAvatar.group);
-    playerAvatar.dispose();
+    playerAvatar.dispose?.();
     playerAvatar = createPlayerAvatar({ classId, sex, manifest:options.playerManifest });
     // Re-apply the name label after the avatar is rebuilt for a class/sex change.
     if (localPlayerName) playerAvatar.setName(localPlayerName);
@@ -684,7 +684,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   };
 
   const dispose = (): void => {
-    playerAvatar.dispose();
+    playerAvatar.dispose?.();
     clearPathPreview();
     audioManager?.dispose();
     audioManager = null;
