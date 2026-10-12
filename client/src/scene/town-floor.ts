@@ -2,23 +2,29 @@ import * as THREE from 'three';
 import type {SceneObjectSpec} from './village';
 
 /** Low-cost, deterministic cobblestone texture; no external asset or Canvas needed. */
-export const TOWN_PAVING_PIXELS = 128;
+export const TOWN_PAVING_PIXELS = 256;
 export function makePavingPixels(seed=20261012, size=TOWN_PAVING_PIXELS): Uint8Array {
   const data=new Uint8Array(size*size*4);
-  const stone=16;
-  for(let y=0;y<size;y++) for(let x=0;x<size;x++){
-    const col=Math.floor(x/stone),row=Math.floor(y/stone);
-    const insetX=x%stone, insetY=y%stone;
-    const offset=(row%2)*8;
-    const staggeredX=(x+offset)%stone;
-    const border=staggeredX<2||insetY<2;
-    const hash=(Math.imul(col+row*13+seed,1103515245)>>>10)&255;
-    const grain=((Math.imul(x*91+y*47+seed,1664525)>>>16)&7)-3;
-    const shade=border?72:145+(hash%34)-17+grain;
+  const stone=24;
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    const row=Math.floor(y/stone),rowY=y%stone;
+    const stagger=(row%2)*(stone/2);
+    const stoneX=x+stagger;
+    const col=Math.floor(stoneX/stone),insetX=stoneX%stone;
+    // Rounded-away corners create small individual masonry joints, rather
+    // than long uninterrupted checkerboard grout seams.
+    const edge=Math.min(insetX,stone-insetX-1,rowY,stone-rowY-1);
+    const corner=Math.min(insetX,stone-insetX-1)+Math.min(rowY,stone-rowY-1);
+    const grout=edge<2||corner<7;
+    const blockHash=(Math.imul(col*29+row*131+seed,1103515245)>>>10)&255;
+    const grain=((Math.imul(x*91+y*47+seed,1664525)>>>16)&15)-7;
+    const chip=((Math.imul(x*137+y*311+seed,22695477)>>>23)&7);
+    const moss=grout&&blockHash%5===0&&chip<3;
+    const base=grout?77+blockHash%18:151+blockHash%39+grain;
     const i=(y*size+x)*4;
-    data[i]=Math.min(255,shade+17);
-    data[i+1]=Math.min(255,shade+7);
-    data[i+2]=Math.min(255,shade-2);
+    data[i]=Math.max(0,Math.min(255,base+(moss?-5:14)));
+    data[i+1]=Math.max(0,Math.min(255,base+(moss?18:7)));
+    data[i+2]=Math.max(0,Math.min(255,base+(moss?-3:-4)));
     data[i+3]=255;
   }
   return data;
@@ -34,7 +40,7 @@ export function createVillagePaving(spec:SceneObjectSpec):THREE.Mesh {
   texture.needsUpdate=true;
   const mesh=new THREE.Mesh(
     new THREE.BoxGeometry(spec.width,spec.height,spec.depth),
-    new THREE.MeshStandardMaterial({map:texture,roughness:1,metalness:0,color:0xd1c6ad})
+    new THREE.MeshStandardMaterial({map:texture,roughness:1,metalness:0,color:0xffffff})
   );
   mesh.name='village-ground';
   mesh.position.set(spec.x,spec.y,spec.z);
