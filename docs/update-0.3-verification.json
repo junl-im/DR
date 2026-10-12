@@ -1,0 +1,56 @@
+{
+  "version": "0.3.0",
+  "errors": [],
+  "before": {
+    "name": "모험가",
+    "classId": 0,
+    "x": 0,
+    "z": 0,
+    "hp": 100,
+    "mp": 60,
+    "level": 1,
+    "xp": 30,
+    "gold": 11,
+    "wood": 1,
+    "potions": 6,
+    "weapon": 0,
+    "kills": 1
+  },
+  "after": {
+    "name": "모험가",
+    "classId": 0,
+    "x": 0,
+    "z": 0,
+    "hp": 100,
+    "mp": 60,
+    "level": 1,
+    "xp": 30,
+    "gold": 3,
+    "wood": 1,
+    "potions": 7,
+    "weapon": 0,
+    "kills": 1
+  },
+  "restored": {
+    "name": "모험가",
+    "classId": 0,
+    "x": 0.5,
+    "z": 0.5,
+    "hp": 100,
+    "mp": 60,
+    "level": 1,
+    "xp": 30,
+    "gold": 3,
+    "wood": 1,
+    "potions": 7,
+    "weapon": 0,
+    "kills": 1
+  },
+  "checks": [
+    "zero-gold purchase disabled",
+    "actual hunt reward funds purchase",
+    "buy-one costs 8 and grants one potion",
+    "IndexedDB reload restores transaction",
+    "mobile no horizontal overflow"
+  ]
+}

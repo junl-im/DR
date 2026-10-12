@@ -1,0 +1,69 @@
+{
+  "errors": [],
+  "bad": [],
+  "sockets": [],
+  "overflow": false,
+  "before": {
+    "schemaVersion": 1,
+    "gameVersion": "0.2.0",
+    "updatedAt": 0,
+    "seed": 2855072631,
+    "player": {
+      "name": "모험가",
+      "classId": 0,
+      "x": 0,
+      "z": 0,
+      "hp": 118,
+      "mp": 60,
+      "level": 2,
+      "xp": 0,
+      "gold": 3,
+      "wood": 2,
+      "potions": 6,
+      "weapon": 1,
+      "kills": 2
+    },
+    "territory": {
+      "hall": 1,
+      "garden": 1,
+      "stored": 0.2500000000000001
+    }
+  },
+  "after": {
+    "schemaVersion": 1,
+    "gameVersion": "0.2.0",
+    "updatedAt": 1791730007027,
+    "seed": 2855072631,
+    "player": {
+      "name": "모험가",
+      "classId": 0,
+      "x": 0.5,
+      "z": 0.5,
+      "hp": 118,
+      "mp": 60,
+      "level": 2,
+      "xp": 0,
+      "gold": 3,
+      "wood": 2,
+      "potions": 6,
+      "weapon": 1,
+      "kills": 2
+    },
+    "territory": {
+      "hall": 1,
+      "garden": 1,
+      "stored": 0.31874999999999987
+    }
+  },
+  "verified": [
+    "character",
+    "movement",
+    "two kills",
+    "level up",
+    "gather",
+    "garden",
+    "save/reload",
+    "mobile",
+    "no game server connection"
+  ]
+}

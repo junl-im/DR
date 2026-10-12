@@ -1,0 +1,17 @@
+{
+  "version": "0.5.0",
+  "fixture": "weapon +2 seeded to verify equipment state; no earned-equipment claim",
+  "errors": [],
+  "checks": [
+    "equipped vs unequipped comparison 20 / 6",
+    "unequip empties equipment slot and removes E badge",
+    "unarmed skill denied",
+    "IndexedDB restore retains unequipped +2 weapon",
+    "reequip restores attack display and E badge",
+    "mobile toggle and no horizontal overflow"
+  ],
+  "limitations": [
+    "world baked weapon model is not yet synchronized",
+    "actual Google cross-device login not tested"
+  ]
+}

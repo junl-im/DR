@@ -1,0 +1,613 @@
+{
+  "objects": [
+    {
+      "name": "human_male_body_default",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "human_male",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 464,
+      "collections": [
+        "Collection 2"
+      ]
+    },
+    {
+      "name": "human_male_feet_default",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "human_male",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 212,
+      "collections": [
+        "Collection 2"
+      ]
+    },
+    {
+      "name": "human_male_hair_1",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 72,
+      "collections": [
+        "Collection 11"
+      ]
+    },
+    {
+      "name": "human_male_hair_2",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 151,
+      "collections": [
+        "Collection 12"
+      ]
+    },
+    {
+      "name": "human_male_hair_3",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 91,
+      "collections": [
+        "Collection 13"
+      ]
+    },
+    {
+      "name": "human_male_hair_4",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 151,
+      "collections": [
+        "Collection 14"
+      ]
+    },
+    {
+      "name": "human_male_hair_5",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 91,
+      "collections": [
+        "Collection 15"
+      ]
+    },
+    {
+      "name": "human_male_hair_6",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 91,
+      "collections": [
+        "Collection 16"
+      ]
+    },
+    {
+      "name": "human_male_hands_default",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "human_male",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 380,
+      "collections": [
+        "Collection 2"
+      ]
+    },
+    {
+      "name": "human_male_head_2",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 254,
+      "collections": [
+        "Collection 17"
+      ]
+    },
+    {
+      "name": "human_male_head_3",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 254,
+      "collections": [
+        "Collection 18"
+      ]
+    },
+    {
+      "name": "human_male_head_4",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 254,
+      "collections": [
+        "Collection 19"
+      ]
+    },
+    {
+      "name": "human_male_head_5",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 254,
+      "collections": [
+        "Collection 20"
+      ]
+    },
+    {
+      "name": "human_male_head_6",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 254,
+      "collections": [
+        "Collection 10"
+      ]
+    },
+    {
+      "name": "human_male_head_default",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "human_male",
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 254,
+      "collections": [
+        "Collection 2"
+      ]
+    },
+    {
+      "name": "human_male_heavy_armor",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 758,
+      "collections": [
+        "Collection 3"
+      ]
+    },
+    {
+      "name": "human_male_heavy_boots",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 176,
+      "collections": [
+        "Collection 3"
+      ]
+    },
+    {
+      "name": "human_male_heavy_gloves",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 412,
+      "collections": [
+        "Collection 3"
+      ]
+    },
+    {
+      "name": "human_male_heavy_helmet",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 206,
+      "collections": [
+        "Collection 3"
+      ]
+    },
+    {
+      "name": "human_male_light_armor",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 563,
+      "collections": [
+        "Collection 4"
+      ]
+    },
+    {
+      "name": "human_male_light_armor_2",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 464,
+      "collections": [
+        "Collection 6"
+      ]
+    },
+    {
+      "name": "human_male_light_armor_3",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 545,
+      "collections": [
+        "Collection 7"
+      ]
+    },
+    {
+      "name": "human_male_light_armor_4",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 592,
+      "collections": [
+        "Collection 8"
+      ]
+    },
+    {
+      "name": "human_male_light_boots",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 212,
+      "collections": [
+        "Collection 4"
+      ]
+    },
+    {
+      "name": "human_male_light_boots_2",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 212,
+      "collections": [
+        "Collection 6"
+      ]
+    },
+    {
+      "name": "human_male_light_gloves",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 380,
+      "collections": [
+        "Collection 4"
+      ]
+    },
+    {
+      "name": "human_male_light_gloves_3",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 380,
+      "collections": [
+        "Collection 6"
+      ]
+    },
+    {
+      "name": "human_male_light_helmet",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 134,
+      "collections": [
+        "Collection 4"
+      ]
+    },
+    {
+      "name": "human_male_medium_armor",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 733,
+      "collections": [
+        "Collection 5"
+      ]
+    },
+    {
+      "name": "human_male_medium_boots",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 220,
+      "collections": [
+        "Collection 5"
+      ]
+    },
+    {
+      "name": "human_male_medium_gloves",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 428,
+      "collections": [
+        "Collection 5"
+      ]
+    },
+    {
+      "name": "human_male_medium_helmet",
+      "loc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null,
+      "parent_type": "OBJECT",
+      "parent_bone": "",
+      "groups": 41,
+      "vertices": 230,
+      "collections": [
+        "Collection 5"
+      ]
+    }
+  ],
+  "actions": [
+    "human_male_cast_dual_wield_melee",
+    "human_male_cast_dual_wield_melee_2",
+    "human_male_cast_dual_wield_melee_3",
+    "human_male_cast_dual_wield_melee_4",
+    "human_male_cast_main_hand_melee",
+    "human_male_cast_main_hand_melee_2",
+    "human_male_cast_main_hand_melee_3",
+    "human_male_cast_main_hand_wand",
+    "human_male_cast_off_hand_shield",
+    "human_male_cast_two_handed_bow",
+    "human_male_cast_two_handed_bow_2",
+    "human_male_cast_two_handed_crossbow",
+    "human_male_cast_two_handed_melee",
+    "human_male_cast_two_handed_melee_2",
+    "human_male_cast_two_handed_melee_3",
+    "human_male_cast_two_handed_melee_4",
+    "human_male_cast_two_handed_melee_5",
+    "human_male_cast_two_handed_staff",
+    "human_male_cast_unarmed_magic",
+    "human_male_cast_unarmed_magic_2",
+    "human_male_channel_dual_wield_melee",
+    "human_male_channel_main_hand_melee",
+    "human_male_channel_main_hand_wand",
+    "human_male_channel_two_handed_bow",
+    "human_male_channel_two_handed_bow_2",
+    "human_male_channel_two_handed_crossbow",
+    "human_male_channel_two_handed_melee",
+    "human_male_channel_two_handed_staff",
+    "human_male_channel_unarmed_magic",
+    "human_male_death",
+    "human_male_drink_potion",
+    "human_male_gathering",
+    "human_male_idle",
+    "human_male_idle_combat_dual_wield_melee",
+    "human_male_idle_combat_main_hand_melee",
+    "human_male_idle_combat_main_hand_wand",
+    "human_male_idle_combat_two_handed_bow",
+    "human_male_idle_combat_two_handed_crossbow",
+    "human_male_idle_combat_two_handed_melee",
+    "human_male_idle_combat_two_handed_staff",
+    "human_male_idle_combat_unarmed",
+    "human_male_jump",
+    "human_male_power_up",
+    "human_male_power_up_2",
+    "human_male_power_up_3",
+    "human_male_pray",
+    "human_male_run",
+    "IK_human_male_NEW_idle.001",
+    "IK_human_male_NEW_run.000",
+    "IK_human_male_NEW_run.002"
+  ],
+  "bones": [
+    "pelvis",
+    "leg_upper_L",
+    "leg_lower_L",
+    "foot_L",
+    "toes_L",
+    "heel_L",
+    "torso",
+    "head",
+    "shoulder_L",
+    "arm_upper_L",
+    "arm_lower_L",
+    "palm_L",
+    "thumb_upper_L",
+    "thumb_lower_L",
+    "index_upper_L",
+    "index_lower_L",
+    "middle_upper_L",
+    "middle_lower_L",
+    "ring_upper_L",
+    "ring_lower_L",
+    "pinky_upper_L",
+    "pinky_lower_L",
+    "wep_pos_L",
+    "shoulder_R",
+    "arm_upper_R",
+    "arm_lower_R",
+    "palm_R",
+    "thumb_upper_R",
+    "thumb_lower_R",
+    "index_upper_R",
+    "index_lower_R",
+    "middle_upper_R",
+    "middle_lower_R",
+    "ring_upper_R",
+    "ring_lower_R",
+    "pinky_upper_R",
+    "pinky_lower_R",
+    "wep_pos_R",
+    "leg_upper_R",
+    "leg_lower_R",
+    "foot_R",
+    "toes_R",
+    "heel_R"
+  ]
+}

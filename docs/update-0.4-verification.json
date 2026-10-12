@@ -1,0 +1,16 @@
+{
+  "version": "0.4.0",
+  "fixture": "40 gold, 3 wood, 20 HP seeded for UI interaction; no earned-loot claim",
+  "errors": [],
+  "checks": [
+    "24 slots and three actual item types",
+    "category filtering",
+    "item details",
+    "potion consumption and healing",
+    "weapon upgrade and live detail refresh",
+    "title drag and Escape/I",
+    "inventory to shop purchase",
+    "IndexedDB reload preserves upgrade and potion count",
+    "390px mobile no horizontal overflow"
+  ]
+}

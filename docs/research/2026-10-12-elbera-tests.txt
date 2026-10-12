@@ -1,0 +1,68 @@
+(node:44512) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/JUN/Documents/ChatGPT/%EA%B2%8C%EC%9E%84/research-20261012/Elbera/editor/world/js/gamedata.js?cache-test=1 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\JUN\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ itemMeta retries an unavailable response, shares inflight work and caches success (13.1605ms)
+✔ sysMsgMeta retries an unavailable response, shares inflight work and caches success (2.0974ms)
+✔ skillWeapons retries an unavailable response, shares inflight work and caches success (1.6937ms)
+✔ itemTypes retries an unavailable response, shares inflight work and caches success (10.0007ms)
+✔ sysStringMeta retries an unavailable response, shares inflight work and caches success (2.1819ms)
+✔ classIcons retries an unavailable response, shares inflight work and caches success (1.7713ms)
+✔ network, synchronous fetch, JSON decoding and explicit null failures all remain retryable (9.2451ms)
+✔ action indexing retries missing data and caches a valid empty source list (2.5546ms)
+✔ recovered shot metadata updates the synchronous accessor after failed eager loading (2.4679ms)
+✔ animation metadata retries failure and publishes only the recovered response (2.2505ms)
+✔ skill metadata retries only its missing dependency: /gamedata/skillmeta.json (12.6206ms)
+✔ skill metadata retries only its missing dependency: /gamedata/skilltext.json (2.1061ms)
+✔ existing exact-skill validation failures retry without refetching valid legacy data (2.0876ms)
+(node:47056) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/JUN/Documents/ChatGPT/%EA%B2%8C%EC%9E%84/research-20261012/Elbera/editor/world/js/ui/layout.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\JUN\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ saved player placement survives a new inventory instance (5.3321ms)
+✔ first inventory placement keeps the supplied source default (0.3131ms)
+✔ tattoo inventory follows the active class and clears old snapshot icons (0.6112ms)
+✔ explicit layout reset discards saved placement and reapplies the default (0.3162ms)
+✔ right-click and double-click use the grid item; right-click suppresses the browser menu (1.1006ms)
+✔ equipped-slot right-click uses the current occupant and empty slots do nothing (0.4209ms)
+✔ recipe warning has precedence; only OK sends the captured item object (0.6221ms)
+✔ positive popup uses its exact message; Cancel sends no request (0.2772ms)
+✔ session reset and item removal invalidate pending item-use confirmations (0.5887ms)
+✔ missing original warning text never silently uses the item (1.4696ms)
+✔ a second warned item cannot replace the original confirmation target (0.2935ms)
+✔ paired accessories resolve by worn object identity, including identical item templates (0.2421ms)
+✔ a later inventory update survives an older snapshot waiting for warning text (0.6604ms)
+✔ native stackable consume types ask quantity without changing empty, zero or excessive input (1.9147ms)
+✔ single/nonstackable destroy warns for one; positive all-item drag metadata preserves its count (7.1028ms)
+✔ quantity Cancel, unsupported conversion, removal and reset never destroy a stale item (3.2487ms)
+✔ crystallize requires the actual server capability, source item flag and inventory/equip origin (0.6926ms)
+✔ missing consume data cannot turn a stack into a one-item destroy warning (0.1719ms)
+✔ crystallize control visibility follows the server byte, including clearing unknown session state (0.2101ms)
+✔ destroy rejects unknown drag origins without reserving a dialog; admitted origins retain the item (0.5253ms)
+✔ actual replay Reset retires an item load still awaiting completion (3.0734ms)
+✔ actual replay keeps the latest Load when an older completion arrives last (1.7111ms)
+(node:55852) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/JUN/Documents/ChatGPT/%EA%B2%8C%EC%9E%84/research-20261012/Elbera/editor/world/js/ui/questwnd.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\JUN\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ an unchanged selected quest can be cancelled only after confirmation (7.6822ms)
+✔ collapsed journal uses the source Notice path and cannot abort any quest (0.8958ms)
+✔ Cancel leaves the active quest alone (0.7729ms)
+✔ reset while loading cannot open a dialog in the replacement session (0.4311ms)
+✔ selection or membership change while loading cannot target another quest (0.3666ms)
+✔ accepted stale confirmations cannot mutate a new session or selection (1.5168ms)
+✔ missing original message fails closed, without generic replacement prose (0.1963ms)
+✔ completed server rows have no native journal events and leave neither entry nor selection (0.5074ms)
+✔ only native emitted stages admit journal rows, including signed sparse bitmaps (0.371ms)
+✔ completion closes a pending abort confirmation and cannot send an abort (3.0706ms)
+✔ completion while loading retires the request even if the same ID later returns (0.5951ms)
+✔ another quest completing preserves the current active confirmation (0.4807ms)
+✔ quest marker focuses the requested quest and final sparse journal chapter (0.2728ms)
+ℹ tests 48
+ℹ suites 0
+ℹ pass 48
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 308.5696

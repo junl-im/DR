@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "errors": [],
+  "checks": [
+    "town help and equipment signs",
+    "damage numbers",
+    "skill cooldown",
+    "loot and level logs together",
+    "XP counter",
+    "safe zone label",
+    "mobile overflow none"
+  ]
+}

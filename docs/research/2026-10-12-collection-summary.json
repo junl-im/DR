@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-12",
+  "packs": [
+    {
+      "id": "fantasy-ui",
+      "url": "https://kenney.nl/assets/fantasy-ui-borders",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "revision": null,
+      "files": 286,
+      "bytes": 425905,
+      "counts": {
+        ".txt": 1,
+        ".png": 282,
+        ".svg": 1,
+        ".url": 2
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "rpg-ui",
+      "url": "https://kenney.nl/assets/ui-pack-rpg-expansion",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "revision": null,
+      "files": 94,
+      "bytes": 283867,
+      "counts": {
+        ".txt": 1,
+        ".png": 90,
+        ".xml": 1,
+        ".svg": 1,
+        ".swf": 1
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "particles",
+      "url": "https://kenney.nl/assets/particle-pack",
+      "author": "Kenney and credited filter contributors",
+      "license": "CC0-1.0",
+      "revision": null,
+      "files": 195,
+      "bytes": 15222316,
+      "counts": {
+        ".txt": 1,
+        ".png": 193,
+        ".unitypackage": 1
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "rpg-audio",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "revision": null,
+      "files": 55,
+      "bytes": 1049217,
+      "counts": {
+        ".ogg": 52,
+        ".txt": 1,
+        ".url": 2
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "mini-dungeon",
+      "url": "https://kenney.nl/assets/mini-dungeon",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "revision": null,
+      "files": 162,
+      "bytes": 4706909,
+      "counts": {
+        ".txt": 1,
+        ".fbx": 30,
+        ".png": 37,
+        ".glb": 30,
+        ".mtl": 30,
+        ".obj": 30,
+        ".html": 1,
+        ".url": 3
+      },
+      "animatedGlbs": 5,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "isometric-buildings",
+      "url": "https://opengameart.org/content/isometric-buildings-1",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "revision": null,
+      "files": 136,
+      "bytes": 1715462,
+      "counts": {
+        ".url": 2,
+        ".txt": 1,
+        ".png": 132,
+        ".xml": 1
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "KayKit-Dungeon-Remastered-1.0",
+      "url": "https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0",
+      "author": "Kay Lousberg",
+      "license": "CC0-1.0",
+      "revision": "b0ca9bd96a8072ab36a3a5464f00ed1e06a16d07",
+      "files": 844,
+      "bytes": 43969309,
+      "counts": {
+        ".fbx": 203,
+        ".glb": 203,
+        ".txt": 2,
+        ".mtl": 208,
+        ".obj": 208,
+        ".png": 18,
+        ".url": 2
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "KayKit-Character-Pack-Adventures-1.0",
+      "url": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "author": "Kay Lousberg",
+      "license": "CC0-1.0",
+      "revision": "672074b73ba276876a19e8816ecdc5241817ab47",
+      "files": 122,
+      "bytes": 123596930,
+      "counts": {
+        ".fbx": 32,
+        ".png": 27,
+        ".bin": 27,
+        ".gltf": 27,
+        ".glb": 5,
+        ".txt": 2,
+        ".url": 2
+      },
+      "animatedGlbs": 5,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "KayKit-Character-Pack-Skeletons-1.0",
+      "url": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "author": "Kay Lousberg",
+      "license": "CC0-1.0",
+      "revision": "15b62b9bad122f72926c10fb14d622c73819fa54",
+      "files": 61,
+      "bytes": 115726235,
+      "counts": {
+        ".fbx": 17,
+        ".png": 10,
+        ".bin": 13,
+        ".gltf": 13,
+        ".glb": 4,
+        ".txt": 2,
+        ".url": 2
+      },
+      "animatedGlbs": 4,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "game-icons-lorc",
+      "url": "https://github.com/game-icons/icons",
+      "author": "Lorc",
+      "license": "CC-BY-3.0",
+      "revision": "82d948812bfe3f269ef8f731dcdb07b08160edc4",
+      "files": 17,
+      "bytes": 24954,
+      "counts": {
+        ".svg": 16,
+        ".md": 1
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    },
+    {
+      "id": "flare-grassland",
+      "url": "https://opengameart.org/content/grassland-tileset",
+      "author": "Clint Bellanger",
+      "license": "CC-BY-SA-3.0",
+      "revision": null,
+      "files": 2,
+      "bytes": 1291114,
+      "counts": {
+        ".md": 1,
+        ".png": 1
+      },
+      "animatedGlbs": 0,
+      "status": "downloaded; structural checks only; not runtime integrated"
+    }
+  ],
+  "totalFiles": 1974,
+  "totalBytes": 308012218,
+  "failures": [],
+  "limits": "File counts include formats, previews and ancillary files; not unique asset count. Character animation visual quality, glTF external references and runtime performance still require integration checks."
+}

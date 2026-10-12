@@ -1,0 +1,30 @@
+name: Dungeon zero checks
+on:
+  pull_request:
+  push:
+    branches: [main, codex/dream-library-local]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      NX_DAEMON: 'false'
+      VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:core
+      - run: npm run test:client
+      - run: npm run typecheck
+      - run: npm run check:assets
+      - run: npm run build:firebase
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dream-library-web
+          path: dist/client
+

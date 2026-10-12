@@ -1,0 +1,6 @@
+Weapon props imported from KayKit "Fantasy Props MegaKit" (CC0).
+
+SquiresSword.glb — Sword_Bronze.gltf
+GoblinClub.glb — Axe_Bronze.gltf (club stand-in; no club mesh in pack)
+
+Imported by: node scripts/import-pack-assets.mjs

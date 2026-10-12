@@ -1,134 +1,24 @@
 rules_version = '2';
-
+// localSaves/{uid}: private, untrusted single-player saves only.
+// uid string immutable by path; schemaVersion int=1; mode='local';
+// payload JSON string <=50k; updatedAt server timestamp. No public economy.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function validSave(uid) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['uid','schemaVersion','mode','payload','updatedAt'])
+        && d.keys().hasOnly(['uid','schemaVersion','mode','payload','updatedAt'])
+        && d.uid == uid && d.schemaVersion == 1 && d.mode == 'local'
+        && d.payload is string && d.payload.size() > 0 && d.payload.size() <= 50000
+        && d.updatedAt == request.time;
     }
-
-    function isOwner(userId) {
-      return signedIn() && request.auth.uid == userId;
+    match /localSaves/{uid} {
+      allow get: if owner(uid);
+      allow list: if false;
+      allow create, update: if owner(uid) && validSave(uid);
+      allow delete: if owner(uid);
     }
-
-    function validNullableString(value, maxSize) {
-      return value == null || (value is string && value.size() <= maxSize);
-    }
-
-    function validDifficulty(value) {
-      return value in ['easy', 'normal', 'hard', 'expert'];
-    }
-
-    function validUserDoc(userId) {
-      let data = request.resource.data;
-      return data.keys().hasOnly([
-          'uid',
-          'displayName',
-          'email',
-          'provider',
-          'photoURL',
-          'lastLoginAt',
-          'updatedAt'
-        ])
-        && data.keys().hasAll(['uid', 'displayName', 'provider', 'lastLoginAt', 'updatedAt'])
-        && data.uid == userId
-        && data.displayName is string
-        && data.displayName.size() >= 1
-        && data.displayName.size() <= 32
-        && data.provider is string
-        && data.provider.size() >= 1
-        && data.provider.size() <= 40
-        && validNullableString(data.email, 160)
-        && validNullableString(data.photoURL, 500)
-        && data.lastLoginAt == request.time
-        && data.updatedAt == request.time;
-    }
-
-    function validScoreDoc(boardId, userId) {
-      let data = request.resource.data;
-      return boardId in ['global', 'daily']
-        && data.keys().hasOnly([
-          'uid',
-          'displayName',
-          'difficulty',
-          'stageId',
-          'stageNumber',
-          'stars',
-          'score',
-          'timeSeconds',
-          'moves',
-          'comboMax',
-          'cleared',
-          'dailyKey',
-          'updatedAt'
-        ])
-        && data.keys().hasAll([
-          'uid',
-          'displayName',
-          'difficulty',
-          'stageId',
-          'stageNumber',
-          'stars',
-          'score',
-          'timeSeconds',
-          'moves',
-          'comboMax',
-          'cleared',
-          'updatedAt'
-        ])
-        && data.uid == userId
-        && data.displayName is string
-        && data.displayName.size() >= 1
-        && data.displayName.size() <= 32
-        && validDifficulty(data.difficulty)
-        && data.stageId is string
-        && data.stageId.size() >= 5
-        && data.stageId.size() <= 24
-        && data.stageNumber is int
-        && data.stageNumber >= 1
-        && data.stageNumber <= 999
-        && data.stars is int
-        && data.stars >= 0
-        && data.stars <= 3
-        && data.score is int
-        && data.score >= 0
-        && data.score <= 10000000
-        && data.timeSeconds is int
-        && data.timeSeconds >= 0
-        && data.timeSeconds <= 86400
-        && data.moves is int
-        && data.moves >= 0
-        && data.moves <= 10000
-        && data.comboMax is int
-        && data.comboMax >= 0
-        && data.comboMax <= 1000
-        && data.cleared is bool
-        && (boardId != 'daily' || (data.dailyKey is string && data.dailyKey.size() == 10))
-        && (boardId != 'global' || data.dailyKey == null)
-        && data.updatedAt == request.time;
-    }
-
-    match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create, update: if isOwner(userId) && validUserDoc(userId);
-      allow delete: if false;
-    }
-
-    match /leaderboards/{boardId}/scores/{userId} {
-      allow read: if true;
-      allow create, update: if isOwner(userId) && validScoreDoc(boardId, userId);
-      allow delete: if false;
-    }
-
-    match /leaderboards/daily/days/{dateKey}/scores/{userId} {
-      allow read: if true;
-      allow create, update: if isOwner(userId)
-        && validScoreDoc('daily', userId)
-        && request.resource.data.dailyKey == dateKey;
-      allow delete: if false;
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    match /{document=**} { allow read, write: if false; }
   }
 }
