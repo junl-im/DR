@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import {
   ARMOR_SLOTS, prepareModularArmor, armorSurfaceFinish, type ArmorOutfit,
@@ -117,6 +117,28 @@ describe('four-slot modular armor visual fitting', () => {
     expect(ctrl.snapshot().boots).toBe('knight');
     ctrl.reset();
     expect(ctrl.snapshot()).toEqual({helmet:'traveler',body:'traveler',gloves:'traveler',boots:'traveler'});
+  });
+
+  it('releases only generated armor materials and never shared source geometry',async()=>{
+    const rig=buildRig('traveler');
+    const knight=buildRig('knight'),ranger=buildRig('ranger');
+    const original=knight.getObjectByName('human_male_heavy_armor') as THREE.SkinnedMesh;
+    const originalMaterial=original.material as THREE.Material;
+    const originalGeometry=original.geometry;
+    const ctrl=await prepareModularArmor(rig,async url=>source(url.includes('knight')?knight:ranger));
+    const armor=rig.getObjectByName('human_male_heavy_armor-preview')!;
+    let cloned:THREE.Material|undefined;
+    armor.traverse(o=>{if(o instanceof THREE.SkinnedMesh)cloned=o.material as THREE.Material;});
+    expect(cloned).toBeDefined();
+    expect(cloned).not.toBe(originalMaterial);
+    const dispose=vi.spyOn(cloned!,'dispose');
+    ctrl.dispose?.();
+    ctrl.dispose?.();
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(rig.getObjectByName('human_male_heavy_armor-preview')).toBeUndefined();
+    expect(original.material).toBe(originalMaterial);
+    expect(original.geometry).toBe(originalGeometry);
+    expect(()=>ctrl.setPart('body','knight')).toThrow('disposed');
   });
 
   it('does not attach incompatible outfit geometry', async () => {
