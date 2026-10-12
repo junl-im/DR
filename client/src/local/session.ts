@@ -83,7 +83,7 @@ export class LocalGameSession implements GameSession {
     this.mobs=this.mobs.filter(m=>!m.id.startsWith('dungeon-'));
     const d=this.state.player.dungeon!;
     if(!d.inside)return;
-    const center=this.state.player;
+    const center=snapToNearestWalkable(DUNGEON_ARENA.x,DUNGEON_ARENA.z)??this.state.player;
     const remaining=DUNGEON_WAVES[d.wave].enemies;
     for(let i=d.kills;i<remaining.length;i++) {
       const enemy=remaining[i];
@@ -104,8 +104,10 @@ export class LocalGameSession implements GameSession {
   snapshot(): Save { return structuredClone({ ...this.state, gameVersion: GAME_VERSION }); }
   private move(x: number, z: number): void {
     if (!Number.isFinite(x) || !Number.isFinite(z) || Math.abs(x) > 315 || Math.abs(z) > 315) return;
-    if(this.state.player.dungeon!.inside && Math.hypot(x-this.state.player.x,z-this.state.player.z)>DUNGEON_RADIUS) {this.message='던전 회랑 밖으로는 이동할 수 없습니다.';return;}
+    const arena=snapToNearestWalkable(DUNGEON_ARENA.x,DUNGEON_ARENA.z)??DUNGEON_ARENA;
+    if(this.state.player.dungeon!.inside && Math.hypot(x-arena.x,z-arena.z)>DUNGEON_RADIUS) {this.message='던전 회랑 밖으로는 이동할 수 없습니다.';return;}
     const to = snapToNearestWalkable(x, z); if (!to) { this.message = '그곳으로 이동할 수 없습니다.'; return; }
+    if(this.state.player.dungeon!.inside && Math.hypot(to.x-arena.x,to.z-arena.z)>DUNGEON_RADIUS){this.message='던전 경계 밖으로는 이동할 수 없습니다.';return;}
     const path = findPath(this.state.player, to);
     if (!path.length && Math.hypot(to.x - this.state.player.x, to.z - this.state.player.z) > 2) { this.message = '이동 경로를 찾을 수 없습니다.'; return; }
     this.movement = { ...this.movement, targetX: to.x, targetZ: to.z, waypoints: path, waypointIndex: 0 };
