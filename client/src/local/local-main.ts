@@ -9,6 +9,7 @@ import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeon
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
 import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
+import {preloadMobVisualTemplates} from '../scene/mobs';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
 import {AutoHuntController,nextTabTarget,type HuntPriority} from './auto-hunt';
@@ -88,6 +89,8 @@ async function enter(state: Save) {
   root.querySelectorAll<HTMLButtonElement>('.entry button').forEach(b => b.disabled = true);
   try {
     session = new LocalGameSession(state);
+    // Request field monster rigs immediately, in parallel with terrain setup.
+    const initialMobModels=preloadMobVisualTemplates(session.mobs);
     const fixedFrame=fixedFrameForViewport(innerWidth);
     game = await createRenderer(document.getElementById('game') as HTMLCanvasElement, {cameraOffset:fixedFrame.offset,cameraFov:fixedFrame.fov,lockCamera:true,playerManifest:ART_TRIALS[artTrial]});
     const classicScene=applyClassicScene(game.scene);
@@ -176,8 +179,12 @@ async function enter(state: Save) {
       if(keys[e.key]) { e.preventDefault(); manualStop();session.dispatch({type:keys[e.key]} as Intent); }
 
     });
+    // Normally make the starting field GLBs ready before enabling play.
+    // A slow/offline asset service cannot trap the user on the entry screen.
+    await Promise.race([initialMobModels,new Promise<void>(resolve=>setTimeout(resolve,3000))]);
     setConnected(false); setReady(true);
-    Object.assign(window, { __DREAM_SESSION__:session, __DREAM_SAVE__:save });
+    Object.assign(window, { __DREAM_SESSION__:session, __DREAM_SAVE__:save,
+      __DREAM_MOB_RENDER_STATUS__:()=>game.getMobRenderStatus() });
     let last=performance.now(), accumulator=0, uiTime=0,shadowTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;

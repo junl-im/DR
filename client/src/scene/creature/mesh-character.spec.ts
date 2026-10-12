@@ -56,6 +56,22 @@ describe('loadGltfTemplate', () => {
   });
 });
 
+describe('recoverable model loading',()=>{
+  afterEach(()=>clearGltfTemplateCache());
+  it('retries the same GLB after a transient fetch 404',async()=>{
+    let calls=0;
+    const load=vi.fn((_url:string,onLoad:(gltf:GLTFTemplate)=>void,_progress:unknown,onError:(err:Error)=>void)=>{
+      calls++;
+      if(calls===1)onError(new Error('404'));
+      else onLoad(makeSkinnedTemplate());
+    });
+    const loader={load} as unknown as import('three/examples/jsm/loaders/GLTFLoader.js').GLTFLoader;
+    await expect(loadGltfTemplate('/models/retry.glb',loader)).rejects.toThrow('404');
+    await expect(loadGltfTemplate('/models/retry.glb',loader)).resolves.toBeDefined();
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('createMeshCharacterInstance', () => {
   afterEach(() => {
     clearGltfTemplateCache();

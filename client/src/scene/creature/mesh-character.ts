@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import {resolveModelAssetUrl} from '../model-asset-url';
 import type { AnimationClip as ClipName } from '@nj/game-core';
 
 /**
@@ -54,12 +55,13 @@ export function loadGltfTemplate(
   url: string,
   loader: GLTFLoader = new GLTFLoader()
 ): Promise<GLTFTemplate> {
-  const cached = templateCache.get(url);
+  const resolvedUrl = resolveModelAssetUrl(url);
+  const cached = templateCache.get(resolvedUrl);
   if (cached) return cached;
 
   const promise = new Promise<GLTFTemplate>((resolve, reject) => {
     loader.load(
-      url,
+      resolvedUrl,
       (gltf) => {
         resolve({ scene: gltf.scene, animations: gltf.animations });
       },
@@ -67,7 +69,11 @@ export function loadGltfTemplate(
       (err) => reject(err instanceof Error ? err : new Error(String(err)))
     );
   });
-  templateCache.set(url, promise);
+  templateCache.set(resolvedUrl, promise);
+  // Temporary asset/CDN errors may recover on the next mob spawn.
+  void promise.catch(() => {
+    if (templateCache.get(resolvedUrl) === promise) templateCache.delete(resolvedUrl);
+  });
   return promise;
 }
 
