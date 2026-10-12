@@ -663,7 +663,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
       const mobHits = raycaster.intersectObjects(mobGroups, true);
       if (mobHits.length > 0) {
         const mobId = findMobId(mobHits[0].object);
-        if (mobId) {
+        if (mobId && (mobSnapshots.get(mobId)?.hp??0)>0) {
           mobTargetHandler?.(mobId);
           return;
         }
