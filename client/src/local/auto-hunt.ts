@@ -57,7 +57,9 @@ export function createAutoHunt(session:LocalGameSession){
   const tick=(dt:number,hidden=false):string|null=>{
     if(!enabled||!Number.isFinite(dt)||dt<=0||dt>.25)return null;
     const p=session.state.player;
-    if(hidden)return null;
+    // Browser background tabs are not permitted to keep killing enemies.
+    // Suspend the active attack until the tab is visible again.
+    if(hidden){if(session.attacking)session.dispatch({type:'attack'});return null;}
     if(p.dungeon?.inside){stop();return '던전 입장으로 자동사냥을 종료했습니다.';}
     if(p.hp<=maxHp(p)*AUTO_HUNT_LOW_HP_RATIO){stop();return '체력이 30% 이하라 자동사냥을 종료했습니다.';}
     if(!home||Math.hypot(p.x-home.x,p.z-home.z)>AUTO_HUNT_LEASH){
