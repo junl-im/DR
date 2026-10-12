@@ -21,6 +21,7 @@ import {
   faceHpBarsToCamera,
   flushPendingMobRemovals,
   listMobMeshes,
+  mobUsesCapsule,
   mobStateToVisual,
   detachMobVisual,
   removeMob,
@@ -110,6 +111,8 @@ export interface GameRenderer {
     actionSeq?: number;
   }) => void;
   removeMob: (mobId: string) => void;
+  /** Read-only actual renderer state, not just spawn data. */
+  getMobRenderStatus: () => Array<{id:string;npcId:number;hp:number;rendered:boolean;modelReady:boolean}>;
   getMobHookEntries: () => Array<{
     name?: string;
     level?: number;
@@ -529,6 +532,12 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     }));
   };
 
+  const getMobRenderStatus=():Array<{id:string;npcId:number;hp:number;rendered:boolean;modelReady:boolean}>=>
+    [...mobSnapshots.entries()].map(([id,snapshot])=>({
+      id,npcId:snapshot.npcId,hp:snapshot.hp,rendered:mobMeshes.has(id),
+      modelReady:mobMeshes.has(id)&&!mobUsesCapsule(mobInstances,id),
+    }));
+
   const publishMobHookEntries = (): void => {
     if (mobSnapshots.size > 0) {
       setMobs(getMobHookEntries());
@@ -762,6 +771,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     removeRemotePlayer: removeRemotePlayerById,
     syncMob,
     removeMob: removeMobById,
+    getMobRenderStatus,
     getMobHookEntries,
     syncNpc,
     removeNpc: removeNpcById,
