@@ -9,6 +9,7 @@ import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeon
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
 import { buildFieldGroundCover } from '../scene/field-detail';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
+import { createResolutionGovernor } from './resolution-governor';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
 import { TOWN_SIGNS, buildTownDetails } from './town';
@@ -85,8 +86,10 @@ async function enter(state: Save) {
     buildFirstDungeonArt(game.scene);
     buildFieldGroundCover(game.scene);
     threatVisual=createBossThreatVisual(game.scene);
-    game.renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(max-width: 700px)').matches ? 1.1 : 1.5));
-    game.renderer.shadowMap.enabled = !matchMedia('(max-width: 700px)').matches;
+    const mobile=matchMedia('(max-width: 700px)').matches;
+    const quality=createResolutionGovernor(devicePixelRatio,mobile);
+    game.renderer.setPixelRatio(quality.dpr);
+    game.renderer.shadowMap.enabled=!mobile;
     game.setLocalPlayerName(session.state.player.name);
     mountHud();
     game.setMoveIntentHandler(i => session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }));
@@ -115,6 +118,12 @@ async function enter(state: Save) {
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
       while(accumulator>=.05) { session.tick(.05); accumulator-=.05; }
+      const perf=quality.sample(elapsed);
+      if(perf.changed) {
+        game.renderer.setPixelRatio(perf.dpr);
+        const label=root.querySelector<HTMLElement>('#quality-info');
+        if(label) label.textContent='AUTO '+perf.dpr.toFixed(2)+'×';
+      }
       syncScene(); game.tick(Math.min(elapsed,.05));classicScene.tick();const events=session.drainEvents();feedback.push(events);for(const event of events){addLog(event.text);if(event.text===session.message)lastLog=event.text;}feedback.tick(elapsed);positionTownSigns(); game.render();
       uiTime+=elapsed; if(uiTime>.15) { updateHud(); uiTime=0; }
       requestAnimationFrame(frame);
@@ -155,7 +164,7 @@ function mountHud() {
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
 <section class="quest card"><h2>마을 의뢰</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><button id="hunt-guide">가까운 몬스터 찾기</button></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
-<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span>FIXED VIEW</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
+<div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · 몬스터 선택 후 1 공격</p></div>
 <div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
