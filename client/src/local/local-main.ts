@@ -13,6 +13,7 @@ import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
 import {AutoHuntController,nextTabTarget,type HuntPriority} from './auto-hunt';
 import {createAdaptiveShadowGovernor} from './render-budget';
+import {nameplateScreenPoint} from './screen-name-anchor';
 import { fixedFrameForViewport } from './fixed-framing';
 import { applyClassicScene } from './classic-scene';
 import { classicIcon } from './classic-icons';
@@ -187,7 +188,7 @@ async function enter(state: Save) {
         const label=root.querySelector<HTMLElement>('#quality-info');
         if(label)label.textContent=`AUTO ${Math.round(perf.fps)} FPS · ${perf.dpr.toFixed(2)}× · ${game.renderer.info.render.calls} calls`;
       }
-      syncScene(); game.tick(Math.min(elapsed,.05));classicScene.tick();const events=session.drainEvents();feedback.push(events);for(const event of events){addLog(event.text);if(event.text===session.message)lastLog=event.text;}feedback.tick(elapsed);positionTownSigns(); game.render();
+      syncScene(); game.tick(Math.min(elapsed,.05));classicScene.tick();const events=session.drainEvents();feedback.push(events);for(const event of events){addLog(event.text);if(event.text===session.message)lastLog=event.text;}feedback.tick(elapsed);positionTownSigns(); positionPlayerOverheadName();game.render();
       uiTime+=elapsed; if(uiTime>.15) { updateHud(); uiTime=0; }
       requestAnimationFrame(frame);
     }
@@ -234,7 +235,7 @@ function mountHud() {
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
  </div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section>
 <div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
-<div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
+<div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
@@ -264,6 +265,7 @@ function mountHud() {
 function updateHud() {
   const p=session.state.player;
   $('#player-name').textContent=p.name; $('#level').textContent=`Lv. ${p.level}`;
+  const overhead=root.querySelector<HTMLElement>('#player-overhead-name');if(overhead&&overhead.textContent!==p.name)overhead.textContent=p.name;
   $('#hp').textContent=`${p.hp} / ${maxHp(p)}`; $('#mp').textContent=`${p.mp} / 60`;
   $('#hp-bar').style.width=`${p.hp/maxHp(p)*100}%`; $('#mp-bar').style.width=`${p.mp/60*100}%`; $('#xp-bar').style.width=`${p.xp/xpNeeded(p)*100}%`;
   $('#xp-caption').textContent=`EXP ${p.xp} / ${xpNeeded(p)}`;
@@ -279,6 +281,28 @@ function updateHud() {
   if(!$('#panel').hidden) inventoryWindow?.refresh();
 }
 const signPoint=new THREE.Vector3();
+const overheadPoint=new THREE.Vector3();
+/** Screen-constant 14–15px text fixes unreadable perspective-scaled 3D sprites.
+ * Uses the existing avatar nameplate's exact world transform as the anchor.
+ * Pointer clicks still pass through to the world, and online avatars keep
+ * their original 3D sprite rendering (this is local mode only).
+ */
+function positionPlayerOverheadName():void{
+  const label=root.querySelector<HTMLElement>('#player-overhead-name');
+  const avatar=game.scene.getObjectByName('player-avatar');
+  const sprite=avatar?.getObjectByName('nameplate');
+  if(!label||!sprite){if(label)label.hidden=true;return;}
+  sprite.visible=false;
+  sprite.getWorldPosition(overheadPoint).project(game.camera);
+  const bounds=game.renderer.domElement.getBoundingClientRect();
+  const pixel=nameplateScreenPoint(overheadPoint,bounds);
+  label.hidden=!pixel;
+  if(!pixel)return;
+  const left=pixel.x+'px',top=pixel.y+'px';
+  if(label.style.left!==left)label.style.left=left;
+  if(label.style.top!==top)label.style.top=top;
+}
+
 function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(Math.hypot(session.state.player.x-sign.x,session.state.player.z-sign.z)>12){session.message='안내판 가까이 이동해주세요.';updateHud();return;}showPanel(sign.panel);};layer.append(button);}root.append(layer);}
 function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=session.state.player.dungeon!.inside||signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
