@@ -1,3 +1,6 @@
+## Latest resume — 2026-10-13
+Canonical baseline is main b3837e0 (PR #12), superseding older pending implementation/deployment notes below. Resume audit and priorities: docs/review/RESUME_20261012.md. Current PR #13 improves mobile touch targets, bounded quest scrolling and wallet/sign overlap. Use latest origin/main for subsequent work; device FPS/heat and cross-device Google save are still unverified.
+
 # 던전 zero 인수 기록
 
 ## 현재 제품과 문서 우선순위

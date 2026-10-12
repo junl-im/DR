@@ -1,3 +1,5 @@
+> Historical handoff: later PRs through #12 supersede the pending-feature lists below. Weapon/armor, quests/dungeon, town art and public deployment are already implemented. See docs/review/RESUME_20261012.md for the Codex resume audit and next priorities.
+
 # 던전 zero — 일반 채팅 인수 / 무기 시각 연동 후보 (2026-10-12)
 
 ## 기준
