@@ -22,6 +22,8 @@ export interface ModularArmorController {
   setPart(slot: ArmorSlot, outfit: ArmorOutfit): void;
   reset(): void;
   snapshot(): ArmorSelection;
+  /** Dispose only derived armor materials, never shared GLB geometries/maps. */
+  dispose?():void;
 }
 
 interface FoundPart {
@@ -82,15 +84,15 @@ export function armorSurfaceFinish(material:THREE.Material,outfit:ArmorOutfit):T
   }
   return cloned;
 }
-function createBoundPart(source: THREE.Object3D, rig: THREE.SkinnedMesh, outfit:ArmorOutfit): THREE.Group {
+function createBoundPart(source: THREE.Object3D, rig: THREE.SkinnedMesh, finish:(material:THREE.Material)=>THREE.Material): THREE.Group {
   const bound = new THREE.Group();
   bound.name = source.name + '-preview';
   const copy = (node: THREE.Object3D): THREE.Object3D => {
     let result: THREE.Object3D;
     if (node instanceof THREE.SkinnedMesh) {
       const material=Array.isArray(node.material)
-        ? node.material.map(m=>armorSurfaceFinish(m,outfit))
-        : armorSurfaceFinish(node.material,outfit);
+        ? node.material.map(finish)
+        : finish(node.material);
       const mesh = new THREE.SkinnedMesh(node.geometry, material);
       mesh.bindMode = rig.bindMode;
       mesh.bind(rig.skeleton, rig.bindMatrix.clone());
@@ -144,6 +146,18 @@ export async function prepareModularArmor(
     sources.set(outfit, await load(MODEL_ROOT + outfit + '.glb'));
   }));
   const prepared = new Map<string, THREE.Group>();
+  const derived=new Set<THREE.Material>();
+  const cache=new Map<ArmorOutfit,Map<THREE.Material,THREE.Material>>();
+  let disposed=false;
+  const finish=(outfit:ArmorOutfit)=>(source:THREE.Material):THREE.Material=>{
+    let outfitCache=cache.get(outfit);
+    if(!outfitCache){outfitCache=new Map();cache.set(outfit,outfitCache);}
+    const cached=outfitCache.get(source);
+    if(cached)return cached;
+    const generated=armorSurfaceFinish(source,outfit);
+    derived.add(generated);outfitCache.set(source,generated);
+    return generated;
+  };
   // Validate every mesh in every multi-primitive group before altering the live rig.
   for (const outfit of variants) {
     const template = sources.get(outfit)!;
@@ -152,7 +166,7 @@ export async function prepareModularArmor(
       if (!name) continue; // Traveler has no helmet mesh.
       const component = findPart(template.scene, name);
       for (const mesh of component.meshes) assertCompatible(mesh, reference);
-      prepared.set(outfit + ':' + slot, createBoundPart(component.node, reference, outfit));
+      prepared.set(outfit + ':' + slot, createBoundPart(component.node, reference, finish(outfit)));
     }
   }
   for (const part of prepared.values()) attachParent.add(part);
@@ -165,6 +179,7 @@ export async function prepareModularArmor(
     helmet:baseOutfit,body:baseOutfit,gloves:baseOutfit,boots:baseOutfit,
   };
   const setPart = (slot: ArmorSlot, outfit: ArmorOutfit): void => {
+    if(disposed)throw new Error('V3 armor controller already disposed');
     if (!ARMOR_SLOTS.includes(slot) || !ARMOR_OUTFITS.includes(outfit)) {
       throw new Error('Unknown V3 outfit or slot');
     }
@@ -184,5 +199,12 @@ export async function prepareModularArmor(
     setPart,
     reset: () => { for (const slot of ARMOR_SLOTS) setPart(slot, 'traveler'); },
     snapshot: () => ({ ...current }),
+    dispose: () => {
+      if(disposed)return;
+      disposed=true;
+      for(const part of prepared.values())attachParent.remove(part);
+      for(const material of derived)material.dispose();
+      derived.clear();cache.clear();prepared.clear();
+    },
   };
 }
