@@ -4,7 +4,7 @@ import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQues
 import {bossDamage,bossHit,bossRadius,bossWarningLabel,bossWindup,selectBossMove,type BossMove,type BossThreat} from './boss-pattern';
 import { DUNGEON_ARENA, DUNGEON_GATE, DUNGEON_RADIUS, DUNGEON_WAVES, DUNGEON_REWARD, emptyDungeon, validateDungeon, dungeonWaveDone, dungeonBossDone, nearDungeonGate, type DungeonProgress } from './first-dungeon';
 
-export const GAME_VERSION = '0.10.0';
+export const GAME_VERSION = '0.11.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
