@@ -72,12 +72,13 @@ export class AutoHuntController {
   }
   setEnabled(value:boolean,reason:HuntStopReason='manual'):boolean{
     const p=this.session.state.player;
+    const wasEnabled=this.enabled;
     this.enabled=!!value && p.hp>0;
     this.anchor=this.enabled?{x:p.x,z:p.z,inside:!!p.dungeon?.inside}:null;
     this.lastTarget=null;
     this.potionCooldown=0;
     this.stopReason=this.enabled?null:reason;
-    if(!this.enabled&&this.session.attacking)this.session.dispatch({type:'attack'});
+    if(!this.enabled&&wasEnabled)this.session.stopMovement();
     return this.enabled;
   }
   tick(dt=.05):void {
