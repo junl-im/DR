@@ -44,6 +44,7 @@ import type { AnimationClip } from '@nj/game-core';
 import { EntityAction } from '@nj/game-core';
 import { buildEnvironmentScene } from './environment-renderer';
 import { buildFieldGroundCover, disposeFieldGroundCover } from './field-detail';
+import { disposeVillageFacades } from './village-facade';
 import { selectMobNearScreenTap } from './mobile-target-assist';
 import type { AudioManager } from '../audio/audio-manager';
 
@@ -215,7 +216,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   // attachment only; 3 GPU instanced batches, no gameplay raycasts/collision.
   const fieldCover = buildFieldGroundCover(scene);
 
+  let environmentDisposed=false;
   void buildEnvironmentScene({ scene, terrainData }).then((envResult) => {
+    // Environment loading may resolve after the host changes screens.
+    // The cosmetic facade geometry must not survive a retired renderer.
+    if(environmentDisposed){
+      disposeVillageFacades(scene);
+      return;
+    }
     setEnvironment({ ...envResult, loaded: true });
   });
 
@@ -710,6 +718,8 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
   };
 
   const dispose = (): void => {
+    environmentDisposed=true;
+    disposeVillageFacades(scene);
     playerAvatar.dispose?.();
     clearPathPreview();
     disposeFieldGroundCover(fieldCover);
