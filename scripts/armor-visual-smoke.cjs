@@ -182,6 +182,23 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/village-auto-settings-mobile.png',fullPage:true});
     await game.locator('#auto-config summary').click();
     await game.screenshot({path:out+'/village-facades-mobile.png',fullPage:true});
+    // An actual selected monster must not cover mobile quest/touch buttons.
+    await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__;
+      const m=s.mobs.find(m=>m.hp>0&&!m.id.startsWith('dungeon-'));
+      s.dispatch({type:'target',id:m.id});
+    });
+    await game.waitForFunction(()=>document.querySelector('#target')?.hidden===false);
+    const mobileTargetGeometry=await game.evaluate(()=>{
+      const target=document.querySelector('#target').getBoundingClientRect();
+      const quest=document.querySelector('.quest').getBoundingClientRect();
+      return {target:target.toJSON(),quest:quest.toJSON(),
+        overlap:Math.max(0,Math.min(target.right,quest.right)-Math.max(target.left,quest.left))*
+          Math.max(0,Math.min(target.bottom,quest.bottom)-Math.max(target.top,quest.top))};
+    });
+    if(mobileTargetGeometry.overlap>0)
+      throw new Error('Mobile monster HP overlays quest panel: '+JSON.stringify(mobileTargetGeometry));
+    await game.screenshot({path:out+'/mobile-monster-target-no-overlay.png',fullPage:true});
     await game.setViewportSize({width:1440,height:900});
     await game.evaluate(()=>{
       const p=window.__DREAM_SESSION__.state.player;
@@ -372,7 +389,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,desktopFont,mobileName,dodgeSize,aimedBefore,aimedAfter,sweepBefore,sweepAfter,errors,bad,screenshots:32,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,poseProof:{poseA,poseB,displacement,cameraFront,cameraSide,cameraBack},villageState,tabTarget,nextTabTarget,buttonTarget,desktopFont,mobileName,dodgeSize,aimedBefore,aimedAfter,sweepBefore,sweepAfter,mobileTargetGeometry,errors,bad,screenshots:33,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
