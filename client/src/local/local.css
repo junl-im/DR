@@ -20,3 +20,23 @@
 #dungeon-journal{border-color:#a88e64;color:#ddc9a0}
 #dungeon-enter:disabled,#dungeon-next:disabled,#dungeon-claim:disabled{opacity:.5}
 @media(max-width:550px){.boss-warning{top:55px;font-size:10px}.quest #dungeon-journal{font-size:9px;min-height:30px}}
+
+
+/* Auto-hunt preferences: compact, accessible and initially collapsed. */
+.quest #auto-hunt.active{border-color:#d6bd70;color:#f5e3af;background:linear-gradient(#596440,#292e22)}
+.quest #auto-config{margin-top:5px;color:#e4d6ac;font-size:10px}
+.quest #auto-config summary{cursor:pointer;user-select:none;border:1px solid #645d49;padding:5px 7px;background:#20251ddd;list-style-position:inside}
+.quest #auto-config summary:focus-visible{outline:2px solid #e8ce83;outline-offset:2px}
+.quest #auto-config[open]{background:#181f17f5;padding:3px;border:1px solid #817451}
+.quest .auto-config-fields{display:grid;gap:5px;padding:4px}
+.quest .auto-config-fields label{font-size:10px;margin:0;display:block}
+.quest .auto-config-fields select{display:block;width:100%;font-size:11px;margin-top:3px;padding:5px;height:30px}
+.quest #auto-status{color:#e4c88c;font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+.quest #auto-status:empty{display:none}
+@media(max-width:550px){
+  .quest #auto-hunt{min-height:30px;font-size:10px}
+  .quest #auto-config[open]{position:relative;z-index:8;min-width:160px}
+  .quest .auto-config-fields label{font-size:9px}
+  .quest .auto-config-fields select{font-size:12px;min-height:32px}
+  .quest #auto-status{font-size:9px}
+}
