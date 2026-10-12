@@ -90,6 +90,35 @@ export function buildFirstDungeonArt(scene:THREE.Scene):THREE.Group {
   }
   debris.instanceMatrix.needsUpdate=true;
   arena.add(debris);
+  // Broken boundary walls increase architectural definition without adding
+  // physical colliders or changing three-wave battle navigation.
+  const wallFragments=new THREE.InstancedMesh(
+    new THREE.BoxGeometry(2.15,1.5,.52),stone,20
+  );
+  wallFragments.name='ruin-wall-fragments';
+  wallFragments.castShadow=false;
+  wallFragments.receiveShadow=true;
+  wallFragments.userData['decorative']=true;
+  wallFragments.raycast=()=>{};
+  const wallMatrix=new THREE.Matrix4();
+  const rot=new THREE.Quaternion();
+  const pos=new THREE.Vector3();
+  const size=new THREE.Vector3();
+  for(let i=0;i<20;i++) {
+    const side=i%4, step=Math.floor(i/4);
+    const horizontal=side<2,along=(step-2)*4.2;
+    const x=horizontal?along:(side===2?-13:13);
+    const z=horizontal?(side===0?-13:13):along;
+    const height=1.1+(i%3)*.13;
+    const y=snapEntityY(DUNGEON_ARENA.x+x,DUNGEON_ARENA.z+z)-FEET_OFFSET+height*.5;
+    pos.set(x,y,z);
+    rot.setFromAxisAngle(new THREE.Vector3(0,1,0),horizontal?0:Math.PI/2);
+    size.set(1,height/1.5,.8);
+    wallMatrix.compose(pos,rot,size);
+    wallFragments.setMatrixAt(i,wallMatrix);
+  }
+  wallFragments.instanceMatrix.needsUpdate=true;
+  arena.add(wallFragments);
   root.add(arena);
   scene.add(root);
   return root;
