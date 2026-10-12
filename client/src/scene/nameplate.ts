@@ -43,6 +43,10 @@ export function createNameplate(text: string, options: NameplateOptions = {}): N
 
   const sprite = new THREE.Sprite(material);
   sprite.name = 'nameplate';
+  // A larger world-space name must never steal clicks intended for the
+  // ground, monsters or actual character selection.
+  sprite.raycast=()=>{};
+  sprite.userData['decorative']=true;
   sprite.position.y = options.y ?? DEFAULT_Y;
   sprite.renderOrder = 10;
   const aspect = CANVAS_W / CANVAS_H;
