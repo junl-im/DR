@@ -248,7 +248,7 @@ export class LocalGameSession implements GameSession {
       const d=this.state.player.dungeon!;
       if(m.id.startsWith('dungeon-'+d.wave+'-')) d.kills=Math.min(DUNGEON_WAVES[d.wave].enemies.length,d.kills+1);
     }
-    m.action = EntityAction.Die; m.actionSeq++; m.respawn = m.id.startsWith('dungeon-')?Number.POSITIVE_INFINITY:this.clock + (m.name==='숲의 정예 감시자'?35:15);
+    m.windup=0; m.action = EntityAction.Die; m.actionSeq++; m.respawn = m.id.startsWith('dungeon-')?Number.POSITIVE_INFINITY:this.clock + (m.name==='숲의 정예 감시자'?35:15);
     const p = this.state.player, elite=m.name==='숲의 정예 감시자';
     const gold = Math.min(1000000-p.gold,(8 + Math.floor(this.random() * 7)) + (elite?18:0));
     p.gold += gold; p.xp += elite?75:30;
