@@ -32,7 +32,8 @@ export async function writeSave(save: Save): Promise<void> {
       } catch(error) {
         // Synchronous quota/clone errors inside an IDB callback must reject the
         // save promise, not escape as an uncaught page error or partial save.
-        tx.abort();reject(error);
+        try{tx.abort();}catch{/* A transaction already aborting still rejects the save. */}
+        reject(error);
       }
     };
     tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error ?? new Error('저장이 취소되었습니다.'));

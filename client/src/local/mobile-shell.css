@@ -6,3 +6,17 @@ html,body{overscroll-behavior:none}#dream-ui .top{top:calc(8px + var(--safe-top)
 @media(max-width:550px){.top .chapter{display:none}.top .brand{font-size:14px}.top #fullscreen-toggle,.top #game-exit{font-size:10px;padding:4px 6px}.quest{top:calc(60px + var(--safe-top));max-height:max(80px,calc(100dvh - var(--dock) - 100px - var(--safe-top) - var(--safe-bottom)))}.vitals,.bottom{bottom:var(--safe-bottom)}.classic-log{bottom:calc(128px + var(--safe-bottom))}#game{height:calc(100dvh - var(--dock) - var(--safe-bottom))}.wallet{bottom:calc(5px + var(--safe-bottom))}.panel{top:calc(60px + var(--safe-top));bottom:calc(var(--dock) + 10px + var(--safe-bottom))}#notice{bottom:calc(var(--dock) + 13px + var(--safe-bottom))}#save-status{bottom:calc(var(--dock) + 5px + var(--safe-bottom))}}
 
 #dream-ui>#screen-status{position:absolute;top:calc(58px + var(--safe-top));left:8px;max-width:calc(100vw - 175px);font-size:9px;color:#dfc69d;pointer-events:none;text-shadow:0 1px 2px #000}#dream-ui>#screen-status:empty{display:none}
+
+@media(pointer:coarse) and (min-width:551px){
+.vitals,.bottom,.classic-log{bottom:var(--safe-bottom)}
+.vitals{padding-left:calc(14px + env(safe-area-inset-left,0px));width:calc(220px + env(safe-area-inset-left,0px))}
+.wallet{left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(10px + var(--safe-bottom))}
+.bottom{width:calc(400px + env(safe-area-inset-right,0px));padding-right:calc(12px + env(safe-area-inset-right,0px))}
+.classic-log{left:calc(220px + env(safe-area-inset-left,0px));width:calc(100% - 620px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))}
+.quest{right:calc(16px + env(safe-area-inset-right,0px));top:calc(72px + var(--safe-top));max-height:calc(100dvh - var(--dock) - 110px - var(--safe-top) - var(--safe-bottom))}
+.panel{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(var(--dock) + 16px + var(--safe-bottom))}
+#notice{bottom:calc(var(--dock) + 13px + var(--safe-bottom))}#save-status{bottom:calc(var(--dock) + 7px + var(--safe-bottom))}
+}
+@media(pointer:coarse) and (min-width:551px) and (max-width:1000px){
+.vitals{width:calc(185px + env(safe-area-inset-left,0px))}.bottom{width:calc(340px + env(safe-area-inset-right,0px))}.classic-log{left:calc(185px + env(safe-area-inset-left,0px));width:calc(100% - 525px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))}.target{left:calc(14px + env(safe-area-inset-left,0px))}
+}
