@@ -67,7 +67,7 @@ describe('VFU-02/11/13/14: createTerrainMesh visual fidelity', () => {
     const map=material.map!;
     expect(map.colorSpace).toBe(THREE.SRGBColorSpace);
     expect(material.color.getHex()).toBe(0xffffff);
-    expect(map.image.width).toBe(GRASS_TEXTURE_SIZE_PX);
+    expect((map.image as {width:number}).width).toBe(GRASS_TEXTURE_SIZE_PX);
     expect(map.minFilter).toBe(THREE.LinearMipmapLinearFilter);
     expect(map.magFilter).toBe(THREE.LinearFilter);
     expect(map.generateMipmaps).toBe(true);
