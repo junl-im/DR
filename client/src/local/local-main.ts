@@ -106,7 +106,19 @@ async function enter(state: Save) {
     canvas.addEventListener('pointerdown', e => { pointerStart = {x:e.clientX,y:e.clientY}; });
     canvas.addEventListener('pointerup', e => { if (pointerStart && Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)<12) game.handleClick(e); pointerStart=null; });
     // Fixed diagonal camera: wheel and Q/E never orbit the scene.
-    function resizeViewport() { const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock')) || 156; const height = Math.max(180, innerHeight-dock); game.renderer.setSize(innerWidth,height); game.camera.aspect=innerWidth/height;game.camera.updateProjectionMatrix(); }
+    let lastCameraMode=innerWidth<=700?'mobile':'desktop';
+    function resizeViewport() {
+      const dock=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock'))||156;
+      const height=Math.max(180,innerHeight-dock);
+      game.renderer.setSize(innerWidth,height);
+      game.camera.aspect=innerWidth/height;game.camera.updateProjectionMatrix();
+      const mode=innerWidth<=700?'mobile':'desktop';
+      if(mode!==lastCameraMode){
+        lastCameraMode=mode;
+        const next=fixedFrameForViewport(innerWidth);
+        game.setCameraFraming?.(next.offset,next.fov);
+      }
+    }
     resizeViewport();
     window.addEventListener('resize', resizeViewport);
     window.addEventListener('keydown', e => {
