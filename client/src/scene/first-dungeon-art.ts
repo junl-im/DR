@@ -40,7 +40,7 @@ export function buildFirstDungeonArt(scene:THREE.Scene):THREE.Group {
   let index=0;
   for(let z=-7;z<7;z++)for(let x=-7;x<7;x++){
     const px=x*1.8+.7,pz=z*1.8+.7;
-    const y=snapEntityY(DUNGEON_ARENA.x+px,DUNGEON_ARENA.z+pz)-FEET_OFFSET-.13;
+    const y=snapEntityY(DUNGEON_ARENA.x+px,DUNGEON_ARENA.z+pz)-FEET_OFFSET+.06;
     transform.makeTranslation(px,y,pz);
     tiles.setMatrixAt(index++,transform);
   }
