@@ -20,3 +20,16 @@
 #dungeon-journal{border-color:#a88e64;color:#ddc9a0}
 #dungeon-enter:disabled,#dungeon-next:disabled,#dungeon-claim:disabled{opacity:.5}
 @media(max-width:550px){.boss-warning{top:55px;font-size:10px}.quest #dungeon-journal{font-size:9px;min-height:30px}}
+
+
+/* Keyboard and touch-accessible target cycle / explicit field auto-hunt. */
+.hunt-controls{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px}
+.quest .hunt-controls button{min-height:31px;line-height:1.4;border-color:#6d755f}
+.quest .hunt-controls small{display:block;font-size:8px;color:#d5be86}
+.quest #auto-hunt.active{color:#f5e4ab;border-color:#e2c067;background:linear-gradient(#5b5532,#303021);box-shadow:0 0 0 1px #c7a45066}
+.quest #auto-hunt[aria-pressed="true"]::before{content:'● ';color:#bbdf81}
+@media(max-width:550px){
+  .hunt-controls{gap:3px}
+  .quest .hunt-controls button{font-size:8px;padding:4px 1px;min-height:33px}
+  .quest .hunt-controls small{font-size:7px}
+}
