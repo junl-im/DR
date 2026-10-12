@@ -81,9 +81,61 @@ fs.mkdirSync(out,{recursive:true});
     const claimEntries=await game.locator('#log-lines p').filter({hasText:'마을의 첫 의뢰 완료'}).count();
     if(claimEntries!==1)throw new Error('Quest reward was logged more than once: '+claimEntries);
     await game.screenshot({path:out+'/game-quest-claimed-mobile.png',fullPage:true});
+
+    // Dungeon visual/progression fixture. The prior 3 village quests are
+    // marked claimed as a controlled prerequisite; all dungeon kills/rewards
+    // below go through real session combat, save and UI handlers.
+    await game.locator('#panel-close').click();
+    await game.evaluate(()=>{
+      const s=window.__DREAM_SESSION__;
+      s.dispatch({type:'recall'});
+      s.state.player.quest={stage:3,progress:0};
+      s.state.player.mp=60;s.state.player.hp=200;
+    });
+    await game.locator('#dungeon-journal').click();
+    await game.locator('#dungeon-enter').click();
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.inside===true);
+    await game.locator('#panel-close').click();
+    await game.waitForTimeout(1200);
+    await game.screenshot({path:out+'/ruin-entry-mobile.png',fullPage:true});
+    const dungeonKill=async id=>{
+      await game.evaluate(mobId=>{
+        const s=window.__DREAM_SESSION__;
+        const mob=s.mobs.find(m=>m.id===mobId);
+        if(!mob)throw new Error('Missing dungeon monster '+mobId);
+        mob.x=s.state.player.x+1;mob.z=s.state.player.z;mob.hp=1;
+        s.state.player.mp=60;s.state.player.hp=200;
+        s.dispatch({type:'target',id:mobId});s.dispatch({type:'skill'});
+        for(let j=0;j<81;j++)s.tick(.05);
+      },id);
+    };
+    await dungeonKill('dungeon-0-0');
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.kills===1);
+    await game.locator('#menu').click();
+    await game.locator('#save-now').click();
+    await game.reload({waitUntil:'domcontentloaded'});
+    await game.locator('#continue').click();
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.inside===true && window.__DREAM_SESSION__?.state?.player?.dungeon?.kills===1,{timeout:90000});
+    if(await game.evaluate(()=>window.__DREAM_SESSION__.mobs.some(m=>m.id==='dungeon-0-0')))throw new Error('A defeated dungeon monster respawned after reload');
+    await dungeonKill('dungeon-0-1');
+    const next=async()=>{
+      await game.locator('#dungeon-journal').click();
+      await game.locator('#dungeon-next').click();
+      await game.locator('#panel-close').click();
+    };
+    await next();
+    for(const id of ['dungeon-1-0','dungeon-1-1'])await dungeonKill(id);
+    await next();
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.wave===2);
+    await game.screenshot({path:out+'/ruin-boss-mobile.png',fullPage:true});
+    await dungeonKill('dungeon-2-0');
+    await game.locator('#dungeon-journal').click();
+    await game.locator('#dungeon-claim').click();
+    await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.clears===1 && !window.__DREAM_SESSION__?.state?.player?.dungeon?.inside);
+    await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});
     await game.close();
     if(errors.length||bad.length)throw new Error('Browser errors '+JSON.stringify({errors,bad}));
-    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:7,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
+    fs.writeFileSync(out+'/report.json',JSON.stringify({selection,errors,bad,screenshots:10,limit:'Software renderer only; not device FPS or visual design approval'},null,2));
     console.log('Armor visual smoke success',selection);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
