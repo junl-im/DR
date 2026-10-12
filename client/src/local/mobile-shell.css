@@ -1,0 +1,22 @@
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html,body{overscroll-behavior:none}#dream-ui .top{top:calc(8px + var(--safe-top));left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px))}
+.top #menu{margin-left:0}.top #fullscreen-toggle{margin-left:auto;min-height:44px;min-width:44px;padding:5px 8px;font-size:11px}.top #game-exit{min-height:44px;padding:5px 8px;font-size:11px}
+#browser-help{padding:10px;border:1px solid #9f855a;margin:12px 0;background:#202b32;text-align:left}#browser-help p{margin:4px 0;font-size:12px}#game-url{font-size:11px}#screen-status{font-size:11px;color:#e3c38c}
+#mobile-shell dialog{width:min(380px,calc(100vw - 28px));padding:24px;border:1px solid #b69765;border-radius:9px;background:linear-gradient(135deg,#29343d,#121c24);color:#eadcc5;box-shadow:0 15px 60px #000a}#mobile-shell dialog::backdrop{background:#050b11b8}#mobile-shell h2{font-size:20px;margin:0 0 16px}#mobile-shell p{font-size:13px;line-height:1.8}#mobile-shell button{min-height:44px;font-size:13px}.shell-actions{display:flex;gap:10px}.shell-actions button{flex:1}#exit-confirm{border-color:#ba9860;color:#f2d5a3}#game-ended{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#111b24;color:#e9d9bd;text-align:center;padding:24px}
+@media(max-width:550px){.top .chapter{display:none}.top .brand{font-size:14px}.top #fullscreen-toggle,.top #game-exit{font-size:10px;padding:4px 6px}.quest{top:calc(60px + var(--safe-top));max-height:max(80px,calc(100dvh - var(--dock) - 100px - var(--safe-top) - var(--safe-bottom)))}.vitals,.bottom{bottom:var(--safe-bottom)}.classic-log{bottom:calc(128px + var(--safe-bottom))}#game{height:calc(100dvh - var(--dock) - var(--safe-bottom))}.wallet{bottom:calc(5px + var(--safe-bottom))}.panel{top:calc(60px + var(--safe-top));bottom:calc(var(--dock) + 10px + var(--safe-bottom))}#notice{bottom:calc(var(--dock) + 13px + var(--safe-bottom))}#save-status{bottom:calc(var(--dock) + 5px + var(--safe-bottom))}}
+
+#dream-ui>#screen-status{position:absolute;top:calc(58px + var(--safe-top));left:8px;max-width:calc(100vw - 175px);font-size:9px;color:#dfc69d;pointer-events:none;text-shadow:0 1px 2px #000}#dream-ui>#screen-status:empty{display:none}
+
+@media(pointer:coarse) and (min-width:551px){
+.vitals,.bottom,.classic-log{bottom:var(--safe-bottom)}
+.vitals{padding-left:calc(14px + env(safe-area-inset-left,0px));width:calc(220px + env(safe-area-inset-left,0px))}
+.wallet{left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(10px + var(--safe-bottom))}
+.bottom{width:calc(400px + env(safe-area-inset-right,0px));padding-right:calc(12px + env(safe-area-inset-right,0px))}
+.classic-log{left:calc(220px + env(safe-area-inset-left,0px));width:calc(100% - 620px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))}
+.quest{right:calc(16px + env(safe-area-inset-right,0px));top:calc(72px + var(--safe-top));max-height:calc(100dvh - var(--dock) - 110px - var(--safe-top) - var(--safe-bottom))}
+.panel{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(var(--dock) + 16px + var(--safe-bottom))}
+#notice{bottom:calc(var(--dock) + 13px + var(--safe-bottom))}#save-status{bottom:calc(var(--dock) + 7px + var(--safe-bottom))}
+}
+@media(pointer:coarse) and (min-width:551px) and (max-width:1000px){
+.vitals{width:calc(185px + env(safe-area-inset-left,0px))}.bottom{width:calc(340px + env(safe-area-inset-right,0px))}.classic-log{left:calc(185px + env(safe-area-inset-left,0px));width:calc(100% - 525px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))}.target{left:calc(14px + env(safe-area-inset-left,0px))}
+}

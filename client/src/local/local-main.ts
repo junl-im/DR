@@ -2,6 +2,8 @@ import './inventory.css';
 import { createInventoryWindow } from './inventory-window';
 import './local.css';
 import './hud-refresh.css';
+import './mobile-shell.css';
+import {createMobileShell} from './mobile-shell';
 import { pickTownFacility } from './town-interaction';
 import { ART_TRIALS } from './art-trial';
 import { equippedWeaponVisualId } from './equipment-visual';
@@ -36,6 +38,7 @@ const requestedArt = new URLSearchParams(location.search).get('art') ?? 'origina
 let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'original';
 let session: LocalGameSession;
 let autoHunt:AutoHuntController|undefined;
+const mobileShell=createMobileShell({pause:()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);if(session){session.stopMovement();session.attacking=false;}},persist:async()=>{await saveTask;await writeSave(session.snapshot());}});
 let game: GameRenderer;
 let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
 let ruinAtmosphere:ReturnType<typeof createRuinAtmosphere>|undefined;
@@ -78,15 +81,17 @@ async function boot() {
   initGameState();
   let storageError = '';
   try { remembered = await readSave(); } catch(e) { storageError = errorText(e); }
-  root.innerHTML = `<section class="entry"><div class="entry-card"><span class="eyebrow">THE FIRST CHAPTER</span><h1>던전<br><em>zero</em></h1><p class="entry-lead">마을을 나서면 모험이 시작된다.</p><div class="entry-divider"></div><p>시작의 마을을 탐험하고, 골드를 모아<br>나만의 영지를 가꾸세요.</p><label>여행자의 이름<input id="name" maxlength="20" value="모험가" autocomplete="nickname"></label><label>모험의 길<select id="class"><option value="0">수호자 · 검과 방패</option><option value="10">별의 학자 · 마법</option><option value="18">숲의 방랑자 · 탐험</option></select></label><label>캐릭터 외형 시험<select id="art-trial"><option value="original">현재 기본 모델</option><option value="knight">V3 · 중갑 기사</option><option value="ranger">V3 · 경갑 모험가</option><option value="traveler">V3 · 여행자</option></select></label><button id="start" class="primary">${remembered ? '새로운 여행 만들기' : '모험 시작하기'} <span>↗</span></button>${remembered ? '<button id="continue">이전 여행 이어하기</button>' : ''}${storageError ? '<button id="recover">백업 슬롯 복구</button>' : ''}<p id="entry-status" role="status"></p><small>단독 플레이 · 이 기기에 자동 저장<br>클라우드 저장은 입장 후 선택할 수 있습니다.</small></div></section>`;
+  root.innerHTML = `<section class="entry"><div class="entry-card"><span class="eyebrow">THE FIRST CHAPTER</span><h1>던전<br><em>zero</em></h1><p class="entry-lead">마을을 나서면 모험이 시작된다.</p><div class="entry-divider"></div><p>시작의 마을을 탐험하고, 골드를 모아<br>나만의 영지를 가꾸세요.</p><label>여행자의 이름<input id="name" maxlength="20" value="모험가" autocomplete="nickname"></label><label>모험의 길<select id="class"><option value="0">수호자 · 검과 방패</option><option value="10">별의 학자 · 마법</option><option value="18">숲의 방랑자 · 탐험</option></select></label><label>캐릭터 외형 시험<select id="art-trial"><option value="original">현재 기본 모델</option><option value="knight">V3 · 중갑 기사</option><option value="ranger">V3 · 경갑 모험가</option><option value="traveler">V3 · 여행자</option></select></label><button id="start" class="primary">${remembered ? '새로운 여행 만들기' : '모험 시작하기'} <span>↗</span></button>${remembered ? '<button id="continue">이전 여행 이어하기</button>' : ''}${storageError ? '<button id="recover">백업 슬롯 복구</button>' : ''}<div id="browser-help" hidden><p>카카오 브라우저에서는 전체화면이 제한될 수 있습니다. 다른 브라우저로 열기를 권장합니다.</p><button id="external-browser">다른 브라우저로 열기</button><button id="copy-game-url">게임 주소 복사</button><input id="game-url" readonly hidden aria-label="복사할 게임 주소"></div><p id="screen-status" role="status"></p><p id="entry-status" role="status"></p><small>단독 플레이 · 이 기기에 자동 저장<br>클라우드 저장은 입장 후 선택할 수 있습니다.</small></div></section>`;
+  mobileShell.mountControls();
   $('#entry-status').textContent = storageError;
   const artSelect=$<HTMLSelectElement>('#art-trial');artSelect.value=Object.hasOwn(ART_TRIALS,artTrial)?artTrial:'original';
-  artSelect.onchange=()=>{artTrial=artSelect.value;const url=new URL(location.href);url.searchParams.set('art',artTrial);history.replaceState(null,'',url);};
+  artSelect.onchange=()=>{artTrial=artSelect.value;const url=new URL(location.href);url.searchParams.set('art',artTrial);history.replaceState(history.state,'',url);};
   $('#start').onclick = () => { if (remembered && !confirm('기존 여행을 백업 슬롯에 보존하고 새로운 여행을 시작할까요?')) return; void enter(newSave($<HTMLInputElement>('#name').value, Number($<HTMLSelectElement>('#class').value))); };
   root.querySelector<HTMLElement>('#continue')?.addEventListener('click', () => void enter(remembered!));
   root.querySelector<HTMLElement>('#recover')?.addEventListener('click', () => { void readSave('backup').then(s => { if (!s) throw new Error('백업 슬롯이 없습니다.'); return enter(s); }).catch(e => { $('#entry-status').textContent = errorText(e); }); });
 }
 async function enter(state: Save) {
+  if(mobileShell.mobile)void mobileShell.fullscreen();
   const entryStatus = root.querySelector<HTMLElement>('#entry-status'); if (entryStatus) entryStatus.textContent = '시작의 마을을 펼치고 있습니다…';
   root.querySelectorAll<HTMLButtonElement>('.entry button').forEach(b => b.disabled = true);
   try {
@@ -108,6 +113,7 @@ async function enter(state: Save) {
     game.renderer.shadowMap.enabled=shadowBudget.enabled;
     game.setLocalPlayerName(session.state.player.name);
     mountHud();
+    mobileShell.mountControls();
     autoHunt=new AutoHuntController(session,id=>game.setVfxTargetMobId(id));
     const syncAutoButton=()=>{
       const button=root.querySelector<HTMLButtonElement>('#auto-hunt');
@@ -170,7 +176,8 @@ async function enter(state: Save) {
     let lastCameraMode=innerWidth<=700?'mobile':'desktop';
     function resizeViewport() {
       const dock=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock'))||156;
-      const height=Math.max(180,innerHeight-dock);
+      const safe=parseFloat(getComputedStyle(document.querySelector('.bottom')!).bottom)||0;
+      const height=Math.max(180,innerHeight-dock-safe);
       game.renderer.setSize(innerWidth,height);
       game.camera.aspect=innerWidth/height;game.camera.updateProjectionMatrix();
       const mode=innerWidth<=700?'mobile':'desktop';
@@ -182,7 +189,9 @@ async function enter(state: Save) {
     }
     resizeViewport();
     window.addEventListener('resize', resizeViewport);
+    window.visualViewport?.addEventListener('resize',resizeViewport);
     window.addEventListener('keydown', e => {
+      if(mobileShell.paused)return;
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
       if(e.key==='Escape') { manualStop(); $('#panel').hidden=true; return; }
       if(e.key.toLowerCase()==='q'){e.preventDefault();dodgeBossAttack();return;}
@@ -202,6 +211,7 @@ async function enter(state: Save) {
     let last=performance.now(), accumulator=0, uiTime=0,shadowTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
+      if(mobileShell.paused)accumulator=0;
       while(accumulator>=.05) { autoHunt?.tick(.05);session.tick(.05); accumulator-=.05; }
       syncAutoButton();
       const perf=quality.sample(elapsed);
@@ -218,6 +228,7 @@ async function enter(state: Save) {
       uiTime+=elapsed; if(uiTime>.15) { updateHud(); uiTime=0; }
       requestAnimationFrame(frame);
     }
+    mobileShell.arm();
     syncScene(); updateHud(); requestAnimationFrame(frame);
     await save(); setInterval(()=>void save(),15000);
     document.addEventListener('visibilitychange',()=>{ if(document.hidden){manualStop();void save();} });
@@ -260,7 +271,7 @@ function dodgeBossAttack():void {
   updateHud();
 }
 function mountHud() {
-  root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="저장과 설정 열기">☰</button></header>
+  root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="fullscreen-toggle" type="button" aria-pressed="false">전체화면</button><button id="game-exit" type="button">종료</button><button id="menu" aria-label="저장과 설정 열기">☰</button></header>
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
@@ -271,7 +282,7 @@ function mountHud() {
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
  </div></details></div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section><button id="boss-dodge" type="button" title="Q 키 · 기존 이동 속도로 공격 예고 범위 벗어나기" hidden>회피 · Q</button>
 <div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
-<div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><footer id="save-status">저장 준비 중</footer>`;
+<div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><div id="screen-status" role="status"></div><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
@@ -417,7 +428,8 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
   } else if(kind==='inventory') {
     inventoryWindow=createInventoryWindow($('#panel-content'),()=>session.state.player,intent=>{session.dispatch(intent);updateHud();void save();},()=>showPanel('shop'));
   } else {
-    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR JOURNEY, KEPT SAFE</span><h2>여행 기록</h2><p>15초마다 이 기기에 저장합니다.<br>Google 로그인으로 다른 기기에 기록을 옮길 수 있습니다.</p><button id="save-now" class="primary">지금 기기에 저장</button><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label><div class="entry-divider"></div><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button><p id="cloud-status" role="status"></p><small>단독 모험 기록입니다. 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
+    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR JOURNEY, KEPT SAFE</span><h2>여행 기록</h2><p>15초마다 이 기기에 저장합니다.<br>Google 로그인으로 다른 기기에 기록을 옮길 수 있습니다.</p><p>모바일 전체화면이 제한되면 Chrome에서 열거나 Safari 공유 메뉴에서 홈 화면에 추가해 실행하세요.</p><div id="browser-help" hidden><p>카카오 메뉴 → 다른 브라우저로 열기. 기기 저장은 브라우저마다 다르므로 먼저 저장 파일을 내려받으세요.</p><button id="external-browser">다른 브라우저로 열기</button><button id="copy-game-url">게임 주소 복사</button><input id="game-url" readonly hidden aria-label="복사할 게임 주소"></div><button id="save-now" class="primary">지금 기기에 저장</button><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label><div class="entry-divider"></div><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button><p id="cloud-status" role="status"></p><small>단독 모험 기록입니다. 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
+    mobileShell.mountControls();
     $('#save-now').onclick=()=>void save();
     $('#export').onclick=()=>{const blob=new Blob([JSON.stringify({...session.snapshot(),updatedAt:Date.now()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='Dungeon-zero-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
     $<HTMLInputElement>('#import').onchange=async e=>{try{const f=(e.target as HTMLInputElement).files?.[0];if(!f)return;if(f.size>50000)throw new Error('저장 파일이 너무 큽니다.'); const {validateSave}=await import('./session'); const s=validateSave(JSON.parse(await f.text())); if(confirm('현재 여행을 백업하고 파일의 여행으로 바꿀까요?')) {await replaceSave(s);}}catch(e){toast(errorText(e));}};
