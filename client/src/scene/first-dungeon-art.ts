@@ -33,7 +33,10 @@ export function buildFirstDungeonArt(scene:THREE.Scene):THREE.Group {
   const arena=new THREE.Group();arena.name='ruin-arena-decoration';
   arena.position.set(DUNGEON_ARENA.x,0,DUNGEON_ARENA.z);
   const tile=new THREE.BoxGeometry(1.7,.12,1.7);
-  const tiles=new THREE.InstancedMesh(tile,stone,196);
+  const wornTiles=new THREE.MeshStandardMaterial({
+    color:0xb2b0a6,roughness:.98,metalness:0,flatShading:true,
+  });
+  const tiles=new THREE.InstancedMesh(tile,wornTiles,196);
   tiles.name='ruin-cracked-paving';
   tiles.receiveShadow=true;tiles.castShadow=false;
   const transform=new THREE.Matrix4();
@@ -42,7 +45,11 @@ export function buildFirstDungeonArt(scene:THREE.Scene):THREE.Group {
     const px=x*1.8+.7,pz=z*1.8+.7;
     const y=snapEntityY(DUNGEON_ARENA.x+px,DUNGEON_ARENA.z+pz)-FEET_OFFSET+.06;
     transform.makeTranslation(px,y,pz);
-    tiles.setMatrixAt(index++,transform);
+    tiles.setMatrixAt(index,transform);
+    // Three muted stone families break up the monotone grey floor.
+    const palette=[0xa8a89f,0x92938e,0xc6bda6] as const;
+    tiles.setColorAt(index,new THREE.Color(palette[(index*37+Math.floor(index/14))%palette.length]));
+    index++;
   }
   tiles.instanceMatrix.needsUpdate=true;
   tiles.userData['decorative']=true;tiles.raycast=()=>{};arena.add(tiles);
