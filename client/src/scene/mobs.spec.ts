@@ -381,6 +381,34 @@ describe('mobs visual mapping', () => {
     expect(instances.get('gremlin-1')?.clubProp).toBeNull();
   });
 
+  it('does not attach an obsolete club to a reused mob ID after a dungeon wave', async () => {
+    let release!: (template: {scene:THREE.Group;animations:THREE.AnimationClip[]})=>void;
+    const delayed=new Promise<{scene:THREE.Group;animations:THREE.AnimationClip[]}>(resolve=>{release=resolve;});
+    const spy=vi.spyOn(await import('./creature/mesh-character'),'loadGltfTemplate')
+      .mockReturnValueOnce(delayed);
+    const instances=createMobInstanceMap();
+    const retiredAvatar={group:new THREE.Group()} as never;
+    const replacementAvatar={group:new THREE.Group()} as never;
+    const mobId='dungeon-1-0';
+    const initial={
+      group:createMobGroup(mobId),avatar:retiredAvatar,
+      usesCapsule:false,hpBarYOffset:1.65,pendingRemovalAtMs:null,
+      currentClip:'idle',clubProp:null,animAccumMs:0,
+    };
+    instances.set(mobId,initial);
+    attachGoblinClubForTest(instances,mobId,20003,retiredAvatar);
+    // Identical ID, different avatar instance: the old promise must not attach.
+    instances.set(mobId,{...initial,avatar:replacementAvatar});
+    release({scene:new THREE.Group(),animations:[]});
+    await delayed;
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(instances.get(mobId)?.clubProp).toBeNull();
+    expect(retiredAvatar.group.children).toHaveLength(0);
+    expect(replacementAvatar.group.children).toHaveLength(0);
+    spy.mockRestore();
+  });
+
   it('clones a distinct club object per Goblin instance', async () => {
     const handBone = new THREE.Bone();
     handBone.name = KAYKIT_RIGHT_HAND_BONE;
