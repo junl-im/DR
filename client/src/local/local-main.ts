@@ -163,7 +163,7 @@ async function enter(state: Save) {
       syncAutoButton();
     },()=>{
       $('#panel').hidden=true;$('.quest').classList.add('hunt-settings-open');
-      $<HTMLDetailsElement>('#hunt-tools').open=true;$<HTMLDetailsElement>('#auto-config').open=true;
+      $<HTMLDetailsElement>('#hunt-tools').open=true;$<HTMLDetailsElement>('#auto-config').open=true;$('.quest').scrollTop=0;
     });
     const readHuntOptions=()=>{
       autoHunt!.configure({
@@ -464,5 +464,6 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
     $('#cloud-save').onclick=()=>void action(async c=>{ const remote=await c.cloudLoad(); if(remote&&!confirm('클라우드의 기존 여행 기록을 현재 여행으로 덮어쓸까요?'))return;await c.cloudSave(session.snapshot());$('#cloud-status').textContent='클라우드 저장 완료'; });
     $('#cloud-load').onclick=()=>void action(async c=>{const s=await c.cloudLoad();if(!s)throw new Error('클라우드에 저장된 기록이 없습니다.');if(confirm('현재 여행을 기기에 백업하고 클라우드 기록으로 바꿀까요?')){await replaceSave(s);}});
   }
+  $('#panel').scrollTop=0;
 }
 void boot();
