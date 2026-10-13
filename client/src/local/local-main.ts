@@ -7,15 +7,17 @@ import './mobile-shell.css';
 import './entry-screen.css';
 import './compact-hud.css';
 import './unified-interface.css';
+import './game-input-polish.css';
 import {fitEntryScreen} from './entry-fit';
 import {entryScreen,ENTRY_CHARACTERS} from './entry-screen';
 import {createMobileShell} from './mobile-shell';
 import { pickTownFacility } from './town-interaction';
+import {findDungeonApproach,hasArrivedAtDungeonApproach,type GatePoint} from './dungeon-approach';
 import { ART_TRIALS } from './art-trial';
 import { equippedWeaponVisualId } from './equipment-visual';
 import { armorOutfitSelection, armorDefense } from './armor-economy';
 import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest, matchesQuestTarget } from './adventure-quests';
-import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
+import { DUNGEON_GATE, DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
 import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
@@ -45,6 +47,7 @@ let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'origina
 let disposeEntryFit:(()=>void)|undefined;
 let session: LocalGameSession;
 let autoHunt:AutoHuntController|undefined;
+let pendingDungeonApproach:{point:GatePoint;startTime:number}|null=null;
 const mobileShell=createMobileShell({pause:()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);if(session){session.stopMovement();session.attacking=false;}},persist:async()=>{await saveTask;await writeSave(session.snapshot());}});
 let game: GameRenderer;
 let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
@@ -158,13 +161,17 @@ async function enter(state: Save) {
         if(status.textContent!==message)status.textContent=message;
       }
     };
-    bindHuntButton($<HTMLButtonElement>('#auto-hunt'),()=>{
-      autoHunt!.setEnabled(!autoHunt!.enabled);
-      syncAutoButton();
-    },()=>{
+    const openHuntSettings=()=>{
+      if(pendingDungeonApproach){pendingDungeonApproach=null;session.stopMovement();}
       $('#panel').hidden=true;$('.quest').classList.add('hunt-settings-open');
       $<HTMLDetailsElement>('#hunt-tools').open=true;$<HTMLDetailsElement>('#auto-config').open=true;
-    });
+    };
+    bindHuntButton($<HTMLButtonElement>('#auto-hunt'),()=>{
+      pendingDungeonApproach=null;
+      autoHunt!.setEnabled(!autoHunt!.enabled);
+      syncAutoButton();
+    },openHuntSettings);
+    $<HTMLButtonElement>('#hunt-config-toggle').onclick=openHuntSettings;
     const readHuntOptions=()=>{
       autoHunt!.configure({
         radius:Number($<HTMLSelectElement>('#auto-radius').value),
@@ -175,21 +182,22 @@ async function enter(state: Save) {
     };
     for(const id of ['#auto-radius','#auto-priority','#auto-potion'])
       $(id).addEventListener('change',readHuntOptions);
-    const manualStop=()=>{if(autoHunt?.enabled){autoHunt.setEnabled(false);syncAutoButton();}};
+    const manualStop=()=>{pendingDungeonApproach=null;if(autoHunt?.enabled){autoHunt.setEnabled(false);syncAutoButton();}};
     game.setMoveIntentHandler(i => { manualStop();session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }); });
     game.setMobTargetHandler(id => { manualStop();session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
     const canvas = game.renderer.domElement;
     const feedback=createCombatFeedback(root,game.camera,canvas);
     mountTownSigns();
     let pointerStart: { x: number; y: number } | null = null;
-    canvas.addEventListener('pointerdown', e => { pointerStart = {x:e.clientX,y:e.clientY}; });
+    canvas.addEventListener('pointerdown', e => { pointerStart = e.isPrimary&&e.button===0?{x:e.clientX,y:e.clientY}:null; });
     canvas.addEventListener('pointerup', e => {
+      if(!e.isPrimary||e.button!==0){pointerStart=null;return;}
       const tapped=pointerStart && Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)<12;
       pointerStart=null;
       if(!tapped)return;
       const facility=session.state.player.dungeon!.inside?undefined:
         pickTownFacility(game.scene,game.camera,canvas.getBoundingClientRect(),e.clientX,e.clientY);
-      if(facility){manualStop();session.stopMovement();showPanel(facility.panel);}
+      if(facility){if(facility.id==='dungeon')requestDungeonApproach();else {manualStop();session.stopMovement();showPanel(facility.panel);}}
       else game.handleClick(e);
     });
     canvas.addEventListener('pointercancel',()=>{pointerStart=null;});
@@ -212,7 +220,7 @@ async function enter(state: Save) {
     window.addEventListener('keydown', e => {
       if(mobileShell.paused)return;
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
-      if(e.key==='Escape') { $('.quest').classList.remove('hunt-settings-open'); manualStop(); $('#panel').hidden=true; return; }
+      if(e.key==='Escape') { pendingDungeonApproach=null;$('.quest').classList.remove('hunt-settings-open'); manualStop(); $('#panel').hidden=true; return; }
       if(e.key.toLowerCase()==='q'){e.preventDefault();dodgeBossAttack();return;}
       if(e.key==='Tab'){e.preventDefault();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
       if(e.key.toLowerCase()==='h'){e.preventDefault();autoHunt!.setEnabled(!autoHunt!.enabled);syncAutoButton();updateHud();return;}
@@ -233,6 +241,16 @@ async function enter(state: Save) {
       if(mobileShell.paused)accumulator=0;
       while(accumulator>=.05) { autoHunt?.tick(.05);session.tick(.05); accumulator-=.05; }
       syncAutoButton();
+      if(pendingDungeonApproach){
+        const approach=pendingDungeonApproach,p=session.state.player;
+        if(p.hp<=0||p.dungeon!.inside||!$('#panel').hidden){pendingDungeonApproach=null;}
+        else if(hasArrivedAtDungeonApproach(p,approach.point)){
+          pendingDungeonApproach=null;session.stopMovement();showPanel('dungeon');
+        }else if(performance.now()-approach.startTime>24000){
+          pendingDungeonApproach=null;session.stopMovement();
+          session.message='관문까지 도착하지 못했습니다. 길을 다시 선택해 주세요.';
+        }
+      }
       const perf=quality.sample(elapsed);
       if(perf.changed)game.renderer.setPixelRatio(perf.dpr);
       shadowTime+=elapsed;
@@ -280,6 +298,7 @@ function syncScene() {
   }
 }
 function dodgeBossAttack():void {
+  pendingDungeonApproach=null;
   if(autoHunt?.enabled)autoHunt.setEnabled(false);
   const p=session.state.player;
   const destination=findBossDodgeDestination(session.bossThreat,p,!!p.dungeon?.inside);
@@ -287,6 +306,27 @@ function dodgeBossAttack():void {
   else session.message=session.bossThreat
     ?'회피 경로가 없거나 공격까지 시간이 부족합니다. 직접 이동하세요.'
     :'정예 몬스터가 공격을 준비할 때 사용할 수 있습니다.';
+  updateHud();
+}
+/** World and sign clicks walk to the entrance before opening the dialog.
+ * The manual journal button can still show quest information from anywhere.
+ */
+function requestDungeonApproach():void{
+  pendingDungeonApproach=null;
+  if(autoHunt?.enabled)autoHunt.setEnabled(false);
+  session.stopMovement();
+  const p=session.state.player;
+  const distance=Math.hypot(p.x-DUNGEON_GATE.x,p.z-DUNGEON_GATE.z);
+  if(distance<=4.0){showPanel('dungeon');return;}
+  const point=findDungeonApproach(p);
+  if(!point){
+    session.message='관문까지 걸어갈 수 있는 길을 찾지 못했습니다.';
+    updateHud();return;
+  }
+  $('#panel').hidden=true;
+  session.dispatch({type:'move',x:point.x,z:point.z});
+  pendingDungeonApproach={point,startTime:performance.now()};
+  session.message='폐허 관문으로 이동 중 · 도착하면 입장창이 열립니다.';
   updateHud();
 }
 function mountHud() {
@@ -300,15 +340,12 @@ function mountHud() {
  <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option><option value="quest">현재 의뢰 대상 · 정예 포함</option></select></label>
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
  </div></details></div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section><button id="boss-dodge" type="button" title="Q 키 · 기존 이동 속도로 공격 예고 범위 벗어나기" hidden>회피 · Q</button>
-<div class="auto-control"><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기 또는 우클릭: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)">${classicIcon('recall')}<span>귀환</span><small>R</small></button><button id="estate">${classicIcon('estate')}<span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
+<div class="auto-control"><button id="hunt-config-toggle" type="button" title="자동사냥 설정 열기" aria-label="사냥 설정 열기">⚙</button><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)">${classicIcon('recall')}<span>귀환</span><small>R</small></button><button id="estate">${classicIcon('estate')}<span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
 <div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><div id="screen-status" role="status"></div><footer id="save-status">저장 준비 중</footer>`;
-  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
+  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{pendingDungeonApproach=null;if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
-  const panel=$('#panel');let drag:{x:number;y:number;left:number;top:number}|undefined;
-  panel.addEventListener('pointerdown',e=>{if(innerWidth<=550||!(e.target as HTMLElement).closest('.inventory-heading'))return;const rect=panel.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:rect.left,top:rect.top};panel.style.height=rect.height+'px';panel.style.bottom='auto';panel.setPointerCapture(e.pointerId);});
-  panel.addEventListener('pointermove',e=>{if(!drag)return;panel.style.left=Math.max(0,Math.min(innerWidth-panel.offsetWidth,drag.left+e.clientX-drag.x))+'px';panel.style.top=Math.max(0,Math.min(innerHeight-panel.offsetHeight,drag.top+e.clientY-drag.y))+'px';panel.style.right='auto';});
-  panel.addEventListener('pointerup',()=>{drag=undefined;});panel.addEventListener('pointercancel',()=>{drag=undefined;});
+  const panel=$('#panel'); // Fixed in-game window; native mouse dragging is disabled.
   window.addEventListener('resize',()=>{panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';});
   $('#boss-dodge').onclick=dodgeBossAttack;
   $('#quest-mini').onclick=()=>showPanel('help');
@@ -385,10 +422,11 @@ function positionPlayerOverheadName():void{
   if(label.style.top!==top)label.style.top=top;
 }
 
-function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.stopMovement();showPanel(sign.panel);};layer.append(button);}root.append(layer);}
+function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(sign.id==='dungeon')requestDungeonApproach();else {pendingDungeonApproach=null;if(autoHunt?.enabled)autoHunt.setEnabled(false);session.stopMovement();showPanel(sign.panel);}};layer.append(button);}root.append(layer);}
 function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=session.state.player.dungeon!.inside||signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
 function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
+  pendingDungeonApproach=null;
   $('.quest').classList.remove('hunt-settings-open');
   $('#panel').hidden=false;
   inventoryWindow=undefined;

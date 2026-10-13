@@ -287,7 +287,12 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
 
   const raycaster = new THREE.Raycaster();
 
+  let previewRevision = 0;
+  let previewTimeout: ReturnType<typeof setTimeout> | undefined;
   const clearPathPreview = (): void => {
+    previewRevision++;
+    if (previewTimeout !== undefined) clearTimeout(previewTimeout);
+    previewTimeout = undefined;
     if (pathPreviewLine) {
       scene.remove(pathPreviewLine);
       pathPreviewLine.geometry.dispose();
@@ -296,20 +301,33 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     }
   };
 
+  // This is a *real A* route preview*, not a player movement tether.
+  // Render a subtle dashed guide briefly, then remove it so the playing field
+  // never remains covered by a bright cyan debugging line.
   const showPathPreview = (fromX: number, fromZ: number, toX: number, toZ: number): void => {
     clearPathPreview();
+    const revision = previewRevision;
     requestAnimationFrame(() => {
+      if (revision !== previewRevision) return; // ignored superseded click
       const points = buildPathPreviewPoints(fromX, fromZ, toX, toZ);
       if (points.length < 2) return;
       const vectors = points.map(
-        (p) => new THREE.Vector3(p.x, terrainData.sampleHeight(p.x, p.z) + 0.15, p.z)
+        (p) => new THREE.Vector3(p.x, terrainData.sampleHeight(p.x, p.z) + 0.12, p.z)
       );
       const geometry = new THREE.BufferGeometry().setFromPoints(vectors);
       pathPreviewLine = new THREE.Line(
         geometry,
-        new THREE.LineBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.7 })
+        new THREE.LineDashedMaterial({
+          color: 0xcdbb89, dashSize: 0.28, gapSize: 0.25,
+          transparent: true, opacity: 0.42, depthWrite: false
+        })
       );
+      pathPreviewLine.name = 'temporary-movement-guide';
+      pathPreviewLine.computeLineDistances();
       scene.add(pathPreviewLine);
+      previewTimeout = setTimeout(() => {
+        if (revision === previewRevision) clearPathPreview();
+      }, 1350);
     });
   };
 

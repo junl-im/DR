@@ -11,6 +11,7 @@ on:
       - 'scripts/unified-interface-smoke.cjs'
       - 'scripts/quest-hunt-smoke.cjs'
       - 'scripts/hud-town-smoke.cjs'
+      - 'scripts/dungeon-input-smoke.cjs'
       - 'scripts/mobile-shell-smoke.cjs'
       - 'scripts/title-screen-smoke.cjs'
       - 'scripts/monster-respawn-smoke.cjs'
@@ -58,6 +59,8 @@ jobs:
         run: node scripts/quest-hunt-smoke.cjs
       - name: Verify HUD and portal body interaction
         run: node scripts/hud-town-smoke.cjs
+      - name: Verify gate arrival dialog, nameplate and native mouse input restrictions
+        run: node scripts/dungeon-input-smoke.cjs
       - name: Verify mobile back confirmation and save failure recovery
         run: node scripts/mobile-shell-smoke.cjs
       - name: Verify title layout, character selection and saved continuation
@@ -113,6 +116,12 @@ jobs:
           path: artifacts/quest-hunt-proof
           if-no-files-found: warn
 
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-dungeon-input-evidence
+          path: artifacts/dungeon-input-proof
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:

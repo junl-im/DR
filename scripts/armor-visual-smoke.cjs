@@ -1,3 +1,9 @@
+// Desktop and mobile settings are opened by a dedicated primary-click button.
+async function openHuntSettings(page){
+ if(await page.locator('#panel').isVisible())await page.locator('#panel-close').click();
+ await page.locator('#hunt-config-toggle').click();
+ await page.locator('.quest.hunt-settings-open').waitFor({state:'visible',timeout:6000});
+}
 const {chromium} = require('@playwright/test');
 const fs = require('node:fs');
 const out = 'artifacts/armor-visual-proof';
@@ -129,7 +135,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.keyboard.press('Tab');
     const nextTabTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
     if(!nextTabTarget || tabTarget===nextTabTarget)throw new Error('Tab cycling stuck at one target');
-    await game.locator('#auto-hunt').click({button:'right'});await game.locator('#next-target').click();
+    await openHuntSettings(game);await game.locator('#next-target').click();
     const buttonTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
     if(!buttonTarget||buttonTarget===nextTabTarget)
       throw new Error('Mobile next-target button did not cycle to another monster');
@@ -255,7 +261,7 @@ fs.mkdirSync(out,{recursive:true});
       s.state.player.quest={stage:3,progress:0};
       s.state.player.mp=60;s.state.player.hp=100;
     });
-    await game.locator('#auto-hunt').click({button:'right'});await game.locator('#dungeon-journal').click();
+    await openHuntSettings(game);await game.locator('#dungeon-journal').click();
     await game.locator('#dungeon-enter').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.inside===true);
     await game.locator('#panel-close').click();
@@ -303,7 +309,7 @@ fs.mkdirSync(out,{recursive:true});
     if(await game.evaluate(()=>window.__DREAM_SESSION__.mobs.some(m=>m.id==='dungeon-0-0')))throw new Error('A defeated dungeon monster respawned after reload');
     await dungeonKill('dungeon-0-1');
     const next=async()=>{
-      await game.locator('#auto-hunt').click({button:'right'});await game.locator('#dungeon-journal').click();
+      await openHuntSettings(game);await game.locator('#dungeon-journal').click();
       await game.locator('#dungeon-next').click();
       await game.locator('#panel-close').click();
     };
@@ -384,7 +390,7 @@ fs.mkdirSync(out,{recursive:true});
       throw new Error('Real Q-key sweep dodge did not escape damage: '+JSON.stringify({sweepBefore,sweepAfter}));
     await game.screenshot({path:out+'/ruin-boss-sweep-dodged-mobile.png',fullPage:true});
     await dungeonKill('dungeon-2-0');
-    await game.locator('#auto-hunt').click({button:'right'});await game.locator('#dungeon-journal').click();
+    await openHuntSettings(game);await game.locator('#dungeon-journal').click();
     await game.locator('#dungeon-claim').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.clears===1 && !window.__DREAM_SESSION__?.state?.player?.dungeon?.inside);
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});

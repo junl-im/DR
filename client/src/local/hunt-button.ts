@@ -12,7 +12,7 @@ export function bindHuntButton(button:HTMLButtonElement,toggle:()=>void,settings
   button.addEventListener('pointercancel',()=>{clear();start=undefined;suppress=true;});
   button.addEventListener('lostpointercapture',()=>{clear();start=undefined;});
   button.addEventListener('click',e=>{if(suppress&&e.detail!==0){e.preventDefault();return;}toggle();});
-  button.addEventListener('contextmenu',e=>{e.preventDefault();clear();suppress=true;settings();});
-  button.addEventListener('keydown',e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){e.preventDefault();settings();}});
+  button.addEventListener('contextmenu',e=>{e.preventDefault();clear();suppress=true;});
+  button.addEventListener('keydown',e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))e.preventDefault();});
   window.addEventListener('blur',()=>{clear();start=undefined;suppress=true;});
 }
