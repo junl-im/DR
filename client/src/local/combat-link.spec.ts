@@ -111,3 +111,27 @@ describe('combat and quest links', () => {
     expect(loaded.state.player.quest!.stage).toBe(1);
   });
 });
+
+describe('quest completion after defensive combat', () => {
+  it('preserves ready status when an incoming hit completed the objective before the quest button', () => {
+    const { s, m, a } = setup();
+    s.state.player.quest = { stage: 0, progress: 2 };
+    m.hp = 1;
+    s.tick(0.05);
+    const hit = s.drainEvents().find((e) => e.kind === 'hurt')!;
+    a.handleHit(hit);
+    a.tick();
+    s.tick(0.05);
+    expect(s.state.player.quest.progress).toBe(3);
+    expect(a.startQuestHunt()).toBe(false);
+    expect(a.stopReason).toBe('quest-ready');
+    expect(a.enabled).toBe(false);
+    expect(a.retaliateOnHit).toBe(false);
+  });
+  it('reports the final completed state when no village objectives remain', () => {
+    const { s, a } = setup();
+    s.state.player.quest = { stage: 3, progress: 0 };
+    expect(a.startQuestHunt()).toBe(false);
+    expect(a.stopReason).toBe('quest-complete');
+  });
+});

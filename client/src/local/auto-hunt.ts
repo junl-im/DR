@@ -138,8 +138,8 @@ export class AutoHuntController {
     const s=this.session,p=s.state.player;
     const quest=activeQuest(p.quest!);
     if(p.dungeon!.inside){s.message='의뢰 자동이동은 마을 밖 필드에서만 가능합니다.';return false;}
-    if(!quest){s.message='마을 의뢰를 모두 완료했습니다.';return false;}
-    if(canClaimQuest(p.quest!)){s.message='의뢰 목표 달성 · 마을에서 보상을 받으세요.';return false;}
+    if(!quest){this.setEnabled(false,'quest-complete');s.message='마을 의뢰를 모두 완료했습니다.';return false;}
+    if(canClaimQuest(p.quest!)){this.setEnabled(false,'quest-ready');s.message='의뢰 목표 달성 · 마을에서 보상을 받으세요.';return false;}
     const eligible=s.mobs.filter(m=>!m.id.startsWith('dungeon-') && matchesQuestTarget(m,quest.target));
     eligible.sort((a,b)=>(Number(b.hp>0)-Number(a.hp>0))||
       distance(p.x,p.z,a.hp>0?a.x:a.homeX,a.hp>0?a.z:a.homeZ)-
