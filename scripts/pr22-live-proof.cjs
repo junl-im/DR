@@ -32,9 +32,21 @@ fs.mkdirSync(out, { recursive: true });
         await page.locator(id).click();
         await expect(page.locator('#panel')).toBeHidden();
       }
-      await page.locator('#sign-shop').click();
+      // The projected world sign can legitimately fall outside the camera view.
+      // Exercise the same real shop UI via the visible inventory button in that case.
+      const shopSign = page.locator('#sign-shop');
+      const signRect = await shopSign.boundingBox();
+      const signActionable = await shopSign
+        .click({ trial: true, timeout: 1500 })
+        .then(() => true, () => false);
+      row.shopSign = { rect: signRect, actionable: signActionable };
+      if (signActionable) await shopSign.click();
+      else {
+        await page.locator('#inventory').click();
+        await page.locator('#open-shop').click();
+      }
       await expect(page.locator('#buy-one')).toBeVisible();
-      if (width === 1440) await page.locator('#sign-shop').click();
+      if (width === 1440 && signActionable) await shopSign.click();
       else await page.locator('#panel-close').click();
       await expect(page.locator('#panel')).toBeHidden();
       // Sample after the real bubbling feedback handler, inside the actual event.
