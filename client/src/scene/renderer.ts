@@ -145,7 +145,8 @@ export interface GameRenderer {
   setMoveIntentHandler: (handler: (intent: MovementIntent) => void) => void;
   setMobTargetHandler: (handler: (mobId: string) => void) => void;
   rotateCamera: (deltaYaw: number) => void;
-  setCameraFraming?: (offset:{x:number;y:number;z:number},fov:number) => void;
+  setCameraZoom: (zoom: number) => void;
+  setCameraFraming?:  (offset:{x:number;y:number;z:number},fov:number) => void;
   setVfxTargetMobId: (mobId: string | null) => void;
   syncPlayerVfx: (snapshot: {
     hp: number;
@@ -337,6 +338,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
 
   let cameraYaw = 0;
   let activeCameraOffset={...(options.cameraOffset ?? DEFAULT_CAMERA_OFFSET)};
+  let cameraZoom=1;
   const updateCamera = (): void => {
     applyTo(
       {
@@ -344,11 +346,16 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
         lookAt: (target) => camera.lookAt(target.x, target.y, target.z),
       },
       { x: localPosition.x, y: localPosition.y, z: localPosition.z },
-      activeCameraOffset,
+      {x:activeCameraOffset.x*cameraZoom,y:activeCameraOffset.y*cameraZoom,z:activeCameraOffset.z*cameraZoom},
       cameraYaw
     );
   };
 
+  const setCameraZoom=(zoom:number):void=>{
+    if(!Number.isFinite(zoom))return;
+    cameraZoom=Math.max(.82,Math.min(1.24,zoom));
+    updateCamera();
+  };
   const setCameraFraming=(offset:{x:number;y:number;z:number},fov:number):void=>{
     if(![offset.x,offset.y,offset.z,fov].every(Number.isFinite))return;
     if(offset.x<=0||offset.z<=0||offset.y<=0||fov<30||fov>55)return;
@@ -799,6 +806,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     setMoveIntentHandler,
     setMobTargetHandler,
     rotateCamera,
+    setCameraZoom,
     setCameraFraming,
     setVfxTargetMobId,
     syncPlayerVfx,
