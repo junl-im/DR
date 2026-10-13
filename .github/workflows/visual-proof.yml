@@ -5,6 +5,7 @@ on:
       - 'client/**'
       - 'scripts/armor-visual-smoke.cjs'
       - 'scripts/monster-live-smoke.cjs'
+      - 'scripts/monster-retry-smoke.cjs'
       - 'scripts/mobile-review.cjs'
       - 'scripts/compact-hud-smoke.cjs'
       - 'scripts/unified-interface-smoke.cjs'
@@ -49,6 +50,8 @@ jobs:
         run: node scripts/armor-visual-smoke.cjs
       - name: Prove live Firebase-root monster rigs (desktop and mobile)
         run: MONSTER_QA_VARIANT=firebase-root MONSTER_BASE_URL=http://127.0.0.1:4300/ node scripts/monster-live-smoke.cjs
+      - name: Recover real GLB monster after an injected temporary HTTP 503 (desktop and mobile)
+        run: MONSTER_BASE_URL=http://127.0.0.1:4300/ node scripts/monster-retry-smoke.cjs
       - name: Verify mobile touch controls at 320px, 390px and landscape
         run: node scripts/mobile-review.cjs
       - name: Verify quest target hunting, completion stop and reward persistence
@@ -78,6 +81,12 @@ jobs:
           exit 1
       - name: Prove /DR/ model URLs and live monster meshes (desktop and mobile)
         run: MONSTER_QA_VARIANT=github-pages MONSTER_BASE_URL=http://127.0.0.1:4301/DR/ node scripts/monster-live-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-monster-retry-evidence
+          path: artifacts/monster-retry-proof
+          if-no-files-found: warn
       - uses: actions/upload-artifact@v4
         if: always()
         with:
