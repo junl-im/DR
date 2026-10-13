@@ -45,7 +45,7 @@ const base=process.env.GAMEPLAY_BASE_URL||'http://127.0.0.1:4300/';
     result.zoom=zoom;
 
     // No shortcuts: click the real in-game quest journal / auto travel.
-    await page.locator('#quest-journal').click();
+    await page.locator('#quest-mini').click();
     await expect(page.locator('#panel')).toBeVisible();
     await page.locator('#help-quest-target').click();
     await expect(page.locator('#panel')).toBeHidden();
