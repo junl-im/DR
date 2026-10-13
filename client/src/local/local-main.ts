@@ -248,7 +248,8 @@ async function enter(state: Save) {
     await Promise.race([initialMobModels,new Promise<void>(resolve=>setTimeout(resolve,3000))]);
     setConnected(false); setReady(true);
     Object.assign(window, { __DREAM_SESSION__:session, __DREAM_SAVE__:save,
-      __DREAM_MOB_RENDER_STATUS__:()=>game.getMobRenderStatus() });
+      __DREAM_MOB_RENDER_STATUS__:()=>game.getMobRenderStatus(),
+       __DREAM_CAMERA_ZOOM__:()=>cameraWheelZoom });
     let last=performance.now(), accumulator=0, uiTime=0,shadowTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
