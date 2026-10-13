@@ -8,7 +8,7 @@ export const GAME_VERSION = '0.11.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
-export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
+export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string;sourceId?:string}
 export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; quest?: QuestProgress; dungeon?: DungeonProgress; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
 export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number; windup?: number; aimX?: number; aimZ?: number; bossMove?: BossMove; bossCasts?: number }
@@ -228,7 +228,7 @@ export class LocalGameSession implements GameSession {
       const q=p.quest!;
       const quest=activeQuest(q);
       if(!quest){this.message='완료한 의뢰를 모두 정리했습니다.';return;}
-      if(!nearQuestBoard(p.x,p.z)){this.message='마을 모험 안내판에서 의뢰 보상을 수령하세요.';return;}
+      if(p.dungeon!.inside||!nearQuestBoard(p.x,p.z)){this.message='마을 모험 안내판에서 의뢰 보상을 수령하세요.';return;}
       if(!canClaimQuest(q)){this.message='아직 의뢰 목표를 달성하지 못했습니다.';return;}
       const {gold,wood,potions,fragments}=quest.reward;
       if(p.gold+gold>1000000||p.wood+wood>1000000||
@@ -328,7 +328,7 @@ export class LocalGameSession implements GameSession {
             const taken=Math.min(p.hp,Math.max(1,bossDamage(move)-armorDefense(p.armor)));
             p.hp-=taken;
             const label=move==='ground-sweep'?'파수꾼 휩쓸기':'정예 강타';
-            this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:label+' 피해 '+taken});
+            this.emit({kind:'hurt',sourceId:m.id,x:p.x,z:p.z,amount:taken,text:label+' 피해 '+taken});
             this.message=m.name+'의 공격에 '+taken+' 피해를 입었습니다.';
             if(!p.hp){const lost=Math.min(p.gold,5);p.gold-=lost;this.dispatch({type:'recall'});this.message='정예에게 쓰러졌습니다. 마을 귀환 · 골드 -'+lost;break;}
           } else {
@@ -344,7 +344,7 @@ export class LocalGameSession implements GameSession {
         continue;
       }
       if (Math.hypot(m.x - p.x, m.z - p.z) < 3.5 && Math.hypot(p.x, p.z) > 24 && this.clock >= m.cooldown) {
-        const taken=Math.min(p.hp,Math.max(1,7-armorDefense(p.armor)));p.hp -= taken;this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
+        const taken=Math.min(p.hp,Math.max(1,7-armorDefense(p.armor)));p.hp -= taken;this.emit({kind:'hurt',sourceId:m.id,x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
         if (!p.hp) { const lost = Math.min(p.gold, 5); p.gold -= lost; this.dispatch({ type: 'recall' }); this.message = `쓰러졌습니다. 마을에서 회복했습니다. 골드 -${lost}`; break; }
       } else if (this.clock >= m.cooldown - .8) m.action = 0;
     }
