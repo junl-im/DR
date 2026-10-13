@@ -33,7 +33,7 @@ const base=process.env.GAMEPLAY_BASE_URL||'http://127.0.0.1:4300/';
       color:getComputedStyle(el).scrollbarColor
     }));
     expect(result.skin.width).toBe('none');
-    await page.locator('#menu').click();await expect(page.locator('.game-scrollbar[data-scroll-for=panel]')).toBeVisible();
+    await page.locator('#menu').click();for(const summary of await page.locator('#panel details summary').all())await summary.click();await page.locator('#panel').evaluate(el=>el.scrollTop=0);await expect(page.locator('.game-scrollbar[data-scroll-for=panel]')).toBeVisible();
     const scrollbar=await page.locator('.game-scrollbar[data-scroll-for=panel]').evaluate(el=>({width:getComputedStyle(el).width,thumb:getComputedStyle(el.firstElementChild).backgroundImage}));
     expect(scrollbar.width).toBe('8px');expect(scrollbar.thumb).toContain('linear-gradient');result.skin.paint=scrollbar;await page.locator('#menu').click();
 
