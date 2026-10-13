@@ -7,7 +7,7 @@ describe('Quest hunt travel and exact kill verification',()=>{
   it('moves out of the village before enabling a normal safe 28m hunt',()=>{
     const s=new LocalGameSession(newSave('Guide',0));
     const a=new AutoHuntController(s,()=>{});
-    expect(s.state.player.x).toBe(0);
+    expect(Math.hypot(s.state.player.x,s.state.player.z)).toBeLessThan(1);
     expect(a.startQuestHunt()).toBe(true);
     expect(a.approachingQuest).toBe(true);
     expect(a.enabled).toBe(false);
