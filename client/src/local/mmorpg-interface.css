@@ -1,0 +1,129 @@
+/* Original Dungeon ZERO silver-and-obsidian interface. No third-party game art. */
+:root{--dz-ink:#0d1114;--dz-surface:#192127;--dz-silver:#9da99f;--dz-gold:#d7b97e;--dz-selected:#f1cd8c;--dz-ruby:#a82e3c;--dz-mana:#316a90;--dz-text:#e6dfca;--dz-space-tight:4px;--dz-space-section:8px;--dz-space-touch:44px}
+#dream-ui .panel,#dream-ui .panel.inventory-panel,#dream-ui .bottom,#dream-ui .vitals,#dream-ui .quest.hunt-settings-open,.title-entry .entry-card,#mobile-shell dialog{
+ border:8px solid transparent;border-image:url('/art/mmorpg-frame.svg') 24 / 12px / 3px stretch;
+ background:repeating-linear-gradient(135deg,#ffffff02 0 1px,transparent 1px 4px),radial-gradient(ellipse at 50% 0,#34434a55,transparent 70%),linear-gradient(#1a2229f7,#0b1015fa);
+ box-shadow:0 14px 35px #000a,inset 0 0 24px #0008;color:var(--dz-text);border-radius:0;
+}
+#dream-ui .panel{padding:8px 11px;transform-origin:100% 0;animation:dz-window-open 180ms ease-out both;isolation:isolate}
+@keyframes dz-window-open{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#dream-ui .panel:not(.inventory-panel) #panel-content>.eyebrow{display:block;font-size:8px;letter-spacing:2.5px;color:#a99b7a;padding:2px 38px 0 4px}
+#dream-ui .panel h2{
+ margin:3px 38px 11px 0;padding:7px 5px 12px;font-size:18px;line-height:1.3;
+ color:#f2dfb4;text-shadow:0 2px 2px #000;font-family:Georgia,'Noto Sans KR',serif;
+ border-bottom:1px solid #9a80544d;background:linear-gradient(90deg,#a4874b12,transparent);
+}
+#dream-ui .panel h2::after{content:'◆';position:absolute;margin:26px 0 0 -12px;font-size:6px;color:#b69c68;pointer-events:none}
+#dream-ui .panel>.close{width:36px;min-height:36px;right:0;top:0;border:1px solid #a09574;background:linear-gradient(135deg,#535a55,#202b30 47%,#0a1015);color:#edd8ac;box-shadow:inset 0 0 0 2px #090d10,inset 0 0 0 3px #b4a17840;font:22px Georgia,serif}
+#dream-ui .panel :is(p,small){color:#b8c0bc}
+#dream-ui .panel button:not(.close){
+ border:1px solid #7b8072;border-radius:1px;color:#ded8c6;
+ background:linear-gradient(180deg,#67736a66 0,#34413d44 13%,#202a2c 49%,#111b20 50%,#1e2a2d 96%);
+ box-shadow:inset 0 0 0 1px #070c10,inset 0 2px #d5dfca1c,0 2px 3px #0005;
+ text-shadow:0 1px 2px #000;transition:filter 110ms ease,border-color 110ms ease,box-shadow 110ms ease;
+}
+#dream-ui .panel button.primary,#dream-ui .panel :is(#quest-claim,#dungeon-enter,#dungeon-claim,#upgrade){border-color:#b79a61;background:linear-gradient(#695b3e,#403827 49%,#28251d 50%,#493e29);color:#ffe4b2}
+#dream-ui .panel button:not(.close):hover:not(:disabled):not(.selected):not([aria-pressed=true]){border-color:#ddc794;filter:brightness(1.18);box-shadow:inset 0 0 0 1px #070c10,inset 0 0 12px #c8ac6530,0 0 5px #c8ac6522}
+#dream-ui .panel button:not(.close):active:not(:disabled){filter:brightness(1.38);box-shadow:inset 0 2px 9px #0009;transform:translateY(1px)}
+#dream-ui .panel button:disabled{opacity:.46;filter:saturate(.4)}
+#dream-ui .panel button[aria-pressed=true]{border-color:var(--dz-selected);color:#f8dda4}
+#dream-ui .settings-section{border:1px solid #a2a68c33;padding:10px;background:linear-gradient(110deg,#03090e80,#1d282d44);box-shadow:inset 0 1px #ffffff07}
+#dream-ui .settings-section h3{display:flex;align-items:center;gap:8px;color:#dcc38b;font-weight:600}
+#dream-ui .settings-section h3::before{content:'◆';font-size:6px;color:#a58e5e}
+#dream-ui .settings-section details{border-color:#9ca17c2b}
+#dream-ui #character-stats{gap:5px}
+#dream-ui #character-stats .stat-line{background:linear-gradient(135deg,#34403a33,#070e1480);border-color:#b2a78033;padding:9px 10px;box-shadow:inset 0 1px #dce2c20b}
+#dream-ui #character-stats .stat-line span{color:#91a098;font-size:10px}
+#dream-ui #character-stats .stat-line b{color:#ead9b4;font-family:Georgia,'Noto Sans KR',serif;font-size:14px}
+#dream-ui .panel .stat-line{border-color:#a4a8822c}
+#dream-ui :is(.estate-illustration,.equipment-icon){background:radial-gradient(ellipse,#91b49c16,transparent 65%);border-color:#a4a8822c;color:#d9c38e}
+/* Inventory has a proper window bar, inset bag, equipment alcove and item dossier. */
+#dream-ui .panel.inventory-panel{padding:0;border-width:8px;width:min(680px,calc(100vw - 20px))}
+#dream-ui .inventory-heading{padding:8px 11px 0;background:linear-gradient(#4b554e77,#263138 45%,#151e25);border-bottom:1px solid #a48e5c66;box-shadow:inset 0 1px #e2e6c51c}
+#dream-ui .inventory-heading .eyebrow{font-size:8px;letter-spacing:2.2px;color:#aeb69d}
+#dream-ui .inventory-heading h2{margin:2px 36px 6px 0;padding:4px 3px 7px;border:0;background:none;font-size:18px}
+#dream-ui .inventory-heading h2::after{display:none}
+#dream-ui .inventory-columns{grid-template-columns:208px minmax(0,1fr);padding:10px;gap:12px}
+#dream-ui .equipment-sheet{padding-right:11px;border-color:#a2ab8633}
+#dream-ui .equipment-sheet h3,#dream-ui .bag-title h3{font-size:12px;color:#ddd1b2;letter-spacing:.3px}
+#dream-ui .equipment-sheet h3 span{color:#b5aa8d}
+#dream-ui .paper-doll{height:214px;border:1px solid #83938366;background:radial-gradient(ellipse at 50% 35%,#69918330,transparent 62%),repeating-linear-gradient(0deg,#ffffff03 0 1px,transparent 1px 24px),linear-gradient(#15252b,#080f16);box-shadow:inset 0 0 25px #000b}
+#dream-ui .doll-outline{inset:8px 35px}
+#dream-ui .doll-outline svg{fill:#596f6666;stroke:#b6c6a56b;stroke-width:1.4;filter:drop-shadow(0 0 10px #9aa97933)}
+#dream-ui .gear-empty,#dream-ui .panel button.gear-weapon{border:1px solid #99a28b77;background:linear-gradient(135deg,#44504c,#17232b 55%);box-shadow:inset 0 0 0 2px #0b141b,0 2px 5px #0008}
+#dream-ui .gear-body,#dream-ui .gear-offhand,#dream-ui .panel button.gear-weapon{top:83px}
+#dream-ui .gear-empty{color:#9aa897;font-size:8px}
+#dream-ui .bag-title{padding:3px 3px 7px;border-bottom:1px solid #a3aa822b;margin-bottom:6px}
+#dream-ui .bag-title span{font-size:9px;color:#98a58f}
+#dream-ui .panel .bag-filters{display:flex;flex-wrap:nowrap;gap:2px;margin:0 0 8px}
+#dream-ui .panel .bag-filters button{flex:1 1 0;min-width:0;border-color:#7b80654d;border-bottom:2px solid #555f55;min-height:32px;padding:4px;font-size:10px;background:#121e2480;box-shadow:none}
+#dream-ui .panel .bag-filters button[aria-pressed=true]{background:linear-gradient(#77634266,#342f2580)!important;border-color:#cbb17a!important;color:#ffe4ae!important;box-shadow:inset 0 2px #e6c88744}
+#dream-ui .panel .bag-grid{padding:5px 12px 5px 5px!important;gap:4px;border:1px solid #8b987144;max-height:244px;background:repeating-linear-gradient(135deg,#ffffff02 0 1px,transparent 1px 4px),#070f15;box-shadow:inset 0 2px 12px #0009;border-radius:0}
+#dream-ui .panel .bag-grid .item-slot{border:1px solid #667a6d88;background:radial-gradient(ellipse at 50% 15%,#68786430,transparent 70%),linear-gradient(#15252c,#09131b);box-shadow:inset 0 0 0 2px #0005,inset 0 1px #b4c5a22a;border-radius:1px!important}
+#dream-ui .panel .bag-grid .item-slot.empty{border-color:#526b5938;background:linear-gradient(135deg,#19262a70,#08121a);box-shadow:inset 0 1px 5px #0008}
+#dream-ui .panel .bag-grid button.item-slot.selected,#dream-ui .panel .bag-grid button.item-slot[aria-pressed=true]{border-color:var(--dz-selected);background:radial-gradient(ellipse,#c7aa5a2b,transparent 80%),#17232a;box-shadow:inset 0 0 0 1px #c5a66c88,inset 0 0 15px #d7ac5a27,0 0 5px #d7ac5a4d}
+#dream-ui .item-slot small{font:10px Georgia,serif;color:#f5dfb1;padding:0 2px;background:#08121899;line-height:14px}
+#dream-ui .bag-wallet{padding:9px 10px 9px 4px;border-color:#7d875d3b;font-size:10px;background:linear-gradient(90deg,#ab905110,transparent)}
+#dream-ui .bag-wallet b{color:#ebcc88;font:13px Georgia,serif}
+#dream-ui .item-detail{margin:0 10px;padding:10px 4px;grid-template-columns:48px minmax(0,1fr);background:linear-gradient(110deg,#8a79421a,#07111b70);border-color:#a6a07540}
+#dream-ui .item-detail-icon{height:48px;padding:6px;border:1px solid #b0a275;box-shadow:inset 0 0 0 2px #080d14;background:radial-gradient(ellipse,#6c6a45,#101c25)}
+#dream-ui .panel .item-detail h3{color:#f0d7a3;margin:3px 0 5px;font-size:13px;text-align:left}
+#dream-ui .item-detail strong{color:#a2bcad;font-size:11px}
+#dream-ui .item-detail small{font-size:9px;color:#a3977d}
+#dream-ui .bag-sheet .item-detail{margin:8px 0 0;padding:10px 4px}
+#dream-ui .bag-sheet .inventory-action{padding:8px 0}
+#dream-ui .equipment-comparison{background:#0a151bcc;border-color:#8e9b7133;color:#a9b5aa;font-size:10px}
+#dream-ui .armor-crafting{padding-top:9px;border-color:#82947744}
+#dream-ui .armor-slot-row{background:#07111a44;padding:7px 4px;border-color:#a8ad7926}
+/* HUD: engraved frames, recessed meters, jewelled auto-state and inset shortcuts. */
+#dream-ui .vitals{padding:6px 8px}
+#dream-ui .vitals .player-line{border-bottom:1px solid #acb28b33;padding-bottom:5px;font-size:12px;color:#f0dab3;margin-bottom:5px}
+#dream-ui .vitals .player-line strong::before{content:'◆';color:#b9c8ad;margin-right:6px;font-size:9px;text-shadow:0 0 6px #94bb9c}
+#dream-ui .vitals .player-line span{font:10px Georgia,serif;color:#b7c3a8}
+#dream-ui .bar{border:1px solid #a0aa8c88;border-radius:0;box-shadow:inset 0 2px 5px #000b,0 1px #02070b;background:#050b10}
+#dream-ui .bar i{box-shadow:inset 0 1px #ffffff36,inset 0 -2px #0006}
+#dream-ui .bar.hp i{background:linear-gradient(#a84855,#782532 48%,#581b28 50%,#913343)}
+#dream-ui .bar.mp i{background:linear-gradient(#5d9ab9,#27577b 48%,#193e60 50%,#316a90)}
+#dream-ui .bar.xp i{background:linear-gradient(#d4c093,#897440)}
+#dream-ui .wallet{background:#0b141bb3;border-color:#a5ad7a33;color:#9fac9d;font-size:9px}
+#dream-ui .wallet b{color:#dfc995;font-family:Georgia,serif}
+#dream-ui .bottom{padding:3px 4px;border-width:4px;border-image-width:8px}
+#dream-ui .hotbar-title{color:#a9b69d;font-size:8px;letter-spacing:1px}
+#dream-ui .actions button{min-width:44px;border-color:#8f9a7e99;background:radial-gradient(ellipse at 50% 0,#afbc8233,transparent 80%),linear-gradient(#26332e,#0b141d);box-shadow:inset 0 0 0 2px #0008,inset 0 3px #b7c6a92b,0 1px 4px #0008;border-radius:1px}
+#dream-ui .actions button small{color:#efd59d;font-family:Georgia,serif}
+#dream-ui .actions span{color:#bfc8b5;text-shadow:0 1px 2px #000}
+#dream-ui .classic-log{border:1px solid #a8ac7d66;box-shadow:inset 0 0 0 2px #0004,inset 0 1px #d6d7b51a}
+#dream-ui .classic-log .log-tabs button.active{border-color:#c9b27c;color:#e4c995;background:#3b372a80}
+#dream-ui .auto-control button{border:1px solid #adb58c;box-shadow:inset 0 0 0 2px #08131a,0 2px 6px #0008;background:radial-gradient(circle at 40% 30%,#4a6057,#111d25)}
+#dream-ui #auto-hunt[aria-pressed=true]{border-color:#d9e1a8;color:#e8f2be;box-shadow:inset 0 0 0 2px #15261b,0 0 11px #a6d27d88;background:radial-gradient(circle,#577447,#1b3024)}
+#dream-ui .quest #quest-mini{color:#e8d9ac;text-shadow:0 2px 3px #000}
+#dream-ui .top #menu{border-color:#a6b095;background:linear-gradient(135deg,#46564d,#111d27);box-shadow:inset 0 0 0 2px #081018,inset 0 0 0 3px #b8bf8b33}
+#dream-ui .target{border-color:#a4ad8266;background:linear-gradient(135deg,#26362dd9,#0e1923e6);box-shadow:inset 0 0 0 1px #02070c,0 2px 9px #0006;color:#e3d2aa}
+.title-entry .entry-card{padding:16px 18px}
+.title-entry .creation-heading{border-color:#a4b18b55}
+.title-entry .creation-heading h2{color:#ead8b1;text-shadow:0 2px 4px #000}
+.title-entry .character-card{border-color:#83957a66;background:linear-gradient(#22312d,#0a121b);box-shadow:inset 0 0 0 2px #0006}
+.title-entry .character-card:has(input:checked){border-color:#dfc28a;box-shadow:inset 0 0 0 1px #d4b98277,0 0 10px #d8b86b33}
+.title-entry button.start-adventure{border-color:#c0b084;background:linear-gradient(#66634a,#3e4233 48%,#252c25 50%,#4b5039);color:#f4e1b6;text-shadow:0 2px 3px #000;box-shadow:inset 0 0 0 2px #0b1118,inset 0 3px #f2dfac33}
+@media(max-width:600px){
+ #dream-ui .panel{padding:6px 8px}
+ #dream-ui .panel.inventory-panel{padding:0;width:auto}
+ #dream-ui .panel h2{font-size:16px;padding:5px 3px 10px;margin-bottom:9px}
+ #dream-ui .panel>.close{width:44px;min-height:44px}
+ #dream-ui .vitals{padding:5px 6px}
+ #dream-ui .vitals .player-line{font-size:10px;padding-bottom:4px;margin-bottom:4px}
+ #dream-ui .vitals .bar{margin:3px 0}
+ #dream-ui .vitals .xp-caption{font-size:8px;margin-top:2px}
+ #dream-ui .bottom{padding:1px 2px}
+ #dream-ui .inventory-columns{padding:7px;gap:9px}
+ #dream-ui .panel .bag-filters button{min-height:44px;font-size:10px;padding:3px 2px}
+ #dream-ui .panel .bag-grid{max-height:195px}
+ #dream-ui .inventory-heading{padding:7px 9px 0}
+ #dream-ui .inventory-heading h2{font-size:16px}
+ #dream-ui .bag-title{margin-bottom:5px;padding-bottom:4px}
+ #dream-ui .paper-doll{height:190px}
+ #dream-ui .item-detail{margin:0 7px;padding:9px 3px}
+ #dream-ui .inventory-action{padding:7px}
+ .title-entry .entry-card{padding:11px 13px}
+}
+@media(prefers-reduced-motion:reduce){#dream-ui .panel{animation:none}#dream-ui .panel button{transition:none}}
