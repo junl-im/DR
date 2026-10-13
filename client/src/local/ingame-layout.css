@@ -1,0 +1,155 @@
+/* Dungeon ZERO: in-game interface only. The title/character select screen is unchanged. */
+#game{touch-action:none;}
+
+/* The player status is the only left-top chrome; settings remain reachable at right. */
+#dream-ui .top{
+  position:absolute;left:auto;right:calc(10px + env(safe-area-inset-right,0px));
+  top:calc(10px + var(--safe-top));height:44px;width:44px;z-index:8;
+  display:flex;align-items:center;justify-content:center;pointer-events:none;
+}
+#dream-ui .top #menu{
+  pointer-events:auto;margin:0;width:44px;height:44px;min-width:44px;min-height:44px;
+  border:1px solid #ba9b68;border-radius:5px;
+  background:linear-gradient(140deg,#35434ade,#131c25f0);
+  box-shadow:inset 0 0 0 2px #121921,0 5px 18px #0009;
+}
+#dream-ui .vitals{
+  top:calc(10px + var(--safe-top));bottom:auto;
+  left:calc(10px + env(safe-area-inset-left,0px));
+  width:210px;height:116px;padding:10px 12px;
+  border:1px solid #ab8e5e;border-radius:5px;
+  background:linear-gradient(140deg,#283139f2,#101920f5);
+  box-shadow:inset 0 0 0 2px #0b1118,0 5px 19px #0009;
+  z-index:7;pointer-events:auto;cursor:pointer;
+}
+#dream-ui .vitals .player-line{
+  margin:0 0 6px;color:#f3daad;font-size:13px;
+  text-shadow:0 1px 3px #000;
+}
+#dream-ui .vitals .bar{margin:5px 0;height:15px}
+#dream-ui .vitals .bar.xp{height:5px}
+#dream-ui .vitals .bar span{line-height:13px;font-size:10px}
+#dream-ui .vitals .xp-caption{margin:3px 0 0;font-size:9px;color:#d5c19a}
+#dream-ui .wallet{
+  left:calc(13px + env(safe-area-inset-left,0px));top:calc(130px + var(--safe-top));
+  bottom:auto;width:204px;height:auto;min-height:22px;
+  padding:3px 5px;gap:7px;color:#d5d1c5;font-size:9px;
+  background:#111c25c9;border:1px solid #806d505f;border-radius:3px;
+  text-shadow:0 1px 3px #000;
+}
+
+/* Dark-fantasy panel surfaces without affecting game data, IDs or scrolling. */
+#dream-ui .panel{
+  color:#e0d4bd;border-color:#b3935c;
+  background:linear-gradient(155deg,#29343bf7 0%,#151f29fb 50%,#0d151efa 100%);
+  box-shadow:inset 0 0 0 2px #080e14,inset 0 0 0 3px #e0bc7540,0 15px 35px #000c;
+}
+#dream-ui .panel h2{font-weight:700;letter-spacing:.25px;color:#f2d49e}
+#dream-ui .panel h3{color:#ead1a5}
+#dream-ui .panel .close{
+  color:#f1d8ac;border:1px solid #aa8c5f;background:#1b2731;
+}
+#dream-ui .panel .close:hover,#dream-ui .panel .close:focus-visible{
+  border-color:#f1d8ac;box-shadow:0 0 0 2px #deb97f33;
+}
+#dream-ui .panel .stat-line b{color:#f0d3a2}
+#dream-ui .panel button:active{filter:brightness(1.18)}
+#dream-ui .panel button:focus-visible{outline:2px solid #ffe0a4;outline-offset:2px}
+
+/* Inventory becomes a cohesive paper-doll and readable quick-bag window. */
+#dream-ui .panel.inventory-panel{width:min(660px,calc(100vw - 20px))}
+#dream-ui .inventory-heading{
+  padding:12px 15px 5px;
+  border-bottom:1px solid #ae915b80;
+  background:linear-gradient(100deg,#3e463f,#27333c 60%,#192630);
+}
+#dream-ui .inventory-heading h2{font-size:18px;letter-spacing:.4px}
+#dream-ui .inventory-heading .eyebrow{font-size:9px;color:#dfb778}
+#dream-ui .inventory-columns{grid-template-columns:215px minmax(0,1fr);gap:12px}
+#dream-ui .equipment-sheet{border-right:1px solid #927b534f}
+#dream-ui .paper-doll{
+  border:1px solid #ac905b70;border-radius:3px;
+  background:radial-gradient(ellipse at 50% 35%,#71818b32,transparent 65%),linear-gradient(#25313b,#111c25);
+  box-shadow:inset 0 0 22px #050b10,0 2px 9px #0005;
+}
+#dream-ui .gear-empty,#dream-ui .panel button.gear-weapon{
+  border-color:#ad916273;background:linear-gradient(145deg,#38424a,#1a252b);
+  box-shadow:inset 0 1px #ecd1a227;
+}
+#dream-ui .bag-title h3{font-size:13px}
+#dream-ui .bag-title span{color:#b8ad99}
+#dream-ui .bag-filters button[aria-pressed="true"]{
+  color:#ffe2ac!important;border-color:#dcbb7b!important;
+  background:linear-gradient(#655037,#342d25)!important;
+}
+#dream-ui .bag-grid{
+  border:1px solid #937b547d;border-radius:3px;
+  background:linear-gradient(140deg,#0c141bd9,#17232ae8);
+  box-shadow:inset 0 0 12px #0008;
+}
+#dream-ui .panel .bag-grid .item-slot{
+  border:1px solid #6b6d63;
+  background:linear-gradient(145deg,#2e3940,#18222a);
+  box-shadow:inset 0 1px #dbc19520;
+}
+#dream-ui .panel .bag-grid button.item-slot:hover{
+  border-color:#d6ae74;filter:brightness(1.15);
+}
+#dream-ui .panel .bag-grid button.item-slot.selected,
+#dream-ui .panel .bag-grid button.item-slot[aria-pressed="true"]{
+  border-color:#f1cd8c;
+  box-shadow:inset 0 0 0 1px #ddb979,0 0 9px #d6ab5e42;
+}
+#dream-ui .item-detail{
+  border-top:1px solid #a98d594b;
+  border-bottom:1px solid #a98d594b;
+  background:linear-gradient(90deg,#101c25b0,transparent);
+}
+#dream-ui .item-detail h3{font-size:13px}
+#dream-ui .item-detail p{font-size:11px;line-height:1.5}
+#dream-ui .item-detail-icon{
+  border:1px solid #a78b5c82;
+  background:radial-gradient(circle,#495347,#18222c);
+}
+#dream-ui .bag-wallet{color:#ddcca9}
+#dream-ui .bag-wallet b{color:#f4d99c}
+
+/* On a phone the bag is immediately accessible; equipment follows below. */
+@media(max-width:600px){
+  #dream-ui .top{top:calc(8px + var(--safe-top));right:calc(8px + env(safe-area-inset-right,0px))}
+  #dream-ui .vitals{
+    left:calc(8px + env(safe-area-inset-left,0px));top:calc(8px + var(--safe-top));
+    width:156px;height:108px;padding:8px 9px;
+  }
+  #dream-ui .vitals .player-line{font-size:11px;margin-bottom:4px}
+  #dream-ui .vitals .bar{margin:4px 0;height:14px}
+  #dream-ui .vitals .bar.xp{height:4px}
+  #dream-ui .vitals .xp-caption{font-size:9px;margin-top:3px}
+  #dream-ui .wallet{
+    left:calc(9px + env(safe-area-inset-left,0px));top:calc(120px + var(--safe-top));
+    width:154px;font-size:8px;min-height:24px;gap:3px;padding:3px 4px;
+  }
+  #dream-ui .panel.inventory-panel{width:auto;max-width:none}
+  #dream-ui .inventory-columns{display:flex;flex-direction:column;padding:9px 10px;gap:10px}
+  #dream-ui .bag-sheet{order:-1}
+  #dream-ui .equipment-sheet{
+    border-right:0;border-top:1px solid #a88e594d;padding:9px 0 0;
+  }
+  #dream-ui .paper-doll{height:172px}
+  #dream-ui .panel .bag-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:4px;max-height:190px;
+  }
+  #dream-ui .panel .bag-grid .item-slot{min-height:44px}
+  #dream-ui .inventory-heading{padding:10px 12px 6px}
+  #dream-ui .item-detail{margin:0 10px;padding:9px 0}
+  #dream-ui .inventory-action{padding:7px 10px 12px}
+  #dream-ui .panel .inventory-action>button{min-height:44px}
+}
+@media(min-width:380px) and (max-width:600px){
+  #dream-ui .panel .bag-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media(max-height:470px) and (min-width:601px){
+  #dream-ui .vitals{height:102px}
+  #dream-ui .wallet{top:calc(117px + var(--safe-top))}
+}

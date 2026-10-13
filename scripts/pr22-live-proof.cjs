@@ -32,9 +32,21 @@ fs.mkdirSync(out, { recursive: true });
         await page.locator(id).click();
         await expect(page.locator('#panel')).toBeHidden();
       }
-      await page.locator('#sign-shop').click();
+      // The projected world sign can legitimately fall outside the camera view.
+      // Exercise the same real shop UI via the visible inventory button in that case.
+      const shopSign = page.locator('#sign-shop');
+      const signRect = await shopSign.boundingBox();
+      const signActionable = await shopSign
+        .click({ trial: true, timeout: 1500 })
+        .then(() => true, () => false);
+      row.shopSign = { rect: signRect, actionable: signActionable };
+      if (signActionable) await shopSign.click();
+      else {
+        await page.locator('#inventory').click();
+        await page.locator('#open-shop').click();
+      }
       await expect(page.locator('#buy-one')).toBeVisible();
-      if (width === 1440) await page.locator('#sign-shop').click();
+      if (width === 1440 && signActionable) await shopSign.click();
       else await page.locator('#panel-close').click();
       await expect(page.locator('#panel')).toBeHidden();
       // Sample after the real bubbling feedback handler, inside the actual event.
@@ -177,6 +189,45 @@ fs.mkdirSync(out, { recursive: true });
         await page.evaluate(() => window.__DREAM_SESSION__.state.player.quest),
       ).toEqual({ stage: 3, progress: 0 });
       await page.screenshot({ path: out + '/' + width + '-all-quests.png' });
+      if (width === 390) {
+        // DOM PointerEvents exercise the actual renderer zoom integration,
+        // without claiming physical multitouch-device certification.
+        const canvas = page.locator('#game');
+        const beforePinch = await page.evaluate(() => ({
+          zoom: window.__DREAM_CAMERA_ZOOM__(),
+          x: window.__DREAM_SESSION__.state.player.x,
+          z: window.__DREAM_SESSION__.state.player.z,
+        }));
+        await canvas.dispatchEvent('pointerdown', {
+          pointerId: 201, pointerType: 'touch', isPrimary: true,
+          button: 0, clientX: 100, clientY: 300,
+        });
+        await canvas.dispatchEvent('pointerdown', {
+          pointerId: 202, pointerType: 'touch', isPrimary: false,
+          button: 0, clientX: 220, clientY: 300,
+        });
+        await canvas.dispatchEvent('pointermove', {
+          pointerId: 202, pointerType: 'touch', isPrimary: false,
+          button: 0, clientX: 260, clientY: 300,
+        });
+        await canvas.dispatchEvent('pointerup', {
+          pointerId: 201, pointerType: 'touch', isPrimary: true,
+          button: 0, clientX: 100, clientY: 300,
+        });
+        await canvas.dispatchEvent('pointerup', {
+          pointerId: 202, pointerType: 'touch', isPrimary: false,
+          button: 0, clientX: 260, clientY: 300,
+        });
+        const afterPinch = await page.evaluate(() => ({
+          zoom: window.__DREAM_CAMERA_ZOOM__(),
+          x: window.__DREAM_SESSION__.state.player.x,
+          z: window.__DREAM_SESSION__.state.player.z,
+        }));
+        expect(afterPinch.zoom).toBeLessThan(beforePinch.zoom);
+        expect(afterPinch.x).toBe(beforePinch.x);
+        expect(afterPinch.z).toBe(beforePinch.z);
+        row.pinch = { before: beforePinch, after: afterPinch, simulated: true };
+      }
       expect(errors).toEqual([]);
       await context.close();
     }

@@ -12,7 +12,9 @@ import './unified-interface.css';
 import './game-input-polish.css';
 import './game-ui-feedback.css';
 import './compact-windows.css';
+import './ingame-layout.css';
 import {nextWheelZoom} from './camera-wheel-zoom';
+import {PinchZoomGesture} from './camera-pinch-zoom';
 import {bindHotbarClickFeedback,flashActionSlot} from './hotbar-feedback';
 import {fitEntryScreen} from './entry-fit';
 import {entryScreen,ENTRY_CHARACTERS} from './entry-screen';
@@ -199,9 +201,23 @@ async function enter(state: Save) {
     const canvas = game.renderer.domElement;
     const feedback=createCombatFeedback(root,game.camera,canvas);
     mountTownSigns();
+    let cameraWheelZoom=1;
+    const pinch=new PinchZoomGesture();
     let pointerStart: { x: number; y: number } | null = null;
-    canvas.addEventListener('pointerdown', e => { pointerStart = e.isPrimary&&e.button===0?{x:e.clientX,y:e.clientY}:null; });
+    canvas.addEventListener('pointerdown', e => {
+      pointerStart=e.isPrimary&&e.button===0?{x:e.clientX,y:e.clientY}:null;
+      if(e.pointerType==='touch'&&pinch.pointerDown(e.pointerId,e.clientX,e.clientY))pointerStart=null;
+    });
+    canvas.addEventListener('pointermove',e=>{
+      if(e.pointerType!=='touch')return;
+      const next=pinch.pointerMove(e.pointerId,e.clientX,e.clientY,cameraWheelZoom);
+      if(next===null||mobileShell.paused)return;
+      cameraWheelZoom=next;
+      game.setCameraZoom(cameraWheelZoom);
+    });
     canvas.addEventListener('pointerup', e => {
+      // Both fingers of a pinch must be released before a world tap is permitted.
+      if(e.pointerType==='touch'&&pinch.pointerUp(e.pointerId)){pointerStart=null;return;}
       if(!e.isPrimary||e.button!==0){pointerStart=null;return;}
       const tapped=pointerStart && Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)<12;
       pointerStart=null;
@@ -211,8 +227,10 @@ async function enter(state: Save) {
       if(facility){if(facility.id==='dungeon')requestDungeonApproach();else {manualStop();session.stopMovement();togglePanel(facility.panel);}}
       else game.handleClick(e);
     });
-    canvas.addEventListener('pointercancel',()=>{pointerStart=null;});
-    let cameraWheelZoom=1;
+    canvas.addEventListener('pointercancel',e=>{
+      if(e.pointerType==='touch')pinch.pointerUp(e.pointerId);
+      pointerStart=null;
+    });
     canvas.addEventListener('wheel',e=>{
       e.preventDefault();
       if(mobileShell.paused)return;
@@ -350,7 +368,7 @@ function requestDungeonApproach():void{
   updateHud();
 }
 function mountHud() {
-  root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="게임 옵션 열기" title="게임 옵션">${classicIcon('settings')}</button></header>
+  root.innerHTML=`<header class="top" aria-label="게임 옵션"><button id="menu" aria-label="게임 옵션 열기" title="게임 옵션">${classicIcon('settings')}</button></header>
 <section class="vitals card" role="button" tabindex="0" aria-label="캐릭터 상세 정보 열기" title="캐릭터 상세 정보"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
@@ -401,7 +419,6 @@ function mountHud() {
   };
   $('#log-form').onsubmit=e=>{e.preventDefault();const input=$<HTMLInputElement>('#log-input');if(input.value.trim())addLog(input.value.trim(),true);input.value='';};
   root.querySelectorAll<HTMLButtonElement>('[data-log-filter]').forEach(button=>button.onclick=()=>{logFilter=button.dataset['logFilter']!;root.querySelectorAll('[data-log-filter]').forEach(b=>b.classList.toggle('active',b===button));$('#log-lines').querySelectorAll<HTMLElement>('p').forEach(p=>p.hidden=logFilter==='combat'&&p.dataset['kind']!=='combat');});
-  $('.brand').onclick=e=>e.preventDefault();
   gameScrollbars=createGameScrollbars(root);gameScrollbars.update();
 }
 function updateHud() {
@@ -415,7 +432,6 @@ function updateHud() {
   $('#hp').textContent=`${p.hp} / ${maxHp(p)}`; $('#mp').textContent=`${p.mp} / 60`;
   $('#hp-bar').style.width=`${p.hp/maxHp(p)*100}%`; $('#mp-bar').style.width=`${p.mp/60*100}%`; $('#xp-bar').style.width=`${p.xp/xpNeeded(p)*100}%`;
   $('#xp-caption').textContent=`EXP ${p.xp} / ${xpNeeded(p)}`;
-  $('.chapter strong').textContent=p.dungeon!.inside?'폐허의 시련 · '+DUNGEON_WAVES[p.dungeon!.wave].title:Math.hypot(p.x,p.z)<=24?'시작의 마을 · 안전 지역':'동쪽 사냥터 · 전투 지역';
   const skillButton=root.querySelector<HTMLButtonElement>('[data-intent="skill"]')!;$('#skill-cooldown').textContent=session.skillCooldown>.05?`${session.skillCooldown.toFixed(1)}s`:'2';skillButton.classList.toggle('cooling',session.skillCooldown>.05);skillButton.style.setProperty('--remaining',`${session.skillCooldown/4*100}%`);skillButton.title=`${isWeaponEquipped(p)?'강타 · MP 12':'강타 · 무기 장착 필요'}${session.skillCooldown>.05?' · 재사용 대기 중':''}`;
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
   $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):`${questSummary(validateQuest(p.quest))} · ${canClaimQuest(p.quest!)?'목표 달성 · 마을 보상 수령':activeQuest(p.quest!)?.description??'폐허의 시련에 도전하세요.'}`;
