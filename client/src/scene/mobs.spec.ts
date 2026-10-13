@@ -252,6 +252,8 @@ describe('mobs visual mapping', () => {
     const loader = vi.spyOn(await import('./creature/mesh-character'), 'loadGltfTemplate')
       .mockRejectedValueOnce(new Error('temporary CDN error'))
       .mockResolvedValue({ scene: mobRoot, animations: [] });
+    // Vitest keeps spy history from earlier mob-rig cases in this suite.
+    loader.mockClear();
 
     const scene = { add: () => undefined, remove: () => undefined };
     const map: MobMeshMap = new Map();
