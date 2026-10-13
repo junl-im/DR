@@ -1,6 +1,6 @@
 /* Original Dungeon ZERO silver-and-obsidian interface. No third-party game art. */
 :root{--dz-ink:#0d1114;--dz-surface:#192127;--dz-silver:#9da99f;--dz-gold:#d7b97e;--dz-selected:#f1cd8c;--dz-ruby:#a82e3c;--dz-mana:#316a90;--dz-text:#e6dfca;--dz-space-tight:4px;--dz-space-section:8px;--dz-space-touch:44px}
-#dream-ui :is(.panel,.bottom,.vitals,.quest.hunt-settings-open),.title-entry .entry-card,#mobile-shell dialog{
+#dream-ui .panel,#dream-ui .panel.inventory-panel,#dream-ui .bottom,#dream-ui .vitals,#dream-ui .quest.hunt-settings-open,.title-entry .entry-card,#mobile-shell dialog{
  border:8px solid transparent;border-image:url('/art/mmorpg-frame.svg') 24 / 12px / 3px stretch;
  background:repeating-linear-gradient(135deg,#ffffff02 0 1px,transparent 1px 4px),radial-gradient(ellipse at 50% 0,#34434a55,transparent 70%),linear-gradient(#1a2229f7,#0b1015fa);
  box-shadow:0 14px 35px #000a,inset 0 0 24px #0008;color:var(--dz-text);border-radius:0;
@@ -87,9 +87,9 @@
 #dream-ui .bar.xp i{background:linear-gradient(#d4c093,#897440)}
 #dream-ui .wallet{background:#0b141bb3;border-color:#a5ad7a33;color:#9fac9d;font-size:9px}
 #dream-ui .wallet b{color:#dfc995;font-family:Georgia,serif}
-#dream-ui .bottom{padding:3px 4px}
+#dream-ui .bottom{padding:3px 4px;border-width:4px;border-image-width:8px}
 #dream-ui .hotbar-title{color:#a9b69d;font-size:8px;letter-spacing:1px}
-#dream-ui .actions button{border-color:#8f9a7e99;background:radial-gradient(ellipse at 50% 0,#afbc8233,transparent 80%),linear-gradient(#26332e,#0b141d);box-shadow:inset 0 0 0 2px #0008,inset 0 3px #b7c6a92b,0 1px 4px #0008;border-radius:1px}
+#dream-ui .actions button{min-width:44px;border-color:#8f9a7e99;background:radial-gradient(ellipse at 50% 0,#afbc8233,transparent 80%),linear-gradient(#26332e,#0b141d);box-shadow:inset 0 0 0 2px #0008,inset 0 3px #b7c6a92b,0 1px 4px #0008;border-radius:1px}
 #dream-ui .actions button small{color:#efd59d;font-family:Georgia,serif}
 #dream-ui .actions span{color:#bfc8b5;text-shadow:0 1px 2px #000}
 #dream-ui .classic-log{border:1px solid #a8ac7d66;box-shadow:inset 0 0 0 2px #0004,inset 0 1px #d6d7b51a}
