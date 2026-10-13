@@ -9,3 +9,16 @@ input,textarea,[contenteditable="true"],[role="textbox"]{
 @media(max-width:550px){#player-overhead-name{transform:translate(-50%,calc(-100% - 9px));}}
 /* Windows open and close in place; browser-like panel dragging is disabled. */
 #dream-ui .inventory-heading{cursor:default;touch-action:auto;}
+
+/* Primary-button-only settings access; retain the original 44px A tap target. */
+#dream-ui .auto-control{display:flex;align-items:center;gap:6px}
+#dream-ui #hunt-config-toggle{
+ width:44px;height:44px;min-width:44px;min-height:44px;padding:0;
+ border:1px solid #a9966f99;border-radius:50%;
+ color:#dcc59a;font-size:24px;line-height:1;
+ background:radial-gradient(circle at 35% 30%,#343d42ee,#171f25ec);
+ box-shadow:0 3px 12px #0009;
+}
+#dream-ui #hunt-config-toggle:hover,#dream-ui #hunt-config-toggle:focus-visible{
+ color:#fff1c9;border-color:#e2c18c;filter:brightness(1.2);
+}
