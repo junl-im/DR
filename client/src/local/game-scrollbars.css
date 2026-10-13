@@ -5,3 +5,4 @@
 #dream-ui .game-scrollbar-thumb{position:absolute;left:0;top:0;width:6px;min-height:0;border:1px solid #d6b97c;border-radius:2px;background:linear-gradient(90deg,#695030,#ddbd7e 45%,#795e36);box-shadow:inset 0 1px #fff0ba,inset 0 -1px #382614;pointer-events:auto}
 #dream-ui .game-scrollbar:hover .game-scrollbar-thumb,#dream-ui .game-scrollbar.dragging .game-scrollbar-thumb{filter:brightness(1.25)}
 #dream-ui .game-scrollbar:focus-visible{outline:2px solid #e6c58e;outline-offset:2px}
+#dream-ui :is(.log-lines,.bag-grid,.item-detail).game-scroll-host{padding-right:12px!important}
