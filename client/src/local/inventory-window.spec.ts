@@ -3,18 +3,14 @@ import { createInventoryWindow } from './inventory-window';
 import { newSave, LocalGameSession } from './session';
 
 describe('inventory fitting preview entry', () => {
-  it('links to a separate visual-only art lab without altering equipment ownership', () => {
+  it('keeps developer comparison windows out of the inventory', () => {
     const host = document.createElement('div');
     const player = newSave('비교 여행자', 0).player;
     const before = structuredClone(player);
     const action = vi.fn();
     const openShop = vi.fn();
     createInventoryWindow(host, () => player, action, openShop);
-    const link = host.querySelector<HTMLAnchorElement>('a.armor-preview-link');
-    expect(link?.getAttribute('href')).toBe('./art-lab.html');
-    expect(link?.getAttribute('target')).toBe('_blank');
-    expect(link?.getAttribute('rel')).toContain('noopener');
-    expect(host.textContent).toContain('시험용');
+    expect(host.querySelector('a[href*="art-lab"],a[target="_blank"]')).toBeNull();
     expect(player).toEqual(before);
     expect(action).not.toHaveBeenCalled();
     expect(openShop).not.toHaveBeenCalled();

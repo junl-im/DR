@@ -1,0 +1,22 @@
+/* Quiet quest tracker and one-handed hunt control. */
+#dream-ui .quest{top:calc(70px + var(--safe-top));right:14px;width:224px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;max-height:none;pointer-events:none}
+.quest>h2,.quest>#quest-progress,.quest>#quest-journal,.quest>#dungeon-journal,.quest>#hunt-tools,.quest>#auto-status,.quest>#hunt-close{display:none}
+#dream-ui .quest #quest-mini{display:block;width:100%;min-height:44px;margin:0;padding:5px 0 5px 10px;text-align:right;border:0;border-radius:0;background:transparent;box-shadow:none;text-shadow:0 1px 3px #000,0 1px 8px #000;font-size:12px;line-height:1.6;color:#f2dfbd;pointer-events:auto}
+#quest-mini::before{content:'◆';font-size:8px;color:#d9b574;margin-right:7px}
+#dream-ui .auto-control{position:absolute;right:14px;bottom:calc(var(--dock) + var(--safe-bottom) + 10px);z-index:6;pointer-events:auto}
+#dream-ui #auto-hunt{position:relative;width:44px;height:44px;min-height:44px;padding:0;margin:0;border:1px solid #9d8b704d;border-radius:50%;background:radial-gradient(circle at 35% 25%,#38424af2,#111b24f5);box-shadow:0 2px 10px #0009,inset 0 0 0 3px #101820;touch-action:none;user-select:none;-webkit-touch-callout:none;color:#aab2b7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+#auto-hunt b{font:600 20px/20px Georgia,serif}#auto-hunt #auto-mode{font:700 8px/10px sans-serif;letter-spacing:1px}
+#dream-ui #auto-hunt.active{border-color:#ddc387;color:#f4ddb0;background:radial-gradient(circle at 35% 25%,#58715b,#20392f);box-shadow:0 0 0 2px #bfda8c22,0 0 13px #a7d38744,inset 0 0 0 3px #17291f}
+#dream-ui .quest.hunt-settings-open{top:auto;bottom:calc(var(--dock) + var(--safe-bottom) + 64px);width:280px;max-width:calc(100vw - 24px);max-height:calc(100dvh - var(--dock) - var(--safe-bottom) - var(--safe-top) - 134px);overflow-y:auto;overscroll-behavior:contain;pointer-events:auto;background:linear-gradient(135deg,#202c36fa,#0f1923fc);border:1px solid #a98d5d99;border-radius:8px;padding:16px;box-shadow:0 8px 40px #000a;z-index:12}
+.quest.hunt-settings-open>h2,.quest.hunt-settings-open>#quest-journal,.quest.hunt-settings-open>#dungeon-journal,.quest.hunt-settings-open>#hunt-tools,.quest.hunt-settings-open>#auto-status,.quest.hunt-settings-open>#hunt-close{display:block}
+#dream-ui .quest.hunt-settings-open #quest-mini{display:none}
+.quest.hunt-settings-open h2{font-size:14px;margin:0 46px 14px 0;color:#efd7ad}
+#dream-ui #hunt-close{position:absolute;right:5px;top:5px;width:44px;height:44px;min-height:44px;padding:0;margin:0;font-size:22px;background:transparent;border:0;box-shadow:none}
+.quest.hunt-settings-open button:not(#hunt-close),.quest.hunt-settings-open summary,.quest.hunt-settings-open select{width:100%;min-height:44px;font-size:12px}
+.quest.hunt-settings-open .auto-config-fields{padding:8px 0;gap:10px}.quest.hunt-settings-open .auto-config-fields select{height:44px;background:#0d1821;border-color:#687171}.quest.hunt-settings-open #auto-status{font-size:11px;line-height:1.65;padding-top:10px;border-top:1px solid #a78d5e33;color:#d4bb8c}
+.panel{z-index:15}.panel.inventory-panel{border-radius:8px;overflow-y:auto;overscroll-behavior:contain}.inventory-heading{border-radius:5px 5px 0 0}.panel .inventory-heading h2{font-size:18px}
+@media(max-width:550px){#dream-ui .quest{right:10px;width:min(47vw,190px);top:calc(62px + var(--safe-top))}#dream-ui .quest #quest-mini{font-size:11px;line-height:1.5;padding:3px 0 3px 6px;min-height:44px}#dream-ui .auto-control{right:10px;bottom:calc(128px + var(--safe-bottom) + 8px)}#dream-ui .quest.hunt-settings-open{right:10px;top:auto;bottom:calc(var(--dock) + var(--safe-bottom) + 8px);max-height:max(100px,calc(100dvh - var(--dock) - var(--safe-top) - var(--safe-bottom) - 84px));width:280px;padding:14px}.target,.target.elite-target{top:calc(64px + var(--safe-top))}.panel{border-radius:8px}.hotbar-title span:first-child{color:#c7b28d}.control-hint{display:none}}
+@media(pointer:coarse) and (min-width:551px){#dream-ui .quest{width:205px}#dream-ui .auto-control{right:calc(12px + env(safe-area-inset-right,0px))}}
+@media(prefers-reduced-motion:no-preference){#auto-hunt{transition:background .15s,box-shadow .15s,border-color .15s}}
+
+@media(max-width:550px){.classic-log .log-lines,.classic-log .log-compose{padding-right:58px}}
