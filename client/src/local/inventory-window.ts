@@ -6,9 +6,9 @@ type Item = 'weapon' | 'potion' | 'wood';
 export function createInventoryWindow(host: HTMLElement, getPlayer: () => Player, action: (intent: Intent) => void, openShop: () => void) {
   let selected: Item = 'weapon', filter = 'all', signature = '';
   const details = (p: Player) => ({
-    weapon: { name: `여행자의 무기 +${p.weapon}`, icon: 'sword', tag: `일반 · 무기 · ${isWeaponEquipped(p)?'착용 중':'미착용'}`, info: `무기 공격력 +${6+p.weapon*4}`, description: '모험을 함께하는 기본 무기입니다. 강화하면 공격력이 4 증가합니다.', count: 1 },
-    potion: { name: '회복 물약', icon: 'potion', tag: '일반 · 소모품', info: '체력 55 회복', description: '현재 체력을 최대 체력까지 회복합니다. 단축키 3으로도 사용할 수 있습니다.', count: p.potions },
-    wood: { name: '목재', icon: 'wood', tag: '일반 · 재료', info: `보유 ${p.wood}개`, description: '마을 주변에서 채집하거나 사냥으로 얻습니다. 영지 정원의 건설과 확장에 사용합니다.', count: p.wood },
+    weapon: { name: `여행자의 무기 +${p.weapon}`, icon: 'sword' as const, tag: `일반 · 무기 · ${isWeaponEquipped(p)?'착용 중':'미착용'}`, info: `무기 공격력 +${6+p.weapon*4}`, description: '모험을 함께하는 기본 무기입니다. 강화하면 공격력이 4 증가합니다.', count: 1 },
+    potion: { name: '회복 물약', icon: 'potion' as const, tag: '일반 · 소모품', info: '체력 55 회복', description: '현재 체력을 최대 체력까지 회복합니다. 단축키 3으로도 사용할 수 있습니다.', count: p.potions },
+    wood: { name: '목재', icon: 'wood' as const, tag: '일반 · 재료', info: `보유 ${p.wood}개`, description: '마을 주변에서 채집하거나 사냥으로 얻습니다. 영지 정원의 건설과 확장에 사용합니다.', count: p.wood },
   });
   function render(force = false) {
     const p=getPlayer(), armor=readArmor(p.armor), next=JSON.stringify([p.weapon,p.weaponEquipped,p.level,p.gold,p.potions,p.wood,p.hp,armor,filter,selected]);

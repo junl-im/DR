@@ -6,6 +6,8 @@ import './hud-refresh.css';
 import './mobile-shell.css';
 import './entry-screen.css';
 import './compact-hud.css';
+import './unified-interface.css';
+import {fitEntryScreen} from './entry-fit';
 import {entryScreen,ENTRY_CHARACTERS} from './entry-screen';
 import {createMobileShell} from './mobile-shell';
 import { pickTownFacility } from './town-interaction';
@@ -40,6 +42,7 @@ const root = document.createElement('main'); root.id = 'dream-ui'; document.body
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
 const requestedArt = new URLSearchParams(location.search).get('art') ?? 'original';
 let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'original';
+let disposeEntryFit:(()=>void)|undefined;
 let session: LocalGameSession;
 let autoHunt:AutoHuntController|undefined;
 const mobileShell=createMobileShell({pause:()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);if(session){session.stopMovement();session.attacking=false;}},persist:async()=>{await saveTask;await writeSave(session.snapshot());}});
@@ -87,6 +90,7 @@ async function boot() {
   try { remembered = await readSave(); } catch(e) { storageError = errorText(e); }
   root.innerHTML=entryScreen(!!remembered,!!storageError);
   mobileShell.mountControls();
+  disposeEntryFit=fitEntryScreen(root);
   $('#entry-status').textContent = storageError;
   const continueName=root.querySelector<HTMLElement>('#continue-name');if(continueName&&remembered)continueName.textContent=remembered.player.name;
   root.querySelectorAll<HTMLInputElement>('input[name="character"]').forEach(input=>input.addEventListener('change',()=>{
@@ -124,6 +128,7 @@ async function enter(state: Save) {
     game.renderer.setPixelRatio(quality.dpr);
     game.renderer.shadowMap.enabled=shadowBudget.enabled;
     game.setLocalPlayerName(session.state.player.name);
+    disposeEntryFit?.();disposeEntryFit=undefined;
     mountHud();
     mobileShell.mountControls();
     autoHunt=new AutoHuntController(session,id=>game.setVfxTargetMobId(id));
@@ -191,9 +196,7 @@ async function enter(state: Save) {
     // Fixed diagonal camera: wheel and Q/E never orbit the scene.
     let lastCameraMode=innerWidth<=700?'mobile':'desktop';
     function resizeViewport() {
-      const dock=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock'))||156;
-      const safe=parseFloat(getComputedStyle(document.querySelector('.bottom')!).bottom)||0;
-      const height=Math.max(180,innerHeight-dock-safe);
+      const height=Math.max(180,innerHeight);
       game.renderer.setSize(innerWidth,height);
       game.camera.aspect=innerWidth/height;game.camera.updateProjectionMatrix();
       const mode=innerWidth<=700?'mobile':'desktop';
@@ -287,7 +290,7 @@ function dodgeBossAttack():void {
   updateHud();
 }
 function mountHud() {
-  root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="fullscreen-toggle" type="button" aria-pressed="false">전체화면</button><button id="game-exit" type="button">종료</button><button id="menu" aria-label="저장과 설정 열기">☰</button></header>
+  root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="게임 옵션 열기" title="게임 옵션">${classicIcon('settings')}</button></header>
 <section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
@@ -297,7 +300,7 @@ function mountHud() {
  <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option><option value="quest">현재 의뢰 대상 · 정예 포함</option></select></label>
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
  </div></details></div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section><button id="boss-dodge" type="button" title="Q 키 · 기존 이동 속도로 공격 예고 범위 벗어나기" hidden>회피 · Q</button>
-<div class="auto-control"><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기 또는 우클릭: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)"><b>⌂</b><span>귀환</span><small>R</small></button><button id="estate"><b>♧</b><span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
+<div class="auto-control"><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기 또는 우클릭: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)">${classicIcon('recall')}<span>귀환</span><small>R</small></button><button id="estate">${classicIcon('estate')}<span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
 <div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><div id="screen-status" role="status"></div><footer id="save-status">저장 준비 중</footer>`;
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
   $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
@@ -448,7 +451,10 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
   } else if(kind==='inventory') {
     inventoryWindow=createInventoryWindow($('#panel-content'),()=>session.state.player,intent=>{session.dispatch(intent);updateHud();void save();},()=>showPanel('shop'));
   } else {
-    $('#panel-content').innerHTML=`<span class="eyebrow">YOUR JOURNEY, KEPT SAFE</span><h2>여행 기록</h2><p>15초마다 이 기기에 저장합니다.<br>Google 로그인으로 다른 기기에 기록을 옮길 수 있습니다.</p><p>모바일 전체화면이 제한되면 Chrome에서 열거나 Safari 공유 메뉴에서 홈 화면에 추가해 실행하세요.</p><div id="browser-help" hidden><p>카카오 메뉴 → 다른 브라우저로 열기. 기기 저장은 브라우저마다 다르므로 먼저 저장 파일을 내려받으세요.</p><button id="external-browser">다른 브라우저로 열기</button><button id="copy-game-url">게임 주소 복사</button><input id="game-url" readonly hidden aria-label="복사할 게임 주소"></div><button id="save-now" class="primary">지금 기기에 저장</button><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label><div class="entry-divider"></div><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button><p id="cloud-status" role="status"></p><small>단독 모험 기록입니다. 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
+    $('#panel-content').innerHTML=`<span class="eyebrow">SYSTEM · PREFERENCES</span><h2>게임 옵션</h2><p class="settings-lead">화면, 여행 기록과 계정 연결을 관리하세요.</p>
+      <section class="settings-section"><h3>화면 및 플레이</h3><p>화질은 기기 성능에 맞춰 자동으로 조절됩니다.</p><div class="settings-grid"><button id="fullscreen-toggle" type="button" aria-pressed="false">전체화면</button><button id="game-exit" type="button">저장하고 종료</button></div><p>모바일에서 전체화면이 제한되면 Chrome 또는 홈 화면 실행을 이용하세요.</p><div id="browser-help" hidden><p>카카오 메뉴 → 다른 브라우저로 열기. 기록은 브라우저마다 별도로 저장됩니다.</p><button id="external-browser">다른 브라우저로 열기</button><button id="copy-game-url">게임 주소 복사</button><input id="game-url" readonly hidden aria-label="복사할 게임 주소"></div></section>
+      <section class="settings-section"><h3>여행 기록</h3><p>15초마다 이 기기에 자동 저장합니다.</p><button id="save-now" class="primary">지금 기기에 저장</button><details><summary>저장 파일 백업 · 복구</summary><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label></details></section>
+      <section class="settings-section"><h3>계정 및 클라우드</h3><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><details><summary>클라우드 저장 · 불러오기</summary><p>기기 사이에 단독 모험 기록을 옮깁니다.</p><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button></details><p id="cloud-status" role="status"></p></section><small>단독 모험 기록은 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
     mobileShell.mountControls();
     $('#save-now').onclick=()=>void save();
     $('#export').onclick=()=>{const blob=new Blob([JSON.stringify({...session.snapshot(),updatedAt:Date.now()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a'); a.href=url; a.download='Dungeon-zero-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
