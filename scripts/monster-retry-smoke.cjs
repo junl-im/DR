@@ -19,12 +19,18 @@ fs.mkdirSync(OUT,{recursive:true});
    const page=await browser.newPage({viewport,deviceScaleFactor:1});
    const record={device,failedRequests:0,successfulRequests:0,responses:[],errors:[],
      sawCapsule:false,ready:false,overflow:false};
+   // Keep the successful retry pending until the real fallback is observed.
+   // A fast retry can otherwise finish before the debug hook is published.
+   let releaseRecovery,closing=false;
+   const recoveryGate=new Promise(resolve=>{releaseRecovery=resolve;});
    await page.route('**/models/monsters/Gremlin.glb',async route=>{
      // Keep the first failure deterministic: no blocking of unrelated models.
      if(record.failedRequests===0){
        record.failedRequests++;
        await route.fulfill({status:503,contentType:'text/plain',body:'QA transient GLB error'});
      }else{
+       await recoveryGate;
+       if(closing)return;
        await route.continue();
      }
    });
@@ -44,6 +50,7 @@ fs.mkdirSync(OUT,{recursive:true});
        return one&&one.rendered&&!one.modelReady&&one.hp>0;
      },null,{timeout:15000});
      record.sawCapsule=true;
+     releaseRecovery();
      await page.waitForFunction(()=>{
        const one=window.__DREAM_MOB_RENDER_STATUS__()?.find(m=>m.id==='local-0');
        return one&&one.rendered&&one.modelReady&&one.hp>0;
@@ -58,7 +65,10 @@ fs.mkdirSync(OUT,{recursive:true});
         !record.successfulRequests||record.errors.length||record.overflow){
        throw new Error('Transient GLB recovery regression: '+JSON.stringify(record));
      }
-   }finally{report.viewports.push(record);await page.close();}
+   }finally{
+     record.finalStatus=await page.evaluate(()=>window.__DREAM_MOB_RENDER_STATUS__?.()?.find(m=>m.id==='local-0')).catch(()=>null);
+     closing=true;releaseRecovery();report.viewports.push(record);await page.close();
+   }
   }
   console.log('MONSTER GLB FAULT-RECOVERY VERIFIED: desktop and mobile; first 503 then model ready');
  }catch(error){report.error=String(error);console.error(report.error);process.exitCode=1;}
