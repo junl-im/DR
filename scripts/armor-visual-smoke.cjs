@@ -129,7 +129,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.keyboard.press('Tab');
     const nextTabTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
     if(!nextTabTarget || tabTarget===nextTabTarget)throw new Error('Tab cycling stuck at one target');
-    await game.locator('#hunt-tools summary').first().click();await game.locator('#next-target').click();
+    await game.locator('#auto-hunt').click({button:'right'});await game.locator('#next-target').click();
     const buttonTarget=await game.evaluate(()=>window.__DREAM_SESSION__?.target);
     if(!buttonTarget||buttonTarget===nextTabTarget)
       throw new Error('Mobile next-target button did not cycle to another monster');
@@ -144,20 +144,20 @@ fs.mkdirSync(out,{recursive:true});
       throw new Error('Turning off auto hunt did not stop active combat');
     // Real UI option changes must affect the session controller without
     // changing saved player stats or auto-starting background potion use.
-    await game.locator('#auto-config summary').click();
-    await game.locator('#auto-radius').selectOption('12');
-    await game.locator('#auto-priority').selectOption('normal-only');
-    await game.locator('#auto-potion').selectOption('0.5');
+    await game.locator('#auto-config').evaluate(el=>el.open=!el.open);
+    await game.locator('#auto-config').evaluate(el=>el.open=true);await game.locator('#auto-radius').selectOption('12');
+    await game.locator('#auto-config').evaluate(el=>el.open=true);await game.locator('#auto-priority').selectOption('normal-only');
+    await game.locator('#auto-config').evaluate(el=>el.open=true);await game.locator('#auto-potion').selectOption('0.5');
     await game.locator('#auto-hunt').click();
     if(await game.locator('#auto-hunt').getAttribute('aria-pressed')!=='true')
       throw new Error('Options prevented auto hunt activation');
     await game.waitForFunction(()=>document.querySelector('#auto-status')?.textContent.includes('12m'));
     await game.screenshot({path:out+'/village-auto-settings-desktop.png',fullPage:true});
     await game.locator('#auto-hunt').click();
-    await game.locator('#auto-radius').selectOption('28');
-    await game.locator('#auto-priority').selectOption('nearest');
-    await game.locator('#auto-potion').selectOption('0');
-    await game.locator('#auto-config summary').click();
+    await game.locator('#auto-config').evaluate(el=>el.open=true);await game.locator('#auto-radius').selectOption('28');
+    await game.locator('#auto-config').evaluate(el=>el.open=true);await game.locator('#auto-priority').selectOption('nearest');
+    await game.locator('#auto-config').evaluate(el=>el.open=true);await game.locator('#auto-potion').selectOption('0');
+    await game.locator('#auto-config').evaluate(el=>el.open=!el.open);
     if(await game.evaluate(()=>window.__DREAM_SESSION__.attacking))
       throw new Error('Turning off configured auto hunt kept attacking');
     await game.screenshot({path:out+'/village-facades-desktop.png',fullPage:true});
@@ -176,12 +176,13 @@ fs.mkdirSync(out,{recursive:true});
       throw new Error('Village facade preview overflowed mobile viewport');
     if(!await game.locator('#quality-info').isVisible())
       throw new Error('Mobile GPU FPS / draw-call indicator must remain visible');
-    await game.locator('#auto-config summary').click();
+    await game.locator('#auto-config').evaluate(el=>el.open=!el.open);
     if(await game.evaluate(()=>document.documentElement.scrollWidth>innerWidth))
       throw new Error('Expanded mobile auto-hunt options overflowed the viewport');
     await game.screenshot({path:out+'/village-auto-settings-mobile.png',fullPage:true});
-    await game.locator('#auto-config summary').click();
+    await game.locator('#auto-config').evaluate(el=>el.open=!el.open);
     await game.screenshot({path:out+'/village-facades-mobile.png',fullPage:true});
+    await game.locator('#hunt-close').click();
     // An actual selected monster must not cover mobile quest/touch buttons.
     await game.evaluate(()=>{
       const s=window.__DREAM_SESSION__;
@@ -236,7 +237,7 @@ fs.mkdirSync(out,{recursive:true});
       }
     });
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.quest?.progress===3);
-    await game.locator('#quest-journal').click();
+    await game.locator('#quest-mini').click();
     await game.locator('#quest-claim').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.quest?.stage===1);
     await game.waitForFunction(()=>[...document.querySelectorAll('#log-lines p')].some(node=>node.textContent.includes('마을의 첫 의뢰 완료')));
@@ -254,7 +255,7 @@ fs.mkdirSync(out,{recursive:true});
       s.state.player.quest={stage:3,progress:0};
       s.state.player.mp=60;s.state.player.hp=100;
     });
-    await game.locator('#dungeon-journal').click();
+    await game.locator('#auto-hunt').click({button:'right'});await game.locator('#dungeon-journal').click();
     await game.locator('#dungeon-enter').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.inside===true);
     await game.locator('#panel-close').click();
@@ -302,7 +303,7 @@ fs.mkdirSync(out,{recursive:true});
     if(await game.evaluate(()=>window.__DREAM_SESSION__.mobs.some(m=>m.id==='dungeon-0-0')))throw new Error('A defeated dungeon monster respawned after reload');
     await dungeonKill('dungeon-0-1');
     const next=async()=>{
-      await game.locator('#dungeon-journal').click();
+      await game.locator('#auto-hunt').click({button:'right'});await game.locator('#dungeon-journal').click();
       await game.locator('#dungeon-next').click();
       await game.locator('#panel-close').click();
     };
@@ -383,7 +384,7 @@ fs.mkdirSync(out,{recursive:true});
       throw new Error('Real Q-key sweep dodge did not escape damage: '+JSON.stringify({sweepBefore,sweepAfter}));
     await game.screenshot({path:out+'/ruin-boss-sweep-dodged-mobile.png',fullPage:true});
     await dungeonKill('dungeon-2-0');
-    await game.locator('#dungeon-journal').click();
+    await game.locator('#auto-hunt').click({button:'right'});await game.locator('#dungeon-journal').click();
     await game.locator('#dungeon-claim').click();
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.clears===1 && !window.__DREAM_SESSION__?.state?.player?.dungeon?.inside);
     await game.screenshot({path:out+'/ruin-clear-mobile.png',fullPage:true});

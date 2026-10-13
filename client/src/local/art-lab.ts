@@ -222,6 +222,6 @@ Promise.all(views.map(v=>v.ready)).then(models=>{
   poseStatus.textContent='원본 애니메이션 재생 중 · 슬라이더로 프레임 고정';
   updatePoseDiagnostics();
   Object.assign(window,{__ART_LAB__:{ready:true,models}});
-});
+}).catch(error=>{poseSlider.disabled=true;poseStatus.textContent='비교 모델 로드 실패 · 새로고침 후 다시 확인하세요.';Object.assign(window,{__ART_LAB__:{ready:false,error:String(error)}});});
 let last=performance.now();function tick(now:number){const dt=Math.min(.05,(now-last)/1000);last=now;for(const v of views){if(!poseFrozen)v.character.update(dt);v.renderer.render(v.scene,v.camera);}requestAnimationFrame(tick);}requestAnimationFrame(tick);
 
