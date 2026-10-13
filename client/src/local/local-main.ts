@@ -471,7 +471,14 @@ function positionPlayerOverheadName():void{
 }
 
 function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(sign.id==='dungeon')requestDungeonApproach();else {pendingDungeonApproach=null;if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);session.stopMovement();togglePanel(sign.panel);}};layer.append(button);}root.append(layer);}
-function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=session.state.player.dungeon!.inside||signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
+function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=session.state.player.dungeon!.inside||signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;const rawX=canvas.left+(signPoint.x+1)*canvas.width/2,rawY=canvas.top+(1-signPoint.y)*canvas.height/2;
+  const sidePad=Math.min(64,canvas.width/4);
+  const x=Math.max(canvas.left+sidePad,Math.min(canvas.right-sidePad,rawX));
+  let y=Math.max(canvas.top+48,Math.min(canvas.bottom-12,rawY));
+  // Keep projected sign tap targets away from upper-corner HUD controls.
+  const leftHud=innerWidth<=600?174:230,rightHud=innerWidth<=600?184:224;
+  if(y<canvas.top+156&&(x<canvas.left+leftHud||x>canvas.right-rightHud))y=Math.min(canvas.bottom-12,canvas.top+160);
+  button.style.left=x+'px';button.style.top=y+'px';}}
 function refreshCharacterPanel(){
   const p=session.state.player,node=$('#character-stats');if(!node)return;
   const rows=[['이름',p.name],['레벨',p.level],['HP',p.hp+' / '+maxHp(p)],['MP',p.mp+' / 60'],['경험치',p.xp+' / '+xpNeeded(p)],['공격력',attackPower(p)],['방어력',armorDefense(p.armor)],['무기',isWeaponEquipped(p)?'장착 · +'+p.weapon:'미장착'],['처치',p.kills],['골드',p.gold],['물약',p.potions]];
