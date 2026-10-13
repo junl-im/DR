@@ -50,6 +50,8 @@ jobs:
           exit 1
       - name: Verify live quest auto-walk, correct kills, HUD pulse/toggles and bounded zoom
         run: node scripts/gameplay-polish-smoke.cjs
+      - name: Prove compact HUD touch hold and inventory isolation
+        run: node scripts/compact-hud-smoke.cjs
       - name: Capture WebGL armor proof
         run: node scripts/armor-visual-smoke.cjs
       - name: Prove live Firebase-root monster rigs (desktop and mobile)
@@ -70,8 +72,6 @@ jobs:
         run: node scripts/title-screen-smoke.cjs
       - name: Verify repeated monster respawns and living sibling opacity
         run: node scripts/monster-respawn-smoke.cjs
-      - name: Prove compact HUD touch hold and inventory isolation
-        run: node scripts/compact-hud-smoke.cjs
       - name: Verify fitted title, unified HUD and options at five viewport sizes
         run: node scripts/unified-interface-smoke.cjs
       - name: Rebuild GitHub Pages /DR/ production assets
