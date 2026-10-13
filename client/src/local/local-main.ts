@@ -3,6 +3,8 @@ import { createInventoryWindow } from './inventory-window';
 import './local.css';
 import './hud-refresh.css';
 import './mobile-shell.css';
+import './entry-screen.css';
+import {entryScreen,ENTRY_CHARACTERS} from './entry-screen';
 import {createMobileShell} from './mobile-shell';
 import { pickTownFacility } from './town-interaction';
 import { ART_TRIALS } from './art-trial';
@@ -81,12 +83,20 @@ async function boot() {
   initGameState();
   let storageError = '';
   try { remembered = await readSave(); } catch(e) { storageError = errorText(e); }
-  root.innerHTML = `<section class="entry"><div class="entry-card"><span class="eyebrow">THE FIRST CHAPTER</span><h1>던전<br><em>zero</em></h1><p class="entry-lead">마을을 나서면 모험이 시작된다.</p><div class="entry-divider"></div><p>시작의 마을을 탐험하고, 골드를 모아<br>나만의 영지를 가꾸세요.</p><label>여행자의 이름<input id="name" maxlength="20" value="모험가" autocomplete="nickname"></label><label>모험의 길<select id="class"><option value="0">수호자 · 검과 방패</option><option value="10">별의 학자 · 마법</option><option value="18">숲의 방랑자 · 탐험</option></select></label><label>캐릭터 외형 시험<select id="art-trial"><option value="original">현재 기본 모델</option><option value="knight">V3 · 중갑 기사</option><option value="ranger">V3 · 경갑 모험가</option><option value="traveler">V3 · 여행자</option></select></label><button id="start" class="primary">${remembered ? '새로운 여행 만들기' : '모험 시작하기'} <span>↗</span></button>${remembered ? '<button id="continue">이전 여행 이어하기</button>' : ''}${storageError ? '<button id="recover">백업 슬롯 복구</button>' : ''}<div id="browser-help" hidden><p>카카오 브라우저에서는 전체화면이 제한될 수 있습니다. 다른 브라우저로 열기를 권장합니다.</p><button id="external-browser">다른 브라우저로 열기</button><button id="copy-game-url">게임 주소 복사</button><input id="game-url" readonly hidden aria-label="복사할 게임 주소"></div><p id="screen-status" role="status"></p><p id="entry-status" role="status"></p><small>단독 플레이 · 이 기기에 자동 저장<br>클라우드 저장은 입장 후 선택할 수 있습니다.</small></div></section>`;
+  root.innerHTML=entryScreen(!!remembered,!!storageError);
   mobileShell.mountControls();
   $('#entry-status').textContent = storageError;
-  const artSelect=$<HTMLSelectElement>('#art-trial');artSelect.value=Object.hasOwn(ART_TRIALS,artTrial)?artTrial:'original';
-  artSelect.onchange=()=>{artTrial=artSelect.value;const url=new URL(location.href);url.searchParams.set('art',artTrial);history.replaceState(history.state,'',url);};
-  $('#start').onclick = () => { if (remembered && !confirm('기존 여행을 백업 슬롯에 보존하고 새로운 여행을 시작할까요?')) return; void enter(newSave($<HTMLInputElement>('#name').value, Number($<HTMLSelectElement>('#class').value))); };
+  const continueName=root.querySelector<HTMLElement>('#continue-name');if(continueName&&remembered)continueName.textContent=remembered.player.name;
+  root.querySelectorAll<HTMLInputElement>('input[name="character"]').forEach(input=>input.addEventListener('change',()=>{
+    const character=ENTRY_CHARACTERS.find(c=>c.id===Number(input.value))!;
+    $('#selected-class-name').textContent=character.name;$('#selected-class-detail').textContent=character.detail;
+  }));
+  $<HTMLFormElement>('#entry-form').onsubmit=e=>{
+    e.preventDefault();
+    if(remembered&&!confirm('기존 여행을 백업 슬롯에 보존하고 새로운 여행을 시작할까요?'))return;
+    const character=root.querySelector<HTMLInputElement>('input[name="character"]:checked')!;
+    void enter(newSave($<HTMLInputElement>('#name').value,Number(character.value)));
+  };
   root.querySelector<HTMLElement>('#continue')?.addEventListener('click', () => void enter(remembered!));
   root.querySelector<HTMLElement>('#recover')?.addEventListener('click', () => { void readSave('backup').then(s => { if (!s) throw new Error('백업 슬롯이 없습니다.'); return enter(s); }).catch(e => { $('#entry-status').textContent = errorText(e); }); });
 }
