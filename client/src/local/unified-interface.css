@@ -28,3 +28,11 @@ html,body{width:100%;height:100%;overflow:hidden}#dream-ui{overflow:hidden}
 
 /* The world continues behind the translucent dock; wide desktops keep a compact group. */
 :root{--dock-inset:max(8px,calc((100vw - 920px)/2))}#game{height:100dvh!important}#dream-ui .classic-log{left:calc(var(--dock-inset) + env(safe-area-inset-left,0px));right:calc(var(--dock-inset) + var(--slot-width) + 4px + env(safe-area-inset-right,0px))}#dream-ui .bottom,#dream-ui .auto-control{right:calc(var(--dock-inset) + env(safe-area-inset-right,0px))}#dream-ui .quest.hunt-settings-open{right:calc(var(--dock-inset) + env(safe-area-inset-right,0px))}
+
+/* The entire status card is an accessible character-window trigger. */
+#dream-ui .vitals{pointer-events:auto;cursor:pointer}
+#dream-ui .vitals:focus-visible{outline:2px solid #dfc486;outline-offset:3px}
+#character-stats .stat-line{gap:12px}
+
+#dream-ui label[for="auto-retaliate"]{display:flex;align-items:center;gap:8px;min-height:44px;line-height:1.6}
+#auto-retaliate{width:20px;height:20px;flex-shrink:0;accent-color:#bca16e}

@@ -1,5 +1,5 @@
 import {activeQuest,canClaimQuest,matchesQuestTarget} from './adventure-quests';
-import {maxHp,type LocalGameSession,type Mob} from './session';
+import {maxHp,type LocalGameSession,type Mob,type GameEvent} from './session';
 import {findPath,snapToNearestWalkable} from '@nj/game-core';
 
 export const AUTO_HUNT_RADIUS=28;
@@ -41,11 +41,12 @@ const elite=(m:Mob):boolean=>
   m.name==='숲의 정예 감시자'||m.name==='폐허의 파수꾼';
 
 /**
- * Session-scoped, explicitly opt-in assistance; never persisted or networked.
+ * Session-scoped assistance with on-hit defense; never persisted or networked.
  * Delegates all moving/damage/cooldown to LocalGameSession.tick/dispatch.
  */
 export class AutoHuntController {
   enabled=false;
+  retaliateOnHit=true;
   activity:'idle'|'hunting'|'waiting'|'blocked'|'travelling'='idle';
   radius:typeof AUTO_HUNT_RADII[number]=AUTO_HUNT_RADIUS;
   priority:HuntPriority='nearest';
@@ -67,6 +68,20 @@ export class AutoHuntController {
     private readonly session:LocalGameSession,
     private readonly onTarget:(id:string|null)=>void,
   ){}
+  /** Only actual surviving hits can arm combat; manual/safety stops disarm it. */
+  handleHit(event:GameEvent):void{
+    if(event.kind!=='hurt'||event.amount<=0||!event.sourceId||!this.retaliateOnHit||this.enabled||this.questTravel)return;
+    const p=this.session.state.player;
+    const attacker=this.session.mobs.find(m=>m.id===event.sourceId&&m.hp>0&&m.id.startsWith('dungeon-')===p.dungeon!.inside);
+    if(!attacker||p.hp/maxHp(p)<AUTO_HUNT_STOP_HP_RATIO||(!p.dungeon!.inside&&Math.hypot(p.x,p.z)<=24)||Math.hypot(attacker.x-p.x,attacker.z-p.z)>this.radius)return;
+    const quest=activeQuest(p.quest!);
+    if(this.priority==='quest'&&(!quest||canClaimQuest(p.quest!)||!matchesQuestTarget(attacker,quest.target)))this.priority='nearest';
+    if(this.priority==='normal-only'&&elite(attacker))this.priority='nearest';
+    this.setEnabled(true);
+    this.session.dispatch({type:'target',id:attacker.id});
+    this.onTarget(attacker.id);
+    this.session.message='피격 감지 · 자동사냥 ON';
+  }
   configure(options:{
     radius?:number;
     priority?:HuntPriority;
@@ -97,6 +112,7 @@ export class AutoHuntController {
     const wasTravelling=this.questTravel!==null;
     this.questTravel=null;
     this.enabled=!!value && p.hp>0;
+    this.retaliateOnHit=this.enabled;
     this.anchor=this.enabled?{x:p.x,z:p.z,inside:!!p.dungeon?.inside}:null;
     this.lastTarget=null;
     this.stuckSeconds=0;
@@ -122,8 +138,8 @@ export class AutoHuntController {
     const s=this.session,p=s.state.player;
     const quest=activeQuest(p.quest!);
     if(p.dungeon!.inside){s.message='의뢰 자동이동은 마을 밖 필드에서만 가능합니다.';return false;}
-    if(!quest){s.message='마을 의뢰를 모두 완료했습니다.';return false;}
-    if(canClaimQuest(p.quest!)){s.message='의뢰 목표 달성 · 마을에서 보상을 받으세요.';return false;}
+    if(!quest){this.setEnabled(false,'quest-complete');s.message='마을 의뢰를 모두 완료했습니다.';return false;}
+    if(canClaimQuest(p.quest!)){this.setEnabled(false,'quest-ready');s.message='의뢰 목표 달성 · 마을에서 보상을 받으세요.';return false;}
     const eligible=s.mobs.filter(m=>!m.id.startsWith('dungeon-') && matchesQuestTarget(m,quest.target));
     eligible.sort((a,b)=>(Number(b.hp>0)-Number(a.hp>0))||
       distance(p.x,p.z,a.hp>0?a.x:a.homeX,a.hp>0?a.z:a.homeZ)-
