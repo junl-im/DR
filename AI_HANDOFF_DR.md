@@ -1,3 +1,6 @@
+## Monster respawn visibility — 2026-10-13
+See docs/monster-respawn/README.md. Isolate death dissolve materials from shared GLB templates and siblings; restore/dispose on completion. No gameplay/save changes. Based on main 213426a. Final CI/deploy is in Notion.
+
 ## Title screen redesign — 2026-10-13
 See docs/title-screen/README.md. Original generated title and portrait art; name + three existing class cards + start, saved continuation preserved. Based on main c86333e. Final CI/deploy status is in Notion.
 

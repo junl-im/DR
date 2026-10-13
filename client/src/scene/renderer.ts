@@ -112,7 +112,7 @@ export interface GameRenderer {
   }) => void;
   removeMob: (mobId: string) => void;
   /** Read-only actual renderer state, not just spawn data. */
-  getMobRenderStatus: () => Array<{id:string;npcId:number;hp:number;rendered:boolean;modelReady:boolean}>;
+  getMobRenderStatus: () => Array<{id:string;npcId:number;hp:number;rendered:boolean;modelReady:boolean;bodyMinOpacity:number|null}>;
   getMobHookEntries: () => Array<{
     name?: string;
     level?: number;
@@ -532,10 +532,11 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     }));
   };
 
-  const getMobRenderStatus=():Array<{id:string;npcId:number;hp:number;rendered:boolean;modelReady:boolean}>=>
+  const getMobRenderStatus=():Array<{id:string;npcId:number;hp:number;rendered:boolean;modelReady:boolean;bodyMinOpacity:number|null}>=>
     [...mobSnapshots.entries()].map(([id,snapshot])=>({
       id,npcId:snapshot.npcId,hp:snapshot.hp,rendered:mobMeshes.has(id),
       modelReady:mobMeshes.has(id)&&!mobUsesCapsule(mobInstances,id),
+      bodyMinOpacity:(()=>{const root=mobMeshes.get(id)?.getObjectByName('mob-avatar');if(!root)return null;let min=1;root.traverse(obj=>{if(obj instanceof THREE.Mesh)for(const mat of Array.isArray(obj.material)?obj.material:[obj.material])min=Math.min(min,mat.opacity);});return min;})(),
     }));
 
   const publishMobHookEntries = (): void => {
