@@ -1,3 +1,13 @@
+// Settings remain available via a genuine left-button hold; right-click does nothing.
+async function openHuntSettings(page){
+ const r=await page.locator('#auto-hunt').boundingBox();
+ if(!r)throw new Error('Auto hunt button has no visible bounds');
+ await page.mouse.move(r.x+r.width/2,r.y+r.height/2);
+ await page.mouse.down({button:'left'});
+ await page.waitForTimeout(725);
+ await page.mouse.up({button:'left'});
+ await page.locator('.quest.hunt-settings-open').waitFor({state:'visible',timeout:5000});
+}
 const {chromium,expect}=require('@playwright/test');
 const fs=require('fs');
 const out='artifacts/mobile-review-proof';fs.mkdirSync(out,{recursive:true});
@@ -7,7 +17,7 @@ const out='artifacts/mobile-review-proof';fs.mkdirSync(out,{recursive:true});
  for(const [width,height] of [[390,844],[320,568],[844,390]]){
   const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto((process.env.MOBILE_BASE_URL||'http://127.0.0.1:4300/')+'?art=traveler');await page.locator('#start').click();await page.waitForFunction(()=>window.__DREAM_SESSION__,null,{timeout:60000});
-  await page.locator('#auto-hunt').click({button:'right'});await page.locator('#next-target').tap();await page.waitForFunction(()=>window.__DREAM_SESSION__.target);
+  await openHuntSettings(page);await page.locator('#next-target').tap();await page.waitForFunction(()=>window.__DREAM_SESSION__.target);
   await page.locator('#auto-config').evaluate(el=>el.open=!el.open);await page.locator('#auto-config').evaluate(el=>el.open=true);await page.locator('#auto-radius').selectOption('12');await page.locator('#auto-config').evaluate(el=>el.open=true);await page.locator('#auto-priority').selectOption('weakest');
   await expect(page.locator('#auto-potion')).toHaveValue('0');
   await page.locator('#auto-hunt').tap();await expect(page.locator('#auto-hunt')).toHaveAttribute('aria-pressed','true');
