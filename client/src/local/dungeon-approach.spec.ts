@@ -4,7 +4,7 @@ import {findPath} from '@nj/game-core';
 import {DUNGEON_GATE} from './first-dungeon';
 
 describe('dungeon world click approaches before dialog',()=>{
- it('plans a real walkable route from the new player's village spawn',()=>{
+ it('plans a real walkable route from the village spawn',()=>{
    const start={x:0,z:0},target=findDungeonApproach(start);
    expect(target).not.toBeNull();
    expect(Math.hypot(target!.x-DUNGEON_GATE.x,target!.z-DUNGEON_GATE.z)).toBeLessThan(5.5);
