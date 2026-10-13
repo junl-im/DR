@@ -48,6 +48,8 @@ jobs:
           done
           cat /tmp/dungeon-preview.log
           exit 1
+      - name: Verify live quest auto-walk, correct kills, HUD pulse/toggles and bounded zoom
+        run: node scripts/gameplay-polish-smoke.cjs
       - name: Capture WebGL armor proof
         run: node scripts/armor-visual-smoke.cjs
       - name: Prove live Firebase-root monster rigs (desktop and mobile)
@@ -58,8 +60,6 @@ jobs:
         run: node scripts/mobile-review.cjs
       - name: Verify quest target hunting, completion stop and reward persistence
         run: node scripts/quest-hunt-smoke.cjs
-      - name: Verify live quest auto-walk, correct kills, HUD pulse/toggles and bounded zoom
-        run: node scripts/gameplay-polish-smoke.cjs
       - name: Verify HUD and portal body interaction
         run: node scripts/hud-town-smoke.cjs
       - name: Verify gate arrival dialog, nameplate and native mouse input restrictions
