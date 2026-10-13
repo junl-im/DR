@@ -196,9 +196,7 @@ async function enter(state: Save) {
     // Fixed diagonal camera: wheel and Q/E never orbit the scene.
     let lastCameraMode=innerWidth<=700?'mobile':'desktop';
     function resizeViewport() {
-      const dock=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dock'))||156;
-      const safe=parseFloat(getComputedStyle(document.querySelector('.bottom')!).bottom)||0;
-      const height=Math.max(180,innerHeight-dock-safe);
+      const height=Math.max(180,innerHeight);
       game.renderer.setSize(innerWidth,height);
       game.camera.aspect=innerWidth/height;game.camera.updateProjectionMatrix();
       const mode=innerWidth<=700?'mobile':'desktop';
