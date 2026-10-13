@@ -242,6 +242,62 @@ describe('mobs visual mapping', () => {
     }
   );
 
+  it('recovers a living monster rig after one transient GLB failure without walking away', async () => {
+    const skinned = new THREE.SkinnedMesh(
+      new THREE.BoxGeometry(0.4, 1.2, 0.4), new THREE.MeshBasicMaterial()
+    );
+    skinned.bind(new THREE.Skeleton([new THREE.Bone()]));
+    const mobRoot = new THREE.Group();
+    mobRoot.add(skinned);
+    const loader = vi.spyOn(await import('./creature/mesh-character'), 'loadGltfTemplate')
+      .mockRejectedValueOnce(new Error('temporary CDN error'))
+      .mockResolvedValue({ scene: mobRoot, animations: [] });
+    // Vitest keeps spy history from earlier mob-rig cases in this suite.
+    loader.mockClear();
+
+    const scene = { add: () => undefined, remove: () => undefined };
+    const map: MobMeshMap = new Map();
+    const instances = createMobInstanceMap();
+    const state: MobVisualState = { id: 'recovery-orc', npcId: 20130,
+      x: 2, y: 1, z: 5, hp: 70, maxHp: 70 };
+    syncMobVisual(map, instances, state, scene as never);
+    await vi.waitFor(() => expect(instances.get(state.id)?.modelFailures).toBe(1));
+    const originalGroup = map.get(state.id);
+    const retryTime = instances.get(state.id)?.nextModelRetryAtMs ?? 0;
+    expect(retryTime).toBeGreaterThan(0);
+    expect(mobUsesCapsule(instances, state.id)).toBe(true);
+
+    // Frequent scene syncs must not create a loading storm.
+    syncMobVisual(map, instances, state, scene as never, retryTime - 1);
+    expect(loader).toHaveBeenCalledTimes(1);
+
+    syncMobVisual(map, instances, state, scene as never, retryTime + 1);
+    await vi.waitFor(() => expect(mobUsesCapsule(instances, state.id)).toBe(false));
+    expect(loader).toHaveBeenCalledTimes(2);
+    expect(map.get(state.id)).toBe(originalGroup);
+    expect(map.get(state.id)?.getObjectByName('capsuleBody')).toBeUndefined();
+    expect(instances.get(state.id)?.modelFailures).toBe(0);
+  });
+
+  it('never attaches a delayed successful rig to a corpse awaiting removal', async () => {
+    let complete!: (template: {scene: THREE.Group; animations: THREE.AnimationClip[]}) => void;
+    vi.spyOn(await import('./creature/mesh-character'), 'loadGltfTemplate')
+      .mockReturnValue(new Promise(resolve => { complete = resolve; }));
+    const scene = { add: () => undefined, remove: () => undefined };
+    const map: MobMeshMap = new Map();
+    const instances = createMobInstanceMap();
+    const state: MobVisualState = { id: 'dead-before-load', npcId: 20130,
+      x: 0, y: 0, z: 0, hp: 10, maxHp: 10 };
+    syncMobVisual(map, instances, state, scene as never, 50);
+    expect(removeMob(map, instances, state.id, scene as never, 60)).toBe(false);
+    complete({ scene: new THREE.Group(), animations: [] });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mobUsesCapsule(instances, state.id)).toBe(true);
+    expect(map.get(state.id)?.getObjectByName('mob-avatar')).toBeUndefined();
+    expect(flushPendingMobRemovals(map, instances, scene as never, 2000)).toEqual([state.id]);
+  });
+
   it('defers scene removal while die clip is latched', () => {
     vi.useFakeTimers();
     const removed: unknown[] = [];
