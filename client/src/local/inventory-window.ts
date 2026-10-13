@@ -1,5 +1,5 @@
 import { classicIcon } from './classic-icons';
-import { maxHp, attackPower, isWeaponEquipped, type Player, type Intent } from './session';
+import { maxHp, attackPower, isWeaponEquipped, canUsePotionShop, type Player, type Intent } from './session';
 import { ARMOR_SLOTS, ARMOR_LABELS, ARMOR_TIER_LABELS, armorCraftCost, armorDefense, readArmor, ownsArmor, type ArmorSlot, type CraftedArmorTier } from './armor-economy';
 
 type Item = 'weapon' | 'potion' | 'wood';
@@ -11,7 +11,7 @@ export function createInventoryWindow(host: HTMLElement, getPlayer: () => Player
     wood: { name: '목재', icon: 'wood' as const, tag: '일반 · 재료', info: `보유 ${p.wood}개`, description: '마을 주변에서 채집하거나 사냥으로 얻습니다. 영지 정원의 건설과 확장에 사용합니다.', count: p.wood },
   });
   function render(force = false) {
-    const p=getPlayer(), armor=readArmor(p.armor), next=JSON.stringify([p.weapon,p.weaponEquipped,p.level,p.gold,p.potions,p.wood,p.hp,armor,filter,selected]);
+    const p=getPlayer(), armor=readArmor(p.armor), next=JSON.stringify([p.weapon,p.weaponEquipped,p.level,p.gold,p.potions,p.wood,p.hp,armor,canUsePotionShop(p),filter,selected]);
     if (!force && signature===next) return; signature=next;
     const items=details(p), item=items[selected];
     const armorBag=ARMOR_SLOTS.flatMap(slot=>
@@ -20,18 +20,26 @@ export function createInventoryWindow(host: HTMLElement, getPlayer: () => Player
     const regularBag=(['weapon','potion','wood'] as Item[]).filter(
       id=>items[id].count>0&&(filter==='all'||filter===id)
     );
+    const canCraftHere=canUsePotionShop(p);
+    const recipes=([1,2] as CraftedArmorTier[]).map(tier=>{
+      const cost=armorCraftCost(tier);
+      const missing=[p.gold<cost.gold?'골드 '+(cost.gold-p.gold):'',p.wood<cost.wood?'목재 '+(cost.wood-p.wood):'',armor.fragments<cost.fragments?'파편 '+(cost.fragments-armor.fragments):''].filter(Boolean);
+      const available=canCraftHere&&missing.length===0;
+      const status=!canCraftHere?'마을 보급 상점 근처로 이동':missing.length?'부족 · '+missing.join(' · '):'제작 가능';
+      return {tier,cost,available,status};
+    });
     const armorRows=ARMOR_SLOTS.map(slot=>{
       const equipped=armor.equipped[slot];
       const options=([1,2] as CraftedArmorTier[]).map(tier=>{
-        const owned=ownsArmor(armor,slot,tier), cost=armorCraftCost(tier), name=ARMOR_TIER_LABELS[tier];
-        return owned ? `<button data-equip-armor="${slot}:${tier}" ${equipped===tier?'disabled':''}>${equipped===tier?'착용 중':name+' 착용'}</button>` : `<button data-craft-armor="${slot}:${tier}" title="골드 ${cost.gold} · 목재 ${cost.wood} · 파편 ${cost.fragments}">${name} 제작</button>`;
+        const owned=ownsArmor(armor,slot,tier), recipe=recipes[tier-1], name=ARMOR_TIER_LABELS[tier];
+        return owned ? `<button data-equip-armor="${slot}:${tier}" title="방어력 ${armorDefense(armor)} → ${armorDefense(armor)-equipped+tier}" ${equipped===tier?'disabled':''}>${equipped===tier?'착용 중':name+' 착용'}</button>` : `<button data-craft-armor="${slot}:${tier}" ${!recipe.available?'disabled':''} title="${recipe.status} · 장착 시 방어력 ${armorDefense(armor)} → ${armorDefense(armor)-equipped+tier}">${name} 제작 · 방어 +${tier}</button>`;
       }).join('');
       return `<div class="armor-slot-row"><b>${ARMOR_LABELS[slot]}</b><span>${equipped?ARMOR_TIER_LABELS[equipped]:'미착용'}</span>${options}<button data-unequip-armor="${slot}" ${!equipped?'disabled':''}>해제</button></div>`;
     }).join('');
     host.innerHTML=`<div class="inventory-heading"><span class="eyebrow">CHARACTER & INVENTORY</span><h2>장비와 소지품</h2></div>
       <div class="inventory-columns"><section class="equipment-sheet" aria-label="착용 장비"><h3>착용 장비 <span>Lv. ${p.level}</span></h3>
       <div class="paper-doll"><div class="gear-empty gear-head" title="${armor.equipped.helmet?ARMOR_TIER_LABELS[armor.equipped.helmet]+' 머리 착용':'머리 장비 없음'}">${armor.equipped.helmet?ARMOR_TIER_LABELS[armor.equipped.helmet]: '머리'}</div><div class="gear-empty gear-body" title="${armor.equipped.body?ARMOR_TIER_LABELS[armor.equipped.body]+' 몸통 착용':'몸통 장비 없음'}">${armor.equipped.body?ARMOR_TIER_LABELS[armor.equipped.body]: '몸통'}</div><div class="gear-empty gear-feet" title="${armor.equipped.boots?ARMOR_TIER_LABELS[armor.equipped.boots]+' 발 착용':'발 장비 없음'}">${armor.equipped.boots?ARMOR_TIER_LABELS[armor.equipped.boots]: '발'}</div><button class="gear-weapon" data-item="weapon" title="${isWeaponEquipped(p)?'착용 중인 무기':'미착용 무기'} 정보">${isWeaponEquipped(p)?classicIcon('sword'):'무기'}<small>${isWeaponEquipped(p)?'+'+p.weapon:''}</small></button><div class="gear-empty gear-offhand">보조</div><div class="doll-outline" aria-hidden="true"><svg viewBox="0 0 120 240"><ellipse cx="60" cy="125" rx="46" ry="107" fill="none" stroke-opacity=".18"/><path d="M60 9 77 19 79 39 69 51H51L41 39 43 19Z M44 24H76 M48 35H72 M60 24V44"/><path d="M43 56 25 63 14 84 20 117 30 119 39 85 40 126 34 157 43 163 47 214 57 220 60 166 63 220 73 214 77 163 86 157 80 126 81 85 90 119 100 117 106 84 95 63 77 56 60 66Z"/><path d="M26 63 40 76 60 83 80 76 94 63 M40 126 60 137 80 126 M43 163 60 153 77 163 M47 214 39 229H57V220 M73 214 81 229H63V220 M47 90 60 97 73 90 M49 108 60 114 71 108" fill="none"/><path d="M14 84 8 123 16 139 27 135 30 119 M106 84 112 123 104 139 93 135 90 119"/></svg></div></div>
-      <div class="stat-line">공격력 <b>${attackPower(p)}</b></div><div class="stat-line">최대 체력 <b>${maxHp(p)}</b></div><div class="stat-line">무기 강화 <b>+${p.weapon} / 20</b></div><p class="equipment-note">${isWeaponEquipped(p)?'기본 무기 착용 중':'무기 미착용 · 맨손 공격'}<br>빈 부위에는 아직 장비가 없습니다.</p><section class="armor-crafting" aria-label="방어구 제작과 착용"><h3>방어구 · 방어력 ${armorDefense(armor)}</h3><small>파편 ${armor.fragments}개 · 사냥 2회마다 1개 획득 · 마을 상점 근처 제작</small>${armorRows}</section></section>
+      <div class="stat-line">공격력 <b>${attackPower(p)}</b></div><div class="stat-line">최대 체력 <b>${maxHp(p)}</b></div><div class="stat-line">무기 강화 <b>+${p.weapon} / 20</b></div><p class="equipment-note">${isWeaponEquipped(p)?'기본 무기 착용 중':'무기 미착용 · 맨손 공격'}<br>빈 부위에는 아직 장비가 없습니다.</p><section class="armor-crafting" aria-label="방어구 제작과 착용"><h3>방어구 · 방어력 ${armorDefense(armor)}</h3><small>파편 ${armor.fragments}개 · 사냥 2회마다 1개 획득 · 마을 상점 근처 제작</small>${recipes.map(recipe=>`<small class="craft-recipe" data-recipe="${recipe.tier}"><b>${ARMOR_TIER_LABELS[recipe.tier]}</b> · 골드 ${recipe.cost.gold} · 목재 ${recipe.cost.wood} · 파편 ${recipe.cost.fragments}<br><span>${recipe.status}</span></small>`).join('')}${armorRows}</section></section>
       <section class="bag-sheet" aria-label="소지품"><div class="bag-title"><h3>소지품</h3><span>${regularBag.length+armorBag.length} / 24 슬롯</span></div><nav class="bag-filters" aria-label="소지품 분류">${[['all','전체'],['weapon','장비'],['potion','소모품'],['wood','재료']].map(([id,label])=>`<button data-filter="${id}" aria-pressed="${filter===id}">${label}</button>`).join('')}</nav>
       <div class="bag-grid" aria-label="소지품 슬롯">${Array.from({length:24},(_,i)=>{const id=regularBag[i], worn=armorBag[i-regularBag.length];return worn?`<button data-armor-bag="${worn.slot}:${worn.tier}" class="item-slot" title="${ARMOR_TIER_LABELS[worn.tier]} ${ARMOR_LABELS[worn.slot]} · ${armor.equipped[worn.slot]===worn.tier?'착용 중':'미착용'}">${classicIcon('armor')}<small>${armor.equipped[worn.slot]===worn.tier?'E':'1'}</small></button>`:id?`<button data-item="${id}" class="item-slot ${id===selected?'selected':''}" title="${items[id].name} · ${items[id].info}" aria-label="${items[id].name}, ${items[id].count}개" aria-pressed="${id===selected}">${classicIcon(items[id].icon)}<small>${id==='weapon'?(isWeaponEquipped(p)?'E':'1'):items[id].count}</small></button>`:`<div class="item-slot empty" aria-hidden="true"></div>`;}).join('')}</div>
       <div class="bag-wallet"><span>보유 골드</span><b>${p.gold.toLocaleString()}</b></div><button id="open-shop">마을 보급 상점</button></section></div>

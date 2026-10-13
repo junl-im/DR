@@ -42,3 +42,29 @@ describe('owned armor in the original 24-slot inventory',()=>{
     expect(dispatch).toHaveBeenCalledWith({type:'craft-armor',slot:'body',tier:1});
   });
 });
+
+
+describe('mobile-visible crafting guidance',()=>{
+  it('shows exact missing materials and prevents unavailable crafting without spending',()=>{
+    const session=new LocalGameSession(newSave('재료',0));
+    session.state.player.gold=0;session.state.player.wood=0;
+    const host=document.createElement('div'), action=vi.fn();
+    createInventoryWindow(host,()=>session.state.player,action,vi.fn());
+    expect(host.querySelector('[data-recipe="1"]')!.textContent).toContain('부족 · 골드 24 · 목재 3 · 파편 2');
+    const button=host.querySelector<HTMLButtonElement>('[data-craft-armor="body:1"]')!;
+    expect(button.disabled).toBe(true);button.click();expect(action).not.toHaveBeenCalled();
+  });
+  it('refreshes availability after walking into the shop range with unchanged resources',()=>{
+    const session=new LocalGameSession(newSave('상점',0));const p=session.state.player;
+    p.gold=100;p.wood=20;p.armor!.fragments=10;p.x=60;p.z=30;
+    const host=document.createElement('div'), action=vi.fn();
+    const inventory=createInventoryWindow(host,()=>p,action,vi.fn());
+    expect(host.querySelector('[data-recipe="1"]')!.textContent).toContain('마을 보급 상점 근처로 이동');
+    expect(host.querySelector<HTMLButtonElement>('[data-craft-armor="body:1"]')!.disabled).toBe(true);
+    p.x=0;p.z=0;inventory.refresh();
+    expect(host.querySelector('[data-recipe="1"]')!.textContent).toContain('제작 가능');
+    expect(host.querySelector<HTMLButtonElement>('[data-craft-armor="body:1"]')!.disabled).toBe(false);
+    host.querySelector<HTMLButtonElement>('[data-craft-armor="body:1"]')!.click();
+    expect(action).toHaveBeenCalledWith({type:'craft-armor',slot:'body',tier:1});
+  });
+});
