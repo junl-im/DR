@@ -1,10 +1,5 @@
 async function openHuntSettings(page){
- const rect=await page.locator('#auto-hunt').boundingBox();
- if(!rect)throw new Error('hunt button missing');
- await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);
- await page.mouse.down({button:'left'});
- await page.waitForTimeout(730);
- await page.mouse.up({button:'left'});
+ await page.locator('#hunt-config-toggle').click();
  await page.locator('.quest.hunt-settings-open').waitFor({state:'visible',timeout:6000});
 }
 const {chromium,expect}=require('@playwright/test');
