@@ -1,3 +1,6 @@
+## Title screen redesign — 2026-10-13
+See docs/title-screen/README.md. Original generated title and portrait art; name + three existing class cards + start, saved continuation preserved. Based on main c86333e. Final CI/deploy status is in Notion.
+
 ## Mobile fullscreen/back/Kakao — 2026-10-13
 See docs/mobile-shell/README.md. Based on main f8ab0f5. Real-device system bars and Kakao external-app launching remain unverified; final PR/CI/deploy status is in Notion.
 
