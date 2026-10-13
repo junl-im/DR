@@ -155,7 +155,7 @@ async function enter(state: Save) {
         const progress=autoHunt?.progress;
         const elapsed=progress?.seconds??0;
         const duration=`${Math.floor(elapsed/60)}:${String(elapsed%60).padStart(2,'0')}`;
-        const message=autoHunt?.approachingQuest?'의뢰 사냥터로 이동 중 · 다시 의뢰 버튼을 누르면 취소':enabled?`${autoHunt?.activity==='waiting'?'범위 안 대상 대기':autoHunt?.activity==='blocked'?'막힌 경로 우회 대기':'사냥 중'} · ${autoHunt?.radius}m · ${autoHunt?.priority==='quest'?'현재 의뢰 대상':autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
+        const message=autoHunt?.approachingQuest?'의뢰 사냥터로 이동 중 · 다시 의뢰 버튼을 누르면 취소':enabled?`${autoHunt?.activity==='waiting'?autoHunt?.priority==='quest'?'의뢰 대상 리젠 대기':'범위 안 대상 대기':autoHunt?.activity==='blocked'?'막힌 경로 우회 대기':'사냥 중'} · ${autoHunt?.radius}m · ${autoHunt?.priority==='quest'?'현재 의뢰 대상':autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
           reason==='quest-ready'?'의뢰 목표 달성 · 자동사냥 중단 · 마을에서 보상을 받으세요.':
           reason==='quest-complete'?'마을 의뢰를 모두 완료했습니다. 다른 사냥 기준을 선택하세요.':
           reason==='quest-unavailable'?'마을 의뢰 사냥은 필드에서만 사용할 수 있습니다.':
@@ -204,7 +204,7 @@ async function enter(state: Save) {
       if(!tapped)return;
       const facility=session.state.player.dungeon!.inside?undefined:
         pickTownFacility(game.scene,game.camera,canvas.getBoundingClientRect(),e.clientX,e.clientY);
-      if(facility){if(facility.id==='dungeon')requestDungeonApproach();else {manualStop();session.stopMovement();showPanel(facility.panel);}}
+      if(facility){if(facility.id==='dungeon')requestDungeonApproach();else {manualStop();session.stopMovement();togglePanel(facility.panel);}}
       else game.handleClick(e);
     });
     canvas.addEventListener('pointercancel',()=>{pointerStart=null;});
@@ -234,6 +234,7 @@ async function enter(state: Save) {
     window.addEventListener('keydown', e => {
       if(mobileShell.paused)return;
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
+      if((e.key===' '||e.key==='Enter')&&(e.target as HTMLElement).closest('button,[role=button]'))return;
       if(e.key==='Escape') { pendingDungeonApproach=null;$('.quest').classList.remove('hunt-settings-open'); manualStop(); $('#panel').hidden=true; return; }
       if(e.key.toLowerCase()==='q'){e.preventDefault();dodgeBossAttack();return;}
       if(e.key==='Tab'){e.preventDefault();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
@@ -332,7 +333,7 @@ function requestDungeonApproach():void{
   session.stopMovement();
   const p=session.state.player;
   const distance=Math.hypot(p.x-DUNGEON_GATE.x,p.z-DUNGEON_GATE.z);
-  if(distance<=4.0){showPanel('dungeon');return;}
+  if(distance<=4.0){togglePanel('dungeon');return;}
   const point=findDungeonApproach(p);
   if(!point){
     session.message='관문까지 걸어갈 수 있는 길을 찾지 못했습니다.';
@@ -413,7 +414,8 @@ function updateHud() {
   const skillButton=root.querySelector<HTMLButtonElement>('[data-intent="skill"]')!;$('#skill-cooldown').textContent=session.skillCooldown>.05?`${session.skillCooldown.toFixed(1)}s`:'2';skillButton.classList.toggle('cooling',session.skillCooldown>.05);skillButton.style.setProperty('--remaining',`${session.skillCooldown/4*100}%`);skillButton.title=`${isWeaponEquipped(p)?'강타 · MP 12':'강타 · 무기 장착 필요'}${session.skillCooldown>.05?' · 재사용 대기 중':''}`;
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
   $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):`${questSummary(validateQuest(p.quest))} · ${canClaimQuest(p.quest!)?'목표 달성 · 마을 보상 수령':activeQuest(p.quest!)?.description??'폐허의 시련에 도전하세요.'}`;
-  $('#quest-mini').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):canClaimQuest(p.quest!)?'의뢰 달성 · 마을에서 보상 받기':questSummary(validateQuest(p.quest));
+  $('#quest-mini').title=activeQuest(p.quest!)?.description??'마을 의뢰 완료';
+  $('#quest-mini').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):canClaimQuest(p.quest!)?'의뢰 달성 · 마을에서 보상 받기':questSummary(validateQuest(p.quest))+' · '+(activeQuest(p.quest!)?.description??'완료');
   const warning=session.bossWarning;$('#boss-warning').hidden=!warning;$('#boss-warning').textContent=warning;
   $('#boss-dodge').hidden=!warning;
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
@@ -445,7 +447,7 @@ function positionPlayerOverheadName():void{
   if(label.style.top!==top)label.style.top=top;
 }
 
-function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(sign.id==='dungeon')requestDungeonApproach();else {pendingDungeonApproach=null;if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);session.stopMovement();showPanel(sign.panel);}};layer.append(button);}root.append(layer);}
+function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(sign.id==='dungeon')requestDungeonApproach();else {pendingDungeonApproach=null;if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);session.stopMovement();togglePanel(sign.panel);}};layer.append(button);}root.append(layer);}
 function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=session.state.player.dungeon!.inside||signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
 function refreshCharacterPanel(){
   const p=session.state.player,node=$('#character-stats');if(!node)return;
@@ -461,6 +463,11 @@ function refreshQuestPanel(){
   if(claim){claim.disabled=!canClaimQuest(q);claim.textContent=nearQuestBoard(p.x,p.z)&&!p.dungeon!.inside?'의뢰 보상 수령':'마을 귀환 후 보상 수령';}
 }
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
+function positionWindowBelowQuest(){
+  const mini=$('#quest-mini');if(!mini)return;
+  root.style.setProperty('--window-top',Math.max(110,mini.getBoundingClientRect().bottom+10)+'px');
+}
+window.addEventListener('resize',positionWindowBelowQuest);
 function togglePanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'character') {
   if(!$('#panel').hidden&&shownPanelKind===kind){$('#panel').hidden=true;return;}
   showPanel(kind);
@@ -470,6 +477,7 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'cha
   pendingDungeonApproach=null;
   $('.quest').classList.remove('hunt-settings-open');
   $('#panel').hidden=false;
+  positionWindowBelowQuest();
   inventoryWindow=undefined;
   if(kind!=='inventory'){const panel=$('#panel');panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';}
   $('#panel').classList.toggle('inventory-panel',kind==='inventory');

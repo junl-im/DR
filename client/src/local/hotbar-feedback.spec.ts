@@ -12,8 +12,8 @@ describe('hotbar acknowledgement',()=>{
   cleanup();
  });
  it('releases the flash, including after repeated skill shortcuts',()=>{
-  vi.useFakeTimers();const b=document.createElement('button');flashActionSlot(b);flashActionSlot(b);
+  vi.useFakeTimers();const b=document.createElement('button');flashActionSlot(b);vi.advanceTimersByTime(300);flashActionSlot(b);vi.advanceTimersByTime(350);expect(b.classList.contains('slot-activated')).toBe(true);
   expect(b.classList.contains('slot-activated')).toBe(true);
-  vi.advanceTimersByTime(340);expect(b.classList.contains('slot-activated')).toBe(false);
+  vi.advanceTimersByTime(650);expect(b.classList.contains('slot-activated')).toBe(false);
  });
 });

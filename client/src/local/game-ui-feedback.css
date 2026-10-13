@@ -1,17 +1,17 @@
 /* Dungeon ZERO input response: clear yet lightweight actionable feedback. */
 #dream-ui .actions button{
-  overflow:hidden;isolation:isolate;transform-origin:50% 82%;
+  position:relative;overflow:hidden;isolation:isolate;transform-origin:50% 82%;
   transition:transform 105ms ease,filter 140ms ease,border-color 140ms ease,box-shadow 140ms ease;
 }
 #dream-ui .actions button:active{
   transform:translateY(2px) scale(.94);filter:brightness(1.3);
   box-shadow:inset 0 0 13px #eec37b6b,0 0 10px #d4a45e66;
 }
-#dream-ui .actions button.slot-activated{border-color:#ffdf9e;filter:brightness(1.18)}
+#dream-ui .actions button.slot-activated{border-color:#ffdf9e;filter:brightness(1.45);box-shadow:inset 0 0 15px #ffdf9e99,0 0 10px #e6ae6399}
 #dream-ui .actions button.slot-activated::before{
   content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
-  background:radial-gradient(circle at center,#ffe9ab8e 0%,#edc88542 38%,transparent 75%);
-  animation:dz-slot-flash 300ms ease-out both;
+  background:radial-gradient(circle at center,#fff1bdbf 0%,#edc88570 38%,transparent 75%);
+  animation:dz-slot-flash 620ms ease-out both;
 }
 #dream-ui .actions button.slot-activated::after{
   content:'';position:absolute;inset:2px;pointer-events:none;z-index:5;
@@ -44,3 +44,15 @@
   background:linear-gradient(90deg,#8a7048,var(--dz-scroll-hover),#8a7048)
 }
 #dream-ui ::-webkit-scrollbar-corner,#mobile-shell ::-webkit-scrollbar-corner{background:var(--dz-scroll-track)}
+
+/* Non-auto scrollbar styling lets Chromium use the ornate pseudo-elements;
+   Firefox retains the bronze standard fallback. */
+@supports selector(::-webkit-scrollbar){
+ #dream-ui :is(.panel,.log-lines,.quest,.bag-grid,.item-detail,.settings-section,.inventory-panel),
+ .title-entry,#mobile-shell :is(dialog,.sheet,.content),#dream-ui details{scrollbar-color:auto;scrollbar-width:auto}
+}
+#dream-ui ::-webkit-scrollbar-thumb{border-radius:2px;box-shadow:inset 0 0 0 1px #080e14,inset 0 1px #f8dca8}
+#dream-ui ::-webkit-scrollbar-track{box-shadow:inset 0 0 4px #000;border-right:1px solid #af90652d}
+
+/* Keep the quest trigger exposed so its second real click can close the window. */
+#dream-ui .panel{top:var(--window-top,118px)}

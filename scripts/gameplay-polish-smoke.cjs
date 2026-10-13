@@ -32,7 +32,9 @@ const base=process.env.GAMEPLAY_BASE_URL||'http://127.0.0.1:4300/';
       width:getComputedStyle(el).scrollbarWidth,
       color:getComputedStyle(el).scrollbarColor
     }));
-    expect(result.skin.width).toBe('thin');
+    expect(result.skin.width).toBe('auto');
+    const scrollbar=await page.locator('#panel').evaluate(el=>({width:getComputedStyle(el,'::-webkit-scrollbar').width,thumb:getComputedStyle(el,'::-webkit-scrollbar-thumb').backgroundImage}));
+    expect(scrollbar.width).toBe('8px');expect(scrollbar.thumb).toContain('linear-gradient');result.skin.paint=scrollbar;
 
     const zoom=await page.locator('#game').evaluate(canvas=>{
       const before=window.__DREAM_CAMERA_ZOOM__();
