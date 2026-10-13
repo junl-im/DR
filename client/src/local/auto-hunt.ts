@@ -155,7 +155,7 @@ export class AutoHuntController {
     if(!destination){s.message='의뢰 대상까지 이동 가능한 길을 찾지 못했습니다.';return false;}
     this.configure({priority:'quest'});
     const dist=distance(p.x,p.z,destination.x,destination.z);
-    if(dist<=this.radius-4) {
+    if(dist<=5) {
       this.setEnabled(true);
       s.message=quest.title+' · 의뢰 자동사냥을 시작합니다.';
       return true;
@@ -176,11 +176,12 @@ export class AutoHuntController {
     if(this.questTravel){
       const trip=this.questTravel;
       const quest=activeQuest(p.quest!);
-      if(inside||!p.hp||!quest||canClaimQuest(p.quest!)){
-        this.setEnabled(false);return;
-      }
+      if(inside){this.setEnabled(false,'zone-change');return;}
+      if(p.hp/maxHp(p)<AUTO_HUNT_STOP_HP_RATIO){this.setEnabled(false,'low-hp');return;}
+      if(!quest){this.setEnabled(false,'quest-complete');return;}
+      if(canClaimQuest(p.quest!)){this.setEnabled(false,'quest-ready');return;}
       const remaining=distance(p.x,p.z,trip.x,trip.z);
-      if(remaining<=this.radius-5){
+      if(remaining<=5){
         this.setEnabled(true);
         this.activity='hunting';
         s.message=quest.title+' · 목표 사냥터 도착 · 의뢰 자동사냥 시작';
@@ -234,6 +235,25 @@ export class AutoHuntController {
       a.hp/a.maxHp-b.hp/b.maxHp||
       distance(a.x,a.z,p.x,p.z)-distance(b.x,b.z,p.x,p.z)||a.id.localeCompare(b.id));
     const next=current??others[0];
+    if(!next && this.priority==='quest' && quest){
+      // Quest travel is explicitly requested: patrol onward to a living matching
+      // objective instead of waiting for one corpse while others are outside
+      // the current anchor. Ordinary auto hunting remains strictly anchored.
+      const destinations=s.mobs.filter(m=>m.hp>0&&matchesQuestTarget(m,quest.target)&&
+        (this.unreachableUntil.get(m.id)??0)<=this.elapsed&&
+        (distance(m.x,m.z,this.anchor!.x,this.anchor!.z)>this.radius||distance(m.x,m.z,p.x,p.z)>this.radius))
+        .sort((a,b)=>distance(a.x,a.z,p.x,p.z)-distance(b.x,b.z,p.x,p.z));
+      for(const m of destinations){
+        const point=snapToNearestWalkable(m.x,m.z,2);
+        if(!point||findPath(p,point).length===0)continue;
+        s.stopMovement();s.dispatch({type:'target',id:''});this.onTarget(null);
+        s.dispatch({type:'move',x:point.x,z:point.z});
+        this.enabled=false;this.anchor=null;this.lastTarget=null;
+        this.questTravel={...point,started:this.elapsed,lastX:p.x,lastZ:p.z,stuck:0};
+        this.activity='travelling';
+        s.message=quest.title+' · 남은 의뢰 대상에게 이동 중';return;
+      }
+    }
     if(!next){
       this.activity=[...this.unreachableUntil.values()].some(until=>until>this.elapsed)?'blocked':'waiting';
       // The last mob may have died while a chase waypoint was still queued.

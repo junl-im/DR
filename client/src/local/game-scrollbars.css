@@ -1,0 +1,8 @@
+/* Browser-independent bronze rails: no disappearing mobile native overlay. */
+#dream-ui .game-scroll-host{scrollbar-width:none!important}
+#dream-ui .game-scroll-host::-webkit-scrollbar{display:none!important}
+#dream-ui .game-scrollbar{position:absolute;width:8px;z-index:32;border:1px solid #6e5b3c;border-radius:2px;background:linear-gradient(90deg,#090e14,#20251f,#090e14);box-shadow:inset 0 0 3px #000,0 0 0 1px #080e14;touch-action:none;cursor:pointer;pointer-events:auto}
+#dream-ui .game-scrollbar-thumb{position:absolute;left:0;top:0;width:6px;min-height:0;border:1px solid #d6b97c;border-radius:2px;background:linear-gradient(90deg,#695030,#ddbd7e 45%,#795e36);box-shadow:inset 0 1px #fff0ba,inset 0 -1px #382614;pointer-events:auto}
+#dream-ui .game-scrollbar:hover .game-scrollbar-thumb,#dream-ui .game-scrollbar.dragging .game-scrollbar-thumb{filter:brightness(1.25)}
+#dream-ui .game-scrollbar:focus-visible{outline:2px solid #e6c58e;outline-offset:2px}
+#dream-ui :is(.log-lines,.bag-grid,.item-detail).game-scroll-host{padding-right:12px!important}
