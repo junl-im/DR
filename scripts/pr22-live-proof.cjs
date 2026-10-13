@@ -38,31 +38,78 @@ fs.mkdirSync(out, { recursive: true });
       else await page.locator('#panel-close').click();
       await expect(page.locator('#panel')).toBeHidden();
       // Sample after the real bubbling feedback handler, inside the actual event.
-      await page.evaluate(()=>document.querySelector('#dream-ui').addEventListener('click',event=>{
-        const el=event.target.closest('[data-intent=potion]');if(!el)return;
-        const a=getComputedStyle(el,'::before'),b=getComputedStyle(el,'::after');
-        window.__SLOT_PAINT__={position:getComputedStyle(el).position,animation:a.animationName,duration:a.animationDuration,ring:b.borderTopWidth,active:el.classList.contains('slot-activated')};
-      },{once:true}));
+      await page.evaluate(() =>
+        document.querySelector('#dream-ui').addEventListener(
+          'click',
+          (event) => {
+            const el = event.target.closest('[data-intent=potion]');
+            if (!el) return;
+            const a = getComputedStyle(el, '::before'),
+              b = getComputedStyle(el, '::after');
+            window.__SLOT_PAINT__ = {
+              position: getComputedStyle(el).position,
+              animation: a.animationName,
+              duration: a.animationDuration,
+              ring: b.borderTopWidth,
+              active: el.classList.contains('slot-activated'),
+            };
+          },
+          { once: true },
+        ),
+      );
       await page.locator('[data-intent=potion]').click();
-      row.slot=await page.evaluate(()=>window.__SLOT_PAINT__);
+      row.slot = await page.evaluate(() => window.__SLOT_PAINT__);
       expect(row.slot.position).toBe('relative');
       expect(row.slot.animation).toBe('dz-slot-flash');
       expect(row.slot.duration).toBe('0.62s');
       expect(row.slot.ring).toBe('1px');
       expect(row.slot.active).toBe(true);
       await page.locator('#menu').click();
-      row.scroll = await page
-        .locator('#panel')
-        .evaluate((el) => ({
-          height: el.clientHeight,
-          scrollHeight: el.scrollHeight,
-          thumb: getComputedStyle(el, '::-webkit-scrollbar-thumb')
-            .backgroundImage,
-          track: getComputedStyle(el, '::-webkit-scrollbar-track').boxShadow,
-          color: getComputedStyle(el).scrollbarColor,
-        }));
+      await expect(
+        page.locator('.game-scrollbar[data-scroll-for=panel]'),
+      ).toBeVisible();
+      row.scroll = await page.locator('#panel').evaluate((el) => ({
+        height: el.clientHeight,
+        scrollHeight: el.scrollHeight,
+        thumb: getComputedStyle(
+          document.querySelector(
+            '.game-scrollbar[data-scroll-for=panel] .game-scrollbar-thumb',
+          ),
+        ).backgroundImage,
+        track: getComputedStyle(
+          document.querySelector('.game-scrollbar[data-scroll-for=panel]'),
+        ).boxShadow,
+        color: getComputedStyle(el).scrollbarColor,
+      }));
       expect(row.scroll.thumb).toContain('linear-gradient');
       expect(row.scroll.color).toBe('auto');
+      const rail = page.locator('.game-scrollbar[data-scroll-for=panel]');
+      await expect(rail).toBeVisible();
+      await rail.focus();
+      await page.keyboard.press('End');
+      expect(
+        await page.locator('#panel').evaluate((el) => el.scrollTop),
+      ).toBeGreaterThan(0);
+      await page.keyboard.press('Home');
+      expect(await page.locator('#panel').evaluate((el) => el.scrollTop)).toBe(
+        0,
+      );
+      const rb = await rail.boundingBox();
+      await page.mouse.click(rb.x + rb.width / 2, rb.y + rb.height - 3);
+      expect(
+        await page.locator('#panel').evaluate((el) => el.scrollTop),
+      ).toBeGreaterThan(0);
+      const thumb = page.locator(
+          '.game-scrollbar[data-scroll-for=panel] .game-scrollbar-thumb',
+        ),
+        tb = await thumb.boundingBox();
+      await page.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(rb.x + rb.width / 2, rb.y + 2, { steps: 5 });
+      await page.mouse.up();
+      expect(
+        await page.locator('#panel').evaluate((el) => el.scrollTop),
+      ).toBeLessThan(3);
       await page
         .locator('#panel')
         .evaluate((el) => (el.scrollTop = el.scrollHeight));
@@ -74,6 +121,11 @@ fs.mkdirSync(out, { recursive: true });
         0,
       );
       await page.locator('#panel-close').click();
+      if (process.env.PR22_UI_ONLY === '1') {
+        expect(errors).toEqual([]);
+        await context.close();
+        continue;
+      }
       await page.locator('#hunt-config-toggle').click();
       await page.locator('#auto-radius').selectOption('12');
       await page.locator('#hunt-close').click();
@@ -126,7 +178,13 @@ fs.mkdirSync(out, { recursive: true });
       await context.close();
     }
   } finally {
-    fs.writeFileSync(out + '/report.json', JSON.stringify(report, null, 2));
+    fs.writeFileSync(
+      out +
+        (process.env.PR22_UI_ONLY === '1'
+          ? '/report-ui-only.json'
+          : '/report.json'),
+      JSON.stringify(report, null, 2),
+    );
     await browser.close();
   }
 })().catch((e) => {

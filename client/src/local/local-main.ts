@@ -1,3 +1,5 @@
+import './game-scrollbars.css';
+import {createGameScrollbars} from './game-scrollbars';
 import {bindHuntButton} from './hunt-button';
 import './inventory.css';
 import { createInventoryWindow } from './inventory-window';
@@ -50,6 +52,7 @@ let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'origina
 let disposeEntryFit:(()=>void)|undefined;
 let session: LocalGameSession;
 let autoHunt:AutoHuntController|undefined;
+let gameScrollbars:ReturnType<typeof createGameScrollbars>|undefined;
 let pendingDungeonApproach:{point:GatePoint;startTime:number}|null=null;
 let shownPanelKind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'character'|null=null;
 const mobileShell=createMobileShell({pause:()=>{if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);if(session){session.stopMovement();session.attacking=false;}},persist:async()=>{await saveTask;await writeSave(session.snapshot());}});
@@ -398,6 +401,7 @@ function mountHud() {
   $('#log-form').onsubmit=e=>{e.preventDefault();const input=$<HTMLInputElement>('#log-input');if(input.value.trim())addLog(input.value.trim(),true);input.value='';};
   root.querySelectorAll<HTMLButtonElement>('[data-log-filter]').forEach(button=>button.onclick=()=>{logFilter=button.dataset['logFilter']!;root.querySelectorAll('[data-log-filter]').forEach(b=>b.classList.toggle('active',b===button));$('#log-lines').querySelectorAll<HTMLElement>('p').forEach(p=>p.hidden=logFilter==='combat'&&p.dataset['kind']!=='combat');});
   $('.brand').onclick=e=>e.preventDefault();
+  gameScrollbars=createGameScrollbars(root);gameScrollbars.update();
 }
 function updateHud() {
   $<HTMLInputElement>('#auto-retaliate').checked=autoHunt?.retaliateOnHit??true;
@@ -423,6 +427,7 @@ function updateHud() {
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
   toast(session.message);
   if(!$('#panel').hidden) inventoryWindow?.refresh();
+  gameScrollbars?.update();
 }
 const signPoint=new THREE.Vector3();
 const overheadPoint=new THREE.Vector3();
