@@ -28,3 +28,7 @@ html,body{width:100%;height:100%;overflow:hidden}#dream-ui{overflow:hidden}
 
 /* The world continues behind the translucent dock; wide desktops keep a compact group. */
 :root{--dock-inset:max(8px,calc((100vw - 920px)/2))}#game{height:100dvh!important}#dream-ui .classic-log{left:calc(var(--dock-inset) + env(safe-area-inset-left,0px));right:calc(var(--dock-inset) + var(--slot-width) + 4px + env(safe-area-inset-right,0px))}#dream-ui .bottom,#dream-ui .auto-control{right:calc(var(--dock-inset) + env(safe-area-inset-right,0px))}#dream-ui .quest.hunt-settings-open{right:calc(var(--dock-inset) + env(safe-area-inset-right,0px))}
+
+/* Semantic states stay stronger than the common button frame. */
+#dream-ui .actions button.cooling{background:linear-gradient(to top,#060a08 var(--remaining),#29312a var(--remaining));color:#a9aaa0}#dream-ui .actions button.active,#dream-ui .panel button[aria-pressed="true"],#dream-ui .panel .item-slot.selected{border-color:#e2bc7e;box-shadow:inset 0 0 8px #b48f4d44}#dream-ui #boss-dodge{border-color:#f1c275}
+#dream-ui .panel:not(.inventory-panel)>.close{position:sticky;top:0;float:right;margin:0 0 -44px 0;z-index:20}#dream-ui .quest.hunt-settings-open>#hunt-close{position:sticky;top:0;float:right;margin:-8px -8px -36px 0;z-index:20}
