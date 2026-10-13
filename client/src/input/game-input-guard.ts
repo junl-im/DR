@@ -5,14 +5,22 @@
 export function installGameInputGuard(doc:Document=document):()=>void{
   const editable=(target:EventTarget|null)=>target instanceof Element &&
     !!target.closest('input,textarea,[contenteditable="true"],[role="textbox"]');
-  const context=(event:Event)=>event.preventDefault();
-  const drag=(event:Event)=>event.preventDefault();
+  const context=(event:Event)=>{event.preventDefault();event.stopImmediatePropagation();};
+  const drag=(event:Event)=>{event.preventDefault();event.stopImmediatePropagation();};
   const select=(event:Event)=>{if(!editable(event.target))event.preventDefault();};
   const secondary=(event:Event)=>{
-    if(event instanceof MouseEvent && event.button!==0)event.preventDefault();
+    if(event instanceof MouseEvent && event.button!==0){
+      event.preventDefault();
+      // preventDefault alone still delivers right-pointerdown to camera controls.
+      // Stop handlers from receiving native right/middle-button gestures.
+      event.stopImmediatePropagation();
+    }
   };
   const keyboard=(event:KeyboardEvent)=>{
-    if(event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10'))event.preventDefault();
+    if(event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10')){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
   };
   doc.addEventListener('contextmenu',context,{capture:true});
   doc.addEventListener('dragstart',drag,{capture:true});

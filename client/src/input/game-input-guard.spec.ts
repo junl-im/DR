@@ -30,6 +30,42 @@ describe('game input browser-action guard',()=>{
    document.getElementById('chat')!.dispatchEvent(left);
    expect(left.defaultPrevented).toBe(false);
  });
+ it('prevents game scripts from receiving secondary pointerdown and auxclick but preserves primary input',()=>{
+   document.body.innerHTML='<canvas id="game"></canvas>';
+   const canvas=document.getElementById('game')!;
+   const seen:string[]=[];
+   canvas.addEventListener('pointerdown',()=>seen.push('pointerdown'));
+   canvas.addEventListener('auxclick',()=>seen.push('auxclick'));
+   canvas.addEventListener('contextmenu',()=>seen.push('contextmenu'));
+   dispose=installGameInputGuard(document);
+   for(const button of [1,2]){
+     const down=new MouseEvent('pointerdown',{button,bubbles:true,cancelable:true});
+     canvas.dispatchEvent(down);
+     expect(down.defaultPrevented).toBe(true);
+     const aux=new MouseEvent('auxclick',{button,bubbles:true,cancelable:true});
+     canvas.dispatchEvent(aux);
+     expect(aux.defaultPrevented).toBe(true);
+   }
+   const menu=new MouseEvent('contextmenu',{button:2,bubbles:true,cancelable:true});
+   canvas.dispatchEvent(menu);
+   expect(menu.defaultPrevented).toBe(true);
+   expect(seen).toEqual([]);
+   const left=new MouseEvent('pointerdown',{button:0,bubbles:true,cancelable:true});
+   canvas.dispatchEvent(left);
+   expect(left.defaultPrevented).toBe(false);
+   expect(seen).toEqual(['pointerdown']);
+ });
+ it('stops native file/image dragging before application listeners can change game state',()=>{
+   document.body.innerHTML='<img id="portrait" src="about:blank">';
+   const element=document.getElementById('portrait')!;
+   let reached=false;
+   element.addEventListener('dragstart',()=>{reached=true});
+   dispose=installGameInputGuard(document);
+   const drag=new Event('dragstart',{bubbles:true,cancelable:true});
+   element.dispatchEvent(drag);
+   expect(reached).toBe(false);
+   expect(drag.defaultPrevented).toBe(true);
+ });
  it('blocks keyboard menu invocation and detaches cleanly',()=>{
    dispose=installGameInputGuard(document);
    const contextKey=new KeyboardEvent('keydown',{key:'ContextMenu',bubbles:true,cancelable:true});
