@@ -37,25 +37,14 @@ fs.mkdirSync(out, { recursive: true });
       if (width === 1440) await page.locator('#sign-shop').click();
       else await page.locator('#panel-close').click();
       await expect(page.locator('#panel')).toBeHidden();
-      // A real click, sampled synchronously after the UI handler, checks painted layers.
+      // Sample after the real bubbling feedback handler, inside the actual event.
+      await page.evaluate(()=>document.querySelector('#dream-ui').addEventListener('click',event=>{
+        const el=event.target.closest('[data-intent=potion]');if(!el)return;
+        const a=getComputedStyle(el,'::before'),b=getComputedStyle(el,'::after');
+        window.__SLOT_PAINT__={position:getComputedStyle(el).position,animation:a.animationName,duration:a.animationDuration,ring:b.borderTopWidth,active:el.classList.contains('slot-activated')};
+      },{once:true}));
       await page.locator('[data-intent=potion]').click();
-      // Capture after the bubbling feedback handler, on the following actual frame.
-      row.slot = await page.locator('[data-intent=potion]').evaluate(
-        (el) =>
-          new Promise((resolve) =>
-            requestAnimationFrame(() => {
-              const a = getComputedStyle(el, '::before'),
-                b = getComputedStyle(el, '::after');
-              resolve({
-                position: getComputedStyle(el).position,
-                animation: a.animationName,
-                duration: a.animationDuration,
-                ring: b.borderTopWidth,
-                active: el.classList.contains('slot-activated'),
-              });
-            }),
-          ),
-      );
+      row.slot=await page.evaluate(()=>window.__SLOT_PAINT__);
       expect(row.slot.position).toBe('relative');
       expect(row.slot.animation).toBe('dz-slot-flash');
       expect(row.slot.duration).toBe('0.62s');
