@@ -1,5 +1,6 @@
 // Desktop and mobile settings are opened by a dedicated primary-click button.
 async function openHuntSettings(page){
+ if(await page.locator('#panel').isVisible())await page.locator('#panel-close').click();
  await page.locator('#hunt-config-toggle').click();
  await page.locator('.quest.hunt-settings-open').waitFor({state:'visible',timeout:6000});
 }
