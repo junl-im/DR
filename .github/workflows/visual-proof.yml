@@ -60,6 +60,8 @@ jobs:
         run: node scripts/title-screen-smoke.cjs
       - name: Verify repeated monster respawns and living sibling opacity
         run: node scripts/monster-respawn-smoke.cjs
+      - name: Prove compact HUD touch hold and inventory isolation
+        run: node scripts/compact-hud-smoke.cjs
       - name: Rebuild GitHub Pages /DR/ production assets
         run: npm run build:github
       - name: Start built /DR/ Pages preview
@@ -71,8 +73,6 @@ jobs:
           done
           cat /tmp/dungeon-pages-preview.log
           exit 1
-      - name: Prove compact HUD touch hold and inventory isolation
-        run: node scripts/compact-hud-smoke.cjs
       - name: Prove /DR/ model URLs and live monster meshes (desktop and mobile)
         run: MONSTER_QA_VARIANT=github-pages MONSTER_BASE_URL=http://127.0.0.1:4301/DR/ node scripts/monster-live-smoke.cjs
       - uses: actions/upload-artifact@v4
