@@ -33,6 +33,10 @@ interface MobInstance {
   clubProp: THREE.Object3D | null;
   /** Accumulated unsimulated time (ms) for distance-throttled animation LOD. */
   animAccumMs: number;
+  /** The visual stays as a noninteractive capsule until GLB succeeds. */
+  modelLoadPending?: boolean;
+  modelFailures?: number;
+  nextModelRetryAtMs?: number;
 }
 
 const MOB_BODY_COLOR = 0x884422;
@@ -196,6 +200,57 @@ function attachGoblinClub(
     .catch(() => undefined);
 }
 
+/** A rejected GLB fetch is evicted from the shared loader cache, but a living
+ * mob instance must also retry. Previously it remained a capsule forever until
+ * the player walked outside the culling radius. Retries are bounded/backed off
+ * and guarded by instance identity, so removed/dead/reused IDs are never revived.
+ */
+export const MOB_MODEL_RETRY_BASE_MS = 1500;
+export const MOB_MODEL_RETRY_MAX_MS = 24000;
+
+function ensureMobAvatarLoad(
+  instances: Map<string, MobInstance>,
+  state: MobVisualState,
+  instance: MobInstance,
+  nowMs: number
+): void {
+  if (instance.avatar || instance.modelLoadPending ||
+      instance.pendingRemovalAtMs !== null ||
+      nowMs < (instance.nextModelRetryAtMs ?? 0)) return;
+
+  const entry = resolveMobVisualEntry(state.id, state.npcId);
+  if (!entry) return;
+  instance.modelLoadPending = true;
+
+  getOrLoadTemplate(entry.model)
+    .then(template => {
+      const current = instances.get(state.id);
+      // The mob may have been culled, defeated, or replaced by a fresh spawn.
+      if (current !== instance || current.pendingRemovalAtMs !== null ||
+          !hasCapsuleBody(current.group)) return;
+
+      const avatar = createMobAvatar({ entry, template });
+      const capsule = current.group.getObjectByName('capsuleBody');
+      if (capsule) current.group.remove(capsule);
+      current.group.add(avatar.group);
+      current.avatar = avatar;
+      current.usesCapsule = false;
+      current.modelLoadPending = false;
+      current.modelFailures = 0;
+      current.nextModelRetryAtMs = 0;
+      attachGoblinClub(instances, state.id, state.npcId, avatar);
+    })
+    .catch(() => {
+      if (instances.get(state.id) !== instance) return;
+      instance.modelLoadPending = false;
+      instance.modelFailures = (instance.modelFailures ?? 0) + 1;
+      // Exponential backoff prevents a broken URL from fetching every frame.
+      const exponent = Math.min(4, instance.modelFailures - 1);
+      instance.nextModelRetryAtMs = performance.now() +
+        Math.min(MOB_MODEL_RETRY_MAX_MS, MOB_MODEL_RETRY_BASE_MS * 2 ** exponent);
+    });
+}
+
 function ensureMobInstance(
   map: MobMeshMap,
   instances: Map<string, MobInstance>,
@@ -247,27 +302,6 @@ function ensureMobInstance(
     animAccumMs: Number.POSITIVE_INFINITY,
   };
   instances.set(state.id, instance);
-
-  if (entry) {
-    getOrLoadTemplate(entry.model)
-      .then((template) => {
-        const current = instances.get(state.id);
-        // Same monster id can have a newer instance after culling or respawn.
-        if (current !== instance) return;
-        if (!hasCapsuleBody(current.group)) return;
-
-        const avatar = createMobAvatar({ entry, template });
-        const capsule = current.group.getObjectByName('capsuleBody');
-        if (capsule) current.group.remove(capsule);
-        current.group.add(avatar.group);
-        current.avatar = avatar;
-        current.usesCapsule = false;
-        attachGoblinClub(instances, state.id, state.npcId, avatar);
-      })
-      .catch(() => {
-        /* keep capsule fallback */
-      });
-  }
 
   return instance;
 }
@@ -321,6 +355,7 @@ export function syncMobVisual(
 ): THREE.Group {
   const instance = ensureMobInstance(map, instances, state, scene);
   applyMobVisual(instance, state, nowMs);
+  ensureMobAvatarLoad(instances, state, instance, nowMs);
   return instance.group;
 }
 
