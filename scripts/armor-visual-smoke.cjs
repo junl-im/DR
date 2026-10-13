@@ -1,12 +1,7 @@
-// Settings remain available via a genuine left-button hold; right-click does nothing.
+// Desktop and mobile settings are opened by a dedicated primary-click button.
 async function openHuntSettings(page){
- const r=await page.locator('#auto-hunt').boundingBox();
- if(!r)throw new Error('Auto hunt button has no visible bounds');
- await page.mouse.move(r.x+r.width/2,r.y+r.height/2);
- await page.mouse.down({button:'left'});
- await page.waitForTimeout(725);
- await page.mouse.up({button:'left'});
- await page.locator('.quest.hunt-settings-open').waitFor({state:'visible',timeout:5000});
+ await page.locator('#hunt-config-toggle').click();
+ await page.locator('.quest.hunt-settings-open').waitFor({state:'visible',timeout:6000});
 }
 const {chromium} = require('@playwright/test');
 const fs = require('node:fs');
