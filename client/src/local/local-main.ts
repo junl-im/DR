@@ -13,6 +13,7 @@ import './game-input-polish.css';
 import './game-ui-feedback.css';
 import './compact-windows.css';
 import './ingame-layout.css';
+import './mmorpg-interface.css';
 import {nextWheelZoom} from './camera-wheel-zoom';
 import {PinchZoomGesture} from './camera-pinch-zoom';
 import {bindHotbarClickFeedback,flashActionSlot} from './hotbar-feedback';

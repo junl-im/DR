@@ -1,5 +1,50 @@
 [
   {
+    "path": "art/character-portraits-v1.webp",
+    "bytes": 357092,
+    "sha256": "6d6b14e36c6675b3fda90eb6b176a62bbb0bb6d2408b1f7d24f192f012f1d4f4",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "",
+    "rightsStatus": "source-review-required"
+  },
+  {
+    "path": "art/game-icons-v1-provenance.md",
+    "bytes": 744,
+    "sha256": "4d77c91e12e53c7d30fe534c5c6d1bf17e2efb9445343a150ea681c562d0cd0b",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "",
+    "rightsStatus": "source-review-required"
+  },
+  {
+    "path": "art/game-icons-v1.webp",
+    "bytes": 123962,
+    "sha256": "e3551c4b0acf5e33bc5d301a2a22bf9b03eb7ddfb2fcd77028b387b30a507123",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "",
+    "rightsStatus": "source-review-required"
+  },
+  {
+    "path": "art/mmorpg-frame.svg",
+    "bytes": 1203,
+    "sha256": "e264647e50fb7ceb0bcb51015da112f9f5b8b6948aeef8ae1fb0fd74ffe6e7a1",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "",
+    "rightsStatus": "source-review-required"
+  },
+  {
+    "path": "art/title-hero-v1.webp",
+    "bytes": 233034,
+    "sha256": "458b7185de0ae5ea3d25a83c27f25ed883c28105860a3d947b34527324210f72",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "",
+    "rightsStatus": "source-review-required"
+  },
+  {
     "path": "audio/ambient/ambient_village.mp3",
     "bytes": 1341357,
     "sha256": "ade0f448fa08640a0a1d657d71d2483eb5a291b45c01bde2013b47e768de2456",
@@ -151,6 +196,15 @@
     "animationClips": [],
     "upstreamNotice": "audio/CREDITS.md",
     "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "game-icon.svg",
+    "bytes": 298,
+    "sha256": "8b31440143442065af1e731e9481842a7776049d7b6fa903858d145df3ea59bf",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "",
+    "rightsStatus": "source-review-required"
   },
   {
     "path": "icons/ATTRIBUTION.md",
@@ -331,6 +385,15 @@
     "animationClips": [],
     "upstreamNotice": "icons/ATTRIBUTION.md",
     "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "manifest.webmanifest",
+    "bytes": 423,
+    "sha256": "16d1b8bc65b2d1ddccb4c38e809433bd9f74fe1c1b370c48b00049874404b02a",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "",
+    "rightsStatus": "source-review-required"
   },
   {
     "path": "models/characters/Barbarian.glb",
