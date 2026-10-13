@@ -1,5 +1,6 @@
 import {activeQuest,canClaimQuest,matchesQuestTarget} from './adventure-quests';
 import {maxHp,type LocalGameSession,type Mob} from './session';
+import {findPath,snapToNearestWalkable} from '@nj/game-core';
 
 export const AUTO_HUNT_RADIUS=28;
 export const AUTO_HUNT_RADII=[12,20,28] as const;
@@ -45,12 +46,14 @@ const elite=(m:Mob):boolean=>
  */
 export class AutoHuntController {
   enabled=false;
-  activity:'idle'|'hunting'|'waiting'|'blocked'='idle';
+  activity:'idle'|'hunting'|'waiting'|'blocked'|'travelling'='idle';
   radius:typeof AUTO_HUNT_RADII[number]=AUTO_HUNT_RADIUS;
   priority:HuntPriority='nearest';
   potionThreshold:typeof AUTO_POTION_THRESHOLDS[number]=0;
   stopReason:HuntStopReason|null=null;
   private anchor:{x:number;z:number;inside:boolean}|null=null;
+  /** Explicit quest-button travel; never silently expands ordinary 28m hunts. */
+  private questTravel:{x:number;z:number;started:number;lastX:number;lastZ:number;stuck:number}|null=null;
   private lastTarget:string|null=null;
   private potionCooldown=0;
   private elapsed=0;
@@ -91,6 +94,8 @@ export class AutoHuntController {
   setEnabled(value:boolean,reason:HuntStopReason='manual'):boolean{
     const p=this.session.state.player;
     const wasEnabled=this.enabled;
+    const wasTravelling=this.questTravel!==null;
+    this.questTravel=null;
     this.enabled=!!value && p.hp>0;
     this.anchor=this.enabled?{x:p.x,z:p.z,inside:!!p.dungeon?.inside}:null;
     this.lastTarget=null;
@@ -106,13 +111,77 @@ export class AutoHuntController {
     }
     // Cooldown survives OFF/ON toggling: no consumable spam exploit.
     this.stopReason=this.enabled?null:reason;
-    if(!this.enabled&&wasEnabled)this.session.stopMovement();
+    if(!this.enabled&&(wasEnabled||wasTravelling))this.session.stopMovement();
     return this.enabled;
   }
+  /** Explicit village quest action: walk to a reachable objective before
+   * activating the normal anchored hunt. No teleporting, free kills or rewards.
+   */
+  startQuestHunt():boolean {
+    this.setEnabled(false);
+    const s=this.session,p=s.state.player;
+    const quest=activeQuest(p.quest!);
+    if(p.dungeon!.inside){s.message='의뢰 자동이동은 마을 밖 필드에서만 가능합니다.';return false;}
+    if(!quest){s.message='마을 의뢰를 모두 완료했습니다.';return false;}
+    if(canClaimQuest(p.quest!)){s.message='의뢰 목표 달성 · 마을에서 보상을 받으세요.';return false;}
+    const eligible=s.mobs.filter(m=>!m.id.startsWith('dungeon-') && matchesQuestTarget(m,quest.target));
+    eligible.sort((a,b)=>(Number(b.hp>0)-Number(a.hp>0))||
+      distance(p.x,p.z,a.hp>0?a.x:a.homeX,a.hp>0?a.z:a.homeZ)-
+      distance(p.x,p.z,b.hp>0?b.x:b.homeX,b.hp>0?b.z:b.homeZ));
+    let destination:{x:number;z:number}|null=null;
+    for(const m of eligible) {
+      const x=m.hp>0?m.x:m.homeX,z=m.hp>0?m.z:m.homeZ;
+      const point=snapToNearestWalkable(x,z,2);
+      if(!point)continue;
+      if(distance(p.x,p.z,point.x,point.z)<=this.radius ||
+         findPath(p,point).length>0) {destination=point;break;}
+    }
+    if(!destination){s.message='의뢰 대상까지 이동 가능한 길을 찾지 못했습니다.';return false;}
+    this.configure({priority:'quest'});
+    const dist=distance(p.x,p.z,destination.x,destination.z);
+    if(dist<=this.radius-4) {
+      this.setEnabled(true);
+      s.message=quest.title+' · 의뢰 자동사냥을 시작합니다.';
+      return true;
+    }
+    s.dispatch({type:'move',x:destination.x,z:destination.z});
+    this.questTravel={...destination,started:this.elapsed,lastX:p.x,lastZ:p.z,stuck:0};
+    this.activity='travelling';
+    s.message=quest.title+' · 목표 사냥터까지 자동이동 중 ('+Math.ceil(dist)+'m)';
+    return true;
+  }
+  get approachingQuest():boolean{return this.questTravel!==null;}
+
   tick(dt=.05):void {
-    if(!this.enabled||!this.anchor||!Number.isFinite(dt)||dt<=0||dt>.25)return;
+    if(!Number.isFinite(dt)||dt<=0||dt>.25)return;
+    if(!this.enabled&&!this.questTravel)return;
     this.elapsed+=dt;
     const s=this.session,p=s.state.player,inside=!!p.dungeon?.inside;
+    if(this.questTravel){
+      const trip=this.questTravel;
+      const quest=activeQuest(p.quest!);
+      if(inside||!p.hp||!quest||canClaimQuest(p.quest!)){
+        this.setEnabled(false);return;
+      }
+      const remaining=distance(p.x,p.z,trip.x,trip.z);
+      if(remaining<=this.radius-5){
+        this.setEnabled(true);
+        this.activity='hunting';
+        s.message=quest.title+' · 목표 사냥터 도착 · 의뢰 자동사냥 시작';
+      }else{
+        if(distance(p.x,p.z,trip.lastX,trip.lastZ)>=.15){
+          trip.lastX=p.x;trip.lastZ=p.z;trip.stuck=0;
+        }else trip.stuck+=dt;
+        if(this.elapsed-trip.started>45||trip.stuck>4){
+          this.setEnabled(false);
+          s.message='의뢰 자동이동 경로가 막혔습니다. 가까운 위치에서 다시 시도하세요.';
+          return;
+        }
+        this.activity='travelling';
+        return;
+      }
+    }
+    if(!this.enabled||!this.anchor)return;
     if(inside!==this.anchor.inside){this.setEnabled(false,'zone-change');return;}
     if(distance(p.x,p.z,this.anchor.x,this.anchor.z)>this.radius+.5){
       this.setEnabled(false,'range');return;
