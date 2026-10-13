@@ -14,6 +14,7 @@ on:
       - 'scripts/combat-quest-smoke.cjs'
       - 'scripts/pr22-live-proof.cjs'
       - 'scripts/adventure-next-step-smoke.cjs'
+      - 'scripts/boss-alert-layout-smoke.cjs'
       - 'scripts/hud-town-smoke.cjs'
       - 'scripts/dungeon-input-smoke.cjs'
       - 'scripts/mobile-shell-smoke.cjs'
@@ -53,6 +54,8 @@ jobs:
           exit 1
       - name: Verify PR22 visible feedback, real window toggles, scrollbar paint and three normal quests
         run: DREAM_ADVENTURE_PROOF=1 node scripts/pr22-live-proof.cjs
+      - name: Verify real elite attack tells clear the HUD at four viewport sizes
+        run: node scripts/boss-alert-layout-smoke.cjs
       - name: Verify live quest auto-walk, correct kills, HUD pulse/toggles and bounded zoom
         run: node scripts/gameplay-polish-smoke.cjs
       - name: Verify live quest reward, retaliation, skill continuity and character window
@@ -192,4 +195,11 @@ jobs:
         with:
           name: dungeon-zero-pr22-polish-evidence
           path: artifacts/pr22-polish-proof
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-boss-alert-layout-evidence
+          path: artifacts/boss-alert-layout
           if-no-files-found: warn
