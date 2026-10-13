@@ -1,6 +1,6 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 import {ARMOR_LABELS, ARMOR_TIER_LABELS, awardEliteArmorPiece, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
-import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, type QuestProgress, type HuntKind } from './adventure-quests';
+import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, questKillKind, type QuestProgress } from './adventure-quests';
 import {bossDamage,bossHit,bossRadius,bossWarningLabel,bossWindup,selectBossMove,type BossMove,type BossThreat} from './boss-pattern';
 import { DUNGEON_ARENA, DUNGEON_GATE, DUNGEON_RADIUS, DUNGEON_WAVES, DUNGEON_REWARD, emptyDungeon, validateDungeon, dungeonWaveDone, dungeonBossDone, nearDungeonGate, type DungeonProgress } from './first-dungeon';
 
@@ -65,8 +65,13 @@ export class LocalGameSession implements GameSession {
     const start = snapToNearestWalkable(save.player.x, save.player.z) ?? { x: 0, z: 0 };
     this.state.player.x = start.x; this.state.player.z = start.z;
     this.movement = createPathMoveState(start.x, snapEntityY(start.x, start.z), start.z);
-    for (let i = 0; i < 12; i++) {
-      const spot = snapToNearestWalkable(26 + (i % 4) * 11, -18 - Math.floor(i / 4) * 15);
+    // Retain all 12 original spawn IDs/locations for save & visual compatibility.
+    // Add 6 separated normal-field spawns to avoid an empty hunting ground
+    // while the original wave is waiting on its 15s respawn clock.
+    for (let i = 0; i < 18; i++) {
+      const x=i<12?26 + (i % 4)*11:27 + ((i-12)%3)*13;
+      const z=i<12?-18-Math.floor(i/4)*15:-24 - Math.floor((i-12)/3)*18;
+      const spot = snapToNearestWalkable(x,z);
       if (!spot) continue;
       const elite=i===11;
       const hp=elite?120:45;
@@ -288,8 +293,8 @@ export class LocalGameSession implements GameSession {
     if(eliteFragment) p.armor!.fragments+=eliteFragment;
     const droppedSlot=elite?awardEliteArmorPiece(p.armor!):null;
     if (this.random() < .3) p.potions=Math.min(1000000,p.potions+1);
-    const kind:HuntKind=m.name==='숲의 정예 감시자'?'sentinel':m.npcId===20001?'slime':'wanderer';
-    const advanced=recordQuestKill(p.quest!,kind);
+    const kind=questKillKind(m);
+    const advanced=kind!==null && recordQuestKill(p.quest!,kind);
     this.message = `${m.name} 처치 · 경험치 +${elite?75:30} · 골드 +${gold}${earnedFragment||eliteFragment?' · 방어구 파편 +'+(Number(earnedFragment)+eliteFragment):''}${droppedSlot?' · 경갑 '+ARMOR_LABELS[droppedSlot]+' 획득':''}${advanced?' · '+questSummary(p.quest!):''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
     while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level} 달성! 체력과 마나가 회복되었습니다.`;this.emit({kind:'level',x:p.x,z:p.z,amount:p.level,text:this.message}); }
     if (p.level === 100) p.xp = Math.min(p.xp, xpNeeded(p) - 1);
