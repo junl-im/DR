@@ -4,8 +4,8 @@ import { nextPinchZoom, PinchZoomGesture } from './camera-pinch-zoom';
 
 describe('two-finger world zoom', () => {
   it('zooms in when fingers spread and out when fingers come together', () => {
-    expect(nextPinchZoom(1, 100, 125)).toBeCloseTo(.8, 5);
-    expect(nextPinchZoom(1, 100, 80)).toBeCloseTo(1.25, 5);
+    expect(nextPinchZoom(1, 100, 110)).toBeCloseTo(100 / 110, 5);
+    expect(nextPinchZoom(1, 100, 90)).toBeCloseTo(100 / 90, 5);
   });
 
   it('uses the existing conservative camera limits for wheel and touch', () => {
