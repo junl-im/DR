@@ -1,11 +1,6 @@
 async function openHuntSettings(page){
- const r=await page.locator('#auto-hunt').boundingBox();
- if(!r)throw new Error('No hunt button visible');
- await page.mouse.move(r.x+r.width/2,r.y+r.height/2);
- await page.mouse.down({button:'left'});
- await page.waitForTimeout(720);
- await page.mouse.up({button:'left'});
- await page.locator('.quest.hunt-settings-open').waitFor({state:'visible'});
+ await page.locator('#hunt-config-toggle').click();
+ await page.locator('.quest.hunt-settings-open').waitFor({state:'visible',timeout:6000});
 }
 const {chromium,expect}=require('@playwright/test'),fs=require('fs');
 (async()=>{const b=await chromium.launch({headless:true,executablePath:process.env.DREAM_CHROMIUM||'C:/Users/JUN/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});try{
