@@ -273,7 +273,9 @@ export function createVfxManager(scene: THREE.Scene): VfxManager {
 
       for (const [key, handle] of [...dissolves.entries()]) {
         if (tickDissolve(handle, nowMs)) {
-          if (key === 'player') restoreOpacity(handle);
+          restoreOpacity(handle);
+          // Keep a completed corpse hidden until the renderer retires its root.
+          if (key !== 'player') handle.root.visible = false;
           dissolves.delete(key);
         }
       }

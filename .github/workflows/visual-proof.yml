@@ -10,6 +10,7 @@ on:
       - 'scripts/hud-town-smoke.cjs'
       - 'scripts/mobile-shell-smoke.cjs'
       - 'scripts/title-screen-smoke.cjs'
+      - 'scripts/monster-respawn-smoke.cjs'
       - '.github/workflows/visual-proof.yml'
   workflow_dispatch:
 permissions:
@@ -56,6 +57,8 @@ jobs:
         run: node scripts/mobile-shell-smoke.cjs
       - name: Verify title layout, character selection and saved continuation
         run: node scripts/title-screen-smoke.cjs
+      - name: Verify repeated monster respawns and living sibling opacity
+        run: node scripts/monster-respawn-smoke.cjs
       - name: Rebuild GitHub Pages /DR/ production assets
         run: npm run build:github
       - name: Start built /DR/ Pages preview
@@ -114,4 +117,11 @@ jobs:
         with:
           name: dungeon-zero-title-screen-evidence
           path: artifacts/title-screen-proof
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-monster-respawn-evidence
+          path: artifacts/monster-respawn-proof
           if-no-files-found: warn

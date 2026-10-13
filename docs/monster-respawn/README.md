@@ -1,0 +1,7 @@
+# Monster respawn material isolation
+
+Baseline main 213426a. SkeletonUtils.clone retains shared GLB material references. Death dissolve previously changed opacity/transparent on those references and left mob materials faded after completion. Living siblings, cached templates and later respawns could consequently inherit transparent or invisible materials even with no additional download.
+
+Dissolve now clones only materials used by the dying root, deduplicating references and sharing textures/geometry. Completion/cancellation restores exact original material bindings and disposes temporary clones once. Completed mob corpses stay hidden until normal renderer removal; player visibility is preserved. Original opacity, transparent/depth settings and arrays are untouched. No spawn timers, combat, drop or save changes.
+
+Regression tests cover overlapping deaths, living siblings, a newly instantiated sibling, exact transparent material/array restoration, disposal and corpse visibility. Existing fade assertions inspect the actual render material rather than the shared source. The read-only mob render diagnostic additionally reports bodyMinOpacity. Browser smoke uses a controlled one-HP target, actual combat and the original 15-second field respawn twice each at desktop/mobile widths, verifies living siblings and respawns have opacity 1, and counts a single Gremlin GLB request per page. Software Chromium, not real-device performance certification. Evidence in artifacts/monster-respawn-proof; final CI/deploy in Notion.

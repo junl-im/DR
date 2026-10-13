@@ -131,8 +131,10 @@ describe('vfx-manager', () => {
     mgr.attachMobDissolve('mob-1', mobGroup, 0);
     mgr.tick(600);
 
-    expect(mat.opacity).toBeGreaterThanOrEqual(0.4);
-    expect(mat.opacity).toBeLessThanOrEqual(0.6);
+    const faded = (mobGroup.children[0] as THREE.Mesh).material as THREE.Material;
+    expect(faded.opacity).toBeGreaterThanOrEqual(0.4);
+    expect(faded.opacity).toBeLessThanOrEqual(0.6);
+    expect(mat.opacity).toBe(1);
   });
 
   it('attachPlayerDissolve starts fading the player render root', () => {
@@ -145,8 +147,10 @@ describe('vfx-manager', () => {
     mgr.attachPlayerDissolve(playerGroup, 0);
     mgr.tick(600);
 
-    expect(mat.opacity).toBeGreaterThanOrEqual(0.4);
-    expect(mat.opacity).toBeLessThanOrEqual(0.6);
+    const faded = (playerGroup.children[0] as THREE.Mesh).material as THREE.Material;
+    expect(faded.opacity).toBeGreaterThanOrEqual(0.4);
+    expect(faded.opacity).toBeLessThanOrEqual(0.6);
+    expect(mat.opacity).toBe(1);
   });
 
   it('sets targetRingVisible when target mob is valid', () => {
@@ -164,5 +168,19 @@ describe('vfx-manager', () => {
     expect(mgr.getHookSnapshot().targetRingVisible).toBe(true);
     mgr.setTargetMobId(null);
     expect(mgr.getHookSnapshot().targetRingVisible).toBe(false);
+  });
+});
+
+describe('completed corpse cleanup',()=>{
+  it('restores shared source bindings, disposes the private fade material and hides only the corpse',()=>{
+    const scene=new THREE.Scene(),mgr=createVfxManager(scene);
+    const source=new THREE.MeshLambertMaterial(),root=new THREE.Group();
+    const corpse=new THREE.Mesh(new THREE.BoxGeometry(),source),living=corpse.clone();
+    root.add(corpse);scene.add(root,living);mgr.attachMobDissolve('dead',root,0);
+    let disposed=0;(corpse.material as THREE.Material).addEventListener('dispose',()=>disposed++);
+    mgr.tick(1201);
+    expect(root.visible).toBe(false);expect(living.visible).toBe(true);
+    expect(corpse.material).toBe(source);expect(source.opacity).toBe(1);expect(disposed).toBe(1);
+    mgr.dispose();expect(disposed).toBe(1);
   });
 });
