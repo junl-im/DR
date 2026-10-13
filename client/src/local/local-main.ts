@@ -392,7 +392,7 @@ function mountHud() {
   const panel=$('#panel'); // Fixed in-game window; native mouse dragging is disabled.
   window.addEventListener('resize',()=>{panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';});
   $('#boss-dodge').onclick=dodgeBossAttack;
-  $('#quest-mini').onclick=()=>togglePanel('help');
+  $('#quest-mini').onclick=()=>togglePanel(session.state.player.dungeon!.inside?'dungeon':'help');
   $('#hunt-close').onclick=()=>{$('.quest').classList.remove('hunt-settings-open');$('#auto-hunt').focus();};
   $('#quest-journal').onclick=()=>togglePanel('help');
   $('#dungeon-journal').onclick=()=>togglePanel('dungeon');
@@ -436,7 +436,7 @@ function updateHud() {
   const skillButton=root.querySelector<HTMLButtonElement>('[data-intent="skill"]')!;$('#skill-cooldown').textContent=session.skillCooldown>.05?`${session.skillCooldown.toFixed(1)}s`:'2';skillButton.classList.toggle('cooling',session.skillCooldown>.05);skillButton.style.setProperty('--remaining',`${session.skillCooldown/4*100}%`);skillButton.title=`${isWeaponEquipped(p)?'강타 · MP 12':'강타 · 무기 장착 필요'}${session.skillCooldown>.05?' · 재사용 대기 중':''}`;
   $('#gold').textContent=p.gold.toLocaleString(); $('#wood').textContent=String(p.wood); $('#defense').textContent=String(armorDefense(p.armor));
   $('#potions').textContent=`물약 ${p.potions}`; $('#quest-progress').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):`${questSummary(validateQuest(p.quest))} · ${canClaimQuest(p.quest!)?'목표 달성 · 마을 보상 수령':activeQuest(p.quest!)?.description??'폐허의 시련에 도전하세요.'}`;
-  $('#quest-mini').title=activeQuest(p.quest!)?.description??'마을 의뢰 완료';
+  $('#quest-mini').title=p.dungeon!.inside?'현재 던전 진행 열기':activeQuest(p.quest!)?.description??'폐허 관문으로 이동해 첫 던전에 도전하세요.';
   $('#quest-mini').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):canClaimQuest(p.quest!)?'의뢰 달성 · 마을에서 보상 받기':questSummary(validateQuest(p.quest))+' · '+(activeQuest(p.quest!)?.description??'완료');
   const warning=session.bossWarning;$('#boss-warning').hidden=!warning;$('#boss-warning').textContent=warning;
   $('#boss-dodge').hidden=!warning;
@@ -484,6 +484,13 @@ function refreshQuestPanel(){
   $('#quest-detail').textContent=quest?q.progress+' / '+quest.required:'3 / 3';
   const claim=root.querySelector<HTMLButtonElement>('#quest-claim');
   if(claim){claim.disabled=!canClaimQuest(q);claim.textContent=nearQuestBoard(p.x,p.z)&&!p.dungeon!.inside?'의뢰 보상 수령':'마을 귀환 후 보상 수령';}
+  const next=$('#help-quest-target');
+  if(next){
+    const hunting=autoHunt?.approachingQuest||(autoHunt?.enabled&&autoHunt.priority==='quest');
+    next.textContent=p.dungeon!.inside?'현재 던전 진행 보기':!quest?'폐허 관문으로 자동이동':canClaimQuest(q)?'보상 수령 · 다음 의뢰':hunting?'의뢰 자동이동·사냥 중단':'의뢰 자동이동 · 사냥';
+    next.classList.toggle('primary',!hunting);
+    next.setAttribute('aria-label',next.textContent);
+  }
 }
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
 function positionWindowBelowQuest(){
@@ -546,7 +553,7 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'cha
     const questState=validateQuest(session.state.player.quest),quest=activeQuest(questState);
     const finished=quest?canClaimQuest(questState):false;
     $('#panel-content').innerHTML=`<span class="eyebrow">모험 의뢰 게시판</span><h2>${quest?quest.title:'마을의 의뢰 완료'}</h2>
-      <p>${quest?quest.description:'마을의 3개 의뢰를 모두 완료했습니다. 다음 모험을 준비하세요.'}</p>
+      <p>${quest?quest.description:'마을의 3개 의뢰를 모두 완료했습니다. 폐허 관문으로 이동해 첫 던전에 도전하세요.'}</p>
       <div class="stat-line">의뢰 진행 <b id="quest-detail">${quest?questState.progress+' / '+quest.required:'3 / 3'}</b></div>
       ${quest?`<p>보상 · 골드 ${quest.reward.gold} · 목재 ${quest.reward.wood} · 물약 ${quest.reward.potions} · 파편 ${quest.reward.fragments}</p>
       <button id="quest-claim" ${!finished?'disabled':''}>${nearQuestBoard(session.state.player.x,session.state.player.z)&&!session.state.player.dungeon!.inside?'의뢰 보상 수령':'마을 귀환 후 보상 수령'}</button>`:''}
@@ -557,7 +564,14 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'cha
       <small>목표 달성 후 보상 버튼을 누르면 필요할 때 마을로 귀환해 1번만 수령합니다.</small>`;
     $('#panel-content').dataset['questStage']=String(questState.stage);
     $('#quest-claim')?.addEventListener('click',()=>{if(!canClaimQuest(session.state.player.quest!))return;autoHunt?.setEnabled(false);pendingDungeonApproach=null;if(session.state.player.dungeon!.inside||!nearQuestBoard(session.state.player.x,session.state.player.z))session.dispatch({type:'recall'});session.dispatch({type:'claim-quest'});const result=session.message;lastLog=result;showPanel('help');$('#quest-status').textContent=result;updateHud();void (async()=>{await saveTask;await save();})();});
-    $('#help-quest-target').onclick=()=>{$('#panel').hidden=true;$('#quest-target').click();};
+    $('#help-quest-target').onclick=()=>{
+      const p=session.state.player;
+      if(p.dungeon!.inside){showPanel('dungeon');return;}
+      if(!activeQuest(p.quest!)){requestDungeonApproach();return;}
+      if(canClaimQuest(p.quest!)){$('#quest-claim')?.click();return;}
+      $('#panel').hidden=true;$('#quest-target').click();
+    };
+    refreshQuestPanel();
     $('#help-hunt').onclick=()=>{$('#panel').hidden=true;$('#hunt-guide').click();};
   } else if(kind==='estate') {
     const t=session.state.territory;

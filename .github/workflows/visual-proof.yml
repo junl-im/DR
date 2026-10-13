@@ -13,6 +13,7 @@ on:
       - 'scripts/gameplay-polish-smoke.cjs'
       - 'scripts/combat-quest-smoke.cjs'
       - 'scripts/pr22-live-proof.cjs'
+      - 'scripts/adventure-next-step-smoke.cjs'
       - 'scripts/hud-town-smoke.cjs'
       - 'scripts/dungeon-input-smoke.cjs'
       - 'scripts/mobile-shell-smoke.cjs'
@@ -51,7 +52,7 @@ jobs:
           cat /tmp/dungeon-preview.log
           exit 1
       - name: Verify PR22 visible feedback, real window toggles, scrollbar paint and three normal quests
-        run: node scripts/pr22-live-proof.cjs
+        run: DREAM_ADVENTURE_PROOF=1 node scripts/pr22-live-proof.cjs
       - name: Verify live quest auto-walk, correct kills, HUD pulse/toggles and bounded zoom
         run: node scripts/gameplay-polish-smoke.cjs
       - name: Verify live quest reward, retaliation, skill continuity and character window

@@ -1,5 +1,6 @@
 const { chromium, expect } = require('@playwright/test'),
   fs = require('fs');
+const extension=process.env.DREAM_ADVENTURE_PROOF==='1'?require('./adventure-next-step-smoke.cjs'):null;
 const out = 'artifacts/pr22-polish-proof';
 fs.mkdirSync(out, { recursive: true });
 (async () => {
@@ -166,7 +167,8 @@ fs.mkdirSync(out, { recursive: true });
         );
         await page.locator('#quest-mini').click();
         await expect(page.locator('#quest-claim')).toBeEnabled();
-        await page.locator('#quest-claim').click();
+        if(extension)await extension.claim(page);
+        else await page.locator('#quest-claim').click();
         const after = await page.evaluate(() =>
           structuredClone(window.__DREAM_SESSION__.state.player),
         );
@@ -189,6 +191,7 @@ fs.mkdirSync(out, { recursive: true });
         await page.evaluate(() => window.__DREAM_SESSION__.state.player.quest),
       ).toEqual({ stage: 3, progress: 0 });
       await page.screenshot({ path: out + '/' + width + '-all-quests.png' });
+      if(extension)await extension.afterQuestLine(page,row,width,out);
       if (width === 390) {
         // DOM PointerEvents exercise the actual renderer zoom integration,
         // without claiming physical multitouch-device certification.
