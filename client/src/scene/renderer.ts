@@ -145,7 +145,8 @@ export interface GameRenderer {
   setMoveIntentHandler: (handler: (intent: MovementIntent) => void) => void;
   setMobTargetHandler: (handler: (mobId: string) => void) => void;
   rotateCamera: (deltaYaw: number) => void;
-  setCameraFraming?: (offset:{x:number;y:number;z:number},fov:number) => void;
+  setCameraZoom: (zoom: number) => void;
+  setCameraFraming?:  (offset:{x:number;y:number;z:number},fov:number) => void;
   setVfxTargetMobId: (mobId: string | null) => void;
   syncPlayerVfx: (snapshot: {
     hp: number;
@@ -287,7 +288,12 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
 
   const raycaster = new THREE.Raycaster();
 
+  let previewRevision = 0;
+  let previewTimeout: ReturnType<typeof setTimeout> | undefined;
   const clearPathPreview = (): void => {
+    previewRevision++;
+    if (previewTimeout !== undefined) clearTimeout(previewTimeout);
+    previewTimeout = undefined;
     if (pathPreviewLine) {
       scene.remove(pathPreviewLine);
       pathPreviewLine.geometry.dispose();
@@ -296,20 +302,33 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     }
   };
 
+  // This is a *real A* route preview*, not a player movement tether.
+  // Render a subtle dashed guide briefly, then remove it so the playing field
+  // never remains covered by a bright cyan debugging line.
   const showPathPreview = (fromX: number, fromZ: number, toX: number, toZ: number): void => {
     clearPathPreview();
+    const revision = previewRevision;
     requestAnimationFrame(() => {
+      if (revision !== previewRevision) return; // ignored superseded click
       const points = buildPathPreviewPoints(fromX, fromZ, toX, toZ);
       if (points.length < 2) return;
       const vectors = points.map(
-        (p) => new THREE.Vector3(p.x, terrainData.sampleHeight(p.x, p.z) + 0.15, p.z)
+        (p) => new THREE.Vector3(p.x, terrainData.sampleHeight(p.x, p.z) + 0.12, p.z)
       );
       const geometry = new THREE.BufferGeometry().setFromPoints(vectors);
       pathPreviewLine = new THREE.Line(
         geometry,
-        new THREE.LineBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.7 })
+        new THREE.LineDashedMaterial({
+          color: 0xcdbb89, dashSize: 0.28, gapSize: 0.25,
+          transparent: true, opacity: 0.42, depthWrite: false
+        })
       );
+      pathPreviewLine.name = 'temporary-movement-guide';
+      pathPreviewLine.computeLineDistances();
       scene.add(pathPreviewLine);
+      previewTimeout = setTimeout(() => {
+        if (revision === previewRevision) clearPathPreview();
+      }, 1350);
     });
   };
 
@@ -319,6 +338,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
 
   let cameraYaw = 0;
   let activeCameraOffset={...(options.cameraOffset ?? DEFAULT_CAMERA_OFFSET)};
+  let cameraZoom=1;
   const updateCamera = (): void => {
     applyTo(
       {
@@ -326,11 +346,16 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
         lookAt: (target) => camera.lookAt(target.x, target.y, target.z),
       },
       { x: localPosition.x, y: localPosition.y, z: localPosition.z },
-      activeCameraOffset,
+      {x:activeCameraOffset.x*cameraZoom,y:activeCameraOffset.y*cameraZoom,z:activeCameraOffset.z*cameraZoom},
       cameraYaw
     );
   };
 
+  const setCameraZoom=(zoom:number):void=>{
+    if(!Number.isFinite(zoom))return;
+    cameraZoom=Math.max(.82,Math.min(1.24,zoom));
+    updateCamera();
+  };
   const setCameraFraming=(offset:{x:number;y:number;z:number},fov:number):void=>{
     if(![offset.x,offset.y,offset.z,fov].every(Number.isFinite))return;
     if(offset.x<=0||offset.z<=0||offset.y<=0||fov<30||fov>55)return;
@@ -781,6 +806,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, options: { camer
     setMoveIntentHandler,
     setMobTargetHandler,
     rotateCamera,
+    setCameraZoom,
     setCameraFraming,
     setVfxTargetMobId,
     syncPlayerVfx,

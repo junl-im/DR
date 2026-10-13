@@ -50,6 +50,14 @@ export function nearQuestBoard(x:number,z:number):boolean{
 export function matchesQuestTarget(m:{id:string;name:string;npcId:number},target:HuntKind):boolean{
  if(m.id.startsWith('dungeon-'))return false;
  if(target==='sentinel')return m.name==='숲의 정예 감시자';
- if(m.name==='숲의 정예 감시자')return false;
- return target==='slime'?m.npcId===20001:m.npcId!==20001;
+ if(target==='slime')return m.npcId===20001 && m.name==='잉크 슬라임';
+ return m.npcId===20003 && m.name==='숲의 방랑자';
+}
+
+/** Combat and auto-hunt use the same canonical quest taxonomy. */
+export function questKillKind(m:{id:string;name:string;npcId:number}):HuntKind|null {
+ if(matchesQuestTarget(m,'sentinel'))return 'sentinel';
+ if(matchesQuestTarget(m,'slime'))return 'slime';
+ if(matchesQuestTarget(m,'wanderer'))return 'wanderer';
+ return null;
 }

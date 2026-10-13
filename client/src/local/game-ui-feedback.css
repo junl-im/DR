@@ -1,0 +1,46 @@
+/* Dungeon ZERO input response: clear yet lightweight actionable feedback. */
+#dream-ui .actions button{
+  overflow:hidden;isolation:isolate;transform-origin:50% 82%;
+  transition:transform 105ms ease,filter 140ms ease,border-color 140ms ease,box-shadow 140ms ease;
+}
+#dream-ui .actions button:active{
+  transform:translateY(2px) scale(.94);filter:brightness(1.3);
+  box-shadow:inset 0 0 13px #eec37b6b,0 0 10px #d4a45e66;
+}
+#dream-ui .actions button.slot-activated{border-color:#ffdf9e;filter:brightness(1.18)}
+#dream-ui .actions button.slot-activated::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(circle at center,#ffe9ab8e 0%,#edc88542 38%,transparent 75%);
+  animation:dz-slot-flash 300ms ease-out both;
+}
+#dream-ui .actions button.slot-activated::after{
+  content:'';position:absolute;inset:2px;pointer-events:none;z-index:5;
+  border:1px solid #ffe7aa;box-shadow:inset 0 0 9px #ffe1ab88,0 0 7px #e6ac6988;
+  animation:dz-slot-ring 300ms ease-out both;
+}
+@keyframes dz-slot-flash{from{opacity:1;transform:scale(.63)}to{opacity:0;transform:scale(1.15)}}
+@keyframes dz-slot-ring{from{opacity:1;transform:scale(.88)}to{opacity:0;transform:scale(1.02)}}
+@media(prefers-reduced-motion:reduce){
+ #dream-ui .actions button{transition:none}
+ #dream-ui .actions button.slot-activated::before,
+ #dream-ui .actions button.slot-activated::after{animation:none;opacity:.32}
+}
+/* Slim bronze fantasy scrollbars with visible hover and cross-engine fallback.
+ * Scrolling, keyboard focus and text-entry selection remain functional. */
+:root{--dz-scroll-track:#0a131bbf;--dz-scroll-thumb:#8c7652;--dz-scroll-hover:#dec088}
+#dream-ui :is(.panel,.log-lines,.quest,.bag-grid,.item-detail,.settings-section,.inventory-panel),
+.title-entry,#mobile-shell :is(dialog,.sheet,.content),#dream-ui details{
+  scrollbar-width:thin;scrollbar-color:var(--dz-scroll-thumb) var(--dz-scroll-track);
+}
+#dream-ui ::-webkit-scrollbar,.title-entry::-webkit-scrollbar,#mobile-shell ::-webkit-scrollbar{width:8px;height:8px}
+#dream-ui ::-webkit-scrollbar-track,.title-entry::-webkit-scrollbar-track,#mobile-shell ::-webkit-scrollbar-track{
+  background:var(--dz-scroll-track);border-left:1px solid #af90652d
+}
+#dream-ui ::-webkit-scrollbar-thumb,.title-entry::-webkit-scrollbar-thumb,#mobile-shell ::-webkit-scrollbar-thumb{
+  background:linear-gradient(90deg,#514632,#b59866 50%,#514632);
+  border:1px solid #d5b58173;border-radius:6px
+}
+#dream-ui ::-webkit-scrollbar-thumb:hover,.title-entry::-webkit-scrollbar-thumb:hover,#mobile-shell ::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(90deg,#8a7048,var(--dz-scroll-hover),#8a7048)
+}
+#dream-ui ::-webkit-scrollbar-corner,#mobile-shell ::-webkit-scrollbar-corner{background:var(--dz-scroll-track)}

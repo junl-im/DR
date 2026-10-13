@@ -222,32 +222,8 @@ async function boot(): Promise<void> {
     activeRenderer?.handleClick({ clientX: ev.clientX, clientY: ev.clientY });
   });
 
-  // Right-drag orbits the camera around the player so mobs on any side can be
-  // brought into view and clicked. (Left-click stays reserved for move/target.)
-  const CAMERA_ROTATE_SENSITIVITY = 0.006;
-  let rotating = false;
-  let lastPointerX = 0;
-  canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
-  canvas.addEventListener('pointerdown', (ev) => {
-    if (ev.button !== 2) return;
-    rotating = true;
-    lastPointerX = ev.clientX;
-    canvas.setPointerCapture?.(ev.pointerId);
-  });
-  canvas.addEventListener('pointermove', (ev) => {
-    if (!rotating) return;
-    const dx = ev.clientX - lastPointerX;
-    lastPointerX = ev.clientX;
-    activeRenderer?.rotateCamera(-dx * CAMERA_ROTATE_SENSITIVITY);
-  });
-  const stopRotating = (ev: PointerEvent): void => {
-    if (ev.button !== 2 && ev.type === 'pointerup') return;
-    rotating = false;
-  };
-  canvas.addEventListener('pointerup', stopRotating);
-  canvas.addEventListener('pointercancel', () => {
-    rotating = false;
-  });
+  // No secondary-button camera orbit: the game-wide input guard reserves
+  // mouse clicks for explicit in-world primary-button actions only.
   window.addEventListener('keydown', (ev) => {
     if (ev.key === 'ArrowLeft') activeRenderer?.rotateCamera(-0.12);
     else if (ev.key === 'ArrowRight') activeRenderer?.rotateCamera(0.12);

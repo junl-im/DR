@@ -1,6 +1,6 @@
 import { createPathMoveState, stepAlongPath, findPath, snapToNearestWalkable, snapEntityY, EntityAction, type PathMoveState } from '@nj/game-core';
 import {ARMOR_LABELS, ARMOR_TIER_LABELS, awardEliteArmorPiece, armorBit, armorCraftCost, armorDefense, emptyArmor, isArmorSlot, isCraftedArmorTier, ownsArmor, validateArmor, type ArmorSlot, type CraftedArmorTier, type ArmorInventory} from './armor-economy';
-import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, type QuestProgress, type HuntKind } from './adventure-quests';
+import { initialQuest, validateQuest, recordQuestKill, activeQuest, canClaimQuest, nearQuestBoard, questSummary, questKillKind, type QuestProgress } from './adventure-quests';
 import {bossDamage,bossHit,bossRadius,bossWarningLabel,bossWindup,selectBossMove,type BossMove,type BossThreat} from './boss-pattern';
 import { DUNGEON_ARENA, DUNGEON_GATE, DUNGEON_RADIUS, DUNGEON_WAVES, DUNGEON_REWARD, emptyDungeon, validateDungeon, dungeonWaveDone, dungeonBossDone, nearDungeonGate, type DungeonProgress } from './first-dungeon';
 
@@ -8,7 +8,7 @@ export const GAME_VERSION = '0.11.0';
 export const POTION_PRICE = 8;
 export const POTION_SHOP = { x: 5, z: 5, radius: 12 };
 export const canUsePotionShop = (p: Player) => Math.hypot(p.x-POTION_SHOP.x,p.z-POTION_SHOP.z)<=POTION_SHOP.radius;
-export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string}
+export interface GameEvent {kind:'damage'|'hurt'|'loot'|'level'|'heal';x:number;z:number;amount:number;text:string;sourceId?:string}
 export interface Player { name: string; classId: number; x: number; z: number; hp: number; mp: number; level: number; xp: number; gold: number; wood: number; potions: number; weapon: number; weaponEquipped?: boolean; armor?: ArmorInventory; quest?: QuestProgress; dungeon?: DungeonProgress; kills: number }
 export interface Save { schemaVersion: 1; gameVersion: string; updatedAt: number; seed: number; player: Player; territory: { hall: number; garden: number; stored: number } }
 export interface Mob { id: string; npcId: number; name: string; x: number; z: number; homeX: number; homeZ: number; hp: number; maxHp: number; respawn: number; action: number; actionSeq: number; cooldown: number; windup?: number; aimX?: number; aimZ?: number; bossMove?: BossMove; bossCasts?: number }
@@ -65,8 +65,13 @@ export class LocalGameSession implements GameSession {
     const start = snapToNearestWalkable(save.player.x, save.player.z) ?? { x: 0, z: 0 };
     this.state.player.x = start.x; this.state.player.z = start.z;
     this.movement = createPathMoveState(start.x, snapEntityY(start.x, start.z), start.z);
-    for (let i = 0; i < 12; i++) {
-      const spot = snapToNearestWalkable(26 + (i % 4) * 11, -18 - Math.floor(i / 4) * 15);
+    // Retain all 12 original spawn IDs/locations for save & visual compatibility.
+    // Add 6 separated normal-field spawns to avoid an empty hunting ground
+    // while the original wave is waiting on its 15s respawn clock.
+    for (let i = 0; i < 18; i++) {
+      const x=i<12?26 + (i % 4)*11:27 + ((i-12)%3)*13;
+      const z=i<12?-18-Math.floor(i/4)*15:-24 - Math.floor((i-12)/3)*18;
+      const spot = snapToNearestWalkable(x,z);
       if (!spot) continue;
       const elite=i===11;
       const hp=elite?120:45;
@@ -223,7 +228,7 @@ export class LocalGameSession implements GameSession {
       const q=p.quest!;
       const quest=activeQuest(q);
       if(!quest){this.message='완료한 의뢰를 모두 정리했습니다.';return;}
-      if(!nearQuestBoard(p.x,p.z)){this.message='마을 모험 안내판에서 의뢰 보상을 수령하세요.';return;}
+      if(p.dungeon!.inside||!nearQuestBoard(p.x,p.z)){this.message='마을 모험 안내판에서 의뢰 보상을 수령하세요.';return;}
       if(!canClaimQuest(q)){this.message='아직 의뢰 목표를 달성하지 못했습니다.';return;}
       const {gold,wood,potions,fragments}=quest.reward;
       if(p.gold+gold>1000000||p.wood+wood>1000000||
@@ -288,8 +293,8 @@ export class LocalGameSession implements GameSession {
     if(eliteFragment) p.armor!.fragments+=eliteFragment;
     const droppedSlot=elite?awardEliteArmorPiece(p.armor!):null;
     if (this.random() < .3) p.potions=Math.min(1000000,p.potions+1);
-    const kind:HuntKind=m.name==='숲의 정예 감시자'?'sentinel':m.npcId===20001?'slime':'wanderer';
-    const advanced=recordQuestKill(p.quest!,kind);
+    const kind=questKillKind(m);
+    const advanced=kind!==null && recordQuestKill(p.quest!,kind);
     this.message = `${m.name} 처치 · 경험치 +${elite?75:30} · 골드 +${gold}${earnedFragment||eliteFragment?' · 방어구 파편 +'+(Number(earnedFragment)+eliteFragment):''}${droppedSlot?' · 경갑 '+ARMOR_LABELS[droppedSlot]+' 획득':''}${advanced?' · '+questSummary(p.quest!):''}`;this.emit({kind:'loot',x:m.x,z:m.z,amount:gold,text:this.message});
     while (p.level < 100 && p.xp >= xpNeeded(p)) { p.xp -= xpNeeded(p); p.level++; p.hp = maxHp(p); p.mp = 60; this.message = `레벨 ${p.level} 달성! 체력과 마나가 회복되었습니다.`;this.emit({kind:'level',x:p.x,z:p.z,amount:p.level,text:this.message}); }
     if (p.level === 100) p.xp = Math.min(p.xp, xpNeeded(p) - 1);
@@ -323,7 +328,7 @@ export class LocalGameSession implements GameSession {
             const taken=Math.min(p.hp,Math.max(1,bossDamage(move)-armorDefense(p.armor)));
             p.hp-=taken;
             const label=move==='ground-sweep'?'파수꾼 휩쓸기':'정예 강타';
-            this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:label+' 피해 '+taken});
+            this.emit({kind:'hurt',sourceId:m.id,x:p.x,z:p.z,amount:taken,text:label+' 피해 '+taken});
             this.message=m.name+'의 공격에 '+taken+' 피해를 입었습니다.';
             if(!p.hp){const lost=Math.min(p.gold,5);p.gold-=lost;this.dispatch({type:'recall'});this.message='정예에게 쓰러졌습니다. 마을 귀환 · 골드 -'+lost;break;}
           } else {
@@ -339,7 +344,7 @@ export class LocalGameSession implements GameSession {
         continue;
       }
       if (Math.hypot(m.x - p.x, m.z - p.z) < 3.5 && Math.hypot(p.x, p.z) > 24 && this.clock >= m.cooldown) {
-        const taken=Math.min(p.hp,Math.max(1,7-armorDefense(p.armor)));p.hp -= taken;this.emit({kind:'hurt',x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
+        const taken=Math.min(p.hp,Math.max(1,7-armorDefense(p.armor)));p.hp -= taken;this.emit({kind:'hurt',sourceId:m.id,x:p.x,z:p.z,amount:taken,text:`${m.name}에게 ${taken} 피해를 받았습니다.`}); m.cooldown = this.clock + 1.4; m.action = EntityAction.Attack; m.actionSeq++;
         if (!p.hp) { const lost = Math.min(p.gold, 5); p.gold -= lost; this.dispatch({ type: 'recall' }); this.message = `쓰러졌습니다. 마을에서 회복했습니다. 골드 -${lost}`; break; }
       } else if (this.clock >= m.cooldown - .8) m.action = 0;
     }

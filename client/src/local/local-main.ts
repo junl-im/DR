@@ -7,22 +7,27 @@ import './mobile-shell.css';
 import './entry-screen.css';
 import './compact-hud.css';
 import './unified-interface.css';
+import './game-input-polish.css';
+import './game-ui-feedback.css';
+import {nextWheelZoom} from './camera-wheel-zoom';
+import {bindHotbarClickFeedback,flashActionSlot} from './hotbar-feedback';
 import {fitEntryScreen} from './entry-fit';
 import {entryScreen,ENTRY_CHARACTERS} from './entry-screen';
 import {createMobileShell} from './mobile-shell';
 import { pickTownFacility } from './town-interaction';
+import {findDungeonApproach,hasArrivedAtDungeonApproach,type GatePoint} from './dungeon-approach';
 import { ART_TRIALS } from './art-trial';
 import { equippedWeaponVisualId } from './equipment-visual';
 import { armorOutfitSelection, armorDefense } from './armor-economy';
-import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest, matchesQuestTarget } from './adventure-quests';
-import { DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
+import { activeQuest, canClaimQuest, questSummary, nearQuestBoard, validateQuest, } from './adventure-quests';
+import { DUNGEON_GATE, DUNGEON_WAVES, DUNGEON_REWARD, dungeonSummary, dungeonWaveDone, dungeonBossDone, nearDungeonGate } from './first-dungeon';
 import { buildFirstDungeonArt } from '../scene/first-dungeon-art';
 import { createRuinAtmosphere } from '../scene/ruin-atmosphere';
 import { buildFieldGroundCover } from '../scene/field-detail';
 import {preloadMobVisualTemplates} from '../scene/mobs';
 import { createBossThreatVisual } from '../scene/boss-threat-visual';
 import { createResolutionGovernor } from './resolution-governor';
-import {AutoHuntController,nextTabTarget,selectableMobs,type HuntPriority} from './auto-hunt';
+import {AutoHuntController,nextTabTarget,type HuntPriority} from './auto-hunt';
 import {findBossDodgeDestination} from './boss-dodge';
 import {createAdaptiveShadowGovernor} from './render-budget';
 import {nameplateScreenPoint} from './screen-name-anchor';
@@ -35,7 +40,7 @@ import * as THREE from 'three';
 import { snapEntityY, EntityAction } from '@nj/game-core';
 import { createRenderer, type GameRenderer } from '../scene/renderer';
 import { initGameState, setReady, setConnected, setPlayer, getGameState } from '../test-hook';
-import { isWeaponEquipped, POTION_PRICE, canUsePotionShop, LocalGameSession, newSave, maxHp, xpNeeded, type Save, type Intent } from './session';
+import { isWeaponEquipped, POTION_PRICE, canUsePotionShop, LocalGameSession, newSave, maxHp, xpNeeded, attackPower, type Save, type Intent } from './session';
 import { readSave, writeSave } from './saves';
 
 const root = document.createElement('main'); root.id = 'dream-ui'; document.body.append(root);
@@ -45,7 +50,9 @@ let artTrial = Object.hasOwn(ART_TRIALS, requestedArt) ? requestedArt : 'origina
 let disposeEntryFit:(()=>void)|undefined;
 let session: LocalGameSession;
 let autoHunt:AutoHuntController|undefined;
-const mobileShell=createMobileShell({pause:()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);if(session){session.stopMovement();session.attacking=false;}},persist:async()=>{await saveTask;await writeSave(session.snapshot());}});
+let pendingDungeonApproach:{point:GatePoint;startTime:number}|null=null;
+let shownPanelKind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'character'|null=null;
+const mobileShell=createMobileShell({pause:()=>{if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);if(session){session.stopMovement();session.attacking=false;}},persist:async()=>{await saveTask;await writeSave(session.snapshot());}});
 let game: GameRenderer;
 let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
 let ruinAtmosphere:ReturnType<typeof createRuinAtmosphere>|undefined;
@@ -148,7 +155,7 @@ async function enter(state: Save) {
         const progress=autoHunt?.progress;
         const elapsed=progress?.seconds??0;
         const duration=`${Math.floor(elapsed/60)}:${String(elapsed%60).padStart(2,'0')}`;
-        const message=enabled?`${autoHunt?.activity==='waiting'?'범위 안 대상 대기':autoHunt?.activity==='blocked'?'막힌 경로 우회 대기':'사냥 중'} · ${autoHunt?.radius}m · ${autoHunt?.priority==='quest'?'현재 의뢰 대상':autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
+        const message=autoHunt?.approachingQuest?'의뢰 사냥터로 이동 중 · 다시 의뢰 버튼을 누르면 취소':enabled?`${autoHunt?.activity==='waiting'?'범위 안 대상 대기':autoHunt?.activity==='blocked'?'막힌 경로 우회 대기':'사냥 중'} · ${autoHunt?.radius}m · ${autoHunt?.priority==='quest'?'현재 의뢰 대상':autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
           reason==='quest-ready'?'의뢰 목표 달성 · 자동사냥 중단 · 마을에서 보상을 받으세요.':
           reason==='quest-complete'?'마을 의뢰를 모두 완료했습니다. 다른 사냥 기준을 선택하세요.':
           reason==='quest-unavailable'?'마을 의뢰 사냥은 필드에서만 사용할 수 있습니다.':
@@ -158,13 +165,20 @@ async function enter(state: Save) {
         if(status.textContent!==message)status.textContent=message;
       }
     };
-    bindHuntButton($<HTMLButtonElement>('#auto-hunt'),()=>{
-      autoHunt!.setEnabled(!autoHunt!.enabled);
-      syncAutoButton();
-    },()=>{
+    const openHuntSettings=()=>{
+      if(pendingDungeonApproach){pendingDungeonApproach=null;session.stopMovement();}
       $('#panel').hidden=true;$('.quest').classList.add('hunt-settings-open');
       $<HTMLDetailsElement>('#hunt-tools').open=true;$<HTMLDetailsElement>('#auto-config').open=true;$('.quest').scrollTop=0;
-    });
+    };
+    bindHuntButton($<HTMLButtonElement>('#auto-hunt'),()=>{
+      pendingDungeonApproach=null;
+      autoHunt!.setEnabled(autoHunt!.approachingQuest?false:!autoHunt!.enabled);
+      syncAutoButton();
+    },openHuntSettings);
+    $<HTMLButtonElement>('#hunt-config-toggle').onclick=()=>{
+      if($('.quest').classList.contains('hunt-settings-open'))$('.quest').classList.remove('hunt-settings-open');
+      else openHuntSettings();
+    };
     const readHuntOptions=()=>{
       autoHunt!.configure({
         radius:Number($<HTMLSelectElement>('#auto-radius').value),
@@ -175,25 +189,33 @@ async function enter(state: Save) {
     };
     for(const id of ['#auto-radius','#auto-priority','#auto-potion'])
       $(id).addEventListener('change',readHuntOptions);
-    const manualStop=()=>{if(autoHunt?.enabled){autoHunt.setEnabled(false);syncAutoButton();}};
+    const manualStop=()=>{pendingDungeonApproach=null;if(autoHunt?.enabled||autoHunt?.approachingQuest){autoHunt.setEnabled(false);syncAutoButton();}};
     game.setMoveIntentHandler(i => { manualStop();session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }); });
     game.setMobTargetHandler(id => { manualStop();session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
     const canvas = game.renderer.domElement;
     const feedback=createCombatFeedback(root,game.camera,canvas);
     mountTownSigns();
     let pointerStart: { x: number; y: number } | null = null;
-    canvas.addEventListener('pointerdown', e => { pointerStart = {x:e.clientX,y:e.clientY}; });
+    canvas.addEventListener('pointerdown', e => { pointerStart = e.isPrimary&&e.button===0?{x:e.clientX,y:e.clientY}:null; });
     canvas.addEventListener('pointerup', e => {
+      if(!e.isPrimary||e.button!==0){pointerStart=null;return;}
       const tapped=pointerStart && Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)<12;
       pointerStart=null;
       if(!tapped)return;
       const facility=session.state.player.dungeon!.inside?undefined:
         pickTownFacility(game.scene,game.camera,canvas.getBoundingClientRect(),e.clientX,e.clientY);
-      if(facility){manualStop();session.stopMovement();showPanel(facility.panel);}
+      if(facility){if(facility.id==='dungeon')requestDungeonApproach();else {manualStop();session.stopMovement();showPanel(facility.panel);}}
       else game.handleClick(e);
     });
     canvas.addEventListener('pointercancel',()=>{pointerStart=null;});
-    // Fixed diagonal camera: wheel and Q/E never orbit the scene.
+    let cameraWheelZoom=1;
+    canvas.addEventListener('wheel',e=>{
+      e.preventDefault();
+      if(mobileShell.paused)return;
+      cameraWheelZoom=nextWheelZoom(cameraWheelZoom,e.deltaY);
+      game.setCameraZoom(cameraWheelZoom);
+    },{passive:false});
+    // Q/E never orbit the scene; wheel only changes bounded distance.
     let lastCameraMode=innerWidth<=700?'mobile':'desktop';
     function resizeViewport() {
       const height=Math.max(180,innerHeight);
@@ -212,13 +234,13 @@ async function enter(state: Save) {
     window.addEventListener('keydown', e => {
       if(mobileShell.paused)return;
       if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
-      if(e.key==='Escape') { $('.quest').classList.remove('hunt-settings-open'); manualStop(); $('#panel').hidden=true; return; }
+      if(e.key==='Escape') { pendingDungeonApproach=null;$('.quest').classList.remove('hunt-settings-open'); manualStop(); $('#panel').hidden=true; return; }
       if(e.key.toLowerCase()==='q'){e.preventDefault();dodgeBossAttack();return;}
       if(e.key==='Tab'){e.preventDefault();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
-      if(e.key.toLowerCase()==='h'){e.preventDefault();autoHunt!.setEnabled(!autoHunt!.enabled);syncAutoButton();updateHud();return;}
-      if(e.key.toLowerCase()==='i') { e.preventDefault();showPanel('inventory');return; }
+      if(e.key.toLowerCase()==='h'){e.preventDefault();autoHunt!.setEnabled(autoHunt!.approachingQuest?false:!autoHunt!.enabled);syncAutoButton();updateHud();return;}
+      if(e.key.toLowerCase()==='i') { e.preventDefault();togglePanel('inventory');return; }
       const keys: Record<string, Intent['type']> = { ' ': 'attack', '1':'attack', '2':'skill', '3':'potion', 'r':'recall' };
-      if(keys[e.key]) { e.preventDefault(); manualStop();session.dispatch({type:keys[e.key]} as Intent); }
+      if(keys[e.key]) { e.preventDefault(); if(keys[e.key]!=='skill'&&keys[e.key]!=='potion')manualStop();flashActionSlot(root.querySelector<HTMLElement>('[data-intent="'+keys[e.key]+'"]'));session.dispatch({type:keys[e.key]} as Intent); }
 
     });
     // Normally make the starting field GLBs ready before enabling play.
@@ -226,13 +248,24 @@ async function enter(state: Save) {
     await Promise.race([initialMobModels,new Promise<void>(resolve=>setTimeout(resolve,3000))]);
     setConnected(false); setReady(true);
     Object.assign(window, { __DREAM_SESSION__:session, __DREAM_SAVE__:save,
-      __DREAM_MOB_RENDER_STATUS__:()=>game.getMobRenderStatus() });
+      __DREAM_MOB_RENDER_STATUS__:()=>game.getMobRenderStatus(),
+       __DREAM_CAMERA_ZOOM__:()=>cameraWheelZoom });
     let last=performance.now(), accumulator=0, uiTime=0,shadowTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
       if(mobileShell.paused)accumulator=0;
       while(accumulator>=.05) { autoHunt?.tick(.05);session.tick(.05); accumulator-=.05; }
       syncAutoButton();
+      if(pendingDungeonApproach){
+        const approach=pendingDungeonApproach,p=session.state.player;
+        if(p.hp<=0||p.dungeon!.inside||!$('#panel').hidden){pendingDungeonApproach=null;}
+        else if(hasArrivedAtDungeonApproach(p,approach.point)){
+          pendingDungeonApproach=null;session.stopMovement();showPanel('dungeon');
+        }else if(performance.now()-approach.startTime>24000){
+          pendingDungeonApproach=null;session.stopMovement();
+          session.message='관문까지 도착하지 못했습니다. 길을 다시 선택해 주세요.';
+        }
+      }
       const perf=quality.sample(elapsed);
       if(perf.changed)game.renderer.setPixelRatio(perf.dpr);
       shadowTime+=elapsed;
@@ -243,7 +276,7 @@ async function enter(state: Save) {
         const label=root.querySelector<HTMLElement>('#quality-info');
         if(label)label.textContent=`AUTO ${Math.round(perf.fps)} FPS · ${perf.dpr.toFixed(2)}× · ${game.renderer.info.render.calls} calls`;
       }
-      syncScene(); game.tick(Math.min(elapsed,.05));classicScene.tick();const events=session.drainEvents();feedback.push(events);for(const event of events){addLog(event.text);if(event.text===session.message)lastLog=event.text;}feedback.tick(elapsed);positionTownSigns(); positionPlayerOverheadName();game.render();
+      syncScene(); game.tick(Math.min(elapsed,.05));classicScene.tick();const events=session.drainEvents();feedback.push(events);for(const event of events){autoHunt?.handleHit(event);addLog(event.text);if(event.text===session.message)lastLog=event.text;}feedback.tick(elapsed);positionTownSigns(); positionPlayerOverheadName();game.render();
       uiTime+=elapsed; if(uiTime>.15) { updateHud(); uiTime=0; }
       requestAnimationFrame(frame);
     }
@@ -280,7 +313,8 @@ function syncScene() {
   }
 }
 function dodgeBossAttack():void {
-  if(autoHunt?.enabled)autoHunt.setEnabled(false);
+  pendingDungeonApproach=null;
+  if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);
   const p=session.state.player;
   const destination=findBossDodgeDestination(session.bossThreat,p,!!p.dungeon?.inside);
   if(destination)session.dispatch({type:'move',x:destination.x,z:destination.z});
@@ -289,51 +323,73 @@ function dodgeBossAttack():void {
     :'정예 몬스터가 공격을 준비할 때 사용할 수 있습니다.';
   updateHud();
 }
+/** World and sign clicks walk to the entrance before opening the dialog.
+ * The manual journal button can still show quest information from anywhere.
+ */
+function requestDungeonApproach():void{
+  pendingDungeonApproach=null;
+  if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);
+  session.stopMovement();
+  const p=session.state.player;
+  const distance=Math.hypot(p.x-DUNGEON_GATE.x,p.z-DUNGEON_GATE.z);
+  if(distance<=4.0){showPanel('dungeon');return;}
+  const point=findDungeonApproach(p);
+  if(!point){
+    session.message='관문까지 걸어갈 수 있는 길을 찾지 못했습니다.';
+    updateHud();return;
+  }
+  $('#panel').hidden=true;
+  session.dispatch({type:'move',x:point.x,z:point.z});
+  pendingDungeonApproach={point,startTime:performance.now()};
+  session.message='폐허 관문으로 이동 중 · 도착하면 입장창이 열립니다.';
+  updateHud();
+}
 function mountHud() {
   root.innerHTML=`<header class="top"><a class="brand" href="#">던전 zero</a><div class="chapter"><strong>시작의 마을</strong></div><button id="menu" aria-label="게임 옵션 열기" title="게임 옵션">${classicIcon('settings')}</button></header>
-<section class="vitals card" aria-label="캐릭터 상태"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
+<section class="vitals card" role="button" tabindex="0" aria-label="캐릭터 상세 정보 열기" title="캐릭터 상세 정보"><div class="player-line"><strong id="player-name"></strong><span id="level"></span></div><div class="bar hp"><i id="hp-bar"></i><span id="hp"></span></div><div class="bar mp"><i id="mp-bar"></i><span id="mp"></span></div><div class="bar xp" aria-label="경험치"><i id="xp-bar"></i></div><div id="xp-caption" class="xp-caption"></div></section>
 <div class="wallet"><span>골드 <b id="gold">0</b></span><span>목재 <b id="wood">0</b></span><span>방어력 <b id="defense">0</b></span></div>
 <section class="classic-log card" aria-label="시스템과 개인 기록"><div class="log-tabs"><button data-log-filter="all" class="active">전체 기록</button><button data-log-filter="combat">전투</button><small>단독 모험</small></div><div id="log-lines" class="log-lines" role="log" aria-live="polite"></div><form id="log-form" class="log-compose"><label for="log-input">개인 기록</label><input id="log-input" maxlength="120" autocomplete="off" placeholder="기록할 내용을 입력하세요"><button type="submit">기록</button></form></section>
-<section class="quest card" aria-label="의뢰 및 사냥 설정"><button id="quest-mini" type="button" title="의뢰 현황 열기"></button><button id="hunt-close" type="button" aria-label="사냥 설정 닫기">×</button><h2>사냥 설정</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><details id="hunt-tools"><summary>사냥 보조</summary><div class="hunt-tools-body"><button id="quest-target">의뢰 대상 찾기</button><button id="hunt-guide">가까운 몬스터 찾기</button><button id="next-target" type="button" title="Tab 키와 동일한 다음 몬스터 선택">다음 타깃 · Tab</button>
+<section class="quest card" aria-label="의뢰 및 사냥 설정"><button id="quest-mini" type="button" title="의뢰 현황 열기"></button><button id="hunt-close" type="button" aria-label="사냥 설정 닫기">×</button><h2>사냥 설정</h2><div id="quest-progress"></div><button id="quest-journal">의뢰 현황 · 보상</button><button id="dungeon-journal">폐허의 시련</button><details id="hunt-tools"><summary>사냥 보조</summary><div class="hunt-tools-body"><button id="quest-target">의뢰 자동이동 · 사냥</button><button id="hunt-guide">가까운 몬스터 찾기</button><button id="next-target" type="button" title="Tab 키와 동일한 다음 몬스터 선택">다음 타깃 · Tab</button>
  <details id="auto-config"><summary>자동사냥 설정</summary><div class="auto-config-fields">
+ <label for="auto-retaliate"><input id="auto-retaliate" type="checkbox" checked> 피격 시 자동사냥 · 수동 중단 시 해제</label>
  <label for="auto-radius">사냥 반경<select id="auto-radius"><option value="12">12m</option><option value="20">20m</option><option value="28" selected>28m</option></select></label>
  <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option><option value="quest">현재 의뢰 대상 · 정예 포함</option></select></label>
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
  </div></details></div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section><button id="boss-dodge" type="button" title="Q 키 · 기존 이동 속도로 공격 예고 범위 벗어나기" hidden>회피 · Q</button>
-<div class="auto-control"><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기 또는 우클릭: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)">${classicIcon('recall')}<span>귀환</span><small>R</small></button><button id="estate">${classicIcon('estate')}<span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
+<div class="auto-control"><button id="hunt-config-toggle" type="button" title="자동사냥 설정 열기" aria-label="사냥 설정 열기">⚙</button><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)">${classicIcon('recall')}<span>귀환</span><small>R</small></button><button id="estate">${classicIcon('estate')}<span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
 <div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><div id="screen-status" role="status"></div><footer id="save-status">저장 준비 중</footer>`;
-  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
-  $('#menu').onclick=()=>showPanel('save'); $('#estate').onclick=()=>showPanel('estate'); $('#inventory').onclick=()=>showPanel('inventory');
+  bindHotbarClickFeedback(root);
+  root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(b.dataset['intent']!=='skill'&&b.dataset['intent']!=='potion'){pendingDungeonApproach=null;autoHunt?.setEnabled(false);}session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
+  $('.vitals').onclick=()=>togglePanel('character');
+  $('.vitals').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();togglePanel('character');}};
+  $<HTMLInputElement>('#auto-retaliate').onchange=e=>{if(autoHunt)autoHunt.retaliateOnHit=(e.target as HTMLInputElement).checked;};
+  $('#menu').onclick=()=>togglePanel('save'); $('#estate').onclick=()=>togglePanel('estate'); $('#inventory').onclick=()=>togglePanel('inventory');
   $('#panel-close').onclick=()=>$('#panel').hidden=true;
-  const panel=$('#panel');let drag:{x:number;y:number;left:number;top:number}|undefined;
-  panel.addEventListener('pointerdown',e=>{if(innerWidth<=550||!(e.target as HTMLElement).closest('.inventory-heading'))return;const rect=panel.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:rect.left,top:rect.top};panel.style.height=rect.height+'px';panel.style.bottom='auto';panel.setPointerCapture(e.pointerId);});
-  panel.addEventListener('pointermove',e=>{if(!drag)return;panel.style.left=Math.max(0,Math.min(innerWidth-panel.offsetWidth,drag.left+e.clientX-drag.x))+'px';panel.style.top=Math.max(0,Math.min(innerHeight-panel.offsetHeight,drag.top+e.clientY-drag.y))+'px';panel.style.right='auto';});
-  panel.addEventListener('pointerup',()=>{drag=undefined;});panel.addEventListener('pointercancel',()=>{drag=undefined;});
+  const panel=$('#panel'); // Fixed in-game window; native mouse dragging is disabled.
   window.addEventListener('resize',()=>{panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';});
   $('#boss-dodge').onclick=dodgeBossAttack;
-  $('#quest-mini').onclick=()=>showPanel('help');
+  $('#quest-mini').onclick=()=>togglePanel('help');
   $('#hunt-close').onclick=()=>{$('.quest').classList.remove('hunt-settings-open');$('#auto-hunt').focus();};
-  $('#quest-journal').onclick=()=>showPanel('help');
-  $('#dungeon-journal').onclick=()=>showPanel('dungeon');
+  $('#quest-journal').onclick=()=>togglePanel('help');
+  $('#dungeon-journal').onclick=()=>togglePanel('dungeon');
   $('#next-target').onclick=()=>{
-    if(autoHunt?.enabled)autoHunt.setEnabled(false);
+    if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);
     const id=nextTabTarget(session);
     if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}
     updateHud();
   };
   $('#quest-target').onclick=()=>{
-    if(autoHunt?.enabled)autoHunt.setEnabled(false);
-    const p=session.state.player,q=p.quest!,quest=activeQuest(q);
-    if(!quest){session.message='마을 의뢰를 모두 완료했습니다.';updateHud();return;}
-    if(canClaimQuest(q)){session.message='의뢰 목표 달성 · 마을 모험 안내판에서 보상을 받으세요.';updateHud();return;}
-    const target=selectableMobs(session).find(m=>matchesQuestTarget(m,quest.target));
-    if(!target){session.message='75m 안에 살아있는 의뢰 대상이 없습니다. 필드 위치와 재출현을 확인하세요.';updateHud();return;}
-    session.dispatch({type:'target',id:target.id});game.setVfxTargetMobId(target.id);
-    const distance=Math.round(Math.hypot(target.x-p.x,target.z-p.z));
-    session.message=target.name+' · 거리 '+distance+'m · '+(distance>(autoHunt?.radius??28)?'공격으로 접근하거나 대상 근처에서 의뢰 자동사냥을 켜세요.':'공격 또는 의뢰 자동사냥을 선택하세요.');updateHud();
+    if(autoHunt?.approachingQuest||(autoHunt?.enabled&&autoHunt.priority==='quest')){
+      autoHunt.setEnabled(false);
+      session.message='의뢰 자동이동·사냥을 중단했습니다.';
+    }else{
+      pendingDungeonApproach=null;
+      autoHunt?.startQuestHunt();
+    }
+    updateHud();
   };
   $('#hunt-guide').onclick=()=>{
-    if(autoHunt?.enabled)autoHunt.setEnabled(false);
+    if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);
     const p=session.state.player;
     const m=session.mobs.filter(m=>m.hp>0 && (session.state.player.dungeon!.inside===m.id.startsWith('dungeon-'))).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];
     if(m) { session.dispatch({type:'target',id:m.id}); game.setVfxTargetMobId(m.id); session.dispatch({type:'attack'}); }
@@ -343,6 +399,10 @@ function mountHud() {
   $('.brand').onclick=e=>e.preventDefault();
 }
 function updateHud() {
+  $<HTMLInputElement>('#auto-retaliate').checked=autoHunt?.retaliateOnHit??true;
+  if(autoHunt)$<HTMLSelectElement>('#auto-priority').value=autoHunt.priority;
+  if(!$('#panel').hidden&&shownPanelKind==='help')refreshQuestPanel();
+  if(!$('#panel').hidden&&shownPanelKind==='character')refreshCharacterPanel();
   const p=session.state.player;
   $('#player-name').textContent=p.name; $('#level').textContent=`Lv. ${p.level}`;
   const overhead=root.querySelector<HTMLElement>('#player-overhead-name');if(overhead&&overhead.textContent!==p.name)overhead.textContent=p.name;
@@ -385,18 +445,40 @@ function positionPlayerOverheadName():void{
   if(label.style.top!==top)label.style.top=top;
 }
 
-function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(autoHunt?.enabled)autoHunt.setEnabled(false);session.stopMovement();showPanel(sign.panel);};layer.append(button);}root.append(layer);}
+function mountTownSigns(){const layer=document.createElement('div');layer.id='town-signs';for(const sign of TOWN_SIGNS){const button=document.createElement('button');button.id='sign-'+sign.id;button.textContent=sign.name;button.onclick=()=>{if(sign.id==='dungeon')requestDungeonApproach();else {pendingDungeonApproach=null;if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);session.stopMovement();showPanel(sign.panel);}};layer.append(button);}root.append(layer);}
 function positionTownSigns(){const canvas=game.renderer.domElement.getBoundingClientRect();for(const sign of TOWN_SIGNS){const button=$('#sign-'+sign.id);signPoint.set(sign.x,snapEntityY(sign.x,sign.z)+2.1,sign.z).project(game.camera);button.hidden=session.state.player.dungeon!.inside||signPoint.z>1||signPoint.z< -1||Math.abs(signPoint.x)>1||Math.abs(signPoint.y)>1;button.style.left=(canvas.left+(signPoint.x+1)*canvas.width/2)+'px';button.style.top=(canvas.top+(1-signPoint.y)*canvas.height/2)+'px';}}
+function refreshCharacterPanel(){
+  const p=session.state.player,node=$('#character-stats');if(!node)return;
+  const rows=[['이름',p.name],['레벨',p.level],['HP',p.hp+' / '+maxHp(p)],['MP',p.mp+' / 60'],['경험치',p.xp+' / '+xpNeeded(p)],['공격력',attackPower(p)],['방어력',armorDefense(p.armor)],['무기',isWeaponEquipped(p)?'장착 · +'+p.weapon:'미장착'],['처치',p.kills],['골드',p.gold],['물약',p.potions]];
+  // Names originate in user saves: render all values as text, never HTML.
+  node.replaceChildren(...rows.map(([label,value])=>{const row=document.createElement('div');row.className='stat-line';const key=document.createElement('span'),val=document.createElement('b');key.textContent=String(label);val.textContent=String(value);row.append(key,val);return row;}));
+}
+function refreshQuestPanel(){
+  const p=session.state.player,q=p.quest!,quest=activeQuest(q);
+  if($('#panel-content').dataset['questStage']!==String(q.stage)){showPanel('help');return;}
+  $('#quest-detail').textContent=quest?q.progress+' / '+quest.required:'3 / 3';
+  const claim=root.querySelector<HTMLButtonElement>('#quest-claim');
+  if(claim){claim.disabled=!canClaimQuest(q);claim.textContent=nearQuestBoard(p.x,p.z)&&!p.dungeon!.inside?'의뢰 보상 수령':'마을 귀환 후 보상 수령';}
+}
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
-function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
+function togglePanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'character') {
+  if(!$('#panel').hidden&&shownPanelKind===kind){$('#panel').hidden=true;return;}
+  showPanel(kind);
+}
+function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'character') {
+  shownPanelKind=kind;
+  pendingDungeonApproach=null;
   $('.quest').classList.remove('hunt-settings-open');
   $('#panel').hidden=false;
   inventoryWindow=undefined;
   if(kind!=='inventory'){const panel=$('#panel');panel.style.left='';panel.style.top='';panel.style.right='';panel.style.height='';panel.style.bottom='';}
   $('#panel').classList.toggle('inventory-panel',kind==='inventory');
   $('#panel').setAttribute('aria-label',kind==='inventory'?'장비와 소지품':'게임 메뉴');
-  if(kind==='dungeon') {
-    if(autoHunt?.enabled)autoHunt.setEnabled(false);
+  if(kind==='character'){
+    $('#panel-content').innerHTML='<span class="eyebrow">CHARACTER</span><h2>캐릭터 정보</h2><div id="character-stats"></div><button id="character-equipment">장비와 소지품</button>';
+    refreshCharacterPanel();$('#character-equipment').onclick=()=>showPanel('inventory');
+  } else if(kind==='dungeon') {
+    if(autoHunt?.enabled||autoHunt?.approachingQuest)autoHunt.setEnabled(false);
     const p=session.state.player,d=p.dungeon!,wave=DUNGEON_WAVES[d.wave];
     const ready=dungeonWaveDone(d),boss=dungeonBossDone(d),unlocked=p.quest!.stage===3;
     $('#panel-content').innerHTML=`<span class="eyebrow">첫 번째 던전 · 시작의 마을</span><h2>폐허의 시련</h2>
@@ -435,13 +517,14 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon') {
       <p>${quest?quest.description:'마을의 3개 의뢰를 모두 완료했습니다. 다음 모험을 준비하세요.'}</p>
       <div class="stat-line">의뢰 진행 <b id="quest-detail">${quest?questState.progress+' / '+quest.required:'3 / 3'}</b></div>
       ${quest?`<p>보상 · 골드 ${quest.reward.gold} · 목재 ${quest.reward.wood} · 물약 ${quest.reward.potions} · 파편 ${quest.reward.fragments}</p>
-      <button id="quest-claim" ${!finished||!nearQuestBoard(session.state.player.x,session.state.player.z)?'disabled':''}>의뢰 보상 수령</button>`:''}
+      <button id="quest-claim" ${!finished?'disabled':''}>${nearQuestBoard(session.state.player.x,session.state.player.z)&&!session.state.player.dungeon!.inside?'의뢰 보상 수령':'마을 귀환 후 보상 수령'}</button>`:''}
       <p role="status" id="quest-status"></p>
       <p>땅을 클릭해 이동 · 동쪽 사냥터에서 몬스터를 선택하고 1 키로 공격하세요.</p>
       <p>2 강타 · 3 물약 · R 귀환 · 마을 주변에서는 체력이 회복됩니다.</p>
-      <button id="help-quest-target">의뢰 대상 찾기</button><button id="help-hunt">가까운 몬스터 사냥</button>
-      <small>의뢰 보상은 마을 모험 안내판 근처에서 1번만 수령할 수 있습니다.</small>`;
-    $('#quest-claim')?.addEventListener('click',()=>{session.dispatch({type:'claim-quest'});const result=session.message;lastLog=result;showPanel('help');$('#quest-status').textContent=result;updateHud();void save();});
+      <button id="help-quest-target">의뢰 자동이동 · 사냥</button><button id="help-hunt">가까운 몬스터 사냥</button>
+      <small>목표 달성 후 보상 버튼을 누르면 필요할 때 마을로 귀환해 1번만 수령합니다.</small>`;
+    $('#panel-content').dataset['questStage']=String(questState.stage);
+    $('#quest-claim')?.addEventListener('click',()=>{if(!canClaimQuest(session.state.player.quest!))return;autoHunt?.setEnabled(false);pendingDungeonApproach=null;if(session.state.player.dungeon!.inside||!nearQuestBoard(session.state.player.x,session.state.player.z))session.dispatch({type:'recall'});session.dispatch({type:'claim-quest'});const result=session.message;lastLog=result;showPanel('help');$('#quest-status').textContent=result;updateHud();void (async()=>{await saveTask;await save();})();});
     $('#help-quest-target').onclick=()=>{$('#panel').hidden=true;$('#quest-target').click();};
     $('#help-hunt').onclick=()=>{$('#panel').hidden=true;$('#hunt-guide').click();};
   } else if(kind==='estate') {

@@ -6,7 +6,28 @@ for(const [width,height] of [[1440,900],[390,844],[320,568],[844,390]]){
 const context=await browser.newContext({viewport:{width,height},hasTouch:width<900,isMobile:width<600});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
 await page.goto('http://127.0.0.1:4300/?art=traveler');await expect(page.locator('#entry-form')).toBeVisible();await expect(page.locator('input[name=character]')).toHaveCount(3);await expect(page.locator('select')).toHaveCount(0);
 expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-expect(await page.locator('.title-entry').evaluate(el=>el.scrollHeight<=el.clientHeight)).toBe(true);
+const titleDimensions=()=>page.locator('.title-entry').evaluate(el=>{
+ const fit=el.querySelector('.entry-fit');
+ const button=el.querySelector('#start')?.getBoundingClientRect();
+ return {fits:el.scrollHeight<=el.clientHeight&&el.scrollWidth<=el.clientWidth,
+   height:el.clientHeight,scrollHeight:el.scrollHeight,width:el.clientWidth,scrollWidth:el.scrollWidth,
+   scale:getComputedStyle(fit).transform,
+   buttonWithin:!!button&&button.top>=0&&button.bottom<=innerHeight};
+});
+// Fonts and browser viewport measurements can settle after entry-form mounts.
+// Verify the settled state repeatedly rather than one unrelated initial frame.
+await expect.poll(async()=>await titleDimensions(),{timeout:4500})
+  .toMatchObject({fits:true,buttonWithin:true});
+const initialDimensions=await titleDimensions();
+expect(initialDimensions.fits,'title should never require hidden scroll space').toBe(true);
+if(width===320){
+ for(let probe=0;probe<4;probe++){
+   await page.waitForTimeout(100);
+   const current=await titleDimensions();
+   expect(current.fits,'320px title must stay fitted after fonts and paints').toBe(true);
+   expect(current.buttonWithin).toBe(true);
+ }
+}
 const startBox=await page.locator('#start').boundingBox();expect(startBox.y).toBeGreaterThanOrEqual(0);expect(startBox.y+startBox.height).toBeLessThanOrEqual(height);
 for(const asset of ['title-hero-v1.webp','character-portraits-v1.webp']){const response=await page.request.get('http://127.0.0.1:4300/art/'+asset);expect(response.status()).toBe(200);}
 await page.locator('.character-card').nth(1).click();await expect(page.locator('input[value="10"]')).toBeChecked();await expect(page.locator('#selected-class-name')).toContainText('별의');await page.locator('#name').fill('새벽의학자');await page.mouse.move(0,0);await page.waitForTimeout(250);await page.screenshot({path:`${out}/title-${width}.png`,fullPage:true});
