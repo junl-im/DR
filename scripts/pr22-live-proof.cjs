@@ -65,6 +65,9 @@ fs.mkdirSync(out, { recursive: true });
       expect(row.slot.ring).toBe('1px');
       expect(row.slot.active).toBe(true);
       await page.locator('#menu').click();
+      // Compact options fit on desktop; expanded real sections must still scroll.
+      for(const summary of await page.locator('#panel details summary').all())await summary.click();
+      await page.locator('#panel').evaluate(el=>el.scrollTop=0);
       await expect(
         page.locator('.game-scrollbar[data-scroll-for=panel]'),
       ).toBeVisible();

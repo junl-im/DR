@@ -11,6 +11,7 @@ import './compact-hud.css';
 import './unified-interface.css';
 import './game-input-polish.css';
 import './game-ui-feedback.css';
+import './compact-windows.css';
 import {nextWheelZoom} from './camera-wheel-zoom';
 import {bindHotbarClickFeedback,flashActionSlot} from './hotbar-feedback';
 import {fitEntryScreen} from './entry-fit';
@@ -479,6 +480,7 @@ function togglePanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'c
 }
 function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'character') {
   shownPanelKind=kind;
+  $('#panel').dataset['window']=kind;
   pendingDungeonApproach=null;
   $('.quest').classList.remove('hunt-settings-open');
   $('#panel').hidden=false;
@@ -559,6 +561,18 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'cha
     $('#login').onclick=()=>void action(c=>c.login()); $('#logout').onclick=()=>void action(c=>c.logout());
     $('#cloud-save').onclick=()=>void action(async c=>{ const remote=await c.cloudLoad(); if(remote&&!confirm('클라우드의 기존 여행 기록을 현재 여행으로 덮어쓸까요?'))return;await c.cloudSave(session.snapshot());$('#cloud-status').textContent='클라우드 저장 완료'; });
     $('#cloud-load').onclick=()=>void action(async c=>{const s=await c.cloudLoad();if(!s)throw new Error('클라우드에 저장된 기록이 없습니다.');if(confirm('현재 여행을 기기에 백업하고 클라우드 기록으로 바꿀까요?')){await replaceSave(s);}});
+  }
+  // Group adjacent actions without changing their handlers or reading order.
+  if(kind!=='inventory'){
+    const content=$('#panel-content');
+    for(const child of Array.from(content.children)){
+      if(child.tagName!=='BUTTON'||child.parentElement!==content)continue;
+      const next=child.nextElementSibling;
+      if(next?.tagName!=='BUTTON')continue;
+      const group=document.createElement('div');group.className='window-actions';
+      content.insertBefore(group,child);group.append(child);
+      while(group.nextElementSibling?.tagName==='BUTTON')group.append(group.nextElementSibling);
+    }
   }
   $('#panel').scrollTop=0;
 }
