@@ -276,10 +276,10 @@ async function enter(state: Save) {
       if(key==='i'||key==='b') { e.preventDefault();keyboardMovement.cancel();togglePanel('inventory');return; }
       const panels={c:'character',j:'help',o:'save',t:'estate'} as const;
       if(Object.hasOwn(panels,key)){e.preventDefault();keyboardMovement.cancel();togglePanel(panels[key as keyof typeof panels]);return;}
-      if(!$('#panel').hidden||$('.quest').classList.contains('hunt-settings-open'))return;
+      if(key==='h'){e.preventDefault();keyboardMovement.cancel();autoHunt!.setEnabled(autoHunt!.approachingQuest?false:!autoHunt!.enabled);syncAutoButton();updateHud();return;}
+      if(key==='tab'&&(!$('#panel').hidden||$('.quest').classList.contains('hunt-settings-open')))return;
       if(key==='q'){e.preventDefault();keyboardMovement.cancel();dodgeBossAttack();return;}
       if(key==='tab'){e.preventDefault();keyboardMovement.cancel();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
-      if(key==='h'){e.preventDefault();keyboardMovement.cancel();autoHunt!.setEnabled(autoHunt!.approachingQuest?false:!autoHunt!.enabled);syncAutoButton();updateHud();return;}
       const keys: Record<string, Intent['type']> = { ' ': 'attack', '1':'attack', '2':'skill', '3':'potion', 'r':'recall' };
       if(keys[key]) { e.preventDefault(); if(keys[key]!=='skill'&&keys[key]!=='potion'){keyboardMovement.cancel();manualStop();}flashActionSlot(root.querySelector<HTMLElement>('[data-intent="'+keys[key]+'"]'));session.dispatch({type:keys[key]} as Intent); }
 
