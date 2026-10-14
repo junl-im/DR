@@ -20,6 +20,7 @@ row.mobs=await page.evaluate(()=>window.__DREAM_MOB_RENDER_STATUS__());row.ready
 // Separate controlled encounter fixture: relocate one living ordinary mob only,
 // then let the normal combat tick deliver damage. Never force player HP or rewards.
 if(await page.locator('#auto-hunt').getAttribute('aria-pressed')==='true')await page.keyboard.press('h');
+await page.locator('#hunt-config-toggle').click();await page.locator('#auto-retaliate').check();await page.locator('#hunt-close').click();await page.evaluate(()=>document.activeElement?.blur());
 await page.keyboard.down('w');const hp=await page.evaluate(()=>{const s=window.__DREAM_SESSION__,p=s.state.player,m=s.mobs.find(m=>m.hp>0&&m.maxHp===45);m.x=p.x+1;m.z=p.z;m.cooldown=0;return p.hp;});
 await page.waitForFunction(hp=>window.__DREAM_SESSION__.state.player.hp<hp,hp,{timeout:10000});await expect(page.locator('#auto-hunt')).toHaveAttribute('aria-pressed','false');await page.keyboard.up('w');
 await page.evaluate(()=>{const s=window.__DREAM_SESSION__,p=s.state.player,m=s.mobs.find(m=>m.hp>0&&m.maxHp===45);m.x=p.x+1;m.z=p.z;m.cooldown=0;});
