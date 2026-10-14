@@ -127,3 +127,6 @@
  .title-entry .entry-card{padding:11px 13px}
 }
 @media(prefers-reduced-motion:reduce){#dream-ui .panel{animation:none}#dream-ui .panel button{transition:none}}
+
+/* Visible on touch devices; one shared recipe per tier, not repeated per slot. */
+.panel .armor-crafting .craft-recipe{margin:6px 0;padding:6px 8px;border-left:2px solid #80704b;background:#080c1099;overflow-wrap:anywhere;color:#cfc3a6}.craft-recipe b{color:#f1cd8c}.craft-recipe span{color:#aeb9bd}
