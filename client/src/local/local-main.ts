@@ -294,7 +294,7 @@ async function enter(state: Save) {
     let last=performance.now(), accumulator=0, uiTime=0,shadowTime=0;
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
-      if(mobileShell.paused)accumulator=0;
+      if(mobileShell.paused){keyboardMovement.cancel();accumulator=0;}
       while(accumulator>=.05) { keyboardMovement.tick(.05);autoHunt?.tick(.05);session.tick(.05); accumulator-=.05; }
       syncAutoButton();
       if(pendingDungeonApproach){
