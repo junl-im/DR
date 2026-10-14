@@ -1,3 +1,5 @@
+import './pwa';
+import './pwa.css';
 import {installGameInputGuard} from './input/game-input-guard';
 installGameInputGuard();
 import { installRuntimeErrorRecorder } from './diagnostics/runtime-errors';

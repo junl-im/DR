@@ -1,22 +1,36 @@
 {
-  "name": "던전 zero",
-  "short_name": "던전 zero",
+  "id": "./",
+  "name": "던전 ZERO",
+  "short_name": "던전 ZERO",
+  "description": "고전 MMORPG의 분위기로 즐기는 던전 모험",
   "lang": "ko",
   "start_url": "./",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "display_override": [
     "fullscreen",
     "standalone"
   ],
-  "background_color": "#111b24",
-  "theme_color": "#111b24",
+  "background_color": "#101820",
+  "theme_color": "#101820",
   "icons": [
     {
-      "src": "./game-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "./icons/app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "./icons/app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/app-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

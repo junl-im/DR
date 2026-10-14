@@ -219,7 +219,7 @@ fs.mkdirSync(out,{recursive:true});
     await game.waitForTimeout(1200);
     await game.screenshot({path:out+'/game-crafted-armor-desktop.png',fullPage:true});
     await game.locator('#menu').click();
-    await game.locator('#save-now').click();
+    await game.locator('.window-page-tabs button').nth(1).click();await game.locator('#save-now').click();
     await game.waitForTimeout(450);
     await game.reload({waitUntil:'domcontentloaded'});
     await game.locator('#continue').click();
@@ -285,7 +285,7 @@ fs.mkdirSync(out,{recursive:true});
     await dungeonKill('dungeon-0-0');
     await game.waitForFunction(()=>window.__DREAM_SESSION__?.state?.player?.dungeon?.kills===1);
     await game.locator('#menu').click();
-    await game.locator('#save-now').click();
+    await game.locator('.window-page-tabs button').nth(1).click();await game.locator('#save-now').click();
     // Save is asynchronous. Reloading immediately races the IndexedDB write.
     // Wait for the persisted checkpoint, not an unrelated status label.
     await game.waitForFunction(async()=>{

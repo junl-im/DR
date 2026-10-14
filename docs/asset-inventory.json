@@ -28,8 +28,8 @@
   },
   {
     "path": "art/mmorpg-frame.svg",
-    "bytes": 1203,
-    "sha256": "e264647e50fb7ceb0bcb51015da112f9f5b8b6948aeef8ae1fb0fd74ffe6e7a1",
+    "bytes": 1204,
+    "sha256": "9323efbb96d9fefaa9699ba42c0bb3ae6bcb34d24c07379d608a5b24d53258bb",
     "format": "ok",
     "animationClips": [],
     "upstreamNotice": "",
@@ -199,12 +199,57 @@
   },
   {
     "path": "game-icon.svg",
-    "bytes": 298,
-    "sha256": "8b31440143442065af1e731e9481842a7776049d7b6fa903858d145df3ea59bf",
+    "bytes": 864,
+    "sha256": "5886d053ffb471beb526466ac24bae4565121e31b910a1c6e49bd68d3f260ee4",
     "format": "ok",
     "animationClips": [],
     "upstreamNotice": "",
     "rightsStatus": "source-review-required"
+  },
+  {
+    "path": "icons/app-180.png",
+    "bytes": 16556,
+    "sha256": "f157fb101bef6106bf53d2f1bcae668a1820f736b5e9715b439296c45f367528",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "icons/ATTRIBUTION.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "icons/app-192.png",
+    "bytes": 18210,
+    "sha256": "1515470ef57829ed59539a05269d7ba5568293aa9d80ba947fc7886d9cf21d66",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "icons/ATTRIBUTION.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "icons/app-32.png",
+    "bytes": 1542,
+    "sha256": "ce3af237ba8ec98bf8e80cf333851a0e185188478323c455d6f73981c1d47ce1",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "icons/ATTRIBUTION.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "icons/app-512.png",
+    "bytes": 101462,
+    "sha256": "1cf9a280954d6eb625cd5b32fe8e92365599c2f99864b3d20d9ece1f326fb464",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "icons/ATTRIBUTION.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
+  },
+  {
+    "path": "icons/app-maskable-512.png",
+    "bytes": 64567,
+    "sha256": "c78a7e863e4da96476b40e0d18d4aacb37f5b25046be38a62b9915ca9b609e92",
+    "format": "ok",
+    "animationClips": [],
+    "upstreamNotice": "icons/ATTRIBUTION.md",
+    "rightsStatus": "upstream-notice-present; official-source-review-required"
   },
   {
     "path": "icons/ATTRIBUTION.md",
@@ -388,8 +433,8 @@
   },
   {
     "path": "manifest.webmanifest",
-    "bytes": 423,
-    "sha256": "16d1b8bc65b2d1ddccb4c38e809433bd9f74fe1c1b370c48b00049874404b02a",
+    "bytes": 758,
+    "sha256": "6709f956e011623c018ec00dbe28aa8dd80c587b9493b03235b548706e38c60d",
     "format": "ok",
     "animationClips": [],
     "upstreamNotice": "",

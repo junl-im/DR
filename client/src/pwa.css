@@ -1,0 +1,45 @@
+#install-game {
+  position: fixed;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 10000;
+  border: 1px solid #b79860;
+  border-radius: 5px;
+  padding: 9px 14px;
+  background: linear-gradient(#393629, #111923);
+  color: #eddbb9;
+  font: 13px serif;
+  box-shadow: 0 2px 12px #0009;
+}
+body:has(#dream-ui .classic-hud) #install-game {
+  top: 8px;
+  bottom: auto;
+  right: 72px;
+  padding: 5px 8px;
+  font-size: 11px;
+}
+#install-game[hidden] {
+  display: none;
+}
+#install-guide {
+  max-width: min(360px, 85vw);
+  padding: 24px;
+  background: #131c26;
+  color: #ead8b6;
+  border: 2px solid #ac8b50;
+  border-radius: 8px;
+  font: 15px/1.6 serif;
+}
+#install-guide::backdrop {
+  background: #000b;
+}
+#install-guide button {
+  padding: 8px 24px;
+  border: 1px solid #ac8b50;
+  background: #323026;
+  color: #ead8b6;
+}
+
+body:has(#dream-ui #panel) #install-game {
+  display: none;
+}

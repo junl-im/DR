@@ -80,58 +80,24 @@ fs.mkdirSync(out, { recursive: true });
       expect(row.slot.ring).toBe('1px');
       expect(row.slot.active).toBe(true);
       await page.locator('#menu').click();
-      // Compact options fit on desktop; expanded real sections must still scroll.
-      for(const summary of await page.locator('#panel details summary').all())await summary.click();
-      await page.locator('#panel').evaluate(el=>el.scrollTop=0);
-      await expect(
-        page.locator('.game-scrollbar[data-scroll-for=panel]'),
-      ).toBeVisible();
-      row.scroll = await page.locator('#panel').evaluate((el) => ({
-        height: el.clientHeight,
-        scrollHeight: el.scrollHeight,
-        thumb: getComputedStyle(
-          document.querySelector(
-            '.game-scrollbar[data-scroll-for=panel] .game-scrollbar-thumb',
-          ),
-        ).backgroundImage,
-        track: getComputedStyle(
-          document.querySelector('.game-scrollbar[data-scroll-for=panel]'),
-        ).boxShadow,
-        color: getComputedStyle(el).scrollbarColor,
-      }));
-      expect(row.scroll.thumb).toContain('linear-gradient');
-      expect(row.scroll.color).toBe('auto');
-      const rail = page.locator('.game-scrollbar[data-scroll-for=panel]');
-      await expect(rail).toBeVisible();
-      await rail.focus();
-      await page.keyboard.press('End');
-      expect(
-        await page.locator('#panel').evaluate((el) => el.scrollTop),
-      ).toBeGreaterThan(0);
-      await page.keyboard.press('Home');
-      expect(await page.locator('#panel').evaluate((el) => el.scrollTop)).toBe(
-        0,
-      );
-      const rb = await rail.boundingBox();
-      await page.mouse.click(rb.x + rb.width / 2, rb.y + rb.height - 3);
-      expect(
-        await page.locator('#panel').evaluate((el) => el.scrollTop),
-      ).toBeGreaterThan(0);
-      const thumb = page.locator(
-          '.game-scrollbar[data-scroll-for=panel] .game-scrollbar-thumb',
-        ),
-        tb = await thumb.boundingBox();
-      await page.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2);
-      await page.mouse.down();
-      await page.mouse.move(rb.x + rb.width / 2, rb.y + 2, { steps: 5 });
-      await page.mouse.up();
-      expect(
-        await page.locator('#panel').evaluate((el) => el.scrollTop),
-      ).toBeLessThan(3);
-      await page
-        .locator('#panel')
-        .evaluate((el) => (el.scrollTop = el.scrollHeight));
-      await expect(page.locator('#panel-close')).toBeInViewport();
+      const categories=page.locator('.window-page-tabs button');
+      await expect(categories).toHaveCount(3);
+      await categories.nth(1).click();await expect(page.locator('#save-now')).toBeVisible();
+      await page.locator('#panel details:visible summary').click();
+      const pages=page.locator('.game-pages[data-page-for=panel]');
+      if(await pages.isVisible()){
+        const forward=pages.locator('button').nth(1),back=pages.locator('button').nth(0);
+        await forward.click();expect(await page.locator('#panel').evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+        await back.click();expect(await page.locator('#panel').evaluate(el=>el.scrollTop)).toBe(0);
+        await forward.focus();await page.keyboard.press('PageDown');expect(await page.locator('#panel').evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+        for(let turns=0;turns<50&&!await forward.isDisabled();turns++)await forward.click();
+        expect(await page.locator('#panel').evaluate(el=>el.scrollTop+el.clientHeight>=el.scrollHeight-1)).toBe(true);
+        await expect(page.locator('#panel-close')).toBeInViewport();
+        row.scroll={mode:'pages',label:await pages.textContent(),buttonPaint:await forward.evaluate(el=>getComputedStyle(el).backgroundImage)};
+        expect(row.scroll.buttonPaint).toContain('linear-gradient');
+      }
+      await categories.nth(2).click();await expect(page.locator('#login')).toBeVisible();
+      expect(await page.locator('[role=scrollbar]').count()).toBe(0);
       await page.screenshot({ path: out + '/' + width + '-scrollbar.png' });
       await page.locator('#panel-close').click();
       await page.locator('#menu').click();

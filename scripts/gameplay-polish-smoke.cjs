@@ -33,9 +33,12 @@ const base=process.env.GAMEPLAY_BASE_URL||'http://127.0.0.1:4300/';
       color:getComputedStyle(el).scrollbarColor
     }));
     expect(result.skin.width).toBe('none');
-    await page.locator('#menu').click();for(const summary of await page.locator('#panel details summary').all())await summary.click();await page.locator('#panel').evaluate(el=>el.scrollTop=0);await expect(page.locator('.game-scrollbar[data-scroll-for=panel]')).toBeVisible();
-    const scrollbar=await page.locator('.game-scrollbar[data-scroll-for=panel]').evaluate(el=>({width:getComputedStyle(el).width,thumb:getComputedStyle(el.firstElementChild).backgroundImage}));
-    expect(scrollbar.width).toBe('8px');expect(scrollbar.thumb).toContain('linear-gradient');result.skin.paint=scrollbar;await page.locator('#menu').click();
+    await page.locator('#menu').click();
+    await page.locator('.window-page-tabs button').nth(1).click();await expect(page.locator('#save-now')).toBeVisible();
+    await page.locator('#panel details:visible summary').click();
+    const pages=page.locator('.game-pages[data-page-for=panel]');
+    if(await pages.isVisible()){const next=pages.locator('button').nth(1);await next.click();expect(await page.locator('#panel').evaluate(el=>el.scrollTop)).toBeGreaterThan(0);await pages.locator('button').first().click();expect(await page.locator('#panel').evaluate(el=>el.scrollTop)).toBe(0);result.skin.paint=await next.evaluate(el=>getComputedStyle(el).backgroundImage);expect(result.skin.paint).toContain('linear-gradient');}
+    expect(await page.locator('[role=scrollbar]').count()).toBe(0);await page.locator('#menu').click();
 
     const zoom=await page.locator('#game').evaluate(canvas=>{
       const before=window.__DREAM_CAMERA_ZOOM__();

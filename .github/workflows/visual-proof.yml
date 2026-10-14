@@ -263,6 +263,14 @@ jobs:
           done
           cat /tmp/controls-preview.log
           exit 1
+      - name: Game pages, installation events, icons and complete window actions
+        run: node scripts/pages-pwa-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-pages-pwa-evidence
+          path: artifacts/pages-pwa-proof
+          if-no-files-found: error
       - name: Actual keyboard movement, UI input isolation, Space kills and eight loaded rigs
         run: node scripts/controls-bestiary-smoke.cjs
       - uses: actions/upload-artifact@v4
