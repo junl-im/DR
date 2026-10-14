@@ -33,7 +33,7 @@ export function bindPcMovement(options:{window:Window;blocked:()=>boolean;start:
  const visibility=()=>{if(options.window.document.hidden)cancel();};
  options.window.addEventListener('keydown',down);options.window.addEventListener('keyup',up);
  options.window.addEventListener('blur',cancel);options.window.document.addEventListener('visibilitychange',visibility);options.window.document.addEventListener('focusin',focus);
- return {cancel,tick(dt:number){
+ return {get active(){return held.size>0;},cancel,tick(dt:number){
   if(options.blocked()||isTypingTarget(options.window.document.activeElement)){cancel();return;}
   const direction=movementDirection(held);if(!direction)return;
   elapsed+=dt;if(elapsed>=.15){elapsed=0;options.move(direction);}

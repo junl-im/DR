@@ -19,9 +19,9 @@ describe('PC physical controls',()=>{
  });
  it('moves on ticks, does not restart on repeats, stops immediately on last release',()=>{
   const b=bind();expect(key('keydown','KeyW').defaultPrevented).toBe(true);b.control.tick(.05);
-  expect(b.start).toHaveBeenCalledTimes(1);expect(b.move).toHaveBeenCalledTimes(1);
+  expect(b.control.active).toBe(true);expect(b.start).toHaveBeenCalledTimes(1);expect(b.move).toHaveBeenCalledTimes(1);
   key('keydown','KeyW',window,{repeat:true});b.control.tick(.05);expect(b.move).toHaveBeenCalledTimes(1);
-  key('keyup','KeyW');expect(b.stop).toHaveBeenCalledTimes(1);b.control.tick(1);expect(b.move).toHaveBeenCalledTimes(1);
+  key('keyup','KeyW');expect(b.control.active).toBe(false);expect(b.stop).toHaveBeenCalledTimes(1);b.control.tick(1);expect(b.move).toHaveBeenCalledTimes(1);
  });
  it('releases motion on focus, blur, window opening and pause without sticky keys',()=>{
   const b=bind();key('keydown','KeyW');b.control.tick(.05);window.dispatchEvent(new Event('blur'));expect(b.stop).toHaveBeenCalledTimes(1);
