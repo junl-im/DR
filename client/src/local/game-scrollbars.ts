@@ -152,6 +152,20 @@ export function createGameScrollbars(root: HTMLElement) {
           height,
           host.scrollTop,
         );
+      // Rails live at the UI root, so reproduce clipping by scrolling ancestors.
+      const clip={left:Math.max(0,base.left),top:Math.max(0,base.top),right:Math.min(innerWidth,base.right),bottom:Math.min(innerHeight,base.bottom)};
+      for(let parent=host.parentElement;parent&&parent!==root;parent=parent.parentElement){
+        const parentStyle=getComputedStyle(parent),bounds=parent.getBoundingClientRect();
+        if(/auto|scroll|hidden|clip/.test(parentStyle.overflowX)){clip.left=Math.max(clip.left,bounds.left+parent.clientLeft);clip.right=Math.min(clip.right,bounds.left+parent.clientLeft+parent.clientWidth);}
+        if(/auto|scroll|hidden|clip/.test(parentStyle.overflowY)){clip.top=Math.max(clip.top,bounds.top+parent.clientTop);clip.bottom=Math.min(clip.bottom,bounds.top+parent.clientTop+parent.clientHeight);}
+        if(parent.matches('.panel')){
+          const heading=parent.querySelector<HTMLElement>('.inventory-heading');
+          if(heading&&getComputedStyle(heading).position==='sticky')clip.top=Math.max(clip.top,heading.getBoundingClientRect().bottom);
+        }
+      }
+      const left=rect.right-12,top=rect.top+inset,right=left+8,bottom=top+height;
+      if(Math.min(right,clip.right)<=Math.max(left,clip.left)||Math.min(bottom,clip.bottom)<=Math.max(top,clip.top)){rail.hidden=true;continue;}
+      rail.style.clipPath='inset('+Math.max(0,clip.top-top)+'px '+Math.max(0,right-clip.right)+'px '+Math.max(0,bottom-clip.bottom)+'px '+Math.max(0,clip.left-left)+'px)';
       rail.style.left = rect.right - base.left - 12 + 'px';
       rail.style.top = rect.top - base.top + inset + 'px';
       rail.style.height = height + 'px';

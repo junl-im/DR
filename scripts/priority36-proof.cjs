@@ -27,6 +27,10 @@ exports.selectArmor=async(page,row,width,out)=>{
  await expect(page.locator('[data-armor-bag="body:1"]')).toHaveAttribute('aria-pressed','true');
  await page.locator('#toggle-armor').click();
  expect(await page.evaluate(()=>window.__DREAM_SESSION__.state.player.armor.equipped.body)).toBe(1);
+ await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+ const rails=await page.evaluate(()=>{const panel=document.querySelector('#panel'),bounds=panel.getBoundingClientRect(),heading=panel.querySelector('.inventory-heading').getBoundingClientRect();return [...document.querySelectorAll('.game-scrollbar')].filter(r=>!r.hidden).map(r=>{const host=document.getElementById(r.dataset.scrollFor);if(host===panel||!panel.contains(host))return null;const b=r.getBoundingClientRect(),cuts=getComputedStyle(r).clipPath.match(/[\d.]+/g)?.map(Number)||[0,0,0,0];return {top:b.top+cuts[0],bottom:b.bottom-cuts[2],minTop:Math.max(bounds.top,heading.bottom),maxBottom:bounds.bottom};}).filter(Boolean);});
+ for(const rail of rails){expect(rail.top).toBeGreaterThanOrEqual(rail.minTop-.5);expect(rail.bottom).toBeLessThanOrEqual(rail.maxBottom+.5);}
+ row.nestedRailClipping=rails;
  await page.screenshot({path:out+'/'+width+'-armor-detail.png'});
  await page.locator('[data-filter="all"]').click();
  await page.locator('[data-item="weapon"]').last().click();
