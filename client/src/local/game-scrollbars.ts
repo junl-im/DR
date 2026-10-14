@@ -14,180 +14,146 @@ export function scrollbarMetrics(
     offset: max ? (Math.max(0, Math.min(max, scroll)) / max) * travel : 0,
   };
 }
-/** Real game rails remain visible on mobile browsers that hide native bars. */
+
+/** Discrete, overlapping viewport pages keep tall rows and actions reachable. */
 export function createGameScrollbars(root: HTMLElement) {
   const entries = new Map<
     HTMLElement,
-    { rail: HTMLDivElement; thumb: HTMLDivElement }
+    {
+      nav: HTMLElement;
+      previous: HTMLButtonElement;
+      next: HTMLButtonElement;
+      label: HTMLElement;
+    }
   >();
   let sequence = 0;
-  const selectors =
-    '.panel,.quest.hunt-settings-open,.log-lines,.bag-grid,.item-detail';
-  function add(host: HTMLElement) {
-    const rail = document.createElement('div'),
-      thumb = document.createElement('div');
-    rail.className = 'game-scrollbar';
-    thumb.className = 'game-scrollbar-thumb';
-    rail.append(thumb);
-    rail.hidden = true;
-    if (!host.id) host.id = 'game-scroll-host-' + ++sequence;
-    rail.dataset['scrollFor'] = host.id;
-    rail.tabIndex = 0;
-    rail.setAttribute('role', 'scrollbar');
-    rail.setAttribute(
-      'aria-label',
-      (host.getAttribute('aria-label') ?? '게임 창') + ' 스크롤',
-    );
-    rail.setAttribute('aria-controls', host.id);
-    rail.setAttribute('aria-orientation', 'vertical');
-    rail.setAttribute('aria-valuemin', '0');
-    rail.setAttribute('aria-valuemax', '100');
-    let drag: { id: number; grab: number } | null = null;
-    const move = (y: number, grab: number) => {
-      const r = rail.getBoundingClientRect(),
-        m = scrollbarMetrics(
-          host.clientHeight,
-          host.scrollHeight,
-          r.height,
-          host.scrollTop,
-        );
-      host.scrollTop = m.travel
-        ? (Math.max(0, Math.min(m.travel, y - r.top - grab)) / m.travel) * m.max
-        : 0;
-      update();
-    };
-    rail.onpointerdown = (e) => {
-      if (e.button !== 0) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const r = thumb.getBoundingClientRect();
-      drag = {
-        id: e.pointerId,
-        grab: e.target === thumb ? e.clientY - r.top : r.height / 2,
-      };
-      rail.setPointerCapture(e.pointerId);
-      rail.classList.add('dragging');
-      move(e.clientY, drag.grab);
-    };
-    rail.onpointermove = (e) => {
-      if (drag?.id === e.pointerId) {
-        e.preventDefault();
-        e.stopPropagation();
-        move(e.clientY, drag.grab);
-      }
-    };
-    const release = (e: PointerEvent) => {
-      if (drag?.id !== e.pointerId) return;
-      drag = null;
-      rail.classList.remove('dragging');
-      if (rail.hasPointerCapture(e.pointerId))
-        rail.releasePointerCapture(e.pointerId);
-      e.stopPropagation();
-    };
-    rail.onpointerup = release;
-    rail.onpointercancel = release;
-    rail.onlostpointercapture = () => {
-      drag = null;
-      rail.classList.remove('dragging');
-    };
-    rail.onclick = (e) => e.stopPropagation();
-    rail.oncontextmenu = (e) => e.preventDefault();
-    rail.onkeydown = (e) => {
-      const max = Math.max(0, host.scrollHeight - host.clientHeight),
-        steps: Record<string, number> = {
-          ArrowDown: 36,
-          ArrowUp: -36,
-          PageDown: host.clientHeight * 0.8,
-          PageUp: -host.clientHeight * 0.8,
-        };
-      if (e.key === 'Home') host.scrollTop = 0;
-      else if (e.key === 'End') host.scrollTop = max;
-      else if (e.key in steps) host.scrollTop += steps[e.key];
-      else return;
-      e.preventDefault();
-      e.stopPropagation();
-      update();
-    };
-    rail.addEventListener(
-      'wheel',
-      (e) => {
-        host.scrollTop += e.deltaY;
-        e.preventDefault();
-        e.stopPropagation();
-        update();
-      },
-      { passive: false },
-    );
-    host.classList.add('game-scroll-host');
-    root.append(rail);
-    entries.set(host, { rail, thumb });
-  }
   function update() {
-    for (const [host, { rail }] of entries)
+    for (const [host, e] of entries)
       if (!host.isConnected) {
-        rail.remove();
+        e.nav.remove();
         entries.delete(host);
       }
-    root.querySelectorAll<HTMLElement>(selectors).forEach((host) => {
-      if (!entries.has(host)) add(host);
-    });
-    const base = root.getBoundingClientRect();
-    for (const [host, { rail, thumb }] of entries) {
-      const rect = host.getBoundingClientRect(),
-        style = getComputedStyle(host),
-        overflow = /auto|scroll/.test(style.overflowY),
-        visible =
-          !host.closest('[hidden]') &&
-          rect.width > 0 &&
-          rect.height > 65 &&
-          overflow &&
-          host.scrollHeight > host.clientHeight + 1;
-      rail.hidden = !visible;
-      if (!visible) continue;
-      const inset = host.matches('.panel,.quest') ? 52 : 3,
-        height = Math.max(20, rect.height - inset - 6),
-        m = scrollbarMetrics(
-          host.clientHeight,
-          host.scrollHeight,
-          height,
-          host.scrollTop,
+    root
+      .querySelectorAll<HTMLElement>(
+        '.panel,.quest.hunt-settings-open,.log-lines,.bag-grid,.item-detail',
+      )
+      .forEach((host) => {
+        if (entries.has(host)) return;
+        if (!host.id) host.id = 'game-page-host-' + ++sequence;
+        const nav = document.createElement('nav');
+        nav.className = 'game-pages';
+        nav.dataset['pageFor'] = host.id;
+        nav.setAttribute(
+          'aria-label',
+          (host.getAttribute('aria-label') || '게임 창') + ' 페이지',
         );
-      // Rails live at the UI root, so reproduce clipping by scrolling ancestors.
-      const clip={left:Math.max(0,base.left),top:Math.max(0,base.top),right:Math.min(innerWidth,base.right),bottom:Math.min(innerHeight,base.bottom)};
-      for(let parent=host.parentElement;parent&&parent!==root;parent=parent.parentElement){
-        const parentStyle=getComputedStyle(parent),bounds=parent.getBoundingClientRect();
-        if(/auto|scroll|hidden|clip/.test(parentStyle.overflowX)){clip.left=Math.max(clip.left,bounds.left+parent.clientLeft);clip.right=Math.min(clip.right,bounds.left+parent.clientLeft+parent.clientWidth);}
-        if(/auto|scroll|hidden|clip/.test(parentStyle.overflowY)){clip.top=Math.max(clip.top,bounds.top+parent.clientTop);clip.bottom=Math.min(clip.bottom,bounds.top+parent.clientTop+parent.clientHeight);}
-        if(parent.matches('.panel')){
-          const heading=parent.querySelector<HTMLElement>('.inventory-heading');
-          if(heading&&getComputedStyle(heading).position==='sticky')clip.top=Math.max(clip.top,heading.getBoundingClientRect().bottom);
+        const previous = document.createElement('button'),
+          next = document.createElement('button'),
+          label = document.createElement('span');
+        previous.type = next.type = 'button';
+        previous.textContent = '◀';
+        next.textContent = '▶';
+        previous.setAttribute('aria-label', '이전 페이지');
+        next.setAttribute('aria-label', '다음 페이지');
+        previous.setAttribute('aria-controls', host.id);
+        next.setAttribute('aria-controls', host.id);
+        label.setAttribute('aria-live', 'polite');
+        const turn = (direction: number) => {
+          host.scrollTop = Math.max(
+            0,
+            Math.min(
+              host.scrollHeight - host.clientHeight,
+              host.scrollTop + direction * Math.max(1, host.clientHeight - 64),
+            ),
+          );
+          update();
+        };
+        previous.onclick = (e) => {
+          e.stopPropagation();
+          turn(-1);
+        };
+        next.onclick = (e) => {
+          e.stopPropagation();
+          turn(1);
+        };
+        nav.onkeydown = (e) => {
+          if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+            e.preventDefault();
+            e.stopPropagation();
+            turn(1);
+          } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            e.stopPropagation();
+            turn(-1);
+          }
+        };
+        nav.append(previous, label, next);
+        root.append(nav);
+        host.classList.add('game-page-host');
+        entries.set(host, { nav, previous, next, label });
+      });
+    const base = root.getBoundingClientRect();
+    for (const [host, e] of entries) {
+      const r = host.getBoundingClientRect(),
+        max = Math.max(0, host.scrollHeight - host.clientHeight),
+        step = Math.max(1, host.clientHeight - 64);
+      let top = Math.max(0, r.top),
+        bottom = Math.min(innerHeight, r.bottom),
+        left = r.left,
+        right = r.right;
+      for (
+        let parent = host.parentElement;
+        parent && parent !== root;
+        parent = parent.parentElement
+      ) {
+        if (
+          /auto|scroll|hidden|clip/.test(getComputedStyle(parent).overflowY)
+        ) {
+          const b = parent.getBoundingClientRect();
+          top = Math.max(top, b.top);
+          bottom = Math.min(bottom, b.bottom);
+          if (parent.matches('.panel')) {
+            bottom = Math.min(bottom, b.bottom - 44);
+            const heading =
+              parent.querySelector<HTMLElement>('.inventory-heading');
+            if (heading && getComputedStyle(heading).position === 'sticky')
+              top = Math.max(top, heading.getBoundingClientRect().bottom);
+          }
         }
       }
-      const left=rect.right-12,top=rect.top+inset,right=left+8,bottom=top+height;
-      if(Math.min(right,clip.right)<=Math.max(left,clip.left)||Math.min(bottom,clip.bottom)<=Math.max(top,clip.top)){rail.hidden=true;continue;}
-      rail.style.clipPath='inset('+Math.max(0,clip.top-top)+'px '+Math.max(0,right-clip.right)+'px '+Math.max(0,bottom-clip.bottom)+'px '+Math.max(0,clip.left-left)+'px)';
-      rail.style.left = rect.right - base.left - 12 + 'px';
-      rail.style.top = rect.top - base.top + inset + 'px';
-      rail.style.height = height + 'px';
-      thumb.style.height = m.size + 'px';
-      thumb.style.transform = 'translateY(' + m.offset + 'px)';
-      rail.setAttribute(
-        'aria-valuenow',
-        String(Math.round(m.max ? (host.scrollTop / m.max) * 100 : 0)),
-      );
+      e.nav.hidden =
+        (host.matches('.quest') &&
+          !host.classList.contains('hunt-settings-open')) ||
+        !!host.closest('[hidden]') ||
+        max < 2 ||
+        r.width < 1 ||
+        bottom - top < 70;
+      if (e.nav.hidden) continue;
+      e.nav.style.clipPath = 'inset(0px 0px 0px 0px)';
+      e.nav.style.left = Math.max(0, left - base.left + 8) + 'px';
+      e.nav.style.top = bottom - base.top - 36 + 'px';
+      e.nav.style.width = Math.max(100, right - left - 16) + 'px';
+      e.previous.disabled = host.scrollTop <= 1;
+      e.next.disabled = host.scrollTop >= max - 1;
+      const pages = Math.ceil(max / step) + 1,
+        page =
+          host.scrollTop >= max - 1
+            ? pages
+            : Math.floor(host.scrollTop / step) + 1;
+      const text = page + ' / ' + pages;
+      if (e.label.textContent !== text) e.label.textContent = text;
     }
   }
-  const onScroll = () => update();
-  root.addEventListener('scroll', onScroll, true);
+  root.addEventListener('scroll', update, true);
   window.addEventListener('resize', update);
   return {
     update,
     dispose() {
-      root.removeEventListener('scroll', onScroll, true);
+      root.removeEventListener('scroll', update, true);
       window.removeEventListener('resize', update);
-      for (const [host, { rail }] of entries) {
-        host.classList.remove('game-scroll-host');
-        rail.remove();
+      for (const [host, e] of entries) {
+        host.classList.remove('game-page-host');
+        e.nav.remove();
       }
       entries.clear();
     },

@@ -1,8 +1,81 @@
-/* Browser-independent bronze rails: no disappearing mobile native overlay. */
-#dream-ui .game-scroll-host{scrollbar-width:none!important}
-#dream-ui .game-scroll-host::-webkit-scrollbar{display:none!important}
-#dream-ui .game-scrollbar{position:absolute;width:8px;z-index:32;border:1px solid #6e5b3c;border-radius:2px;background:linear-gradient(90deg,#090e14,#20251f,#090e14);box-shadow:inset 0 0 3px #000,0 0 0 1px #080e14;touch-action:none;cursor:pointer;pointer-events:auto}
-#dream-ui .game-scrollbar-thumb{position:absolute;left:0;top:0;width:6px;min-height:0;border:1px solid #d6b97c;border-radius:2px;background:linear-gradient(90deg,#695030,#ddbd7e 45%,#795e36);box-shadow:inset 0 1px #fff0ba,inset 0 -1px #382614;pointer-events:auto}
-#dream-ui .game-scrollbar:hover .game-scrollbar-thumb,#dream-ui .game-scrollbar.dragging .game-scrollbar-thumb{filter:brightness(1.25)}
-#dream-ui .game-scrollbar:focus-visible{outline:2px solid #e6c58e;outline-offset:2px}
-#dream-ui :is(.log-lines,.bag-grid,.item-detail).game-scroll-host{padding-right:12px!important}
+/* Screen pages, no draggable/native scrollbar. Last page keeps every action reachable. */
+#dream-ui .game-page-host:not(.quest),
+#dream-ui .quest.hunt-settings-open.game-page-host {
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  scroll-behavior: auto !important;
+  padding-bottom: 42px !important;
+}
+#dream-ui .game-page-host::-webkit-scrollbar {
+  display: none !important;
+}
+#dream-ui .game-pages {
+  position: absolute;
+  z-index: 34;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  height: 32px;
+  gap: 6px;
+}
+#dream-ui .game-pages[hidden] {
+  display: none !important;
+}
+#dream-ui .game-pages button {
+  pointer-events: auto;
+  min-width: 42px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #ac8b50;
+  border-radius: 4px;
+  color: #f4ddb2;
+  background: linear-gradient(#3d392d, #131a20);
+  box-shadow:
+    inset 0 1px #dac18a55,
+    0 2px 4px #000a;
+  touch-action: manipulation;
+}
+#dream-ui .game-pages button:active {
+  transform: translateY(1px);
+  filter: brightness(1.4);
+}
+#dream-ui .game-pages button:disabled {
+  opacity: 0.35;
+}
+#dream-ui .game-pages span {
+  font: 11px serif;
+  letter-spacing: 1px;
+  color: #ead4a9;
+  background: #10161de8;
+  padding: 4px 10px;
+  border: 1px solid #92764b;
+  border-radius: 12px;
+}
+#dream-ui .game-pages button:focus-visible {
+  outline: 2px solid #f5d28b;
+  outline-offset: 2px;
+}
+
+#dream-ui .game-page-host:has(.game-page-host) .game-page-host {
+  padding-bottom: 42px !important;
+}
+
+#dream-ui .window-page-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0;
+}
+#dream-ui .window-page-tabs button {
+  flex: 1;
+  padding: 7px 3px;
+  font-size: 11px;
+}
+#dream-ui .window-page-tabs [aria-pressed='true'] {
+  border-color: #e3c17f;
+  background: #51422d;
+}
+#dream-ui .settings-section[hidden] {
+  display: none !important;
+}
+
