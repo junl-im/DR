@@ -138,6 +138,18 @@ export function createMobGroup(mobId: string, hpBarYOffset = DEFAULT_HP_BAR_Y_OF
  */
 export function resolveMobVisualEntry(mobId: string, npcId: number) {
   if (mobId === 'dungeon-2-0' && npcId === 20003) return getCreatureEntry(20098);
+  // Keep the canonical quest/combat NPC identity. Stable spawn IDs select different
+  // already licensed rigs, so respawn, reload and preload agree on the same look.
+  const match=/^local-(\d+)$/.exec(mobId);
+  if(match){
+    const index=Number(match[1]);
+    if(index<18 && npcId===(index%3===0?20001:20003)){
+      if(index===11)return getCreatureEntry(20093);
+      if(npcId===20001)return getCreatureEntry(index%2===0?20001:20101);
+      const wanderers=[20003,20326,20131,20132,20120];
+      return getCreatureEntry(wanderers[(index-Math.floor(index/3)-1)%wanderers.length]);
+    }
+  }
   return getCreatureEntry(npcId);
 }
 
@@ -175,7 +187,7 @@ function attachGoblinClub(
   npcId: number,
   avatar: MobAvatar
 ): void {
-  if (npcId !== 20003 || mobId === 'dungeon-2-0') return;
+  if (npcId !== 20003 || resolveMobVisualEntry(mobId,npcId)?.model !== getCreatureEntry(20003)?.model) return;
 
   loadGltfTemplate(GOBLIN_CLUB_ATTACHMENT.model)
     .then((clubTemplate) => {
