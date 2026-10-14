@@ -1,3 +1,4 @@
+import {dungeonWaveDone,dungeonBossDone} from './first-dungeon';
 import {activeQuest,canClaimQuest,matchesQuestTarget} from './adventure-quests';
 import {maxHp,type LocalGameSession,type Mob,type GameEvent} from './session';
 import {findPath,snapToNearestWalkable} from '@nj/game-core';
@@ -11,7 +12,7 @@ export const AUTO_STUCK_TIMEOUT_S=2.5;
 export const AUTO_STUCK_RETRY_S=12;
 export const TAB_TARGET_RADIUS=75;
 export type HuntPriority='nearest'|'weakest'|'normal-only'|'quest';
-export type HuntStopReason='manual'|'low-hp'|'range'|'zone-change'|'quest-ready'|'quest-complete'|'quest-unavailable';
+export type HuntStopReason='manual'|'low-hp'|'range'|'zone-change'|'quest-ready'|'quest-complete'|'quest-unavailable'|'dungeon-ready';
 export interface HuntProgress {seconds:number;kills:number;gold:number}
 
 function distance(ax:number,az:number,bx:number,bz:number):number{
@@ -200,6 +201,7 @@ export class AutoHuntController {
     }
     if(!this.enabled||!this.anchor)return;
     if(inside!==this.anchor.inside){this.setEnabled(false,'zone-change');return;}
+    if(inside&&dungeonWaveDone(p.dungeon!)){this.setEnabled(false,'dungeon-ready');s.message=dungeonBossDone(p.dungeon!)?'보스 처치 완료 · 던전 보상을 수령하세요.':'구역 정리 완료 · 다음 구역 문을 여세요.';return;}
     if(distance(p.x,p.z,this.anchor.x,this.anchor.z)>this.radius+.5){
       this.setEnabled(false,'range');return;
     }

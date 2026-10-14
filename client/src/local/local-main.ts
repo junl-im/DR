@@ -48,6 +48,8 @@ import { createRenderer, type GameRenderer } from '../scene/renderer';
 import { initGameState, setReady, setConnected, setPlayer, getGameState } from '../test-hook';
 import { isWeaponEquipped, POTION_PRICE, canUsePotionShop, LocalGameSession, newSave, maxHp, xpNeeded, attackPower, type Save, type Intent } from './session';
 import { readSave, writeSave } from './saves';
+import {createLatestSaveQueue} from './latest-save-queue';
+const queuedSaves=createLatestSaveQueue(writeSave);
 
 const root = document.createElement('main'); root.id = 'dream-ui'; document.body.append(root);
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
@@ -64,6 +66,7 @@ let game: GameRenderer;
 let threatVisual:ReturnType<typeof createBossThreatVisual>|undefined;
 let ruinAtmosphere:ReturnType<typeof createRuinAtmosphere>|undefined;
 let saveTask: Promise<void> | undefined;
+let saveRequest=0;
 let replacingSave = false;
 let cloud: typeof import('./cloud') | undefined;
 let remembered: Save | null = null;
@@ -85,13 +88,15 @@ function toast(text: string) { const node = root.querySelector<HTMLElement>('#no
 function errorText(e: unknown) { return e instanceof Error ? e.message : String(e); }
 async function save(): Promise<void> {
   if (replacingSave || !session) return;
-  if (saveTask) return saveTask;
-  saveTask = (async () => {
-    try { await writeSave(session.snapshot()); $('#save-status').textContent = '기기 저장 · ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit'}); }
+  const request=++saveRequest;
+  const commit=queuedSaves.request(session.snapshot());
+  const task = (async () => {
+    try { await commit; $('#save-status').textContent = '기기 저장 · ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit'}); }
     catch(e) { $('#save-status').textContent = '저장 실패'; session.message = '저장하지 못했습니다. 파일 백업을 이용하세요. ' + errorText(e); toast(session.message); }
-    finally { saveTask = undefined; }
+    finally { if(saveRequest===request)saveTask = undefined; }
   })();
-  return saveTask;
+  saveTask=task;
+  return task;
 }
 async function replaceSave(state: Save): Promise<void> {
   replacingSave = true;
@@ -149,9 +154,10 @@ async function enter(state: Save) {
     const syncAutoButton=()=>{
       const button=root.querySelector<HTMLButtonElement>('#auto-hunt');
       if(!button)return;
-      const enabled=!!autoHunt?.enabled;
-      const buttonText=enabled?'자동사냥 ON':'자동사냥 OFF';
-      button.querySelector('#auto-mode')!.textContent=enabled?'ON':'OFF';
+      const travelling=!!autoHunt?.approachingQuest;
+      const enabled=!!autoHunt?.enabled||travelling;
+      const buttonText=travelling?'의뢰 자동이동 중 · 누르면 중단':enabled?'자동사냥 ON':'자동사냥 OFF';
+      button.querySelector('#auto-mode')!.textContent=travelling?'이동':enabled?'ON':'OFF';
       button.setAttribute('aria-label',buttonText+' · 길게 눌러 설정');
       const pressed=String(enabled);
       if(button.getAttribute('aria-pressed')!==pressed)button.setAttribute('aria-pressed',pressed);
@@ -163,6 +169,7 @@ async function enter(state: Save) {
         const elapsed=progress?.seconds??0;
         const duration=`${Math.floor(elapsed/60)}:${String(elapsed%60).padStart(2,'0')}`;
         const message=autoHunt?.approachingQuest?'의뢰 사냥터로 이동 중 · 다시 의뢰 버튼을 누르면 취소':enabled?`${autoHunt?.activity==='waiting'?autoHunt?.priority==='quest'?'의뢰 대상 리젠 대기':'범위 안 대상 대기':autoHunt?.activity==='blocked'?'막힌 경로 우회 대기':'사냥 중'} · ${autoHunt?.radius}m · ${autoHunt?.priority==='quest'?'현재 의뢰 대상':autoHunt?.priority==='normal-only'?'일반 몬스터 우선':autoHunt?.priority==='weakest'?'체력 낮은 몬스터':'가장 가까운 몬스터'} · ${duration} · 처치 ${progress?.kills??0} · +${progress?.gold??0}G`:
+          reason==='dungeon-ready'?'구역 정리 완료 · 던전 안내에서 다음 행동을 선택하세요.':
           reason==='quest-ready'?'의뢰 목표 달성 · 자동사냥 중단 · 마을에서 보상을 받으세요.':
           reason==='quest-complete'?'마을 의뢰를 모두 완료했습니다. 다른 사냥 기준을 선택하세요.':
           reason==='quest-unavailable'?'마을 의뢰 사냥은 필드에서만 사용할 수 있습니다.':
@@ -426,6 +433,7 @@ function updateHud() {
   $<HTMLInputElement>('#auto-retaliate').checked=autoHunt?.retaliateOnHit??true;
   if(autoHunt)$<HTMLSelectElement>('#auto-priority').value=autoHunt.priority;
   if(!$('#panel').hidden&&shownPanelKind==='help')refreshQuestPanel();
+  if(!$('#panel').hidden&&shownPanelKind==='dungeon')refreshDungeonPanel();
   if(!$('#panel').hidden&&shownPanelKind==='character')refreshCharacterPanel();
   const p=session.state.player;
   $('#player-name').textContent=p.name; $('#level').textContent=`Lv. ${p.level}`;
@@ -499,6 +507,17 @@ function refreshQuestPanel(){
     next.setAttribute('aria-label',next.textContent);
   }
 }
+function refreshDungeonPanel(){
+  const p=session.state.player,d=p.dungeon!,ready=dungeonWaveDone(d),boss=dungeonBossDone(d);
+  const phase=String(d.inside)+':'+d.wave+':'+p.quest!.stage;
+  if($('#panel-content').dataset['dungeonPhase']!==phase){showPanel('dungeon');return;}
+  const progress=$('#dungeon-progress');if(progress)progress.textContent=d.inside?d.kills+' / '+DUNGEON_WAVES[d.wave].enemies.length:'누적 정복 '+d.clears+'회';
+  const guide=$('#dungeon-guidance');if(guide)guide.textContent=d.inside?boss?'보스를 처치했습니다. 보상을 받고 마을로 귀환하세요.':ready?'구역 정리 완료 · 다음 구역 문을 여세요.':'남은 적 '+(DUNGEON_WAVES[d.wave].enemies.length-d.kills)+'마리 · 자동사냥으로 구역을 정리하세요.':p.quest!.stage===3?'폐허 관문 가까이에서 입장할 수 있습니다.':'마을 의뢰 3개의 보상을 먼저 수령하세요.';
+  const next=root.querySelector<HTMLButtonElement>('#dungeon-next'),claim=root.querySelector<HTMLButtonElement>('#dungeon-claim'),hunt=root.querySelector<HTMLButtonElement>('#dungeon-hunt');
+  if(next){next.disabled=!ready||boss;next.classList.toggle('primary',ready&&!boss);}
+  if(claim){claim.disabled=!boss;claim.classList.toggle('primary',boss);}
+  if(hunt)hunt.disabled=ready;
+}
 function panelAction(id:string, type:Intent['type'], page:'estate'|'inventory') { $('#'+id).onclick=()=>{ session.dispatch({type} as Intent); showPanel(page); updateHud(); void save(); }; }
 function positionWindowBelowQuest(){
   const mini=$('#quest-mini');if(!mini)return;
@@ -530,15 +549,18 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'cha
     $('#panel-content').innerHTML=`<span class="eyebrow">첫 번째 던전 · 시작의 마을</span><h2>폐허의 시련</h2>
       <p>${d.inside?'봉인된 회랑에서 적을 처치하고 다음 문을 여세요.':'마을 의뢰 3개를 마치면 관문이 열립니다.'}</p>
       <div class="stat-line"><span>상태</span><b>${d.inside?wave.title:unlocked?'진입 가능':'의뢰 완료 필요'}</b></div>
-      <div class="stat-line"><span>진행</span><b>${d.inside?d.kills+' / '+wave.enemies.length:'누적 정복 '+d.clears+'회'}</b></div>
+      <div class="stat-line"><span>진행</span><b id="dungeon-progress">${d.inside?d.kills+' / '+wave.enemies.length:'누적 정복 '+d.clears+'회'}</b></div>
       <p>최종 보상 · 골드 ${DUNGEON_REWARD.gold} · 목재 ${DUNGEON_REWARD.wood} · 파편 ${DUNGEON_REWARD.fragments}</p>
       ${d.inside?
-        `<button id="dungeon-next" ${!ready||boss?'disabled':''}>다음 구역 열기</button>
+        `<button id="dungeon-hunt" class="primary">현재 구역 자동사냥</button><button id="dungeon-next" ${!ready||boss?'disabled':''}>다음 구역 열기</button>
          <button id="dungeon-claim" ${!boss?'disabled':''}>보스 보상 수령 · 귀환</button>
          <button id="dungeon-leave">던전 포기하고 귀환</button>`:
         `<button id="dungeon-enter" ${!unlocked||!nearDungeonGate(p.x,p.z)?'disabled':''}>던전 입장</button>
          <small>폐허 관문 가까이 다가가 입장할 수 있습니다.</small>`}
-      <p id="dungeon-status" role="status"></p>`;
+      <p id="dungeon-guidance" class="adventure-guidance"></p><p id="dungeon-status" role="status"></p>`;
+    $('#panel-content').dataset['dungeonPhase']=String(d.inside)+':'+d.wave+':'+p.quest!.stage;
+    $('#dungeon-hunt')?.addEventListener('click',()=>{if(!session.state.player.dungeon!.inside||dungeonWaveDone(session.state.player.dungeon!))return;autoHunt?.configure({priority:'nearest'});autoHunt?.setEnabled(true);$('#panel').hidden=true;updateHud();});
+    refreshDungeonPanel();
     for(const [id,type] of [
       ['dungeon-enter','enter-dungeon'],['dungeon-next','advance-dungeon'],
       ['dungeon-claim','claim-dungeon'],['dungeon-leave','leave-dungeon']

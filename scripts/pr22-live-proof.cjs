@@ -1,6 +1,7 @@
 const { chromium, expect } = require('@playwright/test'),
   fs = require('fs');
 const extension=process.env.DREAM_ADVENTURE_PROOF==='1'?require('./adventure-next-step-smoke.cjs'):null;
+const polish=process.env.DREAM_PRIORITY36_PROOF==='1'?require('./priority36-proof.cjs'):null;
 const out = 'artifacts/pr22-polish-proof';
 fs.mkdirSync(out, { recursive: true });
 (async () => {
@@ -20,6 +21,7 @@ fs.mkdirSync(out, { recursive: true });
         page = await context.newPage(),
         errors = [];
       page.on('pageerror', (e) => errors.push(String(e)));
+      if(polish)await polish.setup(page);
       await page.goto(process.env.PR22_BASE_URL || 'http://127.0.0.1:4300/');
       await page.locator('#start').click();
       await page.waitForFunction(() => window.__DREAM_SESSION__, null, {
@@ -149,6 +151,7 @@ fs.mkdirSync(out, { recursive: true });
         await page.locator('#quest-mini').click();
         await expect(page.locator('#quest-claim')).toBeDisabled();
         await page.locator('#help-quest-target').click();
+        if(polish)await polish.travel(page,row,stage);
         const required = [3, 4, 1][stage];
         await page.waitForFunction(
           ({ stage, required }) => {

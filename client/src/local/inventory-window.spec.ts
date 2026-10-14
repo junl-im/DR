@@ -33,6 +33,10 @@ describe('owned armor in the original 24-slot inventory',()=>{
     const armorSlot=host.querySelector<HTMLButtonElement>('[data-armor-bag="body:1"]');
     expect(armorSlot).not.toBeNull();
     armorSlot!.click();
+    expect(session.state.player.armor!.equipped.body).toBe(0);
+    expect(host.querySelector('.item-detail')!.textContent).toContain('경갑 갑옷');
+    expect(host.querySelector('.equipment-comparison')!.textContent).toContain('방어력');
+    host.querySelector<HTMLButtonElement>('#toggle-armor')!.click();
     expect(session.state.player.armor!.equipped.body).toBe(1);
     expect(host.querySelector<HTMLElement>('.armor-crafting')!.textContent).toContain('방어력 1');
     window.refresh();

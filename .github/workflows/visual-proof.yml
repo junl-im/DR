@@ -15,6 +15,7 @@ on:
       - 'scripts/pr22-live-proof.cjs'
       - 'scripts/adventure-next-step-smoke.cjs'
       - 'scripts/boss-alert-layout-smoke.cjs'
+      - 'scripts/priority36-proof.cjs'
       - 'scripts/hud-town-smoke.cjs'
       - 'scripts/dungeon-input-smoke.cjs'
       - 'scripts/mobile-shell-smoke.cjs'
@@ -203,3 +204,36 @@ jobs:
           name: dungeon-zero-boss-alert-layout-evidence
           path: artifacts/boss-alert-layout
           if-no-files-found: warn
+
+  priority36-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NX_DAEMON: 'false'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build:firebase
+      - run: npx playwright install --with-deps chromium
+      - name: Start preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4300 > /tmp/priority36-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4300/ >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/priority36-preview.log
+          exit 1
+      - name: Real save latency, armor inspection, quest travel and complete dungeon loop
+        run: DREAM_ADVENTURE_PROOF=1 DREAM_PRIORITY36_PROOF=1 node scripts/pr22-live-proof.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dungeon-zero-priority36-evidence
+          path: artifacts/pr22-polish-proof
+          if-no-files-found: error
