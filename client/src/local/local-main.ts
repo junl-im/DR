@@ -206,7 +206,7 @@ async function enter(state: Save) {
       $(id).addEventListener('change',readHuntOptions);
     const manualStop=()=>{pendingDungeonApproach=null;if(autoHunt?.enabled||autoHunt?.approachingQuest){autoHunt.setEnabled(false);syncAutoButton();}};
     const keyboardMovement=bindPcMovement({window,blocked:()=>mobileShell.paused||!$('#panel').hidden||$('.quest').classList.contains('hunt-settings-open'),
-      start:()=>{manualStop();session.stopMovement();},stop:()=>session.stopMovement(),
+      start:()=>{if(document.activeElement instanceof HTMLElement)document.activeElement.blur();manualStop();session.stopMovement();},stop:()=>session.stopMovement(),
       move:direction=>{const p=session.state.player;session.dispatch({type:'move',x:p.x+direction.x*3.6,z:p.z+direction.z*3.6});}});
     game.renderer.domElement.addEventListener('pointerdown',()=>keyboardMovement.cancel());
     root.addEventListener('pointerdown',()=>keyboardMovement.cancel());
