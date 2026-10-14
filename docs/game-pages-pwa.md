@@ -9,3 +9,5 @@ A service worker is deliberately not registered in this update: installation doe
 Verification covers five desktop/mobile/landscape viewports, real icon HTTP responses, real option categories and last inventory shop action. The prompt callback uses a synthetic beforeinstallprompt fixture in headless Chromium; an actual OS install and real iOS/Kakao devices require device verification. Existing game/persistence/quest proofs are preserved and navigate the new category before saving.
 
 Follow-up: real public 360px action-by-action proof exposed weapon/equipment controls skipped beneath the sticky title. Page travel now subtracts the measured sticky title plus 96px for the navigation and a complete touch action. Short landscape modals use the available viewport height. Every weapon/crafting/shop control must be fully exposed and hit-test visible during button-only paging; the proof explicitly navigates back to the shop when equipment follows it.
+
+Landscape hunt settings occupy the left side so the lower-right auto-hunt toggle remains reachable while settings are open. Browser coverage clicks that toggle on and off without closing settings.

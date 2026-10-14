@@ -82,6 +82,19 @@ const fs = require('fs'),
       turns++;
     }
     await page.locator('#panel-close').click();
+    await page.locator('#hunt-config-toggle').click();
+    await page.locator('#auto-hunt').click();
+    if (
+      (await page.locator('#auto-hunt').getAttribute('aria-pressed')) !== 'true'
+    )
+      throw Error('Hunt toggle is blocked by settings');
+    await page.locator('#auto-hunt').click();
+    if (
+      (await page.locator('#auto-hunt').getAttribute('aria-pressed')) !==
+      'false'
+    )
+      throw Error('Hunt toggle did not stop');
+    await page.locator('#hunt-close').click();
     await page.locator('#inventory').click();
     await page.waitForFunction(() => {
       const panel = document.querySelector('#panel'),
@@ -177,8 +190,8 @@ const fs = require('fs'),
       height,
       turns,
       inventoryTurns,
-      visitedActions:[...visited],
-      expectedActions:expected,
+      visitedActions: [...visited],
+      expectedActions: expected,
       manifestIcons: manifest.icons.length,
       installPromptFixture: true,
       optionCategories: 3,
