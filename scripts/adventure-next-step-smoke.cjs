@@ -5,6 +5,8 @@ exports.claim=async page=>{
   await page.locator('#help-quest-target').click();
 };
 exports.afterQuestLine=async(page,row,width,out)=>{
+      const polish=process.env.DREAM_PRIORITY36_PROOF==='1'?require('./priority36-proof.cjs'):null;
+      if(polish)await polish.selectArmor(page,row,width,out);
       await page.locator('#quest-mini').click();
       await expect(page.locator('#help-quest-target')).toHaveText('폐허 관문으로 자동이동');
       await page.locator('#help-quest-target').click();
@@ -19,6 +21,7 @@ exports.afterQuestLine=async(page,row,width,out)=>{
       await expect(page.locator('#panel')).toHaveCSS('opacity','1');
       row.dungeonGuidance=true;
       await page.screenshot({path:out+'/'+width+'-dungeon-guidance.png'});
-      await page.locator('#dungeon-leave').click();
+      if(polish)await polish.finishDungeon(page,row,width,out);
+      else await page.locator('#dungeon-leave').click();
       await page.locator('#panel-close').click();
 };
