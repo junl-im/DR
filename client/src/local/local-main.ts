@@ -440,6 +440,13 @@ function updateHud() {
   $('#quest-mini').textContent=p.dungeon!.inside?dungeonSummary(p.dungeon!):canClaimQuest(p.quest!)?'의뢰 달성 · 마을에서 보상 받기':questSummary(validateQuest(p.quest))+' · '+(activeQuest(p.quest!)?.description??'완료');
   const warning=session.bossWarning;$('#boss-warning').hidden=!warning;$('#boss-warning').textContent=warning;
   $('#boss-dodge').hidden=!warning;
+  if(warning){
+    // Fixed top offsets overlapped the compact HUD, especially at 320px.
+    const rootTop=root.getBoundingClientRect().top;
+    const hudBottom=Math.max($('.vitals').getBoundingClientRect().bottom,$('#quest-mini').getBoundingClientRect().bottom);
+    $('#boss-warning').style.top=(hudBottom-rootTop+8)+'px';
+    $('#boss-dodge').style.top=($('#boss-warning').getBoundingClientRect().bottom-rootTop+8)+'px';
+  }
   const m=session.mobs.find(m=>m.id===session.target&&m.hp>0);
   $('#target').hidden=!m; $('#target').classList.toggle('elite-target',!!m&&m.name==='숲의 정예 감시자'); if(m) $('#target').textContent=`${m.name==='숲의 정예 감시자'?'정예 · ':''}${m.name} · HP ${m.hp} / ${m.maxHp}`;
   root.querySelector<HTMLButtonElement>('[data-intent="attack"]')!.classList.toggle('active',session.attacking);
