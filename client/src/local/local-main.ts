@@ -1,3 +1,4 @@
+import {bindPcMovement,gameKey,isTypingTarget} from './pc-controls';
 import './game-scrollbars.css';
 import {createGameScrollbars} from './game-scrollbars';
 import {bindHuntButton} from './hunt-button';
@@ -204,6 +205,11 @@ async function enter(state: Save) {
     for(const id of ['#auto-radius','#auto-priority','#auto-potion'])
       $(id).addEventListener('change',readHuntOptions);
     const manualStop=()=>{pendingDungeonApproach=null;if(autoHunt?.enabled||autoHunt?.approachingQuest){autoHunt.setEnabled(false);syncAutoButton();}};
+    const keyboardMovement=bindPcMovement({window,blocked:()=>mobileShell.paused||!$('#panel').hidden||$('.quest').classList.contains('hunt-settings-open'),
+      start:()=>{manualStop();session.stopMovement();},stop:()=>session.stopMovement(),
+      move:direction=>{const p=session.state.player;session.dispatch({type:'move',x:p.x+direction.x*3.6,z:p.z+direction.z*3.6});}});
+    game.renderer.domElement.addEventListener('pointerdown',()=>keyboardMovement.cancel());
+    root.addEventListener('pointerdown',()=>keyboardMovement.cancel());
     game.setMoveIntentHandler(i => { manualStop();session.dispatch({ type: 'move', x: i.targetX, z: i.targetZ }); });
     game.setMobTargetHandler(id => { manualStop();session.dispatch({type:'target',id}); game.setVfxTargetMobId(id); });
     const canvas = game.renderer.domElement;
@@ -263,15 +269,19 @@ async function enter(state: Save) {
     window.visualViewport?.addEventListener('resize',resizeViewport);
     window.addEventListener('keydown', e => {
       if(mobileShell.paused)return;
-      if ((e.target as HTMLElement).matches('input,select,textarea') || e.repeat) return;
+      if (isTypingTarget(e.target) || e.repeat) return;
+      const key=gameKey(e);if(!key)return;
       if((e.key===' '||e.key==='Enter')&&(e.target as HTMLElement).closest('button,[role=button]'))return;
-      if(e.key==='Escape') { pendingDungeonApproach=null;$('.quest').classList.remove('hunt-settings-open'); manualStop(); $('#panel').hidden=true; return; }
-      if(e.key.toLowerCase()==='q'){e.preventDefault();dodgeBossAttack();return;}
-      if(e.key==='Tab'){e.preventDefault();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
-      if(e.key.toLowerCase()==='h'){e.preventDefault();autoHunt!.setEnabled(autoHunt!.approachingQuest?false:!autoHunt!.enabled);syncAutoButton();updateHud();return;}
-      if(e.key.toLowerCase()==='i') { e.preventDefault();togglePanel('inventory');return; }
+      if(key==='escape') { keyboardMovement.cancel();pendingDungeonApproach=null;$('.quest').classList.remove('hunt-settings-open'); manualStop(); $('#panel').hidden=true; return; }
+      if(key==='i'||key==='b') { e.preventDefault();keyboardMovement.cancel();togglePanel('inventory');return; }
+      const panels={c:'character',j:'help',o:'save',t:'estate'} as const;
+      if(Object.hasOwn(panels,key)){e.preventDefault();keyboardMovement.cancel();togglePanel(panels[key as keyof typeof panels]);return;}
+      if(!$('#panel').hidden||$('.quest').classList.contains('hunt-settings-open'))return;
+      if(key==='q'){e.preventDefault();keyboardMovement.cancel();dodgeBossAttack();return;}
+      if(key==='tab'){e.preventDefault();keyboardMovement.cancel();manualStop();const id=nextTabTarget(session);if(id){session.dispatch({type:'target',id});game.setVfxTargetMobId(id);}updateHud();return;}
+      if(key==='h'){e.preventDefault();keyboardMovement.cancel();autoHunt!.setEnabled(autoHunt!.approachingQuest?false:!autoHunt!.enabled);syncAutoButton();updateHud();return;}
       const keys: Record<string, Intent['type']> = { ' ': 'attack', '1':'attack', '2':'skill', '3':'potion', 'r':'recall' };
-      if(keys[e.key]) { e.preventDefault(); if(keys[e.key]!=='skill'&&keys[e.key]!=='potion')manualStop();flashActionSlot(root.querySelector<HTMLElement>('[data-intent="'+keys[e.key]+'"]'));session.dispatch({type:keys[e.key]} as Intent); }
+      if(keys[key]) { e.preventDefault(); if(keys[key]!=='skill'&&keys[key]!=='potion'){keyboardMovement.cancel();manualStop();}flashActionSlot(root.querySelector<HTMLElement>('[data-intent="'+keys[key]+'"]'));session.dispatch({type:keys[key]} as Intent); }
 
     });
     // Normally make the starting field GLBs ready before enabling play.
@@ -285,7 +295,7 @@ async function enter(state: Save) {
     function frame(now: number) {
       const elapsed=Math.min((now-last)/1000,.25); last=now; accumulator+=elapsed;
       if(mobileShell.paused)accumulator=0;
-      while(accumulator>=.05) { autoHunt?.tick(.05);session.tick(.05); accumulator-=.05; }
+      while(accumulator>=.05) { keyboardMovement.tick(.05);autoHunt?.tick(.05);session.tick(.05); accumulator-=.05; }
       syncAutoButton();
       if(pendingDungeonApproach){
         const approach=pendingDungeonApproach,p=session.state.player;
@@ -387,7 +397,7 @@ function mountHud() {
  <label for="auto-priority">타깃 기준<select id="auto-priority"><option value="nearest">가까운 적</option><option value="weakest">체력 낮은 적</option><option value="normal-only">정예 제외</option><option value="quest">현재 의뢰 대상 · 정예 포함</option></select></label>
  <label for="auto-potion">물약 자동 사용<select id="auto-potion"><option value="0" selected>사용 안 함</option><option value="0.35">HP 35% 이하</option><option value="0.5">HP 50% 이하</option><option value="0.65">HP 65% 이하</option></select></label>
  </div></details></div></details><div id="auto-status" role="status" aria-live="polite"></div></section><section id="target" class="target" hidden></section><section id="boss-warning" class="boss-warning" role="status" hidden></section><button id="boss-dodge" type="button" title="Q 키 · 기존 이동 속도로 공격 예고 범위 벗어나기" hidden>회피 · Q</button>
-<div class="auto-control"><button id="hunt-config-toggle" type="button" title="자동사냥 설정 열기" aria-label="사냥 설정 열기">⚙</button><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)">${classicIcon('recall')}<span>귀환</span><small>R</small></button><button id="estate">${classicIcon('estate')}<span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">땅 클릭 이동 · Tab 다음 몬스터 · H 자동사냥 · 1 공격</p></div>
+<div class="auto-control"><button id="hunt-config-toggle" type="button" title="자동사냥 설정 열기" aria-label="사냥 설정 열기">⚙</button><button id="auto-hunt" type="button" aria-pressed="false" aria-label="자동사냥 OFF · 길게 눌러 설정" title="터치: ON/OFF · 길게 누르기: 설정 · H: 전환"><b aria-hidden="true">A</b><span id="auto-mode" aria-hidden="true">OFF</span></button></div><div class="bottom"><div class="hotbar-title"><span>단축 슬롯</span><span id="quality-info" aria-label="화질 자동 조절">AUTO</span></div><nav class="actions" aria-label="모험 행동"><button data-intent="attack" title="공격 전환 (1 또는 Space)">${classicIcon('sword')}<span>공격</span><small>1</small></button><button data-intent="skill" title="강타 (2)">${classicIcon('strike')}<span>강타</span><small id="skill-cooldown">2</small></button><button data-intent="potion" title="회복 물약 (3)">${classicIcon('potion')}<span id="potions">물약</span><small>3</small></button><button data-intent="recall" title="마을 귀환 (R)">${classicIcon('recall')}<span>귀환</span><small>R</small></button><button id="estate">${classicIcon('estate')}<span>영지</span></button><button id="inventory">${classicIcon('armor')}<span>장비</span></button></nav><p class="control-hint">WASD / 방향키 이동 · Space 공격 · Tab 대상 · H 자동사냥</p></div>
 <div id="player-overhead-name" aria-hidden="true" hidden></div><div id="notice" role="status"></div><aside id="panel" class="panel card" hidden><button id="panel-close" class="close" aria-label="패널 닫기">×</button><div id="panel-content"></div></aside><div id="screen-status" role="status"></div><footer id="save-status">저장 준비 중</footer>`;
   bindHotbarClickFeedback(root);
   root.querySelectorAll<HTMLButtonElement>('[data-intent]').forEach(b=>b.onclick=()=>{if(b.dataset['intent']!=='skill'&&b.dataset['intent']!=='potion'){pendingDungeonApproach=null;autoHunt?.setEnabled(false);}session.dispatch({type:b.dataset['intent']} as Intent); updateHud();});
@@ -587,8 +597,8 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'cha
       ${quest?`<p>보상 · 골드 ${quest.reward.gold} · 목재 ${quest.reward.wood} · 물약 ${quest.reward.potions} · 파편 ${quest.reward.fragments}</p>
       <button id="quest-claim" ${!finished?'disabled':''}>${nearQuestBoard(session.state.player.x,session.state.player.z)&&!session.state.player.dungeon!.inside?'의뢰 보상 수령':'마을 귀환 후 보상 수령'}</button>`:''}
       <p role="status" id="quest-status"></p>
-      <p>땅을 클릭해 이동 · 동쪽 사냥터에서 몬스터를 선택하고 1 키로 공격하세요.</p>
-      <p>2 강타 · 3 물약 · R 귀환 · 마을 주변에서는 체력이 회복됩니다.</p>
+      <p>WASD·방향키 또는 땅 클릭으로 이동 · Tab으로 대상을 선택하고 Space·1로 공격하세요.</p>
+      <p>2 강타 · 3 물약 · Q 회피 · H 자동사냥 · R 귀환 · I/B 장비 · C 캐릭터 · J 의뢰 · T 영지 · O 옵션 · Esc 닫기. 마을 주변에서는 체력이 회복됩니다.</p>
       <button id="help-quest-target">의뢰 자동이동 · 사냥</button><button id="help-hunt">가까운 몬스터 사냥</button>
       <small>목표 달성 후 보상 버튼을 누르면 필요할 때 마을로 귀환해 1번만 수령합니다.</small>`;
     $('#panel-content').dataset['questStage']=String(questState.stage);
@@ -610,7 +620,7 @@ function showPanel(kind:'estate'|'inventory'|'save'|'help'|'shop'|'dungeon'|'cha
     inventoryWindow=createInventoryWindow($('#panel-content'),()=>session.state.player,intent=>{session.dispatch(intent);updateHud();void save();},()=>showPanel('shop'));
   } else {
     $('#panel-content').innerHTML=`<span class="eyebrow">SYSTEM · PREFERENCES</span><h2>게임 옵션</h2><p class="settings-lead">화면, 여행 기록과 계정 연결을 관리하세요.</p>
-      <section class="settings-section"><h3>화면 및 플레이</h3><p>화질은 기기 성능에 맞춰 자동으로 조절됩니다.</p><div class="settings-grid"><button id="fullscreen-toggle" type="button" aria-pressed="false">전체화면</button><button id="game-exit" type="button">저장하고 종료</button></div><p>모바일에서 전체화면이 제한되면 Chrome 또는 홈 화면 실행을 이용하세요.</p><div id="browser-help" hidden><p>카카오 메뉴 → 다른 브라우저로 열기. 기록은 브라우저마다 별도로 저장됩니다.</p><button id="external-browser">다른 브라우저로 열기</button><button id="copy-game-url">게임 주소 복사</button><input id="game-url" readonly hidden aria-label="복사할 게임 주소"></div></section>
+      <section class="settings-section"><h3>화면 및 플레이</h3><p>WASD / 방향키 이동 · Space / 1 공격 · 2 강타 · 3 물약 · Q 회피 · Tab 대상 · H 자동사냥 · R 귀환<br>I/B 장비 · C 캐릭터 · J 의뢰 · T 영지 · O 옵션 · Esc 닫기</p><p>화질은 기기 성능에 맞춰 자동으로 조절됩니다.</p><div class="settings-grid"><button id="fullscreen-toggle" type="button" aria-pressed="false">전체화면</button><button id="game-exit" type="button">저장하고 종료</button></div><p>모바일에서 전체화면이 제한되면 Chrome 또는 홈 화면 실행을 이용하세요.</p><div id="browser-help" hidden><p>카카오 메뉴 → 다른 브라우저로 열기. 기록은 브라우저마다 별도로 저장됩니다.</p><button id="external-browser">다른 브라우저로 열기</button><button id="copy-game-url">게임 주소 복사</button><input id="game-url" readonly hidden aria-label="복사할 게임 주소"></div></section>
       <section class="settings-section"><h3>여행 기록</h3><p>15초마다 이 기기에 자동 저장합니다.</p><button id="save-now" class="primary">지금 기기에 저장</button><details><summary>저장 파일 백업 · 복구</summary><button id="export">저장 파일 내려받기</button><label class="import-label">저장 파일 가져오기<input id="import" type="file" accept="application/json"></label></details></section>
       <section class="settings-section"><h3>계정 및 클라우드</h3><p id="account">Google 계정 연결</p><button id="login">Google 로그인</button><details><summary>클라우드 저장 · 불러오기</summary><p>기기 사이에 단독 모험 기록을 옮깁니다.</p><button id="cloud-save">클라우드에 저장</button><button id="cloud-load">클라우드에서 불러오기</button><button id="logout">로그아웃</button></details><p id="cloud-status" role="status"></p></section><small>단독 모험 기록은 온라인 랭킹·거래와 공유되지 않습니다.</small>`;
     mobileShell.mountControls();

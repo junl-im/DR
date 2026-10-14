@@ -128,7 +128,7 @@ describe('mobs visual mapping', () => {
     expect(ordinary.model).toBe('/models/monsters/Goblin.glb');
     expect(boss.model).toBe('/models/monsters/OrcCaptain.glb');
     expect(boss.scale).toBeGreaterThan(ordinary.scale);
-    expect(resolveMobVisualEntry('local-11', 20003)?.model).toBe(ordinary.model);
+    expect(resolveMobVisualEntry('local-11', 20003)?.model).toBe('/models/monsters/OrcWarrior.glb');
     expect(resolveMobVisualEntry('dungeon-2-0', 99999)).toBeNull();
 
     const scene = { add: () => undefined, remove: () => undefined };
