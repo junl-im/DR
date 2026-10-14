@@ -83,9 +83,47 @@ const fs = require('fs'),
     }
     await page.locator('#panel-close').click();
     await page.locator('#inventory').click();
-    await page.waitForTimeout(200);
+    await page.waitForFunction(() => {
+      const panel = document.querySelector('#panel'),
+        nav = document.querySelector('.game-pages[data-page-for=panel]');
+      return (
+        panel &&
+        nav &&
+        (panel.scrollHeight <= panel.clientHeight + 1 || !nav.hidden)
+      );
+    });
     const inventoryPages = page.locator('.game-pages[data-page-for=panel]');
     let inventoryTurns = 0;
+    const visited = new Set();
+    const capture = async () => {
+      const ids = await page.evaluate(() => {
+        const panel = document.querySelector('#panel'),
+          p = panel.getBoundingClientRect(),
+          heading = panel
+            .querySelector('.inventory-heading')
+            .getBoundingClientRect();
+        return [
+          ...panel.querySelectorAll(
+            '#open-shop,#toggle-equipment,#upgrade,[data-craft-armor]',
+          ),
+        ]
+          .filter((b) => {
+            const r = b.getBoundingClientRect(),
+              hit = document.elementFromPoint(
+                r.x + r.width / 2,
+                r.y + r.height / 2,
+              );
+            return (
+              r.top >= Math.max(p.top, heading.bottom) &&
+              r.bottom <= p.bottom - 36 &&
+              (hit === b || b.contains(hit))
+            );
+          })
+          .map((b) => b.id || b.dataset.craftArmor);
+      });
+      ids.forEach((id) => visited.add(id));
+    };
+    await capture();
     while (
       (await inventoryPages.isVisible()) &&
       !(await inventoryPages.locator('button').nth(1).isDisabled()) &&
@@ -93,6 +131,34 @@ const fs = require('fs'),
     ) {
       await inventoryPages.locator('button').nth(1).click();
       inventoryTurns++;
+      await capture();
+    }
+    await capture();
+    const expected = await page
+      .locator('#panel')
+      .evaluate((panel) =>
+        [
+          ...panel.querySelectorAll(
+            '#open-shop,#toggle-equipment,#upgrade,[data-craft-armor]',
+          ),
+        ].map((b) => b.id || b.dataset.craftArmor),
+      );
+    const missing = expected.filter((id) => !visited.has(id));
+    if (missing.length) {
+      await page.screenshot({
+        path: out + '/actions-missing-' + width + '.png',
+      });
+      throw Error(JSON.stringify({ width, missing, visited: [...visited] }));
+    }
+    for (let back = 0; back < 50; back++) {
+      const box = await page.locator('#open-shop').boundingBox(),
+        p = await page.locator('#panel').boundingBox();
+      if (box && box.y >= p.y + 80 && box.y + box.height <= p.y + p.height - 36)
+        break;
+      const previous = inventoryPages.locator('button').first();
+      if (await previous.isDisabled())
+        throw Error('Shop page cannot be reached');
+      await previous.click();
     }
     await page.locator('#open-shop').click();
     if (!(await page.locator('#buy-one').isVisible()))
@@ -111,6 +177,8 @@ const fs = require('fs'),
       height,
       turns,
       inventoryTurns,
+      visitedActions:[...visited],
+      expectedActions:expected,
       manifestIcons: manifest.icons.length,
       installPromptFixture: true,
       optionCategories: 3,

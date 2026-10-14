@@ -1,5 +1,9 @@
 import { it, expect } from 'vitest';
-import { createGameScrollbars, scrollbarMetrics } from './game-scrollbars';
+import {
+  createGameScrollbars,
+  scrollbarMetrics,
+  pageTravel,
+} from './game-scrollbars';
 it('clamps legacy geometry safely', () => {
   expect(scrollbarMetrics(100, 50, 80, 100).max).toBe(0);
   expect(scrollbarMetrics(100, 1000, 80, -20).offset).toBe(0);
@@ -24,14 +28,15 @@ it('turns complete viewport pages, reaches the final action and returns without 
   expect(buttons[0].disabled).toBe(true);
   expect(root.querySelector('[role=scrollbar]')).toBeNull();
   buttons[1].click();
-  expect(panel.scrollTop).toBe(136);
+  expect(panel.scrollTop).toBe(104);
+  buttons[1].click();
   buttons[1].click();
   buttons[1].click();
   expect(panel.scrollTop).toBe(400);
   expect(buttons[1].disabled).toBe(true);
-  expect(nav.textContent).toContain('4 / 4');
+  expect(nav.textContent).toContain('5 / 5');
   buttons[0].click();
-  expect(panel.scrollTop).toBe(264);
+  expect(panel.scrollTop).toBe(296);
   panel.hidden = true;
   pager.update();
   expect(nav.hidden).toBe(true);
@@ -88,4 +93,10 @@ it('keeps nested bag paging above the parent window paging row', () => {
   );
   pages.dispose();
   root.remove();
+});
+
+it('reserves the sticky title, navigation and a complete touch action between pages', () => {
+  expect(pageTravel(388, 70)).toBe(222);
+  expect(388 - pageTravel(388, 70)).toBeGreaterThanOrEqual(70 + 36 + 44);
+  expect(pageTravel(100, 70)).toBe(1);
 });

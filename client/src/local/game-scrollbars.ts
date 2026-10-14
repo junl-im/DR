@@ -15,6 +15,18 @@ export function scrollbarMetrics(
   };
 }
 
+export function pageTravel(view: number, stickyHeading = 0) {
+  return Math.max(1, view - 96 - Math.max(0, stickyHeading));
+}
+function hostPageTravel(host: HTMLElement) {
+  const heading = host.querySelector<HTMLElement>('.inventory-heading');
+  return pageTravel(
+    host.clientHeight,
+    heading && getComputedStyle(heading).position === 'sticky'
+      ? heading.getBoundingClientRect().height
+      : 0,
+  );
+}
 /** Discrete, overlapping viewport pages keep tall rows and actions reachable. */
 export function createGameScrollbars(root: HTMLElement) {
   const entries = new Map<
@@ -63,7 +75,7 @@ export function createGameScrollbars(root: HTMLElement) {
             0,
             Math.min(
               host.scrollHeight - host.clientHeight,
-              host.scrollTop + direction * Math.max(1, host.clientHeight - 64),
+              host.scrollTop + direction * hostPageTravel(host),
             ),
           );
           update();
@@ -96,7 +108,7 @@ export function createGameScrollbars(root: HTMLElement) {
     for (const [host, e] of entries) {
       const r = host.getBoundingClientRect(),
         max = Math.max(0, host.scrollHeight - host.clientHeight),
-        step = Math.max(1, host.clientHeight - 64);
+        step = hostPageTravel(host);
       let top = Math.max(0, r.top),
         bottom = Math.min(innerHeight, r.bottom),
         left = r.left,
